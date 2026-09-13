@@ -258,8 +258,12 @@
             <div id="tab-manuscript" class="tab-content active">
                 <div class="card">
                     <div class="card-header">
-                        <span>Bản Thảo: Quyển 1 / Arc 1 / Chương 1 — Mưa Trên Phố Cũ</span>
-                        <span style="font-size: 0.85rem; color: var(--text-gold);">Góc nhìn: Nguyễn Minh An (Ngôi thứ nhất)</span>
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <span>Bản Thảo: Quyển 1 / Arc 1 /</span>
+                            <select id="chapter-select" onchange="onSelectChapter(this.value)" style="background: var(--bg-hover); color: var(--text-gold); border: 1px solid var(--border-color); padding: 5px 10px; border-radius: 6px; font-weight: 600; font-size: 0.9rem; cursor: pointer;">
+                            </select>
+                        </div>
+                        <span id="chapter-pov-badge" style="font-size: 0.85rem; color: var(--text-gold);">Góc nhìn: Nguyễn Minh An (Ngôi thứ nhất)</span>
                     </div>
                     <div class="manuscript-viewer" id="manuscript-body">Đang tải bản thảo tiếng Việt...</div>
                 </div>
@@ -359,6 +363,8 @@
             event.target.classList.add('active');
         }
 
+        let currentChapter = 2;
+
         async function loadStatus() {
             try {
                 const res = await fetch('/api/status');
@@ -366,17 +372,40 @@
                 document.getElementById('stat-chapters').innerText = data.chapter_count;
                 document.getElementById('stat-words').innerText = data.total_words.toLocaleString('vi-VN');
                 document.getElementById('stat-git').innerText = data.recent_commit || "Đã lưu trữ Git";
+
+                const sel = document.getElementById('chapter-select');
+                if (sel) {
+                    sel.innerHTML = '';
+                    const titles = {
+                        1: "Chương 1: Mưa Trên Phố Cũ",
+                        2: "Chương 2: Căn Phòng Trọ Và Đốm Lửa Tàn"
+                    };
+                    for (let i = 1; i <= data.chapter_count; i++) {
+                        const opt = document.createElement('option');
+                        opt.value = i;
+                        opt.innerText = titles[i] || `Chương ${i}`;
+                        if (i === currentChapter) opt.selected = true;
+                        sel.appendChild(opt);
+                    }
+                }
             } catch(e) { console.error(e); }
         }
 
-        async function loadChapter(chNum = 1) {
+        async function loadChapter(chNum = 2) {
+            currentChapter = chNum;
             try {
                 const res = await fetch(`/api/chapter/${chNum}`);
                 const data = await res.json();
                 document.getElementById('manuscript-body').innerText = data.content;
+                const sel = document.getElementById('chapter-select');
+                if (sel) sel.value = chNum;
             } catch(e) {
                 document.getElementById('manuscript-body').innerText = "Chưa có nội dung cho chương này.";
             }
+        }
+
+        function onSelectChapter(val) {
+            loadChapter(parseInt(val));
         }
 
         async function loadWorld() {
@@ -502,12 +531,12 @@
         }
 
         function downloadWord() {
-            window.location.href = '/api/export-docx/1';
+            window.location.href = `/api/export-docx/${currentChapter}`;
         }
 
         // Tự động nạp dữ liệu khi mở trang
         loadStatus();
-        loadChapter(1);
+        loadChapter(2);
         loadWorld();
         loadCharacters();
         loadTimeline();

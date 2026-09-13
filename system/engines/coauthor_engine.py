@@ -160,7 +160,7 @@ Mưa ngớt dần. Tôi dắt xe ra đường, hòa vào dòng người tiếp t
             cur.execute("""INSERT INTO character_states (character_id, chapter_num, location_id, cultivation_realm, physical_condition, injuries_json, inventory_json, emotional_state)
                            VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
                         ("char_lam_tich", 2, "Thức hải Minh An", "Đỉnh cao vị diện (tàn hồn kiệt sức)", "Tàn hồn cực độ suy kiệt, thân thể đã tan rã",
-                         json.dumps(["Thân thể nát vụn hoàn toàn", "Đạo cơ đứt đoạn", "Nguyên thần vỡ vụn"], ensure_ascii=False),
+                         json.dumps(["Thân thể nát vụn hoàn toàn", "Đạo cơ vỡ nát", "Nguyên thần vỡ vụn"], ensure_ascii=False),
                          json.dumps(["Mảnh kiếm gãy (dạng ý niệm)"], ensure_ascii=False),
                          "Cảnh giác, kiêu hãnh nhưng mệt mỏi cùng cực, chìm vào ngủ say"))
             
