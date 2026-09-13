@@ -517,7 +517,7 @@
             event.target.classList.add('active');
         }
 
-        let currentChapter = 14;
+        let currentChapter = 15;
 
         async function loadStatus() {
             try {
@@ -544,7 +544,8 @@
                         11: "Chương 11: Dưới Lăng Kính Công Nghệ",
                         12: "Chương 12: Chu Thiên Đầu Tiên",
                         13: "Chương 13: Kình Lực Trần Thế",
-                        14: "Chương 14: Tiếng Trà Góc Phố"
+                        14: "Chương 14: Tiếng Trà Góc Phố",
+                        15: "Chương 15: Sóng Ngầm Dưới Lăng Kính"
                     };
                     for (let i = 1; i <= data.chapter_count; i++) {
                         const opt = document.createElement('option');
@@ -764,7 +765,7 @@
 
         // Tự động nạp dữ liệu khi mở trang
         loadStatus();
-        loadChapter(14);
+        loadChapter(15);
         loadWorld();
         loadCharacters();
         loadTimeline();
