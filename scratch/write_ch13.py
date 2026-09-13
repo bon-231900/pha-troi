@@ -1,0 +1,122 @@
+# -*- coding: utf-8 -*-
+import sys
+import io
+
+# Set UTF-8 standard output
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+
+from system.engines.coauthor_engine import CoAuthorEngine
+
+ch13_prose = """# CHƯƠNG 13: KÌNH LỰC TRẦN THẾ
+
+Sáu giờ ba mươi phút sáng ngày mười bảy tháng Chín.
+
+Nắng sớm xuyên qua rèm cửa, chiếu rọi lên sàn gỗ căn phòng trọ nhỏ. Tôi mở mắt thức dậy sau một giấc ngủ sâu không mộng mị.
+
+Chưa bao giờ trong suốt hai mươi lăm năm cuộc đời, tôi cảm thấy thế giới này sống động và rõ nét đến thế. 
+
+Tai tôi có thể nghe rõ tiếng lách cách của chiếc vá sắt chạm vào lòng chảo xào hủ tiếu của quán ăn đầu ngõ cách đó hơn trăm mét; mắt tôi có thể phân biệt từng sợi vân gỗ li ti trên chiếc bàn làm việc cũ; và dưới làn da, dòng máu ấm áp đang luân chuyển theo một vòng tuần hoàn khép kín, nhịp nhàng và mạnh mẽ như một dòng hải lưu ngầm.
+
+Sau khi hoàn thành vòng Chu Thiên đầu tiên vào đêm qua, cơ thể tôi dường như đã được tái sinh từ bên trong. Không còn những cơn mỏi cơ bắp hay sự nặng nề của lối sống bàn giấy. Từng thớ cơ săn lại gọn gàng, các khớp xương dẻo dai và vững chãi đến mức mỗi bước chân chạm đất đều mang lại cảm giác thăng bằng tuyệt đối.
+
+Trong cõi sâu thức hải, chiếc kén khí huyết sinh học ấm áp đang bao bọc lấy tàn hồn của Lâm Tịch một cách hoàn hảo. Không còn một tia hàn khí nào rò rỉ ra ngoài. Nàng ngồi tĩnh tọa giữa làn sương mỏng, bóng dáng thiếu nữ áo choàng xám bạc toát lên vẻ an định hiếm thấy.
+
+"Cảm giác thế nào?" Nàng cất tiếng hỏi trong tâm tưởng, thanh âm dịu dàng như gió thoảng đầu cành.
+
+"Rất tốt," tôi mỉm cười đáp lại bằng ý niệm. "Cảm giác như toàn bộ cơ thể đã được đồng bộ hóa hoàn toàn với ý nghĩ."
+
+"Đó là nền tảng của Thể Đạo," Lâm Tịch giải thích. "Phàm nhân cử động thường bị phân tán lực lượng: cơ bắp muốn đi tới nhưng gân cốt chưa theo kịp, ý nghĩ phát ra nhưng dòng máu chưa kịp truyền tải dưỡng chất. Nay ngươi đã thông một Chu Thiên, ý niệm và huyết khí đã hợp nhất làm một. Lực phát từ gót, truyền qua eo, tụ lại nơi nắm đấm, kình lực sinh học của ngươi lúc này đã vượt xa người bình thường."
+
+Tám giờ sáng, tôi có mặt tại tòa cao ốc văn phòng ở Quận 1.
+
+Khi bước qua cổng xoay an ninh và đi ngang qua camera đo thân nhiệt tự động đặt ở sảnh lớn, chiếc máy phát ra tiếng kêu "bíp" ngắn ngủi màu xanh lá cây: `36.6°C - Bình thường`.
+
+Cách đó không xa, anh Tuấn đội trưởng an ninh và kỹ sư Hoàng đang đứng trao đổi với người quản lý tòa nhà. Nhìn thấy tôi đi qua, anh Tuấn mỉm cười giơ tay vẫy chào thân thiện. Màn hình giám sát nhiệt lượng của họ không ghi nhận bất kỳ một điểm trũng bất thường nào nữa. 
+
+Màng chắn khí huyết chu thiên đã phát huy tác dụng tuyệt đối. Mối nguy cơ bị máy móc hiện đại phát hiện tạm thời được hóa giải hoàn toàn.
+
+Chín giờ ba mươi phút sáng.
+
+Tôi được trưởng phòng phân công xuống khu vực sảnh giao nhận hàng hóa phía sau tòa nhà để ký biên bản nhận lô thiết bị máy chủ và tài liệu dự án mới bàn giao từ đối tác.
+
+Khu vực kho bãi tầng trệt lúc này khá tấp nập. Xe tải nhỏ lùi vào bệ dỡ hàng, tiếng động cơ nổ máy hòa lẫn tiếng hô hào điều phối của nhân viên vận chuyển. Một chiếc xe nâng tay thủy lực cỡ lớn chở kiện hàng kim loại nặng chừng bốn trăm kilôgam đang được bác Bảy — một nhân viên kho vận lớn tuổi — kéo chầm chậm lên đoạn dốc thoai thoải dẫn vào cửa kho.
+
+Tôi đứng ở mép hành lang, cầm tập tài liệu chờ nhân viên bưu chính quét mã vận đơn. Cách tôi khoảng mười bước chân, một vị khách cao tuổi mặc bộ đồ bà ba màu đen giản dị, tóc bạc cắt ngắn gọn gàng, hai tay chắp sau lưng, đang thong thả tản bộ ngắm nhìn khu vực hoa viên nội khu của tòa nhà.
+
+Đúng lúc đó, một tiếng kim loại rạn vỡ sắc lạnh đột ngột vang lên:
+
+*Rắc! Phụt!*
+
+Dây cáp hãm thủy lực của chiếc xe nâng hàng bỗng nhiên bị đứt toạc do quá tải. Bánh xe trượt khỏi gờ chặn an toàn. Toàn bộ cỗ xe nâng chở khối kim loại nặng bốn tạ lập tức mất đà, lao dốc ngược về phía sau với tốc độ kinh hoàng.
+
+"Ái chà! Tránh ra!" Bác Bảy thất thanh kêu lên, chân bị vấp vào mép bệ xi măng, ngã ngửa ra sàn bê tông ngay trên đường lao của bánh xe nâng.
+
+Nếu chiếc xe tải trọng bốn tạ ấy cán qua người, hậu quả sẽ là gãy nát toàn bộ lồng ngực và xương chậu của người công nhân già.
+
+Những người xung quanh hét lên kinh hãi, nhưng khoảng cách quá xa và quán tính chiếc xe quá lớn khiến không một ai kịp lao tới can thiệp.
+
+Trong tích tắc ngàn cân treo sợi tóc ấy, tôi không hề đắn đo.
+
+Ý niệm trong đầu vừa lóe lên, dòng máu ấm áp trong lồng ngực lập tức cuộn trào như thác lũ. Không cần lấy đà, hai bàn chân tôi đạp mạnh xuống mặt sàn bê tông, phát ra một tiếng *bụp* trầm đục. Khí huyết dồn xuống hai đùi, tạo thành một sức bật cơ bắp bùng nổ, đẩy thân mình tôi lao vút đi tựa như một mũi tên xé gió.
+
+Khoảng cách bảy mét bị thu hẹp chỉ trong chưa đầy nửa giây.
+
+Tôi lướt tới trước mặt bác Bảy, chân phải cắm sâu xuống khe tiếp giáp của sàn dốc làm trụ, hai bàn tay mang găng sợi vươn ra, tóm chặt lấy hai thanh càng nâng kim loại đang lao xuống ầm ầm.
+
+*Keng! Rầm!*
+
+Một lực va đập khủng khiếp dội thẳng vào hai cánh tay tôi. 
+
+Theo quán tính thông thường, người đỡ sẽ bị khối kim loại bốn tạ nghiền nát hoặc hất văng đi. Nhưng ngay khoảnh khắc ấy, bài học về ý niệm dòng sông của Lâm Tịch lập tức phát huy tác dụng. Tôi không dùng sức thô bạo để ghìm xe lại, mà khẽ chùng khớp gối, uốn cong cột sống, chuyển hóa toàn bộ xung lực lao tới thành một đường cung trượt dọc theo cơ thể rồi truyền thẳng xuống mặt sàn bê tông dưới chân.
+
+Đôi giày thể thao của tôi ma sát với mặt sàn rít lên một tiếng chói tai, trượt dài chừng hai mươi phân rồi khựng lại hoàn toàn.
+
+Chiếc xe nâng bốn tạ dừng lại cách lồng ngực bác Bảy chỉ vỏn vẹn một gang tay.
+
+Toàn bộ khu vực giao nhận hàng bỗng chốc im bặt như tờ.
+
+Gió sớm thổi qua vạt áo sơ mi của tôi. Lồng ngực tôi phập phồng nhẹ, dòng khí huyết lưu chuyển êm ru xua tan toàn bộ phản lực va chạm, không một thớ cơ nào bị rách, không một khớp xương nào bị trật. Đó là sự chuẩn xác và dẻo dai tột đỉnh của một cơ thể phàm nhân đã khơi thông tuần hoàn sinh học.
+
+"Bác... bác Bảy có sao không?" Tôi vừa giữ chặt càng nâng vừa cúi xuống hỏi, giọng nói vẫn điềm đạm, không hề hụt hơi.
+
+Bác Bảy mở mắt ra, toàn thân run rẩy, nhìn cỗ xe nâng bị tôi chặn đứng bằng hai tay trần mà mắt mở to trừng trừng như nhìn thấy quái vật:
+
+"Cậu... cậu An... cậu đỡ được nó thật sao? Trời đất ơi... cậu có gãy tay không?"
+
+Mọi người xung quanh lập tức hoàn hồn ùa tới, năm sáu thanh niên vội vã chèn gỗ chặn bánh xe, đỡ bác Bảy đứng dậy rồi liên tục vỗ vai tôi thán phục:
+
+"Trời ơi anh An, anh khỏe khủng khiếp vậy! Xe bốn tạ đang lao dốc mà anh hãm lại được!"
+
+"Chắc do góc dốc thoai thoải với may mắn bánh xe bị kẹt vào mép gờ thôi mọi người," tôi cười xòa, khéo léo gãi đầu giấu đi sự dị thường, đóng tròn vai một thanh niên gặp may nhờ phản xạ nhanh.
+
+Nhưng giữa đám đông đang ồn ào ấy, tôi bất chợt cảm nhận được một ánh mắt lạ thường.
+
+Cách đó không xa, vị khách cao tuổi mặc áo bà ba đen lúc nãy vẫn đang đứng yên dưới gốc cây bàng. Ông không nhìn cỗ xe nâng, cũng không nhìn bác Bảy, mà ánh mắt sắc sảo như chim ưng của ông đang khóa chặt vào tư thế hạ bàn và đôi bàn tay của tôi. Đôi lông mày bạc của ông khẽ nhíu lại, trong ánh mắt thoáng qua một tia kinh ngạc tột bộc, tựa như một người thợ kim hoàn vừa nhìn thấy viên ngọc thô giữa đống đất cát tầm thường.
+
+Trong thức hải, Lâm Tịch khẽ thì thầm:
+
+"Người kia... trên thân có kình lực nội gia của phàm trần. Ông ta đã nhận ra sự khác thường trong cú phát lực của ngươi."
+
+Tôi kín đáo thu hồi bàn tay, kéo phẳng lại tay áo sơ mi, khẽ gật đầu đáp lại ánh nhìn của vị khách lạ rồi bình thản quay lại bàn ký nhận tài liệu. 
+
+Một buổi sáng bình thường của phố thị Sài Gòn lại tiếp diễn, nhưng bánh xe số phận dường như đã bắt đầu lăn những vòng quay mới."""
+
+def main():
+    print("--- KHỞI CHẠY QUY TRÌNH VIẾT CHƯƠNG 13 ---")
+    engine = CoAuthorEngine()
+    result = engine.write_next_chapter(
+        target_chapter_num=13,
+        pov="Nguyễn Minh An (Ngôi thứ nhất)",
+        custom_draft_prose=ch13_prose
+    )
+    print("Kết quả pipeline:", result["success"])
+    print("Đường dẫn Markdown:", result["md_path"])
+    print("Đường dẫn Word DOCX:", result["docx_path"])
+    print("Tổng số từ:", result["word_count"])
+    print("Kiểm duyệt (Audit Passed):", result["critique"]["passed"])
+    if not result["critique"]["passed"]:
+        print("Danh sách cảnh báo:", result["critique"]["issues"])
+    print("Hoàn tất!")
+
+if __name__ == "__main__":
+    main()

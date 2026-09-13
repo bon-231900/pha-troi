@@ -488,6 +488,35 @@ Mưa ngớt dần. Tôi dắt xe ra đường, hòa vào dòng người tiếp t
                         ("FSH-012", "Dao động sinh học cực kỳ mờ nhạt từ khe nứt đốt sống thứ bảy thẩm thấu vào lòng đất Sài Gòn", 12, 1,
                          json.dumps(["Lâm Tịch"], ensure_ascii=False),
                          "Tín hiệu mở khóa Khí Huyết đầu tiên sau vạn năm kích hoạt cảm ứng vi mô của đại trận phong ấn Cố Thổ nằm sâu dưới lòng đất", 28, "PLANTED"))
+        elif chapter_num == 13:
+            cur.execute("""INSERT OR REPLACE INTO timeline_events (id, title, chapter_num, scene_num, absolute_time, location_id, participants_json, summary, outcome)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                        (f"EVT-CH{chapter_num:03d}-01", "Kỳ tích sinh học và sự xuất hiện của ánh mắt quan sát", chapter_num, 1,
+                         "2026-09-17T09:30:00+07:00", "loc_hcmc", json.dumps(["char_minh_an", "char_lam_tich"], ensure_ascii=False),
+                         "Sáng 17/09/2026, Minh An trải nghiệm sự thăng hoa giác quan sau khi thông 1 Chu Thiên. Khi đến tòa nhà làm việc, máy quét tầm nhiệt không còn phát hiện bất kỳ dị thường nào nhờ màng chắn khí huyết hoàn hảo. Trong giờ làm việc tại khu vực bốc dỡ hàng tầng trệt, một sự cố trượt cáp xe nâng hàng đe dọa người công nhân già; Minh An kịp thời dùng lực cơ bắp thuần túy bộc phát chuẩn xác để giữ lấy càng nâng, cứu người an toàn trong giới hạn phàm nhân. Một vị khách lớn tuổi am hiểu nội gia quyền ngẫu nhiên chứng kiến và chú ý.",
+                         "Khẳng định sức mạnh Khí Huyết dùng để bảo hộ cuộc sống; củng cố niềm tin tuyệt đối giữa Minh An và Lâm Tịch; gieo mầm phục bút FSH-013 về sự chú ý của giới võ học cổ truyền."))
+            
+            # Character states
+            cur.execute("""INSERT INTO character_states (character_id, chapter_num, location_id, cultivation_realm, physical_condition, injuries_json, inventory_json, emotional_state)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                        ("char_minh_an", 13, "Khu vực tầng trệt tòa nhà Quận 1", "Phàm nhân (Khí Huyết Đạo Sơ Khai - Nhất Chu Thiên Vững Chắc)", "Cơ bắp phát lực nhịp nhàng, phản xạ vượt bậc, không chịu bất kỳ chấn thương nào sau cú bộc phát kình lực",
+                         json.dumps([], ensure_ascii=False),
+                         json.dumps(["Điện thoại di động", "Ví tiền", "Chìa khóa xe Wave", "Thẻ nhân viên", "Găng tay sợi"], ensure_ascii=False),
+                         "Điềm đạm, sẵn sàng che chở người yếu thế, vững vàng trước mọi ánh nhìn"))
+            
+            cur.execute("""INSERT INTO character_states (character_id, chapter_num, location_id, cultivation_realm, physical_condition, injuries_json, inventory_json, emotional_state)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                        ("char_lam_tich", 13, "Thức hải Minh An", "Đỉnh cao vị diện (tàn hồn an định)", "Tàn hồn yên ấm bên trong kén khí huyết chu thiên, khí tức băng phách thu liễm tuyệt đối",
+                         json.dumps(["Thân thể nát vụn hoàn toàn", "Đạo cơ vỡ nát", "Nguyên thần vỡ vụn"], ensure_ascii=False),
+                         json.dumps(["Mảnh kiếm gãy (dạng ý niệm)"], ensure_ascii=False),
+                         "Cảm kích trước tấm lòng nhân hậu của Minh An, chính thức coi anh là đạo lữ đồng hành sinh tử"))
+            
+            # Foreshadowing seed FSH-013
+            cur.execute("""INSERT OR REPLACE INTO foreshadowing_ledger (id, seed_description, planted_chapter, planted_scene, notices_json, actual_meaning, payoff_chapter, status)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                        ("FSH-013", "Ánh mắt kinh ngạc của vị khách cao tuổi mặc áo bà ba đen chứng kiến cú phát lực chặn xe nâng của Minh An", 13, 1,
+                         json.dumps(["Minh An", "Lâm Tịch"], ensure_ascii=False),
+                         "Một võ sư nội gia quyền thuộc môn phái cổ truyền nhận ra dấu vết kình lực Khí Huyết thất truyền, chuẩn bị cho cuộc hội ngộ ở Chương 16", 16, "PLANTED"))
         else:
             cur.execute("""INSERT OR REPLACE INTO timeline_events (id, title, chapter_num, scene_num, absolute_time, location_id, participants_json, summary, outcome)
                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
