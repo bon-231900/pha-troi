@@ -308,6 +308,38 @@ Mưa ngớt dần. Tôi dắt xe ra đường, hòa vào dòng người tiếp t
                         ("FSH-006", "Nhận định của Lâm Tịch về Trái Đất là Cố Thổ cội nguồn của Khí Huyết Đạo viễn cổ bị phong ấn cô lập", 6, 1,
                          json.dumps(["Minh An", "Lâm Tịch"], ensure_ascii=False),
                          "Trái Đất vốn là cái nôi của Thể Đạo; phong ấn viễn cổ thực chất là bức tường thành bảo vệ nhân loại khỏi sự lây nhiễm của Thiên Đạo tha hóa", 25, "PLANTED"))
+        elif chapter_num == 7:
+            cur.execute("""INSERT OR REPLACE INTO timeline_events (id, title, chapter_num, scene_num, absolute_time, location_id, participants_json, summary, outcome)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                        (f"EVT-CH{chapter_num:03d}-01", "Hàn ý giữa chảo lửa và phản xạ bảo vệ của Băng Phách", chapter_num, 1,
+                         "2026-09-15T15:30:00+07:00", "loc_hcmc", json.dumps(["char_minh_an", "char_lam_tich"], ensure_ascii=False),
+                         "Chiều 15/09/2026, Quận 1 nắng rát 37°C. Tại quán giải khát đông đúc giờ giải lao, sự cố bình nước sôi hất đổ hướng thẳng vào Minh An và đồng nghiệp. Quy tắc Băng Phách từ tàn hồn Lâm Tịch trong thức hải tự phát kích hoạt theo bản năng bảo hộ sinh mệnh cộng sinh, hạ nhiệt tức thì khối chất lỏng bỏng rát thành làn sương khói mát lạnh trong tích tắc, giải cứu cả hai người an toàn.",
+                         "Hoàn tất thu hồi phục bút FSH-004 và FSH-001; xác nhận mối quan hệ cộng sinh hai chiều: Minh An dùng khí huyết phàm nhân nuôi dưỡng tàn hồn nàng, còn quy tắc của Lâm Tịch phản xạ che chắn hiểm nguy cho Minh An; gieo mầm phục bút FSH-007 về sự biến thiên nhiệt độ vật lý cục bộ."))
+            
+            # Character states
+            cur.execute("""INSERT INTO character_states (character_id, chapter_num, location_id, cultivation_realm, physical_condition, injuries_json, inventory_json, emotional_state)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                        ("char_minh_an", 7, "Tòa nhà văn phòng & khu vực Nguyễn Huệ, Quận 1", "Phàm nhân (Thể phách ngưng luyện sơ bộ)", "Khí huyết sung mãn, thần kinh phản xạ nhạy bén, không hề bị tổn thương do nước sôi",
+                         json.dumps([], ensure_ascii=False),
+                         json.dumps(["Điện thoại di động", "Ví tiền", "Chìa khóa xe Wave", "Thẻ nhân viên", "Cốc trà sữa"], ensure_ascii=False),
+                         "Kinh ngạc, sau đó là sự thấu hiểu và gắn kết sâu sắc với Lâm Tịch"))
+            
+            cur.execute("""INSERT INTO character_states (character_id, chapter_num, location_id, cultivation_realm, physical_condition, injuries_json, inventory_json, emotional_state)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                        ("char_lam_tich", 7, "Thức hải Minh An", "Đỉnh cao vị diện (tàn hồn kiệt sức)", "Tàn hồn tiêu hao thêm một tia thần niệm sau phản xạ bảo vệ, nhưng được khí huyết ấm áp của Minh An ổn định tức thì",
+                         json.dumps(["Thân thể nát vụn hoàn toàn", "Đạo cơ vỡ nát", "Nguyên thần vỡ vụn"], ensure_ascii=False),
+                         json.dumps(["Mảnh kiếm gãy (dạng ý niệm)"], ensure_ascii=False),
+                         "Hơi mệt mỏi nhưng thanh thản, lần đầu gọi tên Minh An, thừa nhận mối quan hệ đồng hành sinh tử"))
+            
+            # Payoff FSH-001 & FSH-004
+            cur.execute("""UPDATE foreshadowing_ledger SET status = 'PAID' WHERE id IN ('FSH-001', 'FSH-004')""")
+
+            # Foreshadowing seed FSH-007
+            cur.execute("""INSERT OR REPLACE INTO foreshadowing_ledger (id, seed_description, planted_chapter, planted_scene, notices_json, actual_meaning, payoff_chapter, status)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                        ("FSH-007", "Sự biến thiên nhiệt độ đột ngột tại hiện trường Quận 1 bị camera an ninh và cảm biến nhiệt môi trường ghi nhận", 7, 1,
+                         json.dumps(["Minh An", "Bộ phận kỹ thuật tòa nhà"], ensure_ascii=False),
+                         "Hiện tượng bất thường phi vật lý đầu tiên để lại dấu vết công nghệ ở thế giới hiện đại, đặt tiền đề cho các cơ quan nghiên cứu chú ý", 15, "PLANTED"))
         else:
             cur.execute("""INSERT OR REPLACE INTO timeline_events (id, title, chapter_num, scene_num, absolute_time, location_id, participants_json, summary, outcome)
                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
