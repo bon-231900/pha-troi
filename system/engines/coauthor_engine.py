@@ -247,6 +247,38 @@ Mưa ngớt dần. Tôi dắt xe ra đường, hòa vào dòng người tiếp t
                         ("FSH-004", "Quy tắc hàn băng vi mô phát sinh tại môi trường nhiệt độ cao (giọt nước ngưng băng trên cốc trà đá giữa trưa)", 4, 1,
                          json.dumps(["Minh An"], ensure_ascii=False),
                          "Quy tắc Băng Phách của Lâm Tịch bắt đầu có hiện tượng rò rỉ thụ động ra vật chất ngoại cảnh khi nàng chuyển mình ý thức", 7, "PLANTED"))
+        elif chapter_num == 5:
+            cur.execute("""INSERT OR REPLACE INTO timeline_events (id, title, chapter_num, scene_num, absolute_time, location_id, participants_json, summary, outcome)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                        (f"EVT-CH{chapter_num:03d}-01", "Cuộc đối thoại dưới ánh đèn đêm và lời giới thiệu tên họ", chapter_num, 1,
+                         "2026-09-14T21:30:00+07:00", "loc_hcmc", json.dumps(["char_minh_an", "char_lam_tich"], ensure_ascii=False),
+                         "Minh An trở về phòng trọ sau ngày làm việc. Trong đêm tĩnh mịch, Lâm Tịch tỉnh giấc lâu hơn, chính thức giới thiệu danh tự của mình và giải thích về đạo cơ vỡ nát cùng nguyên nhân hàn khí rò rỉ. Hai người chia sẻ góc nhìn về nhân sinh ngắn ngủi của phàm nhân và sự tịch diệt của chư thiên vị diện.",
+                         "Hoàn tất thu hồi phục bút FSH-002; xác lập liên kết nhận thức sâu sắc giữa Minh An và Lâm Tịch; gieo mầm phục bút FSH-005 về thảm họa Phá Trời."))
+            
+            # Character states
+            cur.execute("""INSERT INTO character_states (character_id, chapter_num, location_id, cultivation_realm, physical_condition, injuries_json, inventory_json, emotional_state)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                        ("char_minh_an", 5, "Phòng trọ Bình Thạnh", "Phàm nhân", "Khí huyết lưu chuyển hài hòa, bắt đầu có cảm ứng vi mô với nhiệt độ và sinh mệnh lực xung quanh",
+                         json.dumps([], ensure_ascii=False),
+                         json.dumps(["Điện thoại di động", "Ví tiền", "Chìa khóa xe Wave", "Laptop cũ", "Cốc trà sứ"], ensure_ascii=False),
+                         "Trầm lắng, thấu cảm sâu sắc, bắt đầu gánh vác trọng trách vô hình"))
+            
+            cur.execute("""INSERT INTO character_states (character_id, chapter_num, location_id, cultivation_realm, physical_condition, injuries_json, inventory_json, emotional_state)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                        ("char_lam_tich", 5, "Thức hải Minh An", "Đỉnh cao vị diện (tàn hồn kiệt sức)", "Tàn hồn cực độ suy kiệt, thân thể đã tan rã",
+                         json.dumps(["Thân thể nát vụn hoàn toàn", "Đạo cơ vỡ nát", "Nguyên thần vỡ vụn"], ensure_ascii=False),
+                         json.dumps(["Mảnh kiếm gãy (dạng ý niệm)"], ensure_ascii=False),
+                         "Bớt cảnh giác, chấp nhận nương tựa, thoáng ngậm ngùi trước triết lý nhân gian"))
+            
+            # Payoff FSH-002
+            cur.execute("""UPDATE foreshadowing_ledger SET status = 'PAID' WHERE id = 'FSH-002'""")
+
+            # Foreshadowing seed FSH-005
+            cur.execute("""INSERT OR REPLACE INTO foreshadowing_ledger (id, seed_description, planted_chapter, planted_scene, notices_json, actual_meaning, payoff_chapter, status)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                        ("FSH-005", "Lời nhắc mơ hồ của Lâm Tịch về 'Bầu trời bị tha hóa' và thanh kiếm gãy chém đứt quy tắc", 5, 1,
+                         json.dumps(["Minh An"], ensure_ascii=False),
+                         "Bản chất của thảm họa diệt thế chư thiên: Thiên Đạo sinh ra ý chí độc hại nuốt chửng các vị diện", 20, "PLANTED"))
         else:
             cur.execute("""INSERT OR REPLACE INTO timeline_events (id, title, chapter_num, scene_num, absolute_time, location_id, participants_json, summary, outcome)
                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
