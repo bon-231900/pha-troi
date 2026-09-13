@@ -733,6 +733,28 @@ Mưa ngớt dần. Tôi dắt xe ra đường, hòa vào dòng người tiếp t
                         ("FSH-020", "Tiếng kiếm ngân trong trẻo đầu tiên vang lên trong thức hải và lớp rỉ sét bong ra hé lộ một nét hoa văn cổ tự màu lam tuyết trên thân tàn kiếm", 20, 1,
                          json.dumps(["Minh An", "Lâm Tịch"], ensure_ascii=False),
                          "Thanh tàn kiếm của Lâm Tịch bắt đầu thức tỉnh linh tính dưới sự tẩm bổ của Khí Huyết Đạo thuần khiết, chuẩn bị cho kiếm khí sơ khởi ở Chương 38", 38, "PLANTED"))
+        elif chapter_num == 21:
+            cur.execute("""INSERT OR REPLACE INTO timeline_events (id, title, chapter_num, scene_num, absolute_time, location_id, participants_json, summary, outcome)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                        (f"EVT-CH{chapter_num:03d}-01", "Đêm tĩnh lặng sau bão giông và khúc tự sự của thanh tàn kiếm", chapter_num, 1,
+                         "2026-09-21T21:30:00+07:00", "loc_hcmc", json.dumps(["char_minh_an", "char_lam_tich"], ensure_ascii=False),
+                         "Đêm 21/09 và rạng sáng 22/09/2026. Minh An trở về căn phòng trọ nhỏ ở Bình Thạnh sau biến cố đại kiếp ở Thủ Thiêm. Dưới ánh đèn bàn ấm áp và bữa ăn khuya thanh đạm, hai người có cuộc đối thoại sâu lắng về nguồn gốc Băng Phách Trảm Tuyết Kiếm và ý chí phàm trần. Thể chất Nhị Chu Thiên của Minh An hoàn tất đợt thích nghi sinh học vượt bậc sau áp lực cực hạn; hoa văn kiếm ngân trên tay áo Lâm Tịch bắt đầu hiện rõ hơn.",
+                         "Khẳng định sự hòa hợp tuyệt đối giữa cuộc sống đời thường và hành trình tu thân; bước tiến quan trọng cho phục bút FSH-009 và FSH-017 chuẩn bị hồi báo ở Chương 22."))
+            
+            # Character states
+            cur.execute("""INSERT INTO character_states (character_id, chapter_num, location_id, cultivation_realm, physical_condition, injuries_json, inventory_json, emotional_state)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                        ("char_minh_an", 21, "Phòng trọ Nơ Trang Long, Bình Thạnh", "Phàm nhân (Khí Huyết Đạo Sơ Khai - Nhị Chu Thiên Cố Hóa)", "Đốt sống cổ thứ ba rắn chắc như ngọc thạch sau tôi luyện, khí huyết thuần dương lưu chuyển êm ả, tinh thần thư thái minh mẫn",
+                         json.dumps([], ensure_ascii=False),
+                         json.dumps(["Điện thoại di động", "Ví tiền", "Chìa khóa xe Wave", "Laptop cũ", "Sổ tay ghi chép", "Bút bi", "Danh thiếp gỗ của ông Ba Khiêm"], ensure_ascii=False),
+                         "Thanh thản, kiên định, bình yên sâu sắc giữa cuộc sống đời thường"))
+            
+            cur.execute("""INSERT INTO character_states (character_id, chapter_num, location_id, cultivation_realm, physical_condition, injuries_json, inventory_json, emotional_state)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                        ("char_lam_tich", 21, "Thức hải Minh An", "Đỉnh cao vị diện (tàn hồn an định, kiếm ý sơ phục)", "Tàn hồn được sưởi ấm trong kén khí huyết kết hợp kiếm quang lam tuyết, tay áo xuất hiện hoa văn kiếm ngân mờ ảo, tàn kiếm bớt đi một tầng rỉ sét",
+                         json.dumps(["Thân thể nát vụn hoàn toàn", "Đạo cơ vỡ nát", "Nguyên thần đang dần ngưng tụ lại"], ensure_ascii=False),
+                         json.dumps(["Mảnh kiếm gãy (dạng ý niệm, đã hé lộ nét cổ tự tuyết lam)"], ensure_ascii=False),
+                         "An yên, thấu cảm, trút bỏ hoàn toàn gánh nặng quá khứ, tin tưởng tuyệt đối vào Minh An"))
         else:
             cur.execute("""INSERT OR REPLACE INTO timeline_events (id, title, chapter_num, scene_num, absolute_time, location_id, participants_json, summary, outcome)
                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
