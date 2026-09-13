@@ -456,6 +456,38 @@ Mưa ngớt dần. Tôi dắt xe ra đường, hòa vào dòng người tiếp t
                         ("FSH-011", "Tệp video camera nhiệt sự cố được chuyên viên kỹ thuật lưu trữ vào thư mục hồ sơ mật mang mã số NV-2026-X", 11, 1,
                          json.dumps(["Chuyên viên kỹ thuật", "Minh An"], ensure_ascii=False),
                          "Dấu tích rò rỉ quy tắc đầu tiên chính thức đi vào hồ sơ nghiên cứu của một viện khoa học năng lượng phi truyền thống", 24, "PLANTED"))
+        elif chapter_num == 12:
+            cur.execute("""INSERT OR REPLACE INTO timeline_events (id, title, chapter_num, scene_num, absolute_time, location_id, participants_json, summary, outcome)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                        (f"EVT-CH{chapter_num:03d}-01", "Khai mở then cài và chu thiên Khí Huyết đầu tiên", chapter_num, 1,
+                         "2026-09-16T23:30:00+07:00", "loc_hcmc", json.dumps(["char_minh_an", "char_lam_tich"], ensure_ascii=False),
+                         "Đêm 16/09/2026, tại phòng trọ Bình Thạnh. Minh An dùng ý chí kiên định và ý niệm trường giang, kiên trì mài giũa then cài phong ấn tại đốt sống lưng thứ bảy. Với sự hỗ trợ hàn ý thanh tỉnh từ Lâm Tịch, anh thành công phá nứt then cài, hoàn thành Vòng Chu Thiên Khí Huyết trọn vẹn đầu tiên, hình thành màng chắn tự chủ bao bọc thức hải.",
+                         "Hoàn tất thu hồi phục bút FSH-003; Minh An chính thức bước vào ngạch cửa Khí Huyết Đạo sơ cấp (hoàn thành chu thiên); chấm dứt nguy cơ rò rỉ quy tắc thụ động ra thiết bị cảm biến; gieo mầm phục bút FSH-012 về dao động sinh học kích phát địa tầng."))
+            
+            # Character states
+            cur.execute("""INSERT INTO character_states (character_id, chapter_num, location_id, cultivation_realm, physical_condition, injuries_json, inventory_json, emotional_state)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                        ("char_minh_an", 12, "Phòng trọ Nơ Trang Long, Bình Thạnh", "Phàm nhân (Khí Huyết Đạo Sơ Khai - Nhất Chu Thiên)", "Hoàn thành 1 chu thiên khép kín, bài xuất độc tố tầng biểu bì, kinh mạch thông suốt, thể lực và sức bền tăng vọt",
+                         json.dumps([], ensure_ascii=False),
+                         json.dumps(["Điện thoại di động", "Ví tiền", "Chìa khóa xe Wave", "Khăn tắm", "Cốc sứ"], ensure_ascii=False),
+                         "Tự tin, kiên định, thăng hoa về nhận thức bản thân, xác lập mối quan hệ đồng hành bình đẳng với Lâm Tịch"))
+            
+            cur.execute("""INSERT INTO character_states (character_id, chapter_num, location_id, cultivation_realm, physical_condition, injuries_json, inventory_json, emotional_state)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                        ("char_lam_tich", 12, "Thức hải Minh An", "Đỉnh cao vị diện (tàn hồn an định)", "Tàn hồn được bao bọc trong kén khí huyết chu thiên, chấm dứt tình trạng rò rỉ và tán loạn, hồi phục thêm một phần sinh cơ",
+                         json.dumps(["Thân thể nát vụn hoàn toàn", "Đạo cơ vỡ nát", "Nguyên thần vỡ vụn"], ensure_ascii=False),
+                         json.dumps(["Mảnh kiếm gãy (dạng ý niệm)"], ensure_ascii=False),
+                         "Thán phục trước ý chí phàm nhân, chính thức công nhận Minh An là người kế thừa tinh thần của Khí Huyết Đạo"))
+            
+            # Payoff FSH-003
+            cur.execute("""UPDATE foreshadowing_ledger SET status = 'PAID' WHERE id = 'FSH-003'""")
+
+            # Foreshadowing seed FSH-012
+            cur.execute("""INSERT OR REPLACE INTO foreshadowing_ledger (id, seed_description, planted_chapter, planted_scene, notices_json, actual_meaning, payoff_chapter, status)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                        ("FSH-012", "Dao động sinh học cực kỳ mờ nhạt từ khe nứt đốt sống thứ bảy thẩm thấu vào lòng đất Sài Gòn", 12, 1,
+                         json.dumps(["Lâm Tịch"], ensure_ascii=False),
+                         "Tín hiệu mở khóa Khí Huyết đầu tiên sau vạn năm kích hoạt cảm ứng vi mô của đại trận phong ấn Cố Thổ nằm sâu dưới lòng đất", 28, "PLANTED"))
         else:
             cur.execute("""INSERT OR REPLACE INTO timeline_events (id, title, chapter_num, scene_num, absolute_time, location_id, participants_json, summary, outcome)
                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
