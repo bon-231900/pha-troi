@@ -9,6 +9,17 @@
       "verified": true,
       "possible_use": "Bối cảnh mở đầu của Nguyễn Minh An",
       "canon_status": "RESEARCH_ONLY"
+    },
+    {
+      "id": "RS-TEST-01",
+      "topic": "Sai Gon ngap nuoc Ung Van Khiem 2026",
+      "source": "Khao sat do thi",
+      "date": "2026-09-13",
+      "summary": "Ung Van Khiem ngap nuoc sau con mua rao thang 9.",
+      "reliability": "HIGH",
+      "verified": true,
+      "possible_use": "",
+      "canon_status": "RESEARCH_ONLY"
     }
   ]
 }

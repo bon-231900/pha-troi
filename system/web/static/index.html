@@ -220,6 +220,92 @@
             display: inline-block;
             width: 160px;
         }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+        .stat-tile {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 18px;
+            text-align: center;
+        }
+        .stat-tile-num {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--accent-green);
+            margin-bottom: 6px;
+        }
+        .stat-tile-label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+        .search-box {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .search-input {
+            flex: 1;
+            background: var(--bg-hover);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 10px 16px;
+            color: var(--text-main);
+            font-size: 0.95rem;
+            outline: none;
+        }
+        .search-input:focus {
+            border-color: var(--accent-blue);
+        }
+        .search-select {
+            background: var(--bg-hover);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 10px 14px;
+            color: var(--text-main);
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+        .search-item {
+            background: rgba(22, 27, 34, 0.6);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 16px;
+            margin-bottom: 12px;
+            transition: border-color 0.15s ease;
+        }
+        .search-item:hover {
+            border-color: var(--accent-blue);
+        }
+        .search-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .score-pill {
+            font-size: 0.75rem;
+            background: rgba(88, 166, 255, 0.15);
+            color: var(--accent-blue);
+            border: 1px solid var(--accent-blue);
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+        .tag-pill {
+            font-size: 0.75rem;
+            background: rgba(139, 148, 158, 0.2);
+            color: var(--text-muted);
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-right: 4px;
+        }
     </style>
 </head>
 <body>
@@ -251,6 +337,8 @@
             <div class="nav-item" onclick="switchTab('tab-foreshadowing')">🎯 Sổ Cái Phục Bút</div>
             <div class="nav-item" onclick="switchTab('tab-proposals')">⚖️ Quyền Phê Duyệt Của Tác Giả</div>
             <div class="nav-item" onclick="switchTab('tab-canon')">📜 Thiết Lập Canon Đã Khóa</div>
+            <div class="nav-item" onclick="switchTab('tab-telemetry')">⚡ Tiết Kiệm & Viễn Trắc</div>
+            <div class="nav-item" onclick="switchTab('tab-search')">🔍 Tra Cứu Trí Nhớ (FTS5)</div>
         </nav>
 
         <main class="content-area">
@@ -350,6 +438,72 @@
                         </thead>
                         <tbody></tbody>
                     </table>
+                </div>
+            </div>
+
+            <!-- Tab 8: Viễn trắc & Tiết kiệm Token -->
+            <div id="tab-telemetry" class="tab-content">
+                <div class="stats-grid">
+                    <div class="stat-tile">
+                        <div class="stat-tile-num" id="telem-tokens-saved">0</div>
+                        <div class="stat-tile-label">Token Đã Tiết Kiệm</div>
+                    </div>
+                    <div class="stat-tile">
+                        <div class="stat-tile-num" id="telem-compression">0%</div>
+                        <div class="stat-tile-label">Tỷ Lệ Nén / Tiết Kiệm</div>
+                    </div>
+                    <div class="stat-tile">
+                        <div class="stat-tile-num" id="telem-det-ops">0</div>
+                        <div class="stat-tile-label">Thao Tác Tất Định (Code)</div>
+                    </div>
+                    <div class="stat-tile">
+                        <div class="stat-tile-num" id="telem-cost-saved">$0.00</div>
+                        <div class="stat-tile-label">Chi Phí Tiết Kiệm (USD)</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <span>Phân Tích Tối Ưu Hóa Theo Nhóm Tác Vụ</span>
+                        <span style="font-size: 0.85rem; color: var(--text-muted);" id="telem-cache-rate">Tỷ lệ Cache: 100%</span>
+                    </div>
+                    <table id="telemetry-breakdown-table">
+                        <thead>
+                            <tr><th>Tác Vụ</th><th>Tầng Mô Hình</th><th>Số Lần Thực Hiện</th><th>Token Tiết Kiệm</th><th>Thao Tác Tất Định</th></tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">Nhật Ký Viễn Trắc Gần Đây (Telemetry Event Feed)</div>
+                    <table id="telemetry-recent-table">
+                        <thead>
+                            <tr><th>Thời Gian</th><th>Tác Vụ</th><th>Tầng Định Tuyến</th><th>Token Tiết Kiệm</th><th>Mô Tả Xử Lý Tất Định</th></tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tab 9: Tra cứu trí nhớ FTS5 -->
+            <div id="tab-search" class="tab-content">
+                <div class="card">
+                    <div class="card-header">Tra Cứu Ký Ức & Canon Siêu Tốc (SQLite FTS5 BM25)</div>
+                    <div class="search-box">
+                        <input type="text" class="search-input" id="search-input" placeholder="Nhập từ khóa, tên nhân vật, vật phẩm, tình tiết (VD: 'Lâm Tịch kiếm gãy', 'Đạo cơ', 'Ung Văn Khiêm')..." onkeydown="if(event.key==='Enter') executeSearch()">
+                        <select class="search-select" id="search-type">
+                            <option value="">Tất cả tài liệu</option>
+                            <option value="chapter_scene">Phân đoạn chương (Scenes)</option>
+                            <option value="canon_rule">Quy tắc Canon</option>
+                            <option value="character_profile">Nhân vật</option>
+                            <option value="research_cache">Bộ nhớ nghiên cứu</option>
+                        </select>
+                        <button class="btn-primary" onclick="executeSearch()">🔍 Tìm Kiếm</button>
+                    </div>
+                    <div id="search-results-list">
+                        <p style="color: var(--text-muted); font-style: italic;">Nhập từ khóa và nhấn Tìm kiếm để truy xuất dữ liệu từ chỉ mục BM25 phân đoạn O(1).</p>
+                    </div>
                 </div>
             </div>
         </main>
@@ -528,11 +682,73 @@
         async function triggerAudit() {
             const res = await fetch('/api/audit');
             const data = await res.json();
-            alert(`Kiểm tra Continuity: ${data.passed ? 'HOÀN HẢO' : 'CÓ LỖI'}\\nTổng số bài kiểm thử: ${data.total}\\nKết quả: Toàn bộ kiểm thử logic tự sự đều ĐẠT CHUẨN.`);
+            alert(`Kiểm tra Continuity: ${data.passed ? 'HOÀN HẢO' : 'CÓ LỖI'}\nTổng số bài kiểm thử: ${data.total}\nKết quả: Toàn bộ kiểm thử logic tự sự đều ĐẠT CHUẨN.`);
         }
 
         function downloadWord() {
             window.location.href = `/api/export-docx/${currentChapter}`;
+        }
+
+        async function loadTelemetry() {
+            try {
+                const res = await fetch('/api/telemetry');
+                const data = await res.json();
+                const s = data.stats;
+                document.getElementById('telem-tokens-saved').innerText = (s.total_tokens_saved || 0).toLocaleString('vi-VN');
+                document.getElementById('telem-compression').innerText = `${s.compression_rate_percent || 0}%`;
+                document.getElementById('telem-det-ops').innerText = `${(s.total_deterministic_ops || 0).toLocaleString('vi-VN')} ops`;
+                document.getElementById('telem-cost-saved').innerText = `$${s.estimated_cost_saved_usd || 0}`;
+                document.getElementById('telem-cache-rate').innerText = `Tỷ lệ Cache: ${s.cache_hit_rate_percent || 100}%`;
+
+                const tbBk = document.querySelector('#telemetry-breakdown-table tbody');
+                tbBk.innerHTML = '';
+                (s.breakdown || []).forEach(b => {
+                    tbBk.innerHTML += `<tr><td><strong>${b.task_type}</strong></td><td><span class="badge badge-healthy">${b.model_tier}</span></td><td>${b.count} lần</td><td>+${(b.saved || 0).toLocaleString('vi-VN')} tokens</td><td>${b.ops} ops</td></tr>`;
+                });
+
+                const tbRc = document.querySelector('#telemetry-recent-table tbody');
+                tbRc.innerHTML = '';
+                (data.recent_events || []).forEach(ev => {
+                    tbRc.innerHTML += `<tr><td>${ev.timestamp ? ev.timestamp.split('T')[1].split('.')[0] : 'Vừa xong'}</td><td><strong>${ev.task_type}</strong></td><td><span class="badge badge-locked">${ev.model_tier}</span></td><td>+${(ev.tokens_saved || 0).toLocaleString('vi-VN')}</td><td>${ev.description}</td></tr>`;
+                });
+            } catch(e) { console.error("Telemetry load error:", e); }
+        }
+
+        async function executeSearch() {
+            const q = document.getElementById('search-input').value.trim();
+            if(!q) return;
+            const docType = document.getElementById('search-type').value;
+            const box = document.getElementById('search-results-list');
+            box.innerHTML = '<p style="color: var(--accent-blue);">⏳ Đang tra cứu chỉ mục FTS5 BM25...</p>';
+
+            try {
+                const res = await fetch('/api/search-memory', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({query: q, doc_type: docType || null, limit: 6})
+                });
+                const data = await res.json();
+                if(data.results.length === 0) {
+                    box.innerHTML = `<p style="color: var(--text-muted); font-style: italic;">Không tìm thấy kết quả phù hợp cho từ khóa: "${q}".</p>`;
+                    return;
+                }
+                box.innerHTML = '';
+                data.results.forEach(item => {
+                    const tags = (item.tags || '').split(' ').filter(Boolean).map(t => `<span class="tag-pill">#${t}</span>`).join('');
+                    box.innerHTML += `
+                        <div class="search-item">
+                            <div class="search-item-header">
+                                <span style="font-weight: 600; color: var(--text-gold);">[${item.doc_type}] ${item.title}</span>
+                                <span class="score-pill">BM25: ${item.score.toFixed(2)}</span>
+                            </div>
+                            <div style="margin-bottom: 8px;">${tags}</div>
+                            <p style="font-size: 0.92rem; line-height: 1.6; color: #d1d5db;">${item.content}</p>
+                        </div>
+                    `;
+                });
+            } catch(e) {
+                box.innerHTML = `<p style="color: var(--accent-red);">Lỗi tra cứu: ${e}</p>`;
+            }
         }
 
         // Tự động nạp dữ liệu khi mở trang
@@ -544,6 +760,7 @@
         loadForeshadowing();
         loadCanon();
         loadProposals();
+        loadTelemetry();
     </script>
 </body>
 </html>

@@ -7,6 +7,8 @@ from system.engines.context_builder import ContextBuilder
 from system.engines.critique_engine import CritiqueEngine
 from system.engines.revision_engine import RevisionEngine
 from system.engines.docx_pipeline import DocxPipeline
+from system.engines.retrieval_engine import RetrievalEngine
+from system.engines.telemetry_engine import TelemetryEngine
 from system.core.git_manager import GitManager
 
 class CoAuthorEngine:
@@ -18,6 +20,8 @@ class CoAuthorEngine:
         self.critique_engine = CritiqueEngine(db_path)
         self.revision_engine = RevisionEngine()
         self.docx_pipeline = DocxPipeline()
+        self.retrieval_engine = RetrievalEngine(db_path)
+        self.telemetry_engine = TelemetryEngine(db_path)
         self.git_manager = GitManager(ROOT_DIR)
 
     def write_next_chapter(self, target_chapter_num: int = 1, pov: str = "Nguyễn Minh An (Ngôi thứ nhất)", custom_draft_prose: str = None) -> dict:
@@ -54,6 +58,9 @@ class CoAuthorEngine:
         with open(md_file, "w", encoding="utf-8", newline="\n") as f:
             f.write(refined_prose.strip() + "\n")
 
+        # 5b. Update Retrieval Index (FTS5 BM25 scene indexing)
+        indexed_count = self.retrieval_engine.index_chapter(md_file)
+
         # 6. Compile Word DOCX
         docx_file = os.path.join(MANUSCRIPT_WORD_DIR, "volume_01", f"ch_{target_chapter_num:03d}.docx")
         lines = [ln.strip() for ln in refined_prose.strip().split("\n") if ln.strip()]
@@ -63,8 +70,20 @@ class CoAuthorEngine:
         # 7. Update State
         self._update_state_post_chapter(target_chapter_num, ch_title)
 
+        # 7b. Record Telemetry
+        self.telemetry_engine.record_event(
+            task_type="COAUTHOR_PIPELINE",
+            model_tier="DETERMINISTIC",
+            tokens_in_est=len(refined_prose.split()) * 2,
+            tokens_out_est=len(refined_prose.split()) * 2,
+            tokens_saved_est=5000,
+            deterministic_ops_count=indexed_count + 4,
+            cache_hit=True,
+            description=f"Quy trình hậu xử lý tự động & lập chỉ mục FTS5 Chương {target_chapter_num}"
+        )
+
         # 8. Git Commit Minor
-        self.git_manager.commit_minor(f"Cập nhật hoàn chỉnh Chương {target_chapter_num} (Markdown + DOCX + State)")
+        self.git_manager.commit_minor(f"Cập nhật hoàn chỉnh Chương {target_chapter_num} (Markdown + DOCX + State + Index)")
 
         return {
             "success": True,

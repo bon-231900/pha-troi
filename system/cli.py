@@ -21,6 +21,8 @@ from system.engines.timeline_engine import TimelineEngine
 from system.engines.foreshadowing_engine import ForeshadowingEngine
 from system.engines.proposal_manager import ProposalManager
 from system.engines.test_runner import run_all_narrative_tests
+from system.engines.telemetry_engine import TelemetryEngine
+from system.engines.retrieval_engine import RetrievalEngine
 
 def main():
     verify_novel_lock()
@@ -57,6 +59,13 @@ def main():
     p_rej.add_argument("id", type=str, help="Mã định danh đề xuất (Proposal ID)")
 
     subparsers.add_parser("kiem-thu", aliases=["test"], help="Chạy bộ kiểm thử tự động 21 tình huống narrative logic")
+    subparsers.add_parser("tiet-kiem", aliases=["telemetry", "token-metrics"], help="Báo cáo viễn trắc đo lường mức độ tiết kiệm token và thao tác tất định")
+
+    p_search = subparsers.add_parser("tim-kiem", aliases=["search", "memory-search"], help="Tra cứu ký ức, tình tiết, nhân vật và Canon siêu tốc bằng FTS5 BM25")
+    p_search.add_argument("query", type=str, help="Từ khóa hoặc ngữ cảnh cần tìm kiếm")
+    p_search.add_argument("--type", type=str, default=None, help="Loại tài liệu: chapter_scene, canon_rule, character_profile, research_cache")
+    p_search.add_argument("--limit", type=int, default=5, help="Số lượng kết quả tối đa (mặc định: 5)")
+
     subparsers.add_parser("studio", aliases=["serve"], help="Khởi động giao diện Novel OS Web Studio trực quan")
 
     args = parser.parse_args()
@@ -167,6 +176,34 @@ def main():
         res = run_all_narrative_tests()
         print(res["output"])
         print(f"Kết quả kiểm thử: {'ĐẠT CHUẨN' if res['passed'] else 'THẤT BẠI'} (Tổng cộng {res['total']} bài kiểm tra)")
+
+    elif args.command in ["tiet-kiem", "telemetry", "token-metrics"]:
+        t_eng = TelemetryEngine()
+        metrics = t_eng.get_summary_metrics()
+        print("=== BÁO CÁO VIỄN TRẮC & TỐI ƯU HÓA TOKEN (NOVEL OS TELEMETRY) ===")
+        print(f"  Tổng sự kiện ghi nhận:          {metrics['total_events']:,}")
+        print(f"  Tổng token gửi LLM (ước tính):  {metrics['total_tokens_in']:,}")
+        print(f"  Tổng token tiết kiệm được:      {metrics['total_tokens_saved']:,}")
+        print(f"  Tỷ lệ nén / tiết kiệm:          {metrics['compression_percentage']}%")
+        print(f"  Thao tác tất định bằng mã:      {metrics['deterministic_ops_count']:,} lần")
+        print(f"  Tỷ lệ Cache Hit:                {metrics['cache_hit_ratio']}%")
+        print("\n--- Chi tiết theo nhóm tác vụ ---")
+        for brk in metrics.get("breakdown", []):
+            print(f"  - [{brk['task_type']} / {brk['model_tier']}]: {brk['count']} lần | Tiết kiệm: {brk['saved']:,} tokens | Tất định: {brk['ops']:,} ops")
+        print()
+
+    elif args.command in ["tim-kiem", "search", "memory-search"]:
+        r_eng = RetrievalEngine()
+        doc_types = [args.type] if getattr(args, 'type', None) else None
+        results = r_eng.search(args.query, doc_types=doc_types, top_k=args.limit)
+        print(f"=== KẾT QUẢ TÌM KIẾM TRÍ NHỚ (FTS5 BM25) CHO: '{args.query}' ===")
+        if not results:
+            print("  Không tìm thấy kết quả phù hợp.\n")
+        else:
+            for idx, res in enumerate(results, 1):
+                print(f"{idx}. [{res['doc_type']}] {res['title']} (Điểm phù hợp: {res['score']:.2f})")
+                print(f"   Thẻ: {res['tags']}")
+                print(f"   Nội dung: {res['content'][:250]}...\n")
 
     elif args.command in ["studio", "serve"]:
         from system.web.app import run_server

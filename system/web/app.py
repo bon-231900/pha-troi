@@ -21,6 +21,8 @@ from system.engines.timeline_engine import TimelineEngine
 from system.engines.foreshadowing_engine import ForeshadowingEngine
 from system.engines.proposal_manager import ProposalManager
 from system.engines.test_runner import run_all_narrative_tests
+from system.engines.telemetry_engine import TelemetryEngine
+from system.engines.retrieval_engine import RetrievalEngine
 
 app = FastAPI(title="Novel OS — Xưởng Sáng Tác Phá Trời")
 
@@ -140,6 +142,32 @@ def export_docx(chapter_num: int):
     if not os.path.exists(docx_file):
         raise HTTPException(status_code=404, detail="File DOCX chưa được biên dịch.")
     return FileResponse(docx_file, filename=f"Pha_Troi_Ch_{chapter_num:03d}.docx", media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+
+@app.get("/api/telemetry")
+def get_telemetry():
+    t_eng = TelemetryEngine()
+    stats = t_eng.get_summary_stats()
+    recent = t_eng.get_recent_events(limit=12)
+    return {
+        "stats": stats,
+        "recent_events": recent
+    }
+
+class SearchRequest(BaseModel):
+    query: str
+    doc_type: Optional[str] = None
+    limit: Optional[int] = 6
+
+@app.post("/api/search-memory")
+def search_memory(req: SearchRequest):
+    r_eng = RetrievalEngine()
+    doc_types = [req.doc_type] if req.doc_type else None
+    results = r_eng.search(req.query, doc_types=doc_types, top_k=req.limit or 6)
+    return {
+        "query": req.query,
+        "total": len(results),
+        "results": results
+    }
 
 @app.get("/", response_class=HTMLResponse)
 def index_page():

@@ -47,6 +47,18 @@ class GitManager:
         code, out = self._run_git(["commit", "-m", full_msg])
         return (code == 0, out)
 
+    def commit_major(self, message: str, files: list = None) -> tuple[bool, str]:
+        """Tự động commit cho các mốc kiến trúc hoặc sáng tác chương lớn."""
+        if files:
+            for f in files:
+                self._run_git(["add", f])
+        else:
+            self._run_git(["add", "."])
+        
+        full_msg = f"[NovelOS-Major] {message}"
+        code, out = self._run_git(["commit", "-m", full_msg])
+        return (code == 0, out)
+
     def status(self) -> str:
         _, out = self._run_git(["status", "--short"])
         return out
