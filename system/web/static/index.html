@@ -363,7 +363,7 @@
             event.target.classList.add('active');
         }
 
-        let currentChapter = 2;
+        let currentChapter = 3;
 
         async function loadStatus() {
             try {
@@ -378,7 +378,8 @@
                     sel.innerHTML = '';
                     const titles = {
                         1: "Chương 1: Mưa Trên Phố Cũ",
-                        2: "Chương 2: Căn Phòng Trọ Và Đốm Lửa Tàn"
+                        2: "Chương 2: Căn Phòng Trọ Và Đốm Lửa Tàn",
+                        3: "Chương 3: Nhịp Thở Dưới Đáy Sâu"
                     };
                     for (let i = 1; i <= data.chapter_count; i++) {
                         const opt = document.createElement('option');
@@ -391,7 +392,7 @@
             } catch(e) { console.error(e); }
         }
 
-        async function loadChapter(chNum = 2) {
+        async function loadChapter(chNum = 3) {
             currentChapter = chNum;
             try {
                 const res = await fetch(`/api/chapter/${chNum}`);
@@ -536,7 +537,7 @@
 
         // Tự động nạp dữ liệu khi mở trang
         loadStatus();
-        loadChapter(2);
+        loadChapter(3);
         loadWorld();
         loadCharacters();
         loadTimeline();
