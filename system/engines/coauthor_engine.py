@@ -579,6 +579,38 @@ Mưa ngớt dần. Tôi dắt xe ra đường, hòa vào dòng người tiếp t
                         ("FSH-015", "Tiến sĩ Trịnh Hoài Nam nhắc đến dữ liệu cảm biến địa chấn ngầm ngoại ô phía Đông Nam Sài Gòn ghi nhận một xung dao động tần số thấp cùng thời điểm đêm 16/09", 15, 1,
                          json.dumps(["Minh An", "Lâm Tịch", "Tiến sĩ Trịnh Hoài Nam"], ensure_ascii=False),
                          "Mối liên kết giữa khe nứt phong ấn đốt sống thứ bảy của Minh An với sự dao động của đại trận cổ xưa dưới lòng đất Trái Đất (tiến triển FSH-012 tới Ch 28)", 28, "PLANTED"))
+        elif chapter_num == 16:
+            cur.execute("""INSERT OR REPLACE INTO timeline_events (id, title, chapter_num, scene_num, absolute_time, location_id, participants_json, summary, outcome)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                        (f"EVT-CH{chapter_num:03d}-01", "Hội ngộ võ đường cổ truyền và bí ẩn cổ thư phương Nam", chapter_num, 1,
+                         "2026-09-19T09:30:00+07:00", "loc_hcmc", json.dumps(["char_minh_an", "char_lam_tich", "char_le_ba_khiem"], ensure_ascii=False),
+                         "Sáng thứ Bảy 19/09/2026, Minh An ghé thăm võ đường của võ sư Lê Bá Khiêm bên hẻm đường Đinh Tiên Hoàng. Hai người giao lưu cảm nhận kình lực qua thôi thủ; Minh An dùng Chu Thiên Khí Huyết nhẹ nhàng hóa giải nội kình của bậc lão võ sư mà không hề lay động. Ông Ba Khiêm xúc động mang cuốn cổ thư chép tay của sư tổ cho Minh An xem, hé lộ đồ hình kinh mạch trùng khớp Chu Thiên và đoạn nhật ký năm 1920 ghi lại dấu tích phiến đá long xà phát ra nhịp đập sâu dưới lòng đất phương Nam.",
+                         "Hoàn tất thu hồi phục bút FSH-013; củng cố mối giao hảo tri kỷ võ học giữa Minh An và ông Ba Khiêm; xác nhận dấu tích Thể Đạo cổ xưa từng tồn tại ở phương Nam; gieo mầm phục bút FSH-016 về phiến đá long xà và nhịp đập địa tầng."))
+            
+            # Character states
+            cur.execute("""INSERT INTO character_states (character_id, chapter_num, location_id, cultivation_realm, physical_condition, injuries_json, inventory_json, emotional_state)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                        ("char_minh_an", 16, "Võ đường cổ truyền hẻm Đinh Tiên Hoàng, Bình Thạnh", "Phàm nhân (Khí Huyết Đạo Sơ Khai - Chu Thiên Dung Hợp Quyền Thuật)", "Khí huyết lưu chuyển dồi dào, thấu suốt nguyên lý trầm kiều và thính kình, gân cốt dẻo dai tột bậc",
+                         json.dumps([], ensure_ascii=False),
+                         json.dumps(["Điện thoại di động", "Ví tiền", "Chìa khóa xe Wave", "Danh thiếp gỗ của ông Ba Khiêm", "Bản sao đồ hình kinh mạch cổ"], ensure_ascii=False),
+                         "Tâm thái rộng mở, tôn kính tiền nhân, thấu cảm sâu sắc mối liên kết giữa võ học trần thế và đại đạo"))
+            
+            cur.execute("""INSERT INTO character_states (character_id, chapter_num, location_id, cultivation_realm, physical_condition, injuries_json, inventory_json, emotional_state)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                        ("char_lam_tich", 16, "Thức hải Minh An", "Đỉnh cao vị diện (tàn hồn an định)", "Tàn hồn an trú yên bình bên trong kén khí huyết, xúc động trước tàn tích Thể Đạo còn lưu lại nhân gian",
+                         json.dumps(["Thân thể nát vụn hoàn toàn", "Đạo cơ vỡ nát", "Nguyên thần vỡ vụn"], ensure_ascii=False),
+                         json.dumps(["Mảnh kiếm gãy (dạng ý niệm)"], ensure_ascii=False),
+                         "Bùi ngùi hoài niệm về thời đại Thể Đạo chư thiên, xác quyết niềm tin vào con đường phàm nhân của Minh An"))
+            
+            # Payoff FSH-013
+            cur.execute("""UPDATE foreshadowing_ledger SET status = 'PAID' WHERE id = 'FSH-013'""")
+            
+            # Foreshadowing seed FSH-016
+            cur.execute("""INSERT OR REPLACE INTO foreshadowing_ledger (id, seed_description, planted_chapter, planted_scene, notices_json, actual_meaning, payoff_chapter, status)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                        ("FSH-016", "Đoạn nhật ký năm 1920 trong cổ thư của ông Ba Khiêm nhắc đến phiến đá cổ long xà phát ra nhịp đập sâu dưới lòng đất đầm lầy Tây Nam", 16, 1,
+                         json.dumps(["Minh An", "Lâm Tịch", "Võ sư Lê Bá Khiêm"], ensure_ascii=False),
+                         "Manh mối dẫn tới trận nhãn phong ấn viễn cổ của Khí Huyết Đạo nằm tại vùng đồng bằng châu thổ phương Nam", 30, "PLANTED"))
         else:
             cur.execute("""INSERT OR REPLACE INTO timeline_events (id, title, chapter_num, scene_num, absolute_time, location_id, participants_json, summary, outcome)
                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
