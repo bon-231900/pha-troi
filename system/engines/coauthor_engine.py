@@ -427,6 +427,35 @@ Mưa ngớt dần. Tôi dắt xe ra đường, hòa vào dòng người tiếp t
                         ("FSH-010", "Dữ liệu camera nhiệt của tòa nhà ghi nhận vệt bóng mờ hình bán nguyệt kỳ lạ bao quanh cơ thể Minh An", 10, 1,
                          json.dumps(["Minh An", "Bộ phận an ninh tòa nhà"], ensure_ascii=False),
                          "Vết tích vật lý của trường lực Băng Phách bị phân tích kỹ thuật số, khiến Minh An lọt vào diện theo dõi ngầm của chuyên gia cảm biến", 15, "PLANTED"))
+        elif chapter_num == 11:
+            cur.execute("""INSERT OR REPLACE INTO timeline_events (id, title, chapter_num, scene_num, absolute_time, location_id, participants_json, summary, outcome)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                        (f"EVT-CH{chapter_num:03d}-01", "Căn phòng giám sát an ninh và bài thử thách thế tục", chapter_num, 1,
+                         "2026-09-16T17:30:00+07:00", "loc_hcmc", json.dumps(["char_minh_an", "char_lam_tich"], ensure_ascii=False),
+                         "Chiều 16/09/2026, Minh An xuống văn phòng an ninh tầng hầm B1 đối chiếu video camera sự cố nước sôi. Anh bình tĩnh giải thích bằng hiện tượng nước đá và gió máy lạnh, tạm thời vượt qua nghi vấn kỹ thuật số. Tuy nhiên, chuyên viên kiểm định đã lưu trữ đoạn clip dị thường vào cơ sở dữ liệu nghiên cứu. Minh An ý thức được sự giám sát của thế giới công nghệ, quyết tâm hoàn thành chu thiên Khí Huyết để tự chủ thân thể.",
+                         "Vượt qua sự kiểm tra ban đầu của an ninh thế tục một cách êm thấm; gieo mầm phục bút FSH-011 về tệp dữ liệu lưu trữ NV-2026-X; tạo động lực tối thượng thúc đẩy Minh An bước vào chu thiên trọn vẹn ở Chương 12."))
+            
+            # Character states
+            cur.execute("""INSERT INTO character_states (character_id, chapter_num, location_id, cultivation_realm, physical_condition, injuries_json, inventory_json, emotional_state)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                        ("char_minh_an", 11, "Phòng an ninh B1 -> Hầm giữ xe -> Cầu Thị Nghè", "Phàm nhân (Nội luyện Khí Huyết sơ cấp - Ý Niệm Vững Vàng)", "Tâm lý trầm tĩnh tột bậc, nhịp tim duy trì 60 nhịp/phút dù đối mặt thẩm vấn, khí huyết vận hành mượt mà",
+                         json.dumps([], ensure_ascii=False),
+                         json.dumps(["Điện thoại di động", "Ví tiền", "Chìa khóa xe Wave", "Thẻ nhân viên", "Bút bi"], ensure_ascii=False),
+                         "Cảnh giác cao độ, thấu hiểu sức mạnh và cạm bẫy của công nghệ hiện đại, kiên định"))
+            
+            cur.execute("""INSERT INTO character_states (character_id, chapter_num, location_id, cultivation_realm, physical_condition, injuries_json, inventory_json, emotional_state)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                        ("char_lam_tich", 11, "Thức hải Minh An", "Đỉnh cao vị diện (tàn hồn ngưng tụ sơ khai)", "Tàn hồn tĩnh lặng, thu liễm hoàn toàn dao động quy tắc để không bị thiết bị điện tử phát hiện",
+                         json.dumps(["Thân thể nát vụn hoàn toàn", "Đạo cơ vỡ nát", "Nguyên thần vỡ vụn"], ensure_ascii=False),
+                         json.dumps(["Mảnh kiếm gãy (dạng ý niệm)"], ensure_ascii=False),
+                         "Kinh ngạc trước mạng lưới ghi nhớ vĩnh viễn của máy móc phàm nhân, ngày càng tin cậy trí tuệ ứng biến của Minh An"))
+            
+            # Foreshadowing seed FSH-011
+            cur.execute("""INSERT OR REPLACE INTO foreshadowing_ledger (id, seed_description, planted_chapter, planted_scene, notices_json, actual_meaning, payoff_chapter, status)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                        ("FSH-011", "Tệp video camera nhiệt sự cố được chuyên viên kỹ thuật lưu trữ vào thư mục hồ sơ mật mang mã số NV-2026-X", 11, 1,
+                         json.dumps(["Chuyên viên kỹ thuật", "Minh An"], ensure_ascii=False),
+                         "Dấu tích rò rỉ quy tắc đầu tiên chính thức đi vào hồ sơ nghiên cứu của một viện khoa học năng lượng phi truyền thống", 24, "PLANTED"))
         else:
             cur.execute("""INSERT OR REPLACE INTO timeline_events (id, title, chapter_num, scene_num, absolute_time, location_id, participants_json, summary, outcome)
                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
