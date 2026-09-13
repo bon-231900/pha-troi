@@ -56,10 +56,12 @@ class CoAuthorEngine:
 
         # 6. Compile Word DOCX
         docx_file = os.path.join(MANUSCRIPT_WORD_DIR, "volume_01", f"ch_{target_chapter_num:03d}.docx")
-        self.docx_pipeline.export_chapter_to_docx(f"Chương {target_chapter_num}: Mưa Trên Phố Cũ", target_chapter_num, refined_prose, docx_file)
+        lines = [ln.strip() for ln in refined_prose.strip().split("\n") if ln.strip()]
+        ch_title = lines[0].replace("#", "").strip() if lines and lines[0].startswith("#") else f"Chương {target_chapter_num}"
+        self.docx_pipeline.export_chapter_to_docx(ch_title, target_chapter_num, refined_prose, docx_file)
 
         # 7. Update State
-        self._update_state_post_chapter(target_chapter_num)
+        self._update_state_post_chapter(target_chapter_num, ch_title)
 
         # 8. Git Commit Minor
         self.git_manager.commit_minor(f"Cập nhật hoàn chỉnh Chương {target_chapter_num} (Markdown + DOCX + State)")
@@ -122,16 +124,58 @@ Tôi đưa tay sờ lên sau gáy. Không có vết thương, không có máu, c
 Mưa ngớt dần. Tôi dắt xe ra đường, hòa vào dòng người tiếp tục hành trình trở về căn phòng trọ nhỏ bé của mình, hoàn toàn không hay biết rằng, bánh xe của một định mệnh vượt ngoài tầm hiểu biết của thế gian đã bắt đầu chậm rãi xoay chuyển.
 """
 
-    def _update_state_post_chapter(self, chapter_num: int):
+    def _update_state_post_chapter(self, chapter_num: int, chapter_title: str = ""):
         conn = sqlite3.connect(self.db_path, timeout=30.0)
         cur = conn.cursor()
-        cur.execute("""INSERT OR REPLACE INTO timeline_events (id, title, chapter_num, scene_num, absolute_time, location_id, participants_json, summary, outcome)
-                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-                    (f"EVT-CH{chapter_num:03d}-01", "Cơn mưa rào ngã tư Hàng Xanh và khoảnh khắc tàn hồn rơi", chapter_num, 1,
-                     "2026-09-13T18:00:00+07:00", "loc_hcmc", json.dumps(["char_minh_an", "char_lam_tich"], ensure_ascii=False),
-                     "Minh An tan sở trú mưa ở Ung Văn Khiêm, bị tàn hồn Lâm Tịch rơi trúng thức hải, trải qua cơn đau nhói và thoáng thấy ảo ảnh chiến trường viễn cổ.",
-                     "Lâm Tịch hoàn tất neo đậu vào thức hải Minh An; Minh An ngỡ là trúng gió cảm mạo."))
+        title_clean = chapter_title.replace("#", "").strip() or f"Chương {chapter_num}"
         
-        cur.execute("UPDATE plot_nodes SET status = 'CANONIZED' WHERE id = 'ch_001'")
+        # Plot node update
+        cur.execute("""INSERT OR REPLACE INTO plot_nodes (id, node_type, parent_id, order_index, title, status)
+                       VALUES (?, 'CHAPTER', 'arc_01', ?, ?, 'CANONIZED')""",
+                    (f"ch_{chapter_num:03d}", chapter_num, title_clean))
+
+        if chapter_num == 1:
+            cur.execute("""INSERT OR REPLACE INTO timeline_events (id, title, chapter_num, scene_num, absolute_time, location_id, participants_json, summary, outcome)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                        (f"EVT-CH{chapter_num:03d}-01", "Cơn mưa rào ngã tư Hàng Xanh và khoảnh khắc tàn hồn rơi", chapter_num, 1,
+                         "2026-09-13T18:00:00+07:00", "loc_hcmc", json.dumps(["char_minh_an", "char_lam_tich"], ensure_ascii=False),
+                         "Minh An tan sở trú mưa ở Ung Văn Khiêm, bị tàn hồn Lâm Tịch rơi trúng thức hải, trải qua cơn đau nhói và thoáng thấy ảo ảnh chiến trường viễn cổ.",
+                         "Lâm Tịch hoàn tất neo đậu vào thức hải Minh An; Minh An ngỡ là trúng gió cảm mạo."))
+        elif chapter_num == 2:
+            cur.execute("""INSERT OR REPLACE INTO timeline_events (id, title, chapter_num, scene_num, absolute_time, location_id, participants_json, summary, outcome)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                        (f"EVT-CH{chapter_num:03d}-01", "Thanh âm đầu tiên trong căn phòng trọ Bình Thạnh", chapter_num, 1,
+                         "2026-09-13T20:30:00+07:00", "loc_hcmc", json.dumps(["char_minh_an", "char_lam_tich"], ensure_ascii=False),
+                         "Minh An về phòng trọ sau mưa ngập, cảm nhận hàn ý và thấy đốm tro tàn trong mắt. Tàn hồn Lâm Tịch cất tiếng hỏi, xác nhận cảnh tượng biển máu là thật trước khi ngủ say.",
+                         "Minh An xác định không phải bệnh lý tâm thần; thiết lập liên kết ý thức sơ khởi giữa hai người."))
+            
+            # Character states
+            cur.execute("""INSERT INTO character_states (character_id, chapter_num, location_id, cultivation_realm, physical_condition, injuries_json, inventory_json, emotional_state)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                        ("char_minh_an", 2, "Phòng trọ Bình Thạnh", "Phàm nhân", "Bình thường, hơi lạnh sau gáy và bàn tay",
+                         json.dumps([], ensure_ascii=False),
+                         json.dumps(["Điện thoại di động", "Ví tiền", "Chìa khóa xe Wave", "Laptop cũ"], ensure_ascii=False),
+                         "Căng thẳng cảnh giác, bàng hoàng nhưng giữ được bình tĩnh"))
+            
+            cur.execute("""INSERT INTO character_states (character_id, chapter_num, location_id, cultivation_realm, physical_condition, injuries_json, inventory_json, emotional_state)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                        ("char_lam_tich", 2, "Thức hải Minh An", "Đỉnh cao vị diện (tàn hồn kiệt sức)", "Tàn hồn cực độ suy kiệt, thân thể đã tan rã",
+                         json.dumps(["Thân thể nát vụn hoàn toàn", "Đạo cơ đứt đoạn", "Nguyên thần vỡ vụn"], ensure_ascii=False),
+                         json.dumps(["Mảnh kiếm gãy (dạng ý niệm)"], ensure_ascii=False),
+                         "Cảnh giác, kiêu hãnh nhưng mệt mỏi cùng cực, chìm vào ngủ say"))
+            
+            # Foreshadowing seed FSH-002
+            cur.execute("""INSERT OR REPLACE INTO foreshadowing_ledger (id, seed_description, planted_chapter, planted_scene, notices_json, actual_meaning, payoff_chapter, status)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                        ("FSH-002", "Đốm tro tàn thoáng hiện trong đồng tử và hiện tượng sương giá ngưng đọng quanh cốc nước", 2, 1,
+                         json.dumps(["Minh An"], ensure_ascii=False),
+                         "Dấu hiệu nguyên thần Lâm Tịch vô thức rò rỉ hàn khí quy tắc ra môi trường xung quanh Minh An", 5, "PLANTED"))
+        else:
+            cur.execute("""INSERT OR REPLACE INTO timeline_events (id, title, chapter_num, scene_num, absolute_time, location_id, participants_json, summary, outcome)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                        (f"EVT-CH{chapter_num:03d}-01", title_clean, chapter_num, 1,
+                         "2026-09-13T21:00:00+07:00", "loc_hcmc", json.dumps(["char_minh_an"], ensure_ascii=False),
+                         f"Diễn biến tiếp nối của Chương {chapter_num}.", "Hoàn thành chương."))
+            
         conn.commit()
         conn.close()
