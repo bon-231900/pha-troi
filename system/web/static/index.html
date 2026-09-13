@@ -517,7 +517,7 @@
             event.target.classList.add('active');
         }
 
-        let currentChapter = 9;
+        let currentChapter = 10;
 
         async function loadStatus() {
             try {
@@ -539,7 +539,8 @@
                         6: "Chương 6: Ngọn Lửa Dưới Làn Da",
                         7: "Chương 7: Hàn Ý Giữa Chảo Lửa",
                         8: "Chương 8: Tĩnh Khí Dưới Mái Tôn",
-                        9: "Chương 9: Ánh Bình Minh Bên Dòng Kênh"
+                        9: "Chương 9: Ánh Bình Minh Bên Dòng Kênh",
+                        10: "Chương 10: Dòng Sông Và Ý Niệm"
                     };
                     for (let i = 1; i <= data.chapter_count; i++) {
                         const opt = document.createElement('option');
@@ -759,7 +760,7 @@
 
         // Tự động nạp dữ liệu khi mở trang
         loadStatus();
-        loadChapter(9);
+        loadChapter(10);
         loadWorld();
         loadCharacters();
         loadTimeline();
