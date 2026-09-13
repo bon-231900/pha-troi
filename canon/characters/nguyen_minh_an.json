@@ -1,0 +1,27 @@
+{
+  "id": "char_minh_an",
+  "name": "Nguy?n Minh An",
+  "aliases": [
+    "An",
+    "Minh An"
+  ],
+  "age": 25,
+  "birth_year": 2001,
+  "start_year": 2026,
+  "role": "Protagonist",
+  "pov_type": "First Person (Primary)",
+  "origin": "TP. H? Ch? Minh, Vi?t Nam",
+  "cultivation": {
+    "system": "Kh? Huy?t ??o (sau n?y)",
+    "current_realm": "Ng??i th??ng (Ch?a tu luy?n)",
+    "realm_rank": 0,
+    "techniques": [],
+    "artifacts": []
+  },
+  "forbidden_attributes": [
+    "reincarnation",
+    "hidden_system",
+    "god_bloodline",
+    "chosen_one_cliche"
+  ]
+}

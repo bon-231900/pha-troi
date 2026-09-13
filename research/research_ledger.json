@@ -1,0 +1,14 @@
+{
+  "items": [
+    {
+      "id": "RES-001",
+      "topic": "HCMC 2026 Urban Life & Weather",
+      "source": "Observational & Meteorological Records",
+      "date": "2026-09-13",
+      "reliability": "HIGH",
+      "verified": true,
+      "possible_use": "B?i c?nh m? ??u c?a Nguy?n Minh An",
+      "canon_status": "RESEARCH_ONLY"
+    }
+  ]
+}

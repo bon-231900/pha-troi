@@ -1,0 +1,16 @@
+{
+  "ledger": [
+    {
+      "id": "FSH-001",
+      "seed": "C?n ?au nh?i tho?ng qua sau g?y c?a Minh An gi?a c?n m?a r?o ng? t? H?ng Xanh",
+      "planted_chapter": 1,
+      "planted_scene": 1,
+      "notices": [
+        "Minh An (ngh? do tr?ng gi? c?m m?o)"
+      ],
+      "actual_meaning": "Th?i kh?c m?nh nguy?n th?n L?m T?ch ho?n t?t neo ??u v?o th?c h?i",
+      "payoff_candidate": "Ch??ng 2-3 khi gi?ng n?i ??u ti?n vang l?n",
+      "status": "PLANTED"
+    }
+  ]
+}

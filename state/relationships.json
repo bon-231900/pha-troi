@@ -1,0 +1,14 @@
+{
+  "pairs": {
+    "minh_an_x_lam_tich": {
+      "source": "char_minh_an",
+      "target": "char_lam_tich",
+      "trust": 0,
+      "respect": 0,
+      "affection": 0,
+      "fear": 0,
+      "romantic_awareness": 0,
+      "notes": "Ch?a t?ng ti?p x?c ho?c nh?n bi?t nhau."
+    }
+  }
+}

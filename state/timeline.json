@@ -1,0 +1,27 @@
+{
+  "current_time_point": "2026-09-13T19:30:00+07:00",
+  "events": [
+    {
+      "id": "EVT-000",
+      "title": "??i chi?n Di?t Th? t?i Th??ng V? Di?n",
+      "time": "Vi?n c? / Th?i kh?ng kh?ng x?c ??nh",
+      "location": "Tuy?n ph?ng th? cu?i c?ng c?a Th??ng V? Di?n",
+      "participants": [
+        "L?m T?ch",
+        "Th? l?c x?m l??c"
+      ],
+      "outcome": "Th?n th? L?m T?ch b? ph? h?y, t?n h?n r?i v?o h? v?."
+    },
+    {
+      "id": "EVT-001",
+      "title": "T?n h?n r?i v?o TP.HCM",
+      "time": "2026-09-13T19:15:00+07:00",
+      "location": "B?u tr?i TP.HCM -> ? th?c Nguy?n Minh An",
+      "participants": [
+        "L?m T?ch",
+        "Nguy?n Minh An"
+      ],
+      "outcome": "M?nh nguy?n th?n neo l?i trong t?m th?c Minh An khi h?n tan s? v? nh?."
+    }
+  ]
+}

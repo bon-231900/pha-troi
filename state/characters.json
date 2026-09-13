@@ -1,0 +1,34 @@
+{
+  "char_minh_an": {
+    "current_location": "loc_hcmc_apartment",
+    "physical_condition": "Kh?e m?nh, m?t m?i sau gi? l?m",
+    "injuries": [],
+    "cultivation_realm": "Ph?m nh?n",
+    "inventory": [
+      "Smartphone",
+      "Ch?a kh?a xe m?y",
+      "V? ti?n",
+      "Th? nh?n vi?n"
+    ],
+    "emotional_state": "B?nh l?ng, tr?m m?c, h?i c? ??n",
+    "active_goals": [
+      "Ho?n th?nh c?ng vi?c",
+      "Ngh? ng?i bu?i t?i"
+    ]
+  },
+  "char_lam_tich": {
+    "current_location": "loc_consciousness_minh_an",
+    "physical_condition": "Kh?ng c? th? x?c, m?nh t?n h?n suy y?u c?n k? tan r?",
+    "injuries": [
+      "??o c? v? n?t",
+      "Nguy?n th?n x? r?ch 90%"
+    ],
+    "cultivation_realm": "T?n h?n c?c h?n suy y?u",
+    "inventory": [],
+    "emotional_state": "Tr?m l?ng, c?nh gi?c, ki?t qu? sau tr?n chi?n di?t th?",
+    "active_goals": [
+      "Neo gi? m?nh ? th?c kh?ng b? ti?u t?n",
+      "Quan s?t m?i tr??ng m?i"
+    ]
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "locked_rules": [
+    {
+      "id": "RULE-01",
+      "name": "Protagonist Authenticity",
+      "description": "Nguy?n Minh An 100% l? ng??i b?nh th??ng t?i TP.HCM 2026. Kh?ng huy?t m?ch, kh?ng chuy?n sinh, kh?ng h? th?ng.",
+      "level": "LOCKED"
+    },
+    {
+      "id": "RULE-02",
+      "name": "Absolute Death",
+      "description": "C?i ch?t l? v?nh vi?n v? mang tr?ng l??ng t? s? l?n. C?m h?i sinh t?y ti?n.",
+      "level": "LOCKED"
+    },
+    {
+      "id": "RULE-03",
+      "name": "No Auto-Win by Realm",
+      "description": "C?nh gi?i cao h?n kh?ng t? ??ng th?ng. Chi?n ??u ph? thu?c ??a h?nh, kinh nghi?m, th??ng th?, tr? gi?, ph?p b?o, kh?c ch? v? t?m l?.",
+      "level": "LOCKED"
+    },
+    {
+      "id": "RULE-04",
+      "name": "Slow Burn Romance",
+      "description": "T?nh c?m Minh An v? L?m T?ch ti?n tri?n c?c k? ch?m, x?y d?ng tr?n ??ng h?nh v? th?u hi?u nh?n t?nh.",
+      "level": "LOCKED"
+    },
+    {
+      "id": "RULE-05",
+      "name": "Vietnam Realism 2026",
+      "description": "B?i c?nh TP.HCM 2026 ph?i ch?n th?c, ??i th??ng, h?n ch? d?ng t?n c?ng ty/tr??ng h?c c? th?t tr? khi t?ng t?nh th?c t?.",
+      "level": "LOCKED"
+    },
+    {
+      "id": "RULE-06",
+      "name": "Author Secret Isolation",
+      "description": "B? m?t trong author_secret/ kh?ng bao gi? ???c xu?t hi?n tr?c ti?p trong nh?n th?c c?a nh?n v?t khi ch?a m? kh?a.",
+      "level": "LOCKED"
+    }
+  ],
+  "forbidden_assumptions": [
+    "Minh An is secret reincarnator",
+    "Minh An has a system",
+    "Minh An has supreme hidden bloodline",
+    "Earth is permanently the absolute weakest without mystery",
+    "L?m T?ch is completely dead or will disappear casually",
+    "Instant 3-day cultivation breakthroughs"
+  ]
+}

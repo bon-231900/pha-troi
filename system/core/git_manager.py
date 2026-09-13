@@ -1,0 +1,56 @@
+import subprocess
+import os
+import shutil
+from system.core.config import ROOT_DIR
+
+class GitManager:
+    def __init__(self, root_dir: str = ROOT_DIR):
+        self.root_dir = root_dir
+        self.git_bin = self._resolve_git()
+
+    def _resolve_git(self) -> str:
+        # Check environment PATH
+        g = shutil.which("git")
+        if g:
+            return g
+        candidates = [
+            r"C:\Program Files\Git\cmd\git.exe",
+            r"C:\Program Files\Git\bin\git.exe",
+            r"C:\Program Files (x86)\Git\cmd\git.exe"
+        ]
+        for c in candidates:
+            if os.path.exists(c):
+                return c
+        return "git"
+
+    def _run_git(self, args: list) -> tuple[int, str]:
+        cmd = [self.git_bin] + args
+        try:
+            res = subprocess.run(cmd, cwd=self.root_dir, capture_output=True, text=True, encoding="utf-8")
+            return res.returncode, res.stdout + res.stderr
+        except Exception as e:
+            return -1, str(e)
+
+    def is_git_repo(self) -> bool:
+        code, _ = self._run_git(["rev-parse", "--is-inside-work-tree"])
+        return code == 0
+
+    def commit_minor(self, message: str, files: list = None) -> tuple[bool, str]:
+        """T? ??ng commit cho c?c thay ??i nh? (state update, metadata, formatting, index)."""
+        if files:
+            for f in files:
+                self._run_git(["add", f])
+        else:
+            self._run_git(["add", "."])
+        
+        full_msg = f"[NovelOS-Minor] {message}"
+        code, out = self._run_git(["commit", "-m", full_msg])
+        return (code == 0, out)
+
+    def status(self) -> str:
+        _, out = self._run_git(["status", "--short"])
+        return out
+
+    def log(self, n: int = 5) -> str:
+        _, out = self._run_git(["log", f"-n{n}", "--oneline"])
+        return out

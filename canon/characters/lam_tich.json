@@ -1,0 +1,20 @@
+{
+  "id": "char_lam_tich",
+  "name": "L?m T?ch",
+  "aliases": [
+    "T?ch",
+    "Th?n N? V? T?n (ng??i ??i g?i)"
+  ],
+  "age": "Ancient / K? nguy?n vi?n c?",
+  "role": "Female Protagonist",
+  "pov_type": "First Person (Secondary / Controlled)",
+  "origin": "Th??ng V? Di?n / ??i ??i Gi?i",
+  "cultivation": {
+    "former_peak": "??nh cao Ph?p T?c / H?n ??o / Linh ??o",
+    "current_status": "Nguy?n Th?n T?n Phi?n (M?nh v? linh h?n)",
+    "body_status": "Destroyed",
+    "anchor": "? th?c Nguy?n Minh An",
+    "energy_reserve": "C?c th?p / C?n n?ng l??ng kh?i ph?c"
+  },
+  "core_motif": "B?o H? & M?t m?i c? ??c"
+}

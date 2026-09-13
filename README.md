@@ -1,0 +1,41 @@
+# NOVEL OS ? PH? TR?I (PHA_TROI)
+
+> **H? ?i?u h?nh s?ng t?c & Qu?n tr? th?c th? chuy?n bi?t cho ti?u thuy?t tr??ng thi?n 2.000+ ch??ng: ?Ph? Tr?i?.**
+
+## Gi?i thi?u
+Novel OS ???c thi?t k? theo t? duy *Novels as Codebases*, gi?i quy?t tri?t ?? c?c v?n ?? kinh ?i?n c?a ti?u thuy?t tr??ng thi?n:
+- R? r? th?ng tin tr??c th?i h?n (Premature Knowledge Leaks)
+- Sai l?ch d?ng th?i gian & kho?ng c?ch ??a l? (Impossible Travel & Timeline Contradictions)
+- L?m ph?t s?c m?nh phi l? (Power Creep & Realm Mismatches)
+- L?ng qu?n ph?c b?t (Forgotten Foreshadowing & Chekhov's Guns)
+- M?t t?nh c?ch nh?n v?t (Character Voice & Behavior Drift)
+- M?t d?u b? m?t c?a t?c gi? (Author Secret Isolation)
+
+## C?u tr?c c?t l?i
+- **Author Authority**: Quy?n tuy?t ??i thu?c v? T?c gi?. M?i thay ??i canon l?n ??u ph?i c? s? ph? duy?t qua Proposal Engine.
+- **Source of Truth**: Markdown cho b?n th?o (Manuscript) & Story Bible; SQLite (`database/novel_os.db`) cho graph, state, timeline, audit logs.
+- **Word / Markdown Pipeline**: Vi?t b?n th?o b?ng Markdown chu?n, t? ??ng bi?n d?ch v? ??ng b? h?a sang file Word (.docx) chuy?n nghi?p.
+- **Web Studio & CLI**: Giao di?n ?i?u khi?n tr?c quan t?i `http://localhost:8765` c?ng b? l?nh CLI tr?c ti?p.
+
+## Kh?i ??ng Web Studio
+```bash
+python -m system.web.app
+```
+
+## L?nh CLI ch?nh
+```bash
+# Vi?t ti?p ch??ng m?i (T? ??ng ??c tr?ng th?i, context, draft, critique, update state)
+python -m system.cli write-next
+
+# Vi?t l?i ch??ng hi?n t?i
+python -m system.cli rewrite
+
+# Ki?m tra t?nh to?n v?n (Continuity & Canon Audit)
+python -m system.cli audit
+
+# Xu?t b?n th?o ra Word (.docx)
+python -m system.cli export-word
+
+# Ch?y b? ki?m th? narrative (20 edge cases)
+python -m system.cli test
+```
