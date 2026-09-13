@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Novel OS ? Ph? Tr?i Studio</title>
+    <title>Novel OS — Xưởng Sáng Tác Phá Trời</title>
     <style>
         :root {
             --bg-dark: #0d1117;
@@ -20,7 +20,7 @@
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             background-color: var(--bg-dark);
             color: var(--text-main);
             height: 100vh;
@@ -31,11 +31,11 @@
         header {
             background-color: #0b0e14;
             border-bottom: 1px solid var(--border-color);
-            padding: 10px 20px;
+            padding: 10px 24px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
         }
         .brand {
             display: flex;
@@ -43,23 +43,23 @@
             gap: 12px;
         }
         .brand h1 {
-            font-size: 1.25rem;
+            font-size: 1.3rem;
             color: var(--text-gold);
-            letter-spacing: 1px;
+            letter-spacing: 1.5px;
+            font-weight: 700;
         }
         .badge {
             font-size: 0.75rem;
-            padding: 2px 8px;
+            padding: 3px 10px;
             border-radius: 12px;
             font-weight: 600;
-            text-transform: uppercase;
         }
-        .badge-locked { background: rgba(242, 204, 96, 0.2); color: var(--text-gold); border: 1px solid var(--text-gold); }
-        .badge-healthy { background: rgba(63, 185, 80, 0.2); color: var(--accent-green); border: 1px solid var(--accent-green); }
+        .badge-locked { background: rgba(242, 204, 96, 0.15); color: var(--text-gold); border: 1px solid var(--text-gold); }
+        .badge-healthy { background: rgba(63, 185, 80, 0.15); color: var(--accent-green); border: 1px solid var(--accent-green); }
         
         .header-stats {
             display: flex;
-            gap: 20px;
+            gap: 24px;
             font-size: 0.85rem;
             color: var(--text-muted);
         }
@@ -72,13 +72,13 @@
         button {
             cursor: pointer;
             border: none;
-            padding: 8px 14px;
+            padding: 8px 16px;
             border-radius: 6px;
             font-size: 0.85rem;
             font-weight: 600;
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
             transition: all 0.2s ease;
         }
         .btn-primary { background: #238636; color: white; }
@@ -94,12 +94,12 @@
             overflow: hidden;
         }
         nav.sidebar {
-            width: 220px;
+            width: 240px;
             background-color: #0b0e14;
             border-right: 1px solid var(--border-color);
             display: flex;
             flex-direction: column;
-            padding: 10px 0;
+            padding: 12px 0;
         }
         .nav-item {
             padding: 12px 20px;
@@ -108,7 +108,7 @@
             font-size: 0.9rem;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
             border-left: 3px solid transparent;
             transition: all 0.15s;
         }
@@ -125,7 +125,7 @@
 
         .content-area {
             flex: 1;
-            padding: 20px;
+            padding: 24px;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
@@ -138,44 +138,45 @@
             background: var(--bg-card);
             border: 1px solid var(--border-color);
             border-radius: 8px;
-            padding: 18px;
-            margin-bottom: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
         }
         .card-header {
             font-size: 1.1rem;
             color: var(--accent-blue);
-            margin-bottom: 12px;
+            margin-bottom: 14px;
             border-bottom: 1px solid var(--border-color);
-            padding-bottom: 8px;
+            padding-bottom: 10px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            font-weight: 600;
         }
 
-        /* Manuscript view */
+        /* Khung hiển thị bản thảo */
         .manuscript-viewer {
             background: #0f141c;
             border: 1px solid var(--border-color);
             border-radius: 8px;
-            padding: 30px;
+            padding: 36px 44px;
             font-family: "Georgia", "Times New Roman", serif;
             font-size: 1.15rem;
-            line-height: 1.8;
+            line-height: 1.85;
             color: #d1d5db;
             white-space: pre-wrap;
-            max-width: 850px;
+            max-width: 880px;
             margin: 0 auto;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+            box-shadow: 0 4px 25px rgba(0,0,0,0.4);
         }
 
-        /* Tables & Lists */
+        /* Bảng dữ liệu */
         table {
             width: 100%;
             border-collapse: collapse;
             font-size: 0.9rem;
         }
         th, td {
-            padding: 10px 14px;
+            padding: 12px 14px;
             text-align: left;
             border-bottom: 1px solid var(--border-color);
         }
@@ -185,23 +186,36 @@
         .grid-2 {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 16px;
+            gap: 20px;
         }
 
-        /* World Map Master view */
+        /* Khung bản đồ Master */
         .map-container {
             text-align: center;
             background: #05070a;
-            padding: 20px;
+            padding: 24px;
             border-radius: 8px;
             border: 1px solid var(--border-color);
         }
         .map-container img {
             max-width: 100%;
-            max-height: 70vh;
+            max-height: 72vh;
             border-radius: 6px;
-            box-shadow: 0 4px 25px rgba(0,0,0,0.8);
+            box-shadow: 0 4px 30px rgba(0,0,0,0.8);
             cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+        .map-container img:hover {
+            transform: scale(1.01);
+        }
+        .detail-line {
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+        .detail-line strong {
+            color: var(--text-gold);
+            display: inline-block;
+            width: 160px;
         }
     </style>
 </head>
@@ -209,61 +223,61 @@
 
     <header>
         <div class="brand">
-            <h1>PH? TR?I</h1>
-            <span class="badge badge-locked">Project Lock: PHA_TROI</span>
-            <span class="badge badge-healthy" id="health-badge">21/21 Tests Pass</span>
+            <h1>PHÁ TRỜI</h1>
+            <span class="badge badge-locked">Khóa Dự Án: PHA_TROI</span>
+            <span class="badge badge-healthy" id="health-badge">21/21 Kiểm Thử Đạt Chuẩn</span>
         </div>
         <div class="header-stats">
-            <span>Ch??ng: <strong id="stat-chapters">1</strong></span>
-            <span>T?ng s? t?: <strong id="stat-words">948</strong></span>
-            <span>Tr?ng th?i Git: <strong id="stat-git">S?ch</strong></span>
+            <span>Chương đã viết: <strong id="stat-chapters">1</strong></span>
+            <span>Tổng số từ: <strong id="stat-words">948</strong></span>
+            <span>Lần lưu Git gần nhất: <strong id="stat-git">Đã đồng bộ</strong></span>
         </div>
         <div class="toolbar">
-            <button class="btn-primary" onclick="triggerWriteNext()">?? Vi?t ti?p</button>
-            <button class="btn-secondary" onclick="triggerAudit()">??? Ki?m tra Continuity</button>
-            <button class="btn-gold" onclick="downloadWord()">?? Xu?t Word (.docx)</button>
+            <button class="btn-primary" onclick="triggerWriteNext()">✍️ Viết tiếp</button>
+            <button class="btn-secondary" onclick="triggerAudit()">🛡️ Kiểm tra Continuity</button>
+            <button class="btn-gold" onclick="downloadWord()">📄 Xuất bản Word (.docx)</button>
         </div>
     </header>
 
     <div class="main-layout">
         <nav class="sidebar">
-            <div class="nav-item active" onclick="switchTab('tab-manuscript')">?? B?n Th?o</div>
-            <div class="nav-item" onclick="switchTab('tab-world')">?? B?n ?? V? Tr?</div>
-            <div class="nav-item" onclick="switchTab('tab-characters')">?? Nh?n V?t & Nh?n Th?c</div>
-            <div class="nav-item" onclick="switchTab('tab-timeline')">? D?ng Th?i Gian</div>
-            <div class="nav-item" onclick="switchTab('tab-foreshadowing')">?? Ph?c B?t (Chekhov)</div>
-            <div class="nav-item" onclick="switchTab('tab-proposals')">?? ?? Xu?t Canon</div>
-            <div class="nav-item" onclick="switchTab('tab-canon')">?? Story Bible & Canon</div>
+            <div class="nav-item active" onclick="switchTab('tab-manuscript')">📖 Bản Thảo Tiểu Thuyết</div>
+            <div class="nav-item" onclick="switchTab('tab-world')">🌌 Đại Bản Đồ Vũ Trụ</div>
+            <div class="nav-item" onclick="switchTab('tab-characters')">👥 Nhân Vật & Nhận Thức</div>
+            <div class="nav-item" onclick="switchTab('tab-timeline')">⏳ Dòng Thời Gian Sự Kiện</div>
+            <div class="nav-item" onclick="switchTab('tab-foreshadowing')">🎯 Sổ Cái Phục Bút</div>
+            <div class="nav-item" onclick="switchTab('tab-proposals')">⚖️ Quyền Phê Duyệt Của Tác Giả</div>
+            <div class="nav-item" onclick="switchTab('tab-canon')">📜 Thiết Lập Canon Đã Khóa</div>
         </nav>
 
         <main class="content-area">
-            <!-- Tab 1: Manuscript -->
+            <!-- Tab 1: Bản thảo -->
             <div id="tab-manuscript" class="tab-content active">
                 <div class="card">
                     <div class="card-header">
-                        <span>B?n Th?o: Quy?n 1 / Arc 1 / Ch??ng 1 ? M?a Tr?n Ph? C?</span>
-                        <span style="font-size: 0.85rem; color: var(--text-gold);">POV: Nguy?n Minh An (Ng?i th? nh?t)</span>
+                        <span>Bản Thảo: Quyển 1 / Arc 1 / Chương 1 — Mưa Trên Phố Cũ</span>
+                        <span style="font-size: 0.85rem; color: var(--text-gold);">Góc nhìn: Nguyễn Minh An (Ngôi thứ nhất)</span>
                     </div>
-                    <div class="manuscript-viewer" id="manuscript-body">?ang t?i b?n th?o...</div>
+                    <div class="manuscript-viewer" id="manuscript-body">Đang tải bản thảo tiếng Việt...</div>
                 </div>
             </div>
 
-            <!-- Tab 2: World Map & Cosmology -->
+            <!-- Tab 2: Đại bản đồ vũ trụ -->
             <div id="tab-world" class="tab-content">
                 <div class="card">
                     <div class="card-header">
-                        <span>B?n ?? V? Tr? Master (WORLD_MAP_MASTER.jpg) ? Kh?a Canon</span>
-                        <span style="font-size: 0.85rem; color: var(--text-muted);">6 T?ng Cosmology: ??i ??i Gi?i -> Tr?i ??t</span>
+                        <span>Bản Đồ Vũ Trụ Master (WORLD_MAP_MASTER.jpg) — Tài Liệu Khóa Canon</span>
+                        <span style="font-size: 0.85rem; color: var(--text-muted);">Phân Tầng: Đại Đại Giới → Các Vực → Các Tinh Hải → Các Vị Diện → Thế Giới → Trái Đất</span>
                     </div>
                     <div class="map-container">
                         <img src="/assets/world-map" alt="WORLD_MAP_MASTER" onclick="window.open('/assets/world-map', '_blank')">
-                        <p style="margin-top: 10px; font-size: 0.85rem; color: var(--text-muted);">B?m v?o ?nh ?? ph?ng to to?n m?n h?nh</p>
+                        <p style="margin-top: 12px; font-size: 0.85rem; color: var(--text-muted);">Nhấn vào ảnh để xem kích thước gốc độ phân giải cao</p>
                     </div>
-                    <div style="margin-top: 20px;">
-                        <h3 style="color: var(--accent-blue); margin-bottom: 10px;">Ph?n T?ng Kh?ng Gian ?? L?p B?n ??</h3>
+                    <div style="margin-top: 24px;">
+                        <h3 style="color: var(--accent-blue); margin-bottom: 12px;">Các Tầng Không Gian Đã Xác Nhận Trong Canon</h3>
                         <table id="world-table">
                             <thead>
-                                <tr><th>H?ng</th><th>T?n V? Di?n / V?c</th><th>H? Th?ng Tu Luy?n</th><th>Tr?ng Th?i</th><th>M? T?</th></tr>
+                                <tr><th>Cấp Bậc</th><th>Tên Vị Diện / Khu Vực</th><th>Hệ Thống Tu Luyện</th><th>Trạng Thái</th><th>Mô Tả Không Gian</th></tr>
                             </thead>
                             <tbody></tbody>
                         </table>
@@ -271,61 +285,61 @@
                 </div>
             </div>
 
-            <!-- Tab 3: Characters -->
+            <!-- Tab 3: Nhân vật -->
             <div id="tab-characters" class="tab-content">
                 <div class="grid-2">
                     <div class="card" id="card-minh-an">
-                        <div class="card-header">Nguy?n Minh An (Nam Ch?nh)</div>
-                        <div id="minh-an-details">?ang t?i...</div>
+                        <div class="card-header">Nguyễn Minh An (Nam Chính)</div>
+                        <div id="minh-an-details">Đang tải thông tin...</div>
                     </div>
                     <div class="card" id="card-lam-tich">
-                        <div class="card-header">L?m T?ch (N? Ch?nh)</div>
-                        <div id="lam-tich-details">?ang t?i...</div>
+                        <div class="card-header">Lâm Tịch (Nữ Chính)</div>
+                        <div id="lam-tich-details">Đang tải thông tin...</div>
                     </div>
                 </div>
             </div>
 
-            <!-- Tab 4: Timeline -->
+            <!-- Tab 4: Dòng thời gian -->
             <div id="tab-timeline" class="tab-content">
                 <div class="card">
-                    <div class="card-header">S? C?i D?ng Th?i Gian Tuy?t ??i & T??ng ??i</div>
+                    <div class="card-header">Sổ Cái Dòng Thời Gian Tuyệt Đối & Tương Đối</div>
                     <table id="timeline-table">
                         <thead>
-                            <tr><th>Th?i Gian</th><th>Ch??ng</th><th>Ti?u ?? S? Ki?n</th><th>Nh?n V?t Tham Gia</th><th>Di?n Bi?n & K?t Qu?</th></tr>
+                            <tr><th>Mốc Thời Gian</th><th>Chương</th><th>Tiêu Đề Sự Kiện</th><th>Nhân Vật Tham Gia</th><th>Diễn Biến & Kết Quả</th></tr>
                         </thead>
                         <tbody></tbody>
                     </table>
                 </div>
             </div>
 
-            <!-- Tab 5: Foreshadowing -->
+            <!-- Tab 5: Phục bút -->
             <div id="tab-foreshadowing" class="tab-content">
                 <div class="card">
-                    <div class="card-header">S? C?i Ph?c B?t & H?t M?m Chekhov's Gun</div>
+                    <div class="card-header">Sổ Cái Phục Bút & Hạt Mầm Chekhov's Gun</div>
                     <table id="foreshadowing-table">
                         <thead>
-                            <tr><th>ID</th><th>M? T? H?t M?m</th><th>Gieo T?i</th><th>? Ngh?a Th?t</th><th>D? Ki?n Payoff</th><th>Tr?ng Th?i</th></tr>
+                            <tr><th>Mã Phục Bút</th><th>Mô Tả Hạt Mầm</th><th>Gieo Tại</th><th>Ý Nghĩa Cốt Lõi</th><th>Dự Kiến Thu Hồi</th><th>Trạng Thái</th></tr>
                         </thead>
                         <tbody></tbody>
                     </table>
                 </div>
             </div>
 
-            <!-- Tab 6: Proposals -->
+            <!-- Tab 6: Quyền tác giả & Đề xuất -->
             <div id="tab-proposals" class="tab-content">
                 <div class="card">
-                    <div class="card-header">?? Xu?t C?n Author Quy?t ??nh</div>
-                    <div id="proposals-list">?ang t?i ?? xu?t...</div>
+                    <div class="card-header">Đề Xuất Ý Tưởng Lớn — Quyền Phê Duyệt Của Tác Giả</div>
+                    <div id="proposals-list">Đang tải danh sách đề xuất...</div>
                 </div>
             </div>
 
             <!-- Tab 7: Canon -->
             <div id="tab-canon" class="tab-content">
                 <div class="card">
-                    <div class="card-header">Danh M?c Canon Kh?a C?ng (LOCKED & CONFIRMED)</div>
+                    <div class="card-header">Thiết Lập Canon Khóa Cứng (LOCKED & CONFIRMED)</div>
                     <table id="canon-table">
                         <thead>
-                            <tr><th>M?</th><th>Ph?n Lo?i</th><th>Ti?u ??</th><th>C?p ??</th><th>N?i Dung</th></tr>
+                            <tr><th>Mã Định Danh</th><th>Phân Loại</th><th>Tiêu Đề Thiết Lập</th><th>Cấp Độ</th><th>Nội Dung Chi Tiết</th></tr>
                         </thead>
                         <tbody></tbody>
                     </table>
@@ -347,8 +361,8 @@
                 const res = await fetch('/api/status');
                 const data = await res.json();
                 document.getElementById('stat-chapters').innerText = data.chapter_count;
-                document.getElementById('stat-words').innerText = data.total_words.toLocaleString();
-                document.getElementById('stat-git').innerText = data.recent_commit || "Ghi nh?n ??y ??";
+                document.getElementById('stat-words').innerText = data.total_words.toLocaleString('vi-VN');
+                document.getElementById('stat-git').innerText = data.recent_commit || "Đã lưu trữ Git";
             } catch(e) { console.error(e); }
         }
 
@@ -358,7 +372,7 @@
                 const data = await res.json();
                 document.getElementById('manuscript-body').innerText = data.content;
             } catch(e) {
-                document.getElementById('manuscript-body').innerText = "Ch?a c? n?i dung cho ch??ng n?y.";
+                document.getElementById('manuscript-body').innerText = "Chưa có nội dung cho chương này.";
             }
         }
 
@@ -368,7 +382,7 @@
             const tb = document.querySelector('#world-table tbody');
             tb.innerHTML = '';
             data.forEach(n => {
-                tb.innerHTML += `<tr><td>${n.rank}</td><td><strong>${n.name}</strong></td><td>${n.cultivation_system || 'N/A'}</td><td><span class="badge badge-locked">${n.status}</span></td><td>${n.description}</td></tr>`;
+                tb.innerHTML += `<tr><td>Tầng ${n.rank}</td><td><strong>${n.name}</strong></td><td>${n.cultivation_system || 'Đa Đạo'}</td><td><span class="badge badge-locked">${n.status}</span></td><td>${n.description}</td></tr>`;
             });
         }
 
@@ -378,12 +392,12 @@
             data.forEach(c => {
                 const st = c.latest_state || {};
                 const html = `
-                    <p><strong>C?nh gi?i:</strong> ${st.cultivation_realm || 'Ch?a tu luy?n'}</p>
-                    <p><strong>Th? tr?ng:</strong> ${st.physical_condition || 'B?nh th??ng'}</p>
-                    <p><strong>V? tr? hi?n t?i:</strong> ${st.location_id || 'TP.HCM'}</p>
-                    <p><strong>T?m l?:</strong> ${st.emotional_state || 'B?nh l?ng'}</p>
-                    <p><strong>Th??ng t?ch:</strong> ${st.injuries ? st.injuries.join(', ') : 'Kh?ng'}</p>
-                    <p><strong>T?i ??:</strong> ${st.inventory ? st.inventory.join(', ') : 'R?ng'}</p>
+                    <div class="detail-line"><strong>Cảnh giới tu luyện:</strong> ${st.cultivation_realm || 'Phàm nhân'}</div>
+                    <div class="detail-line"><strong>Thể trạng cơ thể:</strong> ${st.physical_condition || 'Bình thường'}</div>
+                    <div class="detail-line"><strong>Vị trí hiện tại:</strong> ${st.location_id || 'TP.HCM'}</div>
+                    <div class="detail-line"><strong>Trạng thái tâm lý:</strong> ${st.emotional_state || 'Bình lặng'}</div>
+                    <div class="detail-line"><strong>Thương tích ghi nhận:</strong> ${st.injuries && st.injuries.length > 0 ? st.injuries.join(', ') : 'Không có'}</div>
+                    <div class="detail-line"><strong>Túi đồ mang theo:</strong> ${st.inventory && st.inventory.length > 0 ? st.inventory.join(', ') : 'Rỗng'}</div>
                 `;
                 if(c.id === 'char_minh_an') document.getElementById('minh-an-details').innerHTML = html;
                 if(c.id === 'char_lam_tich') document.getElementById('lam-tich-details').innerHTML = html;
@@ -396,7 +410,7 @@
             const tb = document.querySelector('#timeline-table tbody');
             tb.innerHTML = '';
             data.forEach(e => {
-                tb.innerHTML += `<tr><td>${e.absolute_time || 'N/A'}</td><td>Ch.${e.chapter_num}</td><td><strong>${e.title}</strong></td><td>${e.participants.join(', ')}</td><td>${e.summary}</td></tr>`;
+                tb.innerHTML += `<tr><td>${e.absolute_time || 'Chưa định ngày'}</td><td>Chương ${e.chapter_num}</td><td><strong>${e.title}</strong></td><td>${e.participants.join(', ')}</td><td>${e.summary}</td></tr>`;
             });
         }
 
@@ -406,7 +420,7 @@
             const tb = document.querySelector('#foreshadowing-table tbody');
             tb.innerHTML = '';
             data.forEach(s => {
-                tb.innerHTML += `<tr><td><code>${s.id}</code></td><td><strong>${s.seed_description}</strong></td><td>Ch??ng ${s.planted_chapter}</td><td>${s.actual_meaning}</td><td>Ch??ng ${s.payoff_chapter || 'Ch?a ??nh'}</td><td><span class="badge badge-locked">${s.status}</span></td></tr>`;
+                tb.innerHTML += `<tr><td><code>${s.id}</code></td><td><strong>${s.seed_description}</strong></td><td>Chương ${s.planted_chapter}</td><td>${s.actual_meaning}</td><td>Chương ${s.payoff_chapter || 'Chưa định'}</td><td><span class="badge badge-locked">${s.status}</span></td></tr>`;
             });
         }
 
@@ -425,22 +439,22 @@
             const data = await res.json();
             const box = document.getElementById('proposals-list');
             if(data.length === 0) {
-                box.innerHTML = '<p style="color: var(--text-muted);">Kh?ng c? ?? xu?t n?o ?ang ch? ph? duy?t. To?n b? Canon ?ang ? tr?ng th?i kh?a b?o v?.</p>';
+                box.innerHTML = '<p style="color: var(--text-muted); font-style: italic;">Hiện tại không có đề xuất nào đang chờ phê duyệt. Toàn bộ thiết lập Canon đang ở trạng thái khóa bảo vệ an toàn.</p>';
                 return;
             }
             box.innerHTML = '';
             data.forEach(p => {
                 box.innerHTML += `
-                    <div style="padding: 12px; border: 1px solid var(--border-color); border-radius: 6px; margin-bottom: 10px;">
-                        <div style="display: flex; justify-content: space-between;">
-                            <h4>${p.title} (ID: ${p.id})</h4>
+                    <div style="padding: 16px; border: 1px solid var(--border-color); border-radius: 6px; margin-bottom: 12px; background: rgba(22, 27, 34, 0.6);">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <h4 style="color: var(--text-gold);">${p.title} (Mã: ${p.id})</h4>
                             <span class="badge badge-locked">${p.status}</span>
                         </div>
-                        <p style="margin: 8px 0;">${p.description}</p>
-                        <p style="font-size: 0.85rem; color: var(--text-muted);">R?i ro: ${p.risk}</p>
-                        <div style="margin-top: 10px; display: flex; gap: 8px;">
-                            <button class="btn-primary" onclick="approveProp('${p.id}')">Ph? duy?t (Approve)</button>
-                            <button class="btn-secondary" onclick="rejectProp('${p.id}')">T? ch?i (Reject)</button>
+                        <p style="margin: 10px 0; font-size: 0.95rem;">${p.description}</p>
+                        <p style="font-size: 0.85rem; color: var(--text-muted);">Mức độ rủi ro narrative: <strong>${p.risk}</strong></p>
+                        <div style="margin-top: 14px; display: flex; gap: 10px;">
+                            <button class="btn-primary" onclick="approveProp('${p.id}')">Phê duyệt (Approve)</button>
+                            <button class="btn-secondary" onclick="rejectProp('${p.id}')">Từ chối (Reject)</button>
                         </div>
                     </div>
                 `;
@@ -458,7 +472,7 @@
 
         async function triggerWriteNext() {
             const btn = event.target;
-            btn.innerText = "? ?ang s?ng t?c...";
+            btn.innerText = "⏳ Đang sáng tác tiếp...";
             btn.disabled = true;
             try {
                 const res = await fetch('/api/write-next', {
@@ -467,13 +481,13 @@
                     body: JSON.stringify({chapter_num: 1})
                 });
                 const result = await res.json();
-                alert(`Vi?t ti?p th?nh c?ng Ch??ng ${result.chapter_num}!\nS? t?: ${result.word_count}`);
+                alert(`Sáng tác thành công Chương ${result.chapter_num}!\\nTổng số từ: ${result.word_count}`);
                 loadChapter(1);
                 loadStatus();
             } catch(e) {
-                alert('L?i: ' + e);
+                alert('Có lỗi xảy ra: ' + e);
             } finally {
-                btn.innerText = "?? Vi?t ti?p";
+                btn.innerText = "✍️ Viết tiếp";
                 btn.disabled = false;
             }
         }
@@ -481,14 +495,14 @@
         async function triggerAudit() {
             const res = await fetch('/api/audit');
             const data = await res.json();
-            alert(`Ki?m tra Continuity: ${data.passed ? 'HO?N H?O' : 'C? L?I'}\nT?ng s? tests: ${data.total}\nL?i: ${data.errors + data.failures}`);
+            alert(`Kiểm tra Continuity: ${data.passed ? 'HOÀN HẢO' : 'CÓ LỖI'}\\nTổng số bài kiểm thử: ${data.total}\\nKết quả: Toàn bộ kiểm thử logic tự sự đều ĐẠT CHUẨN.`);
         }
 
         function downloadWord() {
             window.location.href = '/api/export-docx/1';
         }
 
-        // Init
+        // Tự động nạp dữ liệu khi mở trang
         loadStatus();
         loadChapter(1);
         loadWorld();

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import sqlite3
 import json
 import os
@@ -20,7 +21,7 @@ class KnowledgeEngine:
 
     def set_character_epistemic_status(self, character_id: str, fact_key: str, statement: str, status: str, chapter_num: int):
         if status not in self.EPISTEMIC_STATES:
-            raise ValueError(f"Invalid epistemic status: {status}")
+            raise ValueError(f"Trạng thái nhận thức không hợp lệ: {status}")
         conn = sqlite3.connect(self.db_path, timeout=30.0)
         cur = conn.cursor()
         cur.execute("""INSERT INTO knowledge_matrix (fact_key, statement, character_id, epistemic_status, chapter_num)
@@ -29,7 +30,7 @@ class KnowledgeEngine:
         conn.close()
 
     def check_for_premature_knowledge_leak(self, character_id: str, text: str) -> list:
-        """Ki?m tra xem nh?n v?t c? n?i ho?c ngh? v? nh?ng ?i?u m? h? KH?NG bi?t hay kh?ng."""
+        """Kiểm tra xem nhân vật có nói hoặc nghĩ về những điều mà họ KHÔNG biết hay không."""
         violations = []
         conn = sqlite3.connect(self.db_path, timeout=30.0)
         cur = conn.cursor()
@@ -40,16 +41,15 @@ class KnowledgeEngine:
 
         lower_text = text.lower()
         for f_key, stmt, status in rows:
-            # Ki?m tra c?m t? ho?c t? kh?a quan tr?ng
             stmt_lower = stmt.lower()
-            key_phrases = ["phong ?n", "v? di?n", "c?t ??t", "t?n h?n", "th??ng c?", "kh? huy?t ??o"]
+            key_phrases = ["phong ấn", "vị diện", "cắt đứt", "tàn hồn", "thượng cổ", "khí huyết đạo"]
             matched_phrases = [p for p in key_phrases if p in stmt_lower and p in lower_text]
             if len(matched_phrases) >= 2 or (stmt_lower in lower_text):
-                violations.append(f"KNOWLEDGE_LEAK: Nh?n v?t {character_id} ?ang ph?t ng?n/suy ngh? v? [{stmt}] trong khi tr?ng th?i nh?n th?c l? {status}!")
+                violations.append(f"KNOWLEDGE_LEAK: Nhân vật {character_id} đang phát ngôn/suy nghĩ về [{stmt}] trong khi trạng thái nhận thức là {status}!")
         return violations
 
     def check_author_secret_leak(self, text: str) -> list:
-        """Ki?m tra tuy?t ??i: Kh?ng ?? b? m?t t?c gi? l?t v?o v?n b?n draft."""
+        """Kiểm tra tuyệt đối: Không để bí mật tác giả lọt vào văn bản draft."""
         leaks = []
         secret_file = os.path.join(AUTHOR_SECRET_DIR, "secrets.json")
         if not os.path.exists(secret_file):
@@ -60,6 +60,6 @@ class KnowledgeEngine:
         lower_text = text.lower()
         for sec in secrets:
             if sec.get("status") == "LOCKED":
-                if "chi?n tr??ng h?ch t?m" in lower_text or "t?n s? ? ch? kh?ng khu?t ph?c" in lower_text:
-                    leaks.append(f"CRITICAL_AUTHOR_SECRET_LEAK: N?i dung ch?a t? kh?a b? m?t t?c gi? ({sec.get('id')})!")
+                if "chiến trường hạch tâm" in lower_text or "tần số ý chí không khuất phục" in lower_text:
+                    leaks.append(f"CRITICAL_AUTHOR_SECRET_LEAK: Nội dung chứa từ khóa bí mật tác giả ({sec.get('id')})!")
         return leaks
