@@ -398,6 +398,35 @@ Mưa ngớt dần. Tôi dắt xe ra đường, hòa vào dòng người tiếp t
                         ("FSH-009", "Hoa văn kiếm ngân mờ ảo xuất hiện trên tay áo của bóng dáng tàn hồn Lâm Tịch trong thức hải", 9, 1,
                          json.dumps(["Minh An"], ensure_ascii=False),
                          "Dấu hiệu nguyên thần bắt đầu khôi phục năng lực bản mệnh kiếm ý, chuẩn bị cho khả năng hiển hóa hư ảnh trợ chiến trong tình thế hiểm nghèo", 22, "PLANTED"))
+        elif chapter_num == 10:
+            cur.execute("""INSERT OR REPLACE INTO timeline_events (id, title, chapter_num, scene_num, absolute_time, location_id, participants_json, summary, outcome)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                        (f"EVT-CH{chapter_num:03d}-01", "Dòng sông Sài Gòn và sự khai sáng ý niệm Khí Huyết", chapter_num, 1,
+                         "2026-09-16T13:30:00+07:00", "loc_hcmc", json.dumps(["char_minh_an", "char_lam_tich"], ensure_ascii=False),
+                         "Trưa và chiều 16/09/2026. Minh An xử lý công việc văn phòng với hiệu suất vượt trội. Giờ nghỉ trưa trên sân thượng tòa nhà nhìn ra sông Sài Gòn, Lâm Tịch chỉ điểm về 'Ý niệm hòa quyện dòng máu', mượn hình tượng phù sa cuộn chảy để dẫn dắt khí huyết vận hành theo chu kỳ bán khép kín. Cuối giờ làm, an ninh tòa nhà liên hệ mời Minh An xác minh đoạn băng ghi hình sự cố nhiệt độ.",
+                         "Minh An bước đầu nắm bắt ý niệm dẫn khí huyết tựa dòng trường giang; mối liên kết tâm thức với Lâm Tịch thêm bền chặt; gieo mầm phục bút FSH-010 về bóng mờ bán nguyệt trong dữ liệu camera an ninh."))
+            
+            # Character states
+            cur.execute("""INSERT INTO character_states (character_id, chapter_num, location_id, cultivation_realm, physical_condition, injuries_json, inventory_json, emotional_state)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                        ("char_minh_an", 10, "Sân thượng tòa nhà văn phòng Quận 1", "Phàm nhân (Nội luyện Khí Huyết sơ cấp - Ý Niệm Lưu Chuyển)", "Khí huyết tuần hoàn theo nhịp bán hoàn chỉnh, năng lực tập trung trí não đỉnh cao, hô hấp sâu trầm ổn",
+                         json.dumps([], ensure_ascii=False),
+                         json.dumps(["Điện thoại di động", "Ví tiền", "Chìa khóa xe Wave", "Thẻ nhân viên", "Cốc cà phê"], ensure_ascii=False),
+                         "Điềm đạm, mẫn tuệ, thận trọng trước sự chú ý từ bộ phận an ninh"))
+            
+            cur.execute("""INSERT INTO character_states (character_id, chapter_num, location_id, cultivation_realm, physical_condition, injuries_json, inventory_json, emotional_state)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                        ("char_lam_tich", 10, "Thức hải Minh An", "Đỉnh cao vị diện (tàn hồn ngưng tụ sơ khai)", "Tàn hồn dần ổn định, hình bóng thiếu nữ áo choàng xám bạc thêm phần rõ nét",
+                         json.dumps(["Thân thể nát vụn hoàn toàn", "Đạo cơ vỡ nát", "Nguyên thần vỡ vụn"], ensure_ascii=False),
+                         json.dumps(["Mảnh kiếm gãy (dạng ý niệm)"], ensure_ascii=False),
+                         "Coi trọng ngộ tính của Minh An, chủ động phối hợp điều tức và cảnh báo hiểm nguy thế tục"))
+            
+            # Foreshadowing seed FSH-010
+            cur.execute("""INSERT OR REPLACE INTO foreshadowing_ledger (id, seed_description, planted_chapter, planted_scene, notices_json, actual_meaning, payoff_chapter, status)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                        ("FSH-010", "Dữ liệu camera nhiệt của tòa nhà ghi nhận vệt bóng mờ hình bán nguyệt kỳ lạ bao quanh cơ thể Minh An", 10, 1,
+                         json.dumps(["Minh An", "Bộ phận an ninh tòa nhà"], ensure_ascii=False),
+                         "Vết tích vật lý của trường lực Băng Phách bị phân tích kỹ thuật số, khiến Minh An lọt vào diện theo dõi ngầm của chuyên gia cảm biến", 15, "PLANTED"))
         else:
             cur.execute("""INSERT OR REPLACE INTO timeline_events (id, title, chapter_num, scene_num, absolute_time, location_id, participants_json, summary, outcome)
                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
