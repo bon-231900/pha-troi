@@ -640,6 +640,38 @@ Mưa ngớt dần. Tôi dắt xe ra đường, hòa vào dòng người tiếp t
                         ("FSH-017", "Một đóm tàn vũ xám bạc rơi ra từ vạt áo của Lâm Tịch tan vào dòng khí huyết nuôi dưỡng điểm nút Đại Chùy", 17, 1,
                          json.dumps(["Minh An", "Lâm Tịch"], ensure_ascii=False),
                          "Quy tắc chí cao nguyên thủy của Lâm Tịch vô thức dung hòa vào khí huyết Minh An, mở đường cho khả năng đồng bộ nguyên thần trong giao chiến ở Chương 22", 22, "PLANTED"))
+        elif chapter_num == 18:
+            cur.execute("""INSERT OR REPLACE INTO timeline_events (id, title, chapter_num, scene_num, absolute_time, location_id, participants_json, summary, outcome)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                        (f"EVT-CH{chapter_num:03d}-01", "Khai mở then cài Đại Chùy và Vòng Nhị Chu Thiên Khí Huyết", chapter_num, 1,
+                         "2026-09-20T23:45:00+07:00", "loc_hcmc", json.dumps(["char_minh_an", "char_lam_tich"], ensure_ascii=False),
+                         "Đêm Chủ Nhật 20/09/2026, giữa cơn mưa rào Bình Thạnh, Minh An tiến hành công phá then cài phong ấn thứ hai tại đốt sống cổ thứ ba (huyệt Đại Chùy). Nhờ ý chí kiên định và sự hỗ trợ điều hòa từ tàn niệm Lâm Tịch, màng phong ấn nứt toác hoàn toàn; dòng khí huyết dâng trào thấu não qua đỉnh Bách Hội, khép kín Vòng Nhị Chu Thiên Trọn Vẹn. Giác quan và phản xạ thần kinh của Minh An thăng hoa vượt bậc.",
+                         "Hoàn tất thu hồi phục bút FSH-008; Minh An chính thức bước vào cảnh giới Nhị Chu Thiên Khí Huyết (Khí Huyết Thấu Não); mở rộng trường cảm nhận sinh học vi mô; gieo mầm phục bút FSH-018 về hiện tượng đồng tử ngưng quang."))
+            
+            # Character states
+            cur.execute("""INSERT INTO character_states (character_id, chapter_num, location_id, cultivation_realm, physical_condition, injuries_json, inventory_json, emotional_state)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                        ("char_minh_an", 18, "Phòng trọ Nơ Trang Long, Bình Thạnh", "Phàm nhân (Khí Huyết Đạo Sơ Khai - Nhị Chu Thiên Viên Mãn)", "Hoàn thành 2 chu thiên khép kín, khí huyết thấu não, thần kinh đại não thăng hoa, giác quan 3D nhạy bén trong bán kính 10m, thể phách vững chắc",
+                         json.dumps([], ensure_ascii=False),
+                         json.dumps(["Điện thoại di động", "Ví tiền", "Chìa khóa xe Wave", "Sổ tay ghi chép", "Bút bi", "Danh thiếp gỗ của ông Ba Khiêm"], ensure_ascii=False),
+                         "Điềm đạm, mẫn tuệ tột bậc, tự chủ hoàn toàn thể xác và tinh thần"))
+            
+            cur.execute("""INSERT INTO character_states (character_id, chapter_num, location_id, cultivation_realm, physical_condition, injuries_json, inventory_json, emotional_state)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                        ("char_lam_tich", 18, "Thức hải Minh An", "Đỉnh cao vị diện (tàn hồn an định)", "Tàn hồn được bao bọc trong kén khí huyết Nhị Chu Thiên dày dặn ấm áp gấp bội, phục hồi thêm sinh cơ nguyên thần, hư ảnh thiếu nữ thêm phần ngưng thực",
+                         json.dumps(["Thân thể nát vụn hoàn toàn", "Đạo cơ vỡ nát", "Nguyên thần vỡ vụn"], ensure_ascii=False),
+                         json.dumps(["Mảnh kiếm gãy (dạng ý niệm)"], ensure_ascii=False),
+                         "Vô cùng kinh ngạc trước tốc độ ngộ đạo và ý chí của Minh An, gắn kết tâm thức sâu sắc"))
+            
+            # Payoff FSH-008
+            cur.execute("""UPDATE foreshadowing_ledger SET status = 'PAID' WHERE id = 'FSH-008'""")
+            
+            # Foreshadowing seed FSH-018
+            cur.execute("""INSERT OR REPLACE INTO foreshadowing_ledger (id, seed_description, planted_chapter, planted_scene, notices_json, actual_meaning, payoff_chapter, status)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                        ("FSH-018", "Tia hào quang màu hổ phách vi mô thoáng ngưng tụ sâu trong đáy đồng tử Minh An khi khí huyết tràn qua đỉnh Bách Hội", 18, 1,
+                         json.dumps(["Minh An", "Lâm Tịch"], ensure_ascii=False),
+                         "Dấu tích khai mở Thần Mục Thể Đạo sơ khai, chuẩn bị cho khả năng nhìn thấu quỹ đạo dòng năng lượng và quy tắc ở Chương 32", 32, "PLANTED"))
         else:
             cur.execute("""INSERT OR REPLACE INTO timeline_events (id, title, chapter_num, scene_num, absolute_time, location_id, participants_json, summary, outcome)
                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",

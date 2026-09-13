@@ -1,0 +1,146 @@
+# -*- coding: utf-8 -*-
+import sys
+import io
+
+# Set UTF-8 standard output
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+
+from system.engines.coauthor_engine import CoAuthorEngine
+
+ch18_prose = """# CHƯƠNG 18: KHÍ HUYẾT THẤU NÃO
+
+Mười một giờ đêm ngày Chủ Nhật, hai mươi tháng Chín.
+
+Bên ngoài khung cửa sổ phòng trọ, một cơn mưa giông lớn bất ngờ đổ ập xuống thành phố. Nước mưa quất ràn rạt vào những mái tôn cũ kỹ trong con hẻm đường Nơ Trang Long, tạo nên những thanh âm hỗn loạn nhưng lại kỳ lạ thay, mang đến một cảm giác cách biệt tuyệt đối với thế giới xô bồ bên ngoài. Tiếng sấm rền vang từ phía chân trời xa xôi, ánh chớp xé rách màn đêm hắt lên sàn gỗ những vệt sáng trắng xanh lạnh lẽo trong tích tắc rồi vụt tắt.
+
+Tôi ngồi xếp bằng giữa căn phòng tối, chỉ thắp một ngọn nến nhỏ đặt nơi góc tường. Ngọn lửa leo lét khẽ lay động theo từng cơn gió luồn qua khe cửa, tỏa ra một mùi sáp ong ngai ngái quen thuộc.
+
+Suốt ngày Chủ Nhật hôm nay, tôi dành trọn vẹn thời gian để nghỉ ngơi, tĩnh dưỡng và chuẩn bị thể chất. Tôi nấu một nồi cháo sườn bồi bổ dinh dưỡng, đi dạo thả lỏng gân cốt dọc bờ kênh Thị Nghè, lắng nghe từng nhịp chuyển động của cơ bắp và khớp xương theo đúng những lời chỉ dẫn dưỡng khí của ông Ba Khiêm.
+
+Vòng Chu Thiên Khí Huyết thứ nhất dưới sự mài giũa liên tục đã trở nên thuần thục và ổn định như một cỗ máy sinh học hoàn hảo. Dòng máu ấm áp luân chuyển êm ru từ đan điền xuống xương cụt, lướt qua đốt sống lưng thứ bảy trơn tru không một gợn sóng.
+
+Nhưng mục tiêu đêm nay của tôi không dừng lại ở đó.
+
+Tôi hướng toàn bộ sự tập trung của ý niệm vào vị trí đốt sống cổ thứ ba — huyệt Đại Chùy nằm ngay phía sau chân gáy.
+
+Nơi đó, lớp màng ngăn đá vôi vô hình của chiếc then cài phong ấn thứ hai vẫn đang án ngữ. Dưới vết nứt rạn chân chim cực nhỏ mà tia sinh cơ xám tro của Lâm Tịch tạo ra vào đêm qua, từng đợt xung lực của dòng máu nóng hổi đang khẽ cọ xát, tạo nên một cảm giác ngứa ran và nhức nhối âm ỉ.
+
+"Đã sẵn sàng chưa?" 
+
+Giọng nói của Lâm Tịch vang lên từ cõi sâu thức hải, mang theo một vẻ nghiêm cẩn và tập trung cao độ. Chiếc kén khí huyết sinh học đang che chở cho nàng khẽ khép chặt lại, các dao động quy tắc Băng Phách được thu liễm hoàn toàn vào điểm lõi, sẵn sàng hỗ trợ giữ vững tâm trí cho tôi.
+
+"Tôi đã sẵn sàng," tôi đáp lại bằng ý niệm, hơi thở trầm ổn như mặt hồ mùa thu.
+
+"Hãy nhớ kỹ," Lâm Tịch căn dặn từng lời. "Then cài Đại Chùy khác biệt hoàn toàn với then cài đốt sống thắt lưng. Đốt sống thắt lưng cai quản cơ bắp và gân cốt hạ bàn, có thể chịu được xung lực va đập thô bạo. Nhưng Đại Chùy nằm ở cửa ngõ tủy sống dẫn thẳng lên đại não — nơi tập trung hàng tỷ dây thần kinh mỏng manh. Ngươi không được dùng bạo lực dồn ứ máu huyết để húc mạnh, mà phải dùng kỹ pháp 'Kình phát tự tủy, thẩm thấu hóa kình' của phàm trần mà ngươi vừa lĩnh hội. Lấy nhu khắc cương, dùng nhiệt năng sinh học nung chảy lớp màng ngăn, mượn áp lực thủy lực tự nhiên để tách nứt chiếc then cài."
+
+"Tôi hiểu."
+
+Tôi khẽ thở hắt ra một làn hơi dài, đẩy toàn bộ khí cặn trong buồng phổi ra ngoài, rồi bắt đầu hít vào một hơi thật sâu bằng mũi.
+
+*Thình... thịch... thình... thịch...*
+
+Nhịp tim tôi chậm dần, nhưng mỗi nhịp đập lại mạnh mẽ và đanh thép như tiếng gõ của một chiếc búa tạ. Cơ hoành ép sâu xuống đáy bụng, dồn nén không khí và dưỡng chất vào khoang ngực. 
+
+Dưới sự dẫn dắt của ý niệm dòng sông, dòng máu ấm áp trong các tĩnh mạch lớn bắt đầu tăng tốc cuộn trào. Nó không còn là dòng chảy êm đềm của ngày thường nữa, mà biến thành một thác lũ đỏ thắm hừng hực nhiệt năng, gầm thét lao dọc theo cột sống.
+
+Vượt qua đốt sống lưng thứ bảy!
+
+Tiến qua vùng bả vai!
+
+Lao thẳng vào chân gáy!
+
+*Ầm!*
+
+Một tiếng nổ trầm đục tựa như tiếng sấm nén vang lên sâu thẳm trong xương tủy của tôi. 
+
+Dòng khí huyết nóng bỏng va đập trực diện vào lớp màng đá vôi của huyệt Đại Chùy. Cơn đau buốt thấu tận màng não tức thì bùng phát, sắc nhọn tựa như có một chiếc đinh sắt nung đỏ đang cắm thẳng vào đốt sống cổ. Tai tôi vang lên những tiếng vo ve chói tai, trước mắt lóe lên từng chùm đom đóm bạc.
+
+Một người bình thường gặp phải cơn đau tột cùng nơi tủy sống như thế này chắc chắn sẽ ngất lịm hoặc co giật vì chấn động thần kinh.
+
+Thế nhưng, ý chí của tôi qua hai mươi lăm năm nhẫn nại giữa cuộc mưu sinh trần thế đã rèn cho tôi một bản lĩnh lì lợm phi thường. Tôi không hề nhụt chí, cũng không để cho sự hoảng loạn làm xáo trộn nhịp thở. 
+
+Tôi cắn chặt quai hàm, giữ cho cột sống thẳng tắp như một ngọn thương cắm sâu xuống đất. Ngay khoảnh khắc cơn sốc nhiệt lan lên đỉnh đầu, trong thức hải, Lâm Tịch lập tức phát ra một luồng hàn ý dịu nhẹ tựa như làn nước tuyết tan mùa xuân. Luồng hàn ý thanh tỉnh ấy khẽ lướt qua các tế bào thần kinh đại não của tôi, lập tức xoa dịu đi cơn đau buốt, giữ cho tâm trí tôi mát lành và tỉnh táo đến mức tuyệt đối.
+
+"Giữ vững nhịp thở! Khí huyết dồn vào vết nứt!" Lâm Tịch khẽ quát khẽ trong tâm thức.
+
+Tôi lập tức vận dụng khẩu quyết thính kình của ông Ba Khiêm: lắng nghe từng đường vân của gân cốt, cảm nhận chính xác vị trí của vết rạn chân chim nơi lớp màng đá vôi.
+
+Tôi không để dòng máu tràn lan ra xung quanh, mà dùng ý niệm cô đặc nó lại thành một dòng tia áp lực thủy lực sinh học cực nhỏ, tập trung toàn bộ nhiệt năng và xung lực nén thẳng vào rãnh nứt ấy.
+
+Nóng và lạnh giao tranh! 
+
+Dòng máu ba mươi tám độ C của cơ thể người kết hợp với nhiệt năng sinh học cuộn xoáy liên tục, thẩm thấu sâu vào từng kẽ hở của khối màng ngăn cổ xưa. 
+
+Khối đá vôi vô hình bị nung nóng từ bên trong bắt đầu phát ra những tiếng rên rỉ nghẹt thở. Những vết nứt li ti từ vết rạn chân chim ban đầu lan nhanh như mạng nhện, chằng chịt khắp bề mặt đốt sống cổ thứ ba.
+
+*Rắc!*
+
+Một tiếng rạn vỡ giòn tan, trong trẻo như tiếng ngọc vỡ đột ngột vang lên giữa không gian tĩnh mịch của căn phòng trọ!
+
+Chiếc then cài phong ấn thứ hai tại huyệt Đại Chùy... đã hoàn toàn nứt toác!
+
+*Ào!*
+
+Tựa như một con đập ngàn năm tích nước bỗng nhiên được khai thông cửa xả, dòng khí huyết đỏ thắm hừng hực sức sống cuộn trào vượt qua rào cản, dâng thẳng lên gáy, tràn qua tiểu não, tưới đẫm bán cầu đại não rồi hội tụ mãnh liệt tại đỉnh Bách Hội!
+
+*Oanh!*
+
+Toàn bộ thế giới trong nhận thức của tôi dường như nổ tung thành một biển ánh sáng rực rỡ!
+
+Đó không phải là ảo giác tâm thần, mà là sự bùng nổ sinh học tột đỉnh khi hàng tỷ tế bào thần kinh não bộ bị phong bế suốt bao năm bỗng nhiên được tắm đẫm trong dòng dưỡng chất và oxy dồi dào gấp mười lần ngày thường. Từng nơ-ron thần kinh bừng sáng, các khớp thần kinh kết nối với nhau với tốc độ ánh sáng.
+
+Từ đỉnh Bách Hội, dòng khí huyết ấm áp sau khi thanh tẩy và nuôi dưỡng đại não tiếp tục chảy vòng xuống huyệt Nhân Trung, lướt qua vòm họng ngọt ngào như suối nguồn, đổ ngược về lồng ngực, hòa vào quả tim đang đập rộn rã rồi quay trở lại đan điền.
+
+Một vòng tròn tuần hoàn hoàn chỉnh thứ hai đã khép kín!
+
+**Vòng Nhị Chu Thiên Khí Huyết — Khí Huyết Thấu Não!**
+
+Tôi thở ra một làn hơi dài mang theo nhiệt khí nóng hổi. Hai mắt tôi từ từ mở ra.
+
+Căn phòng trọ lúc này vẫn chìm trong bóng tối, ngọn nến ở góc phòng đã lụi tàn từ lúc nào. Ngoài trời, cơn mưa rào vẫn đang quất ràn rạt xuống mái tôn.
+
+Thế nhưng, thế giới trong mắt tôi lúc này đã hoàn toàn biến đổi.
+
+Dù không có ánh đèn, đồng tử của tôi vẫn thu nhận được từng chi tiết nhỏ nhất trong căn phòng: từng sợi vân gỗ sần sùi trên mặt bàn, từng hạt bụi li ti đang lơ lửng trong không khí, thậm chí cả từng giọt nước mưa li ti đang bắn qua khe hở của khung cửa sổ cuốn.
+
+Tai tôi nghe rõ mồn một từng thanh âm vi mô trong bán kính hơn mười mét: tiếng nhịp tim của một chú mèo hoang đang nằm co ro trú mưa dưới mái hiên nhà bên cạnh, tiếng thở đều đặn của người hàng xóm ở phòng trọ cách hai bức tường gạch, và tiếng rơi tí tách của từng giọt nước mưa đọng trên cành lá cây bàng ngoài ngõ.
+
+Không gian xung quanh tôi dường như được tái tạo lại dưới dạng một bản đồ ba chiều sống động đến từng milimét trong tâm trí. Mỗi cử động của gió, mỗi sự biến đổi của nhiệt độ đều được các tế bào thần kinh đại não phân tích và xử lý với tốc độ chuẩn xác đến mức kinh ngạc.
+
+Đó là sự thức tỉnh của một giác quan sinh học đỉnh cao — bản năng nguyên thủy của loài người thời thượng cổ mà sau bao nhiêu vạn năm phong ấn, nay đã một lần nữa tái hiện trên thể phách của một người phàm!
+
+Trong thức hải, chiếc kén khí huyết sinh học ấm áp lúc này đã dày dặn và tỏa sáng rực rỡ gấp bội. Dòng Nhị Chu Thiên liên tục truyền dẫn những luồng sinh cơ tinh khiết vào bên trong, nuôi dưỡng tàn hồn của Lâm Tịch. Bóng dáng thiếu nữ áo choàng xám bạc của nàng lúc này đã thêm phần rõ nét, những đường nét thanh tú trên gương mặt nàng ánh lên vẻ rạng rỡ và thán phục vô bờ:
+
+"Chúc mừng ngươi, Minh An! Ngươi đã hoàn thành vòng Nhị Chu Thiên Khí Huyết! Kể từ khoảnh khắc này, thần kinh và giác quan của ngươi đã vượt xa giới hạn thông thường của loài người thời đại này."
+
+Tôi đứng dậy, bước chân nhẹ bẫng tựa như không trọng lượng. 
+
+Đi tới trước chiếc gương nhỏ treo trên tường nhà tắm, tôi nhìn vào hình bóng của chính mình trong gương. Gương mặt tôi vẫn là nét mặt thư sinh bình dị của một thanh niên công sở tuổi hai mươi lăm. 
+
+Thế nhưng, khi ánh chớp ngoài trời bất chợt lóe lên rọi qua ô thông gió, tôi kinh ngạc nhìn thấy sâu thẳm trong đáy đồng tử màu đen của mình... khẽ ánh lên một tia hào quang màu hổ phách vi mô ấm áp, tựa như một đốm lửa thiêng ngàn năm vừa được thắp sáng nơi đáy mắt, rồi chầm chậm thu liễm biến mất vào màn đêm.
+
+Một giờ ba mươi phút sáng ngày hai mươi mốt tháng Chín.
+
+Cơn mưa đêm đã dần tạnh, để lại bầu không khí trong lành, ẩm ướt của đất trời phương Nam. Đứng bên cửa sổ nhìn ra ánh đèn thành phố đang dần tỉnh giấc, tôi khẽ nắm chặt hai bàn tay, cảm nhận sức mạnh tự chủ đang dâng trào trong huyết quản.
+
+Một tuần làm việc mới sắp bắt đầu, và tôi biết, mình đã sẵn sàng cho mọi biến động của thời đại."""
+
+def main():
+    print("--- KHỞI CHẠY QUY TRÌNH VIẾT CHƯƠNG 18 ---")
+    engine = CoAuthorEngine()
+    result = engine.write_next_chapter(
+        target_chapter_num=18,
+        pov="Nguyễn Minh An (Ngôi thứ nhất)",
+        custom_draft_prose=ch18_prose
+    )
+    print("Kết quả pipeline:", result["success"])
+    print("Đường dẫn Markdown:", result["md_path"])
+    print("Đường dẫn Word DOCX:", result["docx_path"])
+    print("Tổng số từ:", result["word_count"])
+    print("Kiểm duyệt (Audit Passed):", result["critique"]["passed"])
+    if not result["critique"]["passed"]:
+        print("Danh sách cảnh báo:", result["critique"]["issues"])
+    print("Hoàn tất!")
+
+if __name__ == "__main__":
+    main()
