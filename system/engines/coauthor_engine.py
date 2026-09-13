@@ -701,6 +701,38 @@ Mưa ngớt dần. Tôi dắt xe ra đường, hòa vào dòng người tiếp t
                         ("FSH-019", "Luồng gió mạnh trên sân thượng tòa cao ốc bị tách đôi rẽ sóng khí động học khi thổi qua thân mình Minh An", 19, 1,
                          json.dumps(["Minh An", "Lâm Tịch"], ensure_ascii=False),
                          "Hiện tượng màng chắn khí huyết Nhị Chu Thiên bắt đầu tương tác vật lý thụ động với trường khí quyển ngoại cảnh, chuẩn bị cho năng lực Ngự Khí Thể Đạo ở Chương 35", 35, "PLANTED"))
+        elif chapter_num == 20:
+            cur.execute("""INSERT OR REPLACE INTO timeline_events (id, title, chapter_num, scene_num, absolute_time, location_id, participants_json, summary, outcome)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                        (f"EVT-CH{chapter_num:03d}-01", "Hoàng hôn Thủ Thiêm và ký ức Bầu Trời Bị Tha Hóa", chapter_num, 1,
+                         "2026-09-21T18:30:00+07:00", "loc_hcmc", json.dumps(["char_minh_an", "char_lam_tich"], ensure_ascii=False),
+                         "Chiều tối 21/09/2026, Minh An ra bờ sông Thủ Thiêm đón hoàng hôn ráng đỏ kỳ dị. Dưới sự cộng hưởng của Nhị Chu Thiên Khí Huyết, Lâm Tịch giải phóng tàn niệm viễn cổ về đại kiếp Bầu Trời Bị Tha Hóa. Minh An chứng kiến tàn ảnh kiếm gãy chém rách quy tắc Thiên Đạo; ý chí kiên cường của Minh An neo giữ vững vàng giúp cả hai vượt qua cơn chấn động thức hải. Thanh tàn kiếm rỉ sét phát ra tiếng kiếm ngân đầu tiên, rũ bỏ một lớp rỉ sét hé lộ cổ tự màu lam tuyết.",
+                         "Hồi báo trọn vẹn phục bút then chốt FSH-005 (PAID); xác lập liên kết sinh tử sâu sắc giữa Minh An và Lâm Tịch; thanh tàn kiếm bắt đầu thức tỉnh linh tính; gieo mầm phục bút FSH-020 về hoa văn cổ tự tuyết lam."))
+            
+            # Character states
+            cur.execute("""INSERT INTO character_states (character_id, chapter_num, location_id, cultivation_realm, physical_condition, injuries_json, inventory_json, emotional_state)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                        ("char_minh_an", 20, "Bờ sông Sài Gòn, bán đảo Thủ Thiêm", "Phàm nhân (Khí Huyết Đạo Sơ Khai - Nhị Chu Thiên Trầm Ổn)", "Khí huyết cuộn trào mãnh liệt, ngực và trán hơi nóng ran sau đợt cộng hưởng tâm thức cực độ nhưng thể phách vững như bàn thạch",
+                         json.dumps([], ensure_ascii=False),
+                         json.dumps(["Điện thoại di động", "Ví tiền", "Chìa khóa xe Wave", "Thẻ nhân viên", "Danh thiếp gỗ của ông Ba Khiêm"], ensure_ascii=False),
+                         "Chấn động sâu sắc trước chân tướng diệt thế, ý chí kiên định bất khuất, quyết tâm bảo vệ Lâm Tịch và cõi nhân gian"))
+            
+            cur.execute("""INSERT INTO character_states (character_id, chapter_num, location_id, cultivation_realm, physical_condition, injuries_json, inventory_json, emotional_state)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                        ("char_lam_tich", 20, "Thức hải Minh An", "Đỉnh cao vị diện (tàn hồn hồi phục sinh cơ)", "Tàn hồn được sưởi ấm và neo giữ bởi ý chí kiên định của Minh An, thoát khỏi nỗi ám ảnh diệt thế ngàn năm, thanh tàn kiếm trong thức hải rũ bỏ một lớp rỉ sét",
+                         json.dumps(["Thân thể nát vụn hoàn toàn", "Đạo cơ vỡ nát", "Nguyên thần từng vỡ vụn (đang dần ngưng tụ lại)"], ensure_ascii=False),
+                         json.dumps(["Mảnh kiếm gãy (dạng ý niệm, đã rũ một lớp rỉ sét, hé lộ cổ tự)"], ensure_ascii=False),
+                         "Xúc động tột cùng, rũ bỏ nỗi cô độc thiên thu, hoàn toàn tin tưởng và đồng hành sinh tử cùng Minh An"))
+            
+            # Payoff FSH-005
+            cur.execute("""UPDATE foreshadowing_ledger SET status = 'PAID' WHERE id = 'FSH-005'""")
+            
+            # Foreshadowing seed FSH-020
+            cur.execute("""INSERT OR REPLACE INTO foreshadowing_ledger (id, seed_description, planted_chapter, planted_scene, notices_json, actual_meaning, payoff_chapter, status)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                        ("FSH-020", "Tiếng kiếm ngân trong trẻo đầu tiên vang lên trong thức hải và lớp rỉ sét bong ra hé lộ một nét hoa văn cổ tự màu lam tuyết trên thân tàn kiếm", 20, 1,
+                         json.dumps(["Minh An", "Lâm Tịch"], ensure_ascii=False),
+                         "Thanh tàn kiếm của Lâm Tịch bắt đầu thức tỉnh linh tính dưới sự tẩm bổ của Khí Huyết Đạo thuần khiết, chuẩn bị cho kiếm khí sơ khởi ở Chương 38", 38, "PLANTED"))
         else:
             cur.execute("""INSERT OR REPLACE INTO timeline_events (id, title, chapter_num, scene_num, absolute_time, location_id, participants_json, summary, outcome)
                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
