@@ -517,7 +517,7 @@
             event.target.classList.add('active');
         }
 
-        let currentChapter = 18;
+        let currentChapter = 19;
 
         async function loadStatus() {
             try {
@@ -548,7 +548,8 @@
                         15: "Chương 15: Sóng Ngầm Dưới Lăng Kính",
                         16: "Chương 16: Võ Đường Trong Hẻm Cổ",
                         17: "Chương 17: Ánh Đèn Bên Dòng Kênh",
-                        18: "Chương 18: Khí Huyết Thấu Não"
+                        18: "Chương 18: Khí Huyết Thấu Não",
+                        19: "Chương 19: Thế Giới Dưới Tầng Giác Quan"
                     };
                     for (let i = 1; i <= data.chapter_count; i++) {
                         const opt = document.createElement('option');
@@ -768,7 +769,7 @@
 
         // Tự động nạp dữ liệu khi mở trang
         loadStatus();
-        loadChapter(18);
+        loadChapter(19);
         loadWorld();
         loadCharacters();
         loadTimeline();
