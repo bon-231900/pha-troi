@@ -517,7 +517,7 @@
             event.target.classList.add('active');
         }
 
-        let currentChapter = 12;
+        let currentChapter = 13;
 
         async function loadStatus() {
             try {
@@ -542,7 +542,8 @@
                         9: "Chương 9: Ánh Bình Minh Bên Dòng Kênh",
                         10: "Chương 10: Dòng Sông Và Ý Niệm",
                         11: "Chương 11: Dưới Lăng Kính Công Nghệ",
-                        12: "Chương 12: Chu Thiên Đầu Tiên"
+                        12: "Chương 12: Chu Thiên Đầu Tiên",
+                        13: "Chương 13: Kình Lực Trần Thế"
                     };
                     for (let i = 1; i <= data.chapter_count; i++) {
                         const opt = document.createElement('option');
@@ -762,7 +763,7 @@
 
         // Tự động nạp dữ liệu khi mở trang
         loadStatus();
-        loadChapter(12);
+        loadChapter(13);
         loadWorld();
         loadCharacters();
         loadTimeline();
