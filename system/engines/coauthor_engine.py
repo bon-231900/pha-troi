@@ -755,6 +755,39 @@ Mưa ngớt dần. Tôi dắt xe ra đường, hòa vào dòng người tiếp t
                          json.dumps(["Thân thể nát vụn hoàn toàn", "Đạo cơ vỡ nát", "Nguyên thần đang dần ngưng tụ lại"], ensure_ascii=False),
                          json.dumps(["Mảnh kiếm gãy (dạng ý niệm, đã hé lộ nét cổ tự tuyết lam)"], ensure_ascii=False),
                          "An yên, thấu cảm, trút bỏ hoàn toàn gánh nặng quá khứ, tin tưởng tuyệt đối vào Minh An"))
+        elif chapter_num == 22:
+            cur.execute("""INSERT OR REPLACE INTO timeline_events (id, title, chapter_num, scene_num, absolute_time, location_id, participants_json, summary, outcome)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                        (f"EVT-CH{chapter_num:03d}-01", "Hội nghị tầng mười và hiện tượng kiếm ý đồng bộ nguyên thần", chapter_num, 1,
+                         "2026-09-22T09:30:00+07:00", "loc_hcmc", json.dumps(["char_minh_an", "char_lam_tich"], ensure_ascii=False),
+                         "Sáng 22/09/2026, Minh An tham gia cuộc họp dự án số hóa cảm biến địa chất đô thị tại phòng họp tầng 10. Khi mạng lưới dữ liệu đo đạc sóng địa chấn ngầm gặp sự cố nghẽn tắc ma trận cực độ, Minh An can thiệp xử lý. Hiện tượng đồng bộ nguyên thần vi mô bùng nổ: hoa văn kiếm ngân trên tay áo Lâm Tịch rực sáng, hạt tàn vũ ở Đại Chùy kết nối kiếm ý bóc tách dữ liệu rác với tốc độ kinh hồn. Bản đồ địa chấn phục hồi hé lộ đồ hình sóng ngầm long xà hướng về đầm lầy Tây Nam.",
+                         "Hồi báo thành công 2 phục bút FSH-009 và FSH-017 (PAID); Minh An chính thức gia nhập tổ chuyên trách liên ngành; phát hiện trùng khớp chấn động giữa số liệu khoa học hiện đại và cổ thư chép tay; gieo mầm phục bút FSH-021 về tập dữ liệu Sóng Ngầm Long Xà."))
+            
+            # Character states
+            cur.execute("""INSERT INTO character_states (character_id, chapter_num, location_id, cultivation_realm, physical_condition, injuries_json, inventory_json, emotional_state)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                        ("char_minh_an", 22, "Phòng họp lớn tầng 10, tòa cao ốc văn phòng Quận 1", "Phàm nhân (Khí Huyết Đạo Sơ Khai - Nhị Chu Thiên Đỉnh Phong)", "Các khớp ngón tay và thần kinh đại não linh hoạt tột đỉnh, khí huyết thấu não kết hợp kiếm ý sắc bén, thể trạng tràn trề sinh lực",
+                         json.dumps([], ensure_ascii=False),
+                         json.dumps(["Điện thoại di động", "Ví tiền", "Chìa khóa xe Wave", "Thẻ nhân viên tổ chuyên trách", "Laptop công ty", "Danh thiếp gỗ của ông Ba Khiêm"], ensure_ascii=False),
+                         "Tập trung cao độ, tự tin, kinh ngạc trước sự liên kết giữa khoa học thực nghiệm và tàn tích cổ xưa"))
+            
+            cur.execute("""INSERT INTO character_states (character_id, chapter_num, location_id, cultivation_realm, physical_condition, injuries_json, inventory_json, emotional_state)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                        ("char_lam_tich", 22, "Thức hải Minh An", "Đỉnh cao vị diện (tàn hồn hồi phục sinh cơ, tâm kiếm cộng hưởng)", "Hoa văn kiếm ngân trên tàn y trắng phát sáng định hình rõ rệt, kết nối nguyên thần vi mô với khí huyết Minh An thông qua điểm nút Đại Chùy",
+                         json.dumps(["Thân thể nát vụn hoàn toàn", "Đạo cơ vỡ nát", "Nguyên thần đang dần ngưng tụ lại"], ensure_ascii=False),
+                         json.dumps(["Mảnh kiếm gãy (dạng ý niệm, cổ tự Tuyết tỏa ánh lam)"], ensure_ascii=False),
+                         "Ngạc nhiên và thán phục trước trí tuệ phàm nhân thế giới này khi sử dụng mạng lưới máy móc để đo lường mạch đất"))
+            
+            # Payoffs FSH-009 and FSH-017
+            cur.execute("""UPDATE foreshadowing_ledger SET status = 'PAID' WHERE id = 'FSH-009'""")
+            cur.execute("""UPDATE foreshadowing_ledger SET status = 'PAID' WHERE id = 'FSH-017'""")
+            
+            # Foreshadowing seed FSH-021
+            cur.execute("""INSERT OR REPLACE INTO foreshadowing_ledger (id, seed_description, planted_chapter, planted_scene, notices_json, actual_meaning, payoff_chapter, status)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                        ("FSH-021", "Tập dữ liệu địa chấn bất thường mang mã định danh 'Sóng Ngầm Long Xà' được trích xuất riêng biệt, liên kết với cổ đồ của ông Ba Khiêm", 22, 1,
+                         json.dumps(["Minh An", "Lâm Tịch", "Tiến sĩ Trịnh Hoài Nam"], ensure_ascii=False),
+                         "Xác nhận bằng số liệu khoa học công nghệ hiện đại về sự tồn tại của trận nhãn Khí Huyết Đạo dưới đầm lầy Tây Nam, chuẩn bị cho thực địa ở Chương 26", 26, "PLANTED"))
         else:
             cur.execute("""INSERT OR REPLACE INTO timeline_events (id, title, chapter_num, scene_num, absolute_time, location_id, participants_json, summary, outcome)
                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
