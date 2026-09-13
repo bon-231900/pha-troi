@@ -517,7 +517,7 @@
             event.target.classList.add('active');
         }
 
-        let currentChapter = 3;
+        let currentChapter = 4;
 
         async function loadStatus() {
             try {
@@ -533,7 +533,8 @@
                     const titles = {
                         1: "Chương 1: Mưa Trên Phố Cũ",
                         2: "Chương 2: Căn Phòng Trọ Và Đốm Lửa Tàn",
-                        3: "Chương 3: Nhịp Thở Dưới Đáy Sâu"
+                        3: "Chương 3: Nhịp Thở Dưới Đáy Sâu",
+                        4: "Chương 4: Bản Hòa Âm Trần Thế"
                     };
                     for (let i = 1; i <= data.chapter_count; i++) {
                         const opt = document.createElement('option');
@@ -753,7 +754,7 @@
 
         // Tự động nạp dữ liệu khi mở trang
         loadStatus();
-        loadChapter(3);
+        loadChapter(4);
         loadWorld();
         loadCharacters();
         loadTimeline();
