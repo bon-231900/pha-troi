@@ -23,7 +23,7 @@ class DocxPipeline:
         # Title
         p_title = doc.add_paragraph()
         p_title.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        run_title = p_title.add_run(f"PH? TR?I\n{title.upper()}")
+        run_title = p_title.add_run(f"PHÁ TRỜI\n{title.upper()}")
         run_title.font.name = "Times New Roman"
         run_title.font.size = Pt(18)
         run_title.font.bold = True
@@ -32,7 +32,7 @@ class DocxPipeline:
         # Meta
         p_meta = doc.add_paragraph()
         p_meta.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        run_meta = p_meta.add_run("T?c gi?: Author & Novel OS Co-Author Engine | B?n Th?o Ch?nh Th?c")
+        run_meta = p_meta.add_run("Tác giả: Author & Novel OS Co-Author Engine | Bản Thảo Chính Thức")
         run_meta.font.name = "Times New Roman"
         run_meta.font.size = Pt(10)
         run_meta.font.italic = True
@@ -47,7 +47,7 @@ class DocxPipeline:
             if not line_str:
                 continue
             if line_str.startswith("#"):
-                continue # B? qua header markdown tr?ng l?p
+                continue # Bỏ qua header markdown trùng lặp
             
             p = doc.add_paragraph()
             p.paragraph_format.line_spacing = 1.25
