@@ -517,7 +517,7 @@
             event.target.classList.add('active');
         }
 
-        let currentChapter = 21;
+        let currentChapter = 22;
 
         async function loadStatus() {
             try {
@@ -551,7 +551,8 @@
                         18: "Chương 18: Khí Huyết Thấu Não",
                         19: "Chương 19: Thế Giới Dưới Tầng Giác Quan",
                         20: "Chương 20: Bầu Trời Bị Tha Hóa",
-                        21: "Chương 21: Tiếng Kiếm Ngân Và Bàn Trà Đêm"
+                        21: "Chương 21: Tiếng Kiếm Ngân Và Bàn Trà Đêm",
+                        22: "Chương 22: Tâm Kiếm Nhập Thần Và Mạng Lưới Địa Tầng"
                     };
                     for (let i = 1; i <= data.chapter_count; i++) {
                         const opt = document.createElement('option');
@@ -771,7 +772,7 @@
 
         // Tự động nạp dữ liệu khi mở trang
         loadStatus();
-        loadChapter(21);
+        loadChapter(22);
         loadWorld();
         loadCharacters();
         loadTimeline();
