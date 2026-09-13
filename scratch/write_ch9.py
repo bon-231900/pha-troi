@@ -1,0 +1,112 @@
+# -*- coding: utf-8 -*-
+import sys
+import io
+
+# Set UTF-8 standard output
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+
+from system.engines.coauthor_engine import CoAuthorEngine
+
+ch9_prose = """# CHƯƠNG 9: ÁNH BÌNH MINH BÊN DÒNG KÊNH
+
+Năm giờ ba mươi phút sáng.
+
+Không có tiếng chuông báo thức réo rắt quen thuộc trên điện thoại, mắt tôi tự nhiên mở ra. Căn phòng trọ vẫn còn lãng đãng bóng tối của buổi rạng đông. Gió sớm luồn qua khe chớp cửa gỗ mang theo hơi lạnh thanh khiết sau cơn mưa giông đêm qua, thổi nhẹ tấm rèm vải mỏng.
+
+Tôi ngồi dậy, hít một hơi thật sâu. 
+
+Lồng ngực mở rộng, không hề có cảm giác nặng trĩu hay ngái ngủ của những buổi sáng trước đây. Toàn thân nhẹ bẫng tựa như vừa trút bỏ được một khối đá vô hình đè nặng suốt nhiều năm tháng tuổi trẻ. Dưới lòng bàn chân, cảm giác tiếp xúc với sàn gạch men mát rượi rõ ràng đến từng gai cảm giác.
+
+Tôi thay một chiếc áo thun xám cũ, xỏ chân vào đôi giày thể thao đế mềm đã bám bụi ở góc cửa. Kể từ ngày tốt nghiệp đại học rồi lao vào guồng quay công sở, tôi đã bỏ thói quen chạy bộ buổi sáng ngót nghét ba năm. Nhưng sáng nay, cơ thể tôi như đang thôi thúc, từng thớ cơ bắp khao khát được vận động, được hít thở bầu không khí tinh mơ của đất trời.
+
+Tôi dắt chiếc xe Wave ra gửi chú bảo vệ đầu hẻm, rồi đi bộ ra bờ kênh Nhiêu Lộc - Thị Nghè, đoạn gần chân cầu Hoàng Hoa Thám.
+
+Sài Gòn lúc sáu giờ sáng mang một vẻ đẹp hoàn toàn khác với cái oi ả, ngột ngạt của buổi trưa chảo lửa. 
+
+Mặt nước kênh phẳng lặng như một dải lụa xanh biếc, phản chiếu những vệt ráng hồng đầu tiên của mặt trời đang chầm chậm nhô lên từ phía đông. Dọc theo hai bờ kè rợp bóng cây xanh, không khí mát lành đến ngọt ngào. Tiếng chim sẻ ríu rít chuyền cành trên những tán bàng và me tây; tiếng chổi tre quét rác loẹt xoẹt đều đặn của cô công nhân môi trường đô thị; tiếng nhạc tập dưỡng sinh trầm bổng phát ra từ chiếc máy phát thanh mini của một nhóm các cụ già mặc đồ lụa trắng đang uyển chuyển đi từng thế thái cực quyền.
+
+Tôi bắt đầu chạy chậm.
+
+"Bốn nhịp hít vào, bốn nhịp thở ra."
+
+Tôi nhớ lại lời chỉ dẫn tối qua của Lâm Tịch về phương pháp Tĩnh Khí Quy Nguyên, khéo léo kết hợp nhịp thở bụng sâu với từng bước chân chạm đất. Chân trái, chân phải, chân trái, chân phải — một hơi hít dài bằng mũi đưa dưỡng khí lấp đầy khoang bụng; bốn bước tiếp theo, hé môi thở nhẹ làn hơi ấm ra ngoài.
+
+Kỳ diệu thay, sự kết hợp ấy nhanh chóng biến thành một nhịp điệu tự nhiên. 
+
+Tôi không còn cảm giác thở dốc hay tức ngực sau năm trăm mét đầu tiên như người bình thường. Từng bước chạy của tôi êm ái đến mức gần như không phát ra tiếng động trên lối đi lát gạch đỏ. Trọng lượng cơ thể dường như được phân bổ hoàn hảo qua các khớp xương, lực đàn hồi từ bắp chân truyền lên hông rồi lan tỏa khắp sống lưng. 
+
+Dưới làn da, dòng khí huyết ấm áp lưu chuyển rộn ràng tựa như một dòng suối nhỏ được khơi thông giữa mùa xuân. Những giọt mồ hôi li ti bắt đầu rịn ra trên trán và thái dương, nhưng không hề mang mùi hôi nồng của sự mệt mỏi, mà chỉ thoang thoảng hơi ấm sinh học thanh khiết.
+
+Chạy được chừng ba cây số, đến đoạn gần cầu Bông, tôi giảm tốc độ, chuyển sang đi bộ thả lỏng dọc theo lan can sắt.
+
+Trong cõi sâu thức hải, một làn sương mỏng khẽ dao động.
+
+Đốm sáng tro tàn nhỏ bé của những ngày trước giờ đây đã không còn là một đốm sáng vô định nữa. Nhờ dòng khí huyết ấm áp mà tôi chủ động dẫn truyền suốt đêm qua, tàn hồn của Lâm Tịch đã ngưng tụ rõ nét hơn hẳn. Giữa làn sương mờ ảo, tôi lờ mờ nhìn thấy phác thảo bóng dáng một thiếu nữ thanh tú, khoác chiếc áo choàng màu xám tro viền bạc. Dù gương mặt vẫn còn phủ một tầng sương giá mông lung chưa thể nhìn rõ, nhưng khí chất thanh lãnh, thoát tục tựa như trăng tuyết nơi đỉnh núi cô phong đã hiển hiện một cách kỳ lạ.
+
+Đặc biệt, nơi cổ tay áo rộng của chiếc bóng hư ảo ấy, có một vệt hoa văn màu lam nhạt mờ mờ tựa như hình dáng một thân kiếm cổ xưa, lấp lánh như hạt sương mai.
+
+Nàng đang hướng ánh mắt về phía ngoại cảnh, mượn đôi mắt của tôi để ngắm nhìn thế giới trần gian.
+
+"Thế giới này của ngươi... thật kỳ lạ," tiếng nói thanh lãnh của nàng vang lên, lần này trong trẻo và ổn định hơn rất nhiều, không còn vương nét đứt quãng vì suy kiệt như những ngày qua.
+
+Tôi bước lại một băng ghế đá dưới gốc cây me râm mát, ngồi xuống, khẽ lau mồ hôi trên trán rồi giao tiếp bằng ý niệm:
+
+"Kỳ lạ ở điểm nào?"
+
+"Không có sát khí," nàng đáp, thanh âm mang theo sự trầm tư thăm thẳm. "Ở chư thiên vạn giới, từ khi mở mắt chào đời, mỗi sinh linh đều phải học cách cảnh giác. Tông môn tranh đoạt tài nguyên, huynh đệ tương tàn vì một chút cơ duyên, cường giả giận dữ chôn vùi trăm vạn sinh linh chỉ vì một cái liếc mắt. Bầu trời nơi đó luôn đẫm máu, mặt đất luôn rền rĩ tiếng kêu than. Nhưng ở đây... những con người này yếu ớt đến mức một trận cuồng phong cũng có thể cướp đi sinh mạng, vậy mà trên gương mặt họ lại tràn đầy sự an nhiên."
+
+Tôi nhìn theo ánh mắt của nàng. 
+
+Cách đó không xa, một đôi vợ chồng trẻ đang dắt đứa con gái nhỏ chập chững tập đi trên bãi cỏ, tiếng cười khanh khách của đứa trẻ vang vọng trong nắng sớm. Phía bên kia đường, một quán cà phê cóc vỉa hè kê vài chiếc ghế nhựa con con, những bác xe ôm và chú thợ xây ngồi quây quần bên ấm trà đá và phin cà phê đen bốc khói, rôm rả bàn luận về thời tiết và tin tức buổi sớm.
+
+"Con người ở đây tuổi thọ chỉ vỏn vẹn bảy, tám mươi năm," tôi mỉm cười, đáp lại nàng. "Chúng tôi không có sức mạnh dời non lấp biển, cũng chẳng có thọ nguyên vô tận. Nhưng chính vì sinh mệnh ngắn ngủi, người ta mới biết trân trọng từng buổi sớm mai, từng nụ cười của người thân và một tách trà ấm. Cuộc sống này cũng có khổ đau, có cơm áo gạo tiền đè nặng, nhưng chưa bao giờ người ta ngừng khao khát sự bình yên."
+
+Lâm Tịch im lặng rất lâu. 
+
+Tôi cảm nhận được trong tâm thức nàng một sự rung động sâu sắc. Một tồn tại từng đứng trên đỉnh cao vị diện, từng chứng kiến chư thiên vạn giới chìm trong biển máu diệt thế, nay lại đang lặng người trước sự giản dị của một góc phố Sài Gòn.
+
+"Liệu 'Đạo' mà chúng ta theo đuổi suốt vạn kiếp... có thực sự cao quý hơn sự bình yên này không?" Nàng khẽ tự nhủ, một câu hỏi tựa hồ không dành cho tôi, mà dành cho chính bản thân nàng và cho cả những anh linh đã ngã xuống trong đại kiếp diệt thế.
+
+Tôi không trả lời câu hỏi ấy. Có những câu hỏi mà câu trả lời không nằm ở lời nói, mà nằm ở sự trải nghiệm của thời gian.
+
+Nghỉ ngơi chừng mười lăm phút, tôi đi bộ về lại phòng trọ, tắm rửa rồi chuẩn bị đồ đi làm.
+
+Bảy giờ bốn mươi lăm, tôi hòa vào dòng người hướng về trung tâm Quận 1. Nắng sớm rọi qua những tán cây cổ thụ trên đường Nam Kỳ Khởi Nghĩa, dát vàng lên từng mái ngói cổ kính và những tòa nhà hiện đại. 
+
+Khi chiếc xe Wave của tôi rẽ vào góc đường Ngô Đức Kế, gần quán trà sữa nơi xảy ra sự cố nước sôi chiều qua, tôi bất giác giảm ga.
+
+Trước cửa quán trà, một chiếc xe bán tải màu trắng chuyên dụng có gắn logo của một viện kiểm định môi trường và khí tượng đang đậu sát mép lề. Hai nhân viên mặc đồng phục kỹ thuật đang cầm thiết bị đo đạc cầm tay rà soát quanh khu vực bệ kính và vách tường ngoài của quán. Phía sau họ, người quản lý quán trà ngày hôm qua đang đứng giải trình với vẻ mặt bối rối.
+
+Tôi liếc nhìn chiếc đồng hồ cảm biến trên tay người kỹ thuật viên. Kim chỉ số dao động nhẹ, màn hình hiển thị biểu đồ nhiệt độ môi trường với một điểm trũng bất thường được khoanh đỏ bằng mực kỹ thuật số.
+
+"Cú sụt nhiệt độ hôm qua... thực sự đã để lại dấu vết," tôi thầm nghĩ, nhớ lại lời cảnh báo của Lâm Tịch chiều qua.
+
+"Đừng dừng lại lâu, cứ bình thản đi qua," tiếng Lâm Tịch khẽ nhắc nhở trong thức hải, ngữ điệu mang vẻ thận trọng. "Máy móc thế tục của các ngươi chỉ có thể phát hiện sự dị thường về nhiệt động học, không thể phát hiện tàn niệm quy tắc của ta. Nhưng cẩn thận vẫn là hơn."
+
+"Tôi biết rồi."
+
+Tôi khẽ nhấp ga, chiếc xe Wave lướt nhẹ qua góc phố đông đúc, lẫn vào dòng người áo trắng đang hối hả đổ về các tòa cao ốc văn phòng. 
+
+Bước chân vào thang máy, tôi bấm tầng mười hai. Nhìn hình ảnh phản chiếu của mình qua vách gương kim loại sáng loáng — ánh mắt trong sáng, bờ vai vững chãi, hơi thở thâm trầm — tôi mỉm cười nhẹ.
+
+Một ngày làm việc mới bắt đầu. Giữa thế giới hiện đại đầy ắp những con số và quy tắc văn phòng, ngọn lửa ấm của Khí Huyết Đạo viễn cổ và giọt hàn băng của tàn hồn chí tôn vẫn đang lặng lẽ đồng hành cùng tôi, sẵn sàng đối mặt với bất kỳ phong ba nào phía trước."""
+
+def main():
+    print("--- KHỞI CHẠY QUY TRÌNH VIẾT CHƯƠNG 9 ---")
+    engine = CoAuthorEngine()
+    result = engine.write_next_chapter(
+        target_chapter_num=9,
+        pov="Nguyễn Minh An (Ngôi thứ nhất)",
+        custom_draft_prose=ch9_prose
+    )
+    print("Kết quả pipeline:", result["success"])
+    print("Đường dẫn Markdown:", result["md_path"])
+    print("Đường dẫn Word DOCX:", result["docx_path"])
+    print("Tổng số từ:", result["word_count"])
+    print("Kiểm duyệt (Audit Passed):", result["critique"]["passed"])
+    if not result["critique"]["passed"]:
+        print("Danh sách cảnh báo:", result["critique"]["issues"])
+    print("Hoàn tất!")
+
+if __name__ == "__main__":
+    main()

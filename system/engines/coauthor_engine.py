@@ -369,6 +369,35 @@ Mưa ngớt dần. Tôi dắt xe ra đường, hòa vào dòng người tiếp t
                         ("FSH-008", "Cảm giác nghẽn tắc vi mô như màng đá vôi vô hình sâu trong tủy sống khi Minh An vận hành hơi thở sâu", 8, 1,
                          json.dumps(["Minh An", "Lâm Tịch"], ensure_ascii=False),
                          "Xiềng xích thể phách di truyền do trận đại chiến viễn cổ phong tỏa nhân loại Trái Đất, muốn vượt qua phải dùng ý chí đúc rèn khí huyết phá vỡ gông cùm", 18, "PLANTED"))
+        elif chapter_num == 9:
+            cur.execute("""INSERT OR REPLACE INTO timeline_events (id, title, chapter_num, scene_num, absolute_time, location_id, participants_json, summary, outcome)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                        (f"EVT-CH{chapter_num:03d}-01", "Ánh bình minh bên dòng kênh và chiêm nghiệm giữa hai thế giới", chapter_num, 1,
+                         "2026-09-16T06:30:00+07:00", "loc_hcmc", json.dumps(["char_minh_an", "char_lam_tich"], ensure_ascii=False),
+                         "Sáng 16/09/2026, Minh An dậy sớm chạy bộ dọc bờ kênh Nhiêu Lộc - Thị Nghè, áp dụng nhịp thở Tĩnh Khí Quy Nguyên vào vận động thể thao thực tế. Lâm Tịch tỉnh giấc, quan sát đời sống bình dị và sự hòa hợp của con người Sài Gòn, chiêm nghiệm về sự đối lập giữa tu chân tàn khốc và nhân đạo ấm áp. Trên đường đi làm qua Quận 1, Minh An bắt gặp xe kiểm định kỹ thuật đang rà soát khu vực quán trà sữa.",
+                         "Thể phách Minh An đạt tới trạng thái dẻo dai vượt trội so với người thường; tàn hồn Lâm Tịch ngưng tụ thành hình bóng mờ ảo sơ khai; gieo mầm phục bút FSH-009 về kiếm ngân trên tay áo hư ảnh."))
+            
+            # Character states
+            cur.execute("""INSERT INTO character_states (character_id, chapter_num, location_id, cultivation_realm, physical_condition, injuries_json, inventory_json, emotional_state)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                        ("char_minh_an", 9, "Bờ kênh Nhiêu Lộc -> Văn phòng Quận 1", "Phàm nhân (Nội luyện Khí Huyết sơ cấp)", "Thể lực sung mãn, cơ bắp dẻo dai, nhịp thở sâu dài, hoàn toàn thích ứng với nhịp vận động cao",
+                         json.dumps([], ensure_ascii=False),
+                         json.dumps(["Điện thoại di động", "Ví tiền", "Chìa khóa xe Wave", "Giày chạy bộ", "Thẻ nhân viên"], ensure_ascii=False),
+                         "Thanh thản, tự tin, quan sát sâu sắc, trân trọng cuộc sống đời thường"))
+            
+            cur.execute("""INSERT INTO character_states (character_id, chapter_num, location_id, cultivation_realm, physical_condition, injuries_json, inventory_json, emotional_state)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                        ("char_lam_tich", 9, "Thức hải Minh An", "Đỉnh cao vị diện (tàn hồn ngưng tụ sơ khai)", "Tàn hồn thoát khỏi trạng thái tro tàn vô định, bắt đầu ngưng tụ phác thảo bóng dáng thiếu nữ áo choàng xám bạc",
+                         json.dumps(["Thân thể nát vụn hoàn toàn", "Đạo cơ vỡ nát", "Nguyên thần vỡ vụn"], ensure_ascii=False),
+                         json.dumps(["Mảnh kiếm gãy (dạng ý niệm)"], ensure_ascii=False),
+                         "Trầm tư trước vẻ đẹp bình dị của nhân gian, cảm nhận sự an toàn sâu sắc trong thức hải Minh An"))
+            
+            # Foreshadowing seed FSH-009
+            cur.execute("""INSERT OR REPLACE INTO foreshadowing_ledger (id, seed_description, planted_chapter, planted_scene, notices_json, actual_meaning, payoff_chapter, status)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                        ("FSH-009", "Hoa văn kiếm ngân mờ ảo xuất hiện trên tay áo của bóng dáng tàn hồn Lâm Tịch trong thức hải", 9, 1,
+                         json.dumps(["Minh An"], ensure_ascii=False),
+                         "Dấu hiệu nguyên thần bắt đầu khôi phục năng lực bản mệnh kiếm ý, chuẩn bị cho khả năng hiển hóa hư ảnh trợ chiến trong tình thế hiểm nghèo", 22, "PLANTED"))
         else:
             cur.execute("""INSERT OR REPLACE INTO timeline_events (id, title, chapter_num, scene_num, absolute_time, location_id, participants_json, summary, outcome)
                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
