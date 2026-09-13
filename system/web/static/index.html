@@ -517,7 +517,7 @@
             event.target.classList.add('active');
         }
 
-        let currentChapter = 17;
+        let currentChapter = 18;
 
         async function loadStatus() {
             try {
@@ -547,7 +547,8 @@
                         14: "Chương 14: Tiếng Trà Góc Phố",
                         15: "Chương 15: Sóng Ngầm Dưới Lăng Kính",
                         16: "Chương 16: Võ Đường Trong Hẻm Cổ",
-                        17: "Chương 17: Ánh Đèn Bên Dòng Kênh"
+                        17: "Chương 17: Ánh Đèn Bên Dòng Kênh",
+                        18: "Chương 18: Khí Huyết Thấu Não"
                     };
                     for (let i = 1; i <= data.chapter_count; i++) {
                         const opt = document.createElement('option');
@@ -767,7 +768,7 @@
 
         // Tự động nạp dữ liệu khi mở trang
         loadStatus();
-        loadChapter(17);
+        loadChapter(18);
         loadWorld();
         loadCharacters();
         loadTimeline();
