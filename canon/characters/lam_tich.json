@@ -1,20 +1,20 @@
 {
   "id": "char_lam_tich",
-  "name": "L?m T?ch",
+  "name": "Lâm Tịch",
   "aliases": [
-    "T?ch",
-    "Th?n N? V? T?n (ng??i ??i g?i)"
+    "Tịch",
+    "Thần Nữ Vô Tên (người đời gọi)"
   ],
-  "age": "Ancient / K? nguy?n vi?n c?",
-  "role": "Female Protagonist",
-  "pov_type": "First Person (Secondary / Controlled)",
-  "origin": "Th??ng V? Di?n / ??i ??i Gi?i",
+  "age": "Cổ xưa / Vô số kỷ nguyên",
+  "role": "Nữ Chính (Female Protagonist)",
+  "pov_type": "Ngôi thứ nhất (Thứ cấp / Có kiểm soát)",
+  "origin": "Thượng Vị Diện / Đại Đại Giới",
   "cultivation": {
-    "former_peak": "??nh cao Ph?p T?c / H?n ??o / Linh ??o",
-    "current_status": "Nguy?n Th?n T?n Phi?n (M?nh v? linh h?n)",
-    "body_status": "Destroyed",
-    "anchor": "? th?c Nguy?n Minh An",
-    "energy_reserve": "C?c th?p / C?n n?ng l??ng kh?i ph?c"
+    "former_peak": "Đỉnh cao Pháp Tắc / Hồn Đạo / Linh Đạo",
+    "current_status": "Nguyên Thần Tàn Phiến (Mảnh vỡ linh hồn)",
+    "body_status": "Đã bị phá hủy hoàn toàn",
+    "anchor": "Ý thức Nguyễn Minh An",
+    "energy_reserve": "Cực thấp / Cần năng lượng khôi phục"
   },
-  "core_motif": "B?o H? & M?t m?i c? ??c"
+  "core_motif": "Bảo Hộ & Mệt mỏi cô độc"
 }

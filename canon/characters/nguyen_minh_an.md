@@ -1,14 +1,15 @@
-# NGUY?N MINH AN
+# NGUYỄN MINH AN
 
-- **Tu?i**: 25 (t?nh ??n n?m 2026)
-- **Ngh? nghi?p**: Nh?n vi?n v?n ph?ng (Marketing / Data x? l? t?i li?u) t?i m?t c?ng ty nh? ? Qu?n 1, TP.HCM
-- **N?i ?**: C?n h? chung c? c? t?i Qu?n B?nh Th?nh / Ph? Nhu?n, TP.HCM
-- **Xu?t th?n**: Gia ??nh b?nh th??ng ? mi?n Trung/T?y Nguy?n v?o TP.HCM l?p nghi?p, s?ng t? l?p
-- **Ngo?i h?nh**: D?ng ng??i h?i g?y, m?t c?n nh?, ?n m?c ??n gi?n, n?t m?t tr?m t?nh
-- **T?nh c?ch**: H?i h??ng n?i, th?c t?, quan s?t t?t, s?ng ?n ??nh, bi?t ??, t?m l? v?ng v?ng tr??c bi?n c?
-- **?i?m m?nh c?t l?i**:
-  - Kh?ng tham lam quy?n l?c m? qu?ng
-  - Kh? n?ng ??ng c?m s?u s?c v?i n?i ?au c?a ng??i kh?c
-  - Gi? v?ng nh?n t?nh khi ??i m?t v?i nh?ng th? phi ph?m
-  - B?nh t?nh trong nh?ng th?i kh?c tuy?t v?ng nh?t
-- **Con ???ng tu luy?n**: B?t ??u t? con s? 0. Ti?n ?? c?c k? ch?m r?i, t?ng b??c tr? gi? b?ng m? h?i v? ? ch?.
+- **Tuổi**: 25 (tính đến năm 2026)
+- **Nghề nghiệp**: Nhân viên văn phòng (Marketing / Xử lý tài liệu) tại một công ty nhỏ ở Quận 1, TP.HCM
+- **Nơi ở**: Căn hộ chung cư cũ tại Quận Bình Thạnh / Phú Nhuận, TP.HCM
+- **Xuất thân**: Gia đình bình thường ở miền Trung/Tây Nguyên vào TP.HCM lập nghiệp, sống tự lập
+- **Ngoại hình**: Dáng người hơi gầy, mắt cận nhẹ, ăn mặc đơn giản, nét mặt trầm tĩnh
+- **Tính cách**: Hơi hướng nội, thực tế, quan sát tốt, sống ổn định, biết đủ, tâm lý vững vàng trước biến cố
+- **Điểm mạnh cốt lõi**:
+  - Không tham lam quyền lực mù quáng
+  - Khả năng đồng cảm sâu sắc với nỗi đau của người khác
+  - Giữ vững nhân tính khi đối mặt với những thứ phi phàm
+  - Bình tĩnh trong những thời khắc tuyệt vọng nhất
+- **Con đường tu luyện**: Bắt đầu từ con số 0. Tiến độ cực kỳ chậm rãi, từng bước trả giá bằng mồ hôi và ý chí.
+- **Tiền đề bất biến**: Hoàn toàn bình thường. Không hệ thống, không chuyển sinh, không huyết mạch tối cao.

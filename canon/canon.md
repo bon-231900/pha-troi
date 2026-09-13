@@ -1,16 +1,16 @@
-# CANON BIBLE ? PH? TR?I
+# CANON BIBLE — TIỂU THUYẾT PHÁ TRỜI
 
-## 1. C?c C?p ?? Canon
-1. **LOCKED**: Th?ng tin c?t l?i, tuy?t ??i b?t bi?n. Ch? Author m?i c? quy?n m? kh?a.
-2. **CONFIRMED**: Th?ng tin ?? xu?t hi?n v? ???c x?c nh?n ch?nh th?c trong v?n b?n b?n th?o ?? c?ng b?.
-3. **PROVISIONAL**: Chi ti?t ?ang ???c s? d?ng trong b?n th?o g?n nh?t nh?ng ch?a tuy?t ??i kh?a.
-4. **UNKNOWN**: Nh?ng ?i?u th? gi?i v? nh?n v?t ch?a bi?t. C?m tuy?t ??i hallucination t? ?i?n v?o v?n b?n.
-5. **FORBIDDEN_ASSUMPTION**: Nh?ng ti?n ?? c?m k? m? AI kh?ng bao gi? ???c ph?p t? suy di?n.
-6. **PROPOSED**: C?c ? t??ng s?ng t?o do AI ?? xu?t ?ang ch? Author ph? duy?t.
+## 1. Các Cấp Độ Canon
+1. **LOCKED (ĐÃ KHÓA)**: Thông tin cốt lõi, tuyệt đối bất biến. Chỉ Author mới có quyền mở khóa.
+2. **CONFIRMED (ĐÃ XÁC NHẬN)**: Thông tin đã xuất hiện và được xác nhận chính thức trong văn bản bản thảo đã công bố.
+3. **PROVISIONAL (TẠM THỜI)**: Chi tiết đang được sử dụng trong bản thảo gần nhất nhưng chưa tuyệt đối khóa.
+4. **UNKNOWN (CHƯA BIẾT)**: Những điều thế giới và nhân vật chưa biết. Cấm tuyệt đối hallucination tự điền vào văn bản.
+5. **FORBIDDEN_ASSUMPTION (SUY DIỄN CẤM KỴ)**: Những tiền đề cấm kỵ mà AI không bao giờ được phép tự suy diễn.
+6. **PROPOSED (ĐỀ XUẤT)**: Các ý tưởng sáng tạo do AI đề xuất đang chờ Author phê duyệt.
 
-## 2. Forbidden Assumptions (C?m Tuy?t ??i)
-- C?m suy ?o?n Nguy?n Minh An l? ng??i chuy?n sinh, ng??i xuy?n kh?ng, con c?i th?n linh, c? huy?t m?ch ?n ho?c c? h? th?ng gian l?n.
-- C?m suy ?o?n Tr?i ??t l? n?i y?u nh?t trong to?n b? cosmology m?t c?ch m?c ??nh v? v? c?n c?.
-- C?m suy ?o?n L?m T?ch ?? ch?t ho?n to?n ho?c bi?n m?t v?nh vi?n.
-- C?m suy ?o?n b?t k? nh?n v?t ??ng minh n?o t? nhi?n ph?n b?i m? kh?ng c? qu? tr?nh t?m l? v? c?n nguy?n h?p l?.
-- C?m t? ??ng bi?n gi? thuy?t nghi?n c?u (Research) th?nh Canon khi ch?a c? x?c minh v? ph? duy?t.
+## 2. Suy Diễn Cấm Kỵ (FORBIDDEN_ASSUMPTION)
+- Cấm suy đoán Nguyễn Minh An là người chuyển sinh, người xuyên không, con cái thần linh, có huyết mạch ẩn hoặc có hệ thống gian lận.
+- Cấm suy đoán Trái Đất là nơi yếu nhất trong toàn bộ cosmology một cách mặc định và vô căn cứ.
+- Cấm suy đoán Lâm Tịch đã chết hoàn toàn hoặc biến mất vĩnh viễn.
+- Cấm suy đoán bất kỳ nhân vật đồng minh nào tự nhiên phản bội mà không có quá trình tâm lý và căn nguyên hợp lý.
+- Cấm tự động biến giả thuyết nghiên cứu (Research) thành Canon khi chưa có xác minh và phê duyệt.

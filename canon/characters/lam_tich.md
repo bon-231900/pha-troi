@@ -1,18 +1,18 @@
-# L?M T?CH
+# LÂM TỊCH
 
-- **Tu?i**: C?c k? c? x?a, tr?i qua v? s? k? nguy?n v? v?n minh sinh di?t
-- **Ngu?n g?c**: T?n t?i ??ng ? ??nh cao c?a m?t v? di?n c?p cao thu?c ??i ??i Gi?i
-- **Tr?ng th?i hi?n t?i**:
-  - Th?n th? ?? ho?n to?n tan r? trong ??i chi?n di?t th?
-  - ??o c? t?n h?i n?ng n?, nguy?n th?n v? th?nh nhi?u m?nh
-  - M?nh v? nguy?n th?n c?t l?i r?i v?o h? v? v? v? t?nh neo v?o ? th?c c?a Nguy?n Minh An t?i TP.HCM
-- **T?nh c?ch**:
-  - Tr?m m?c, l?nh ??m, d?t kho?t, s?c b?n
-  - Kh?ng s?t ph?t v? ngh?a, trong chi?n ??u ra tay c?c k? t?n kh?c v? hi?u qu?
-  - C?t l?i t?m t?nh: Tr?ch nhi?m "B?o H?" nh?ng sinh linh c?n b?o v?
-  - M?t m?i sau v? t?n n?m th?ng chi?n ??u c? ??c m? kh?ng ai hay bi?t
-- **Gi?i h?n s?c m?nh tr?n Tr?i ??t**:
-  - V?n c? nh?n gi?i v? uy ?p tuy?t ??nh, c? th? ?p ch? b?t k? ai tr?n Tr?i ??t trong giai ?o?n ??u
-  - Tuy nhi?n b? c?n ki?t n?ng l??ng, quy t?c Tr?i ??t b?i x?ch, m?i l?n can thi?p ??u ti?u hao t?n h?n
-- **Tr?c c?m x?c**:
-  - X?c ??ng s?u s?c khi Minh An kh?ng h?i n?ng m?nh th? n?o, m? h?i n?ng c? m?t m?i v? ?au ??n hay kh?ng.
+- **Tuổi**: Cực kỳ cổ xưa, trải qua vô số kỷ nguyên và văn minh sinh diệt
+- **Nguồn gốc**: Tồn tại đứng ở đỉnh cao của một vị diện cấp cao thuộc Đại Đại Giới
+- **Trạng thái hiện tại**:
+  - Thân thể đã hoàn toàn tan rã trong đại chiến diệt thế
+  - Đạo cơ tổn hại nặng nề, nguyên thần vỡ thành nhiều mảnh
+  - Mảnh vỡ nguyên thần cốt lõi rơi vào hư vô và vô tình neo vào ý thức của Nguyễn Minh An tại TP.HCM
+- **Tính cách**:
+  - Trầm mặc, lãnh đạm, dứt khoát, sắc bén
+  - Không sát phạt vô nghĩa, trong chiến đấu ra tay cực kỳ tàn khốc và hiệu quả
+  - Cốt lõi tâm tính: Trách nhiệm "Bảo Hộ" những sinh linh cần bảo vệ
+  - Mệt mỏi sau vô tận năm tháng chiến đấu cô độc mà không ai hay biết
+- **Giới hạn sức mạnh trên Trái Đất**:
+  - Vẫn có nhãn giới và uy áp tuyệt đỉnh, có thể áp chế bất kỳ ai trên Trái Đất trong giai đoạn đầu
+  - Tuy nhiên bị cạn kiệt năng lượng, quy tắc Trái Đất bài xích, mỗi lần can thiệp đều tiêu hao tàn hồn
+- **Trục cảm xúc**:
+  - Xúc động sâu sắc khi Minh An không hỏi nàng mạnh thế nào, mà hỏi nàng có mệt mỏi và đau đớn hay không.

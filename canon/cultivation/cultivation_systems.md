@@ -1,92 +1,92 @@
-# 7 H? TH?NG TU LUY?N CH?NH & KH? HUY?T ??O TR?I ??T
+# 7 HỆ THỐNG TU LUYỆN CHÍNH & KHÍ HUYẾT ĐẠO TRÁI ĐẤT
 
-## 1. Linh ??o (Luy?n N?ng L??ng)
-H?p thu, t?ch l?y, bi?n ??i, ?i?u khi?n linh l?c.
-1. T? Kh?
-2. Khai M?ch
-3. Linh H?i
-4. Nguy?n ?an
-5. Nguy?n Anh
-6. H?a Th?n
-7. Ph?n H?
-8. H?p ??o
-9. Thi?n M?n
-10. Ch? T?n
+## 1. Linh Đạo (Luyện Năng Lượng)
+Hấp thu, tích lũy, biến đổi, điều khiển linh lực.
+1. Tụ Khí
+2. Khai Mạch
+3. Linh Hải
+4. Nguyên Đan
+5. Nguyên Anh
+6. Hóa Thần
+7. Phản Hư
+8. Hợp Đạo
+9. Thiên Môn
+10. Chí Tôn
 
-## 2. Th? ??o (Luy?n Th?n Th?)
-R?n luy?n th?n th?, khai ph? ti?m n?ng, v??t gi?i h?n nh?c th?n.
-1. T?i Th?
-2. Ho?n Huy?t
-3. ?o?n C?t
-4. Th?n T?ng
-5. Ph?p Th?n
-6. Th?nh Th?
-7. B? Th?
-8. B?t Di?t
-9. V? C?c
+## 2. Thể Đạo (Luyện Thân Thể)
+Rèn luyện thân thể, khai phá tiềm năng, vượt giới hạn nhục thân.
+1. Tôi Thể
+2. Hoán Huyết
+3. Đoán Cốt
+4. Thần Tạng
+5. Pháp Thân
+6. Thánh Thể
+7. Bá Thể
+8. Bất Diệt
+9. Vô Cực
 
-## 3. H?n ??o (Luy?n Nguy?n Th?n)
-T?ng c??ng th?n ni?m, kh?ng ch? linh h?n, ?o?t x?, di?n h?a ? ch?.
-1. Khai Th?c
-2. Linh Ni?m
-3. H?n Cung
-4. Nguy?n Th?n
-5. H?n V?c
-6. Th?n H?n
-7. H?n Ch?
-8. V?n Ni?m
-9. B?t Di?t H?n
+## 3. Hồn Đạo (Luyện Nguyên Thần)
+Tăng cường thần niệm, khống chế linh hồn, đoạt xá, diễn hóa ý chí.
+1. Khai Thức
+2. Linh Niệm
+3. Hồn Cung
+4. Nguyên Thần
+5. Hồn Vực
+6. Thần Hồn
+7. Hồn Chủ
+8. Vạn Niệm
+9. Bất Diệt Hồn
 
-## 4. Ph?p T?c ??o (Luy?n Quy Lu?t)
-N?m gi? quy t?c, ?i?u khi?n thi?n ??a ph?p l?.
-1. C?m Ph?p
-2. Ch??ng Ph?p
-3. Ph?p V?c
-4. Ph?p T??ng
-5. ??o ?n
-6. ??o Qu?
-7. Ch?p Ch??ng
-8. Si?u Tho?t
+## 4. Pháp Tắc Đạo (Luyện Quy Luật)
+Nắm giữ quy tắc, điều khiển thiên địa pháp lý.
+1. Cảm Pháp
+2. Chưởng Pháp
+3. Pháp Vực
+4. Pháp Tướng
+5. Đạo Ấn
+6. Đạo Quả
+7. Chấp Chưởng
+8. Siêu Thoát
 
-## 5. Nh?n Qu? ??o (Luy?n Nh?n Qu?)
-S?p ??t nh?n qu?, ngh?ch chuy?n v?n m?nh, ch?t ??t duy?n nghi?p.
-1. Ki?n Nh?n
-2. K?t Qu?
-3. Ch??ng Duy?n
-4. ??nh M?nh
-5. Ngh?ch Nh?n
-6. ?o?n Qu?
-7. V? Nh?n
+## 5. Nhân Quả Đạo (Luyện Nhân Quả)
+Sắp đặt nhân quả, nghịch chuyển vận mệnh, chặt đứt duyên nghiệp.
+1. Kiến Nhân
+2. Kết Quả
+3. Chưởng Duyên
+4. Định Mệnh
+5. Nghịch Nhân
+6. Đoạn Quả
+7. Vô Nhân
 
-## 6. T?n Ng??ng ??o (Luy?n T?n Ni?m)
-Thu nh?n t?n ng??ng ch?ng sinh, x?y d?ng th?n qu?c, phong th?n.
-1. T? T?n
-2. Th?n H?a
-3. Th?n C?ch
-4. Th?n Qu?c
-5. Th?n V?c
-6. Th?n Ch?
-7. Thi?n Th?n
-8. Ch?n Th?n
+## 6. Tín Ngưỡng Đạo (Luyện Tín Niệm)
+Thu nhận tín ngưỡng chúng sinh, xây dựng thần quốc, phong thần.
+1. Tụ Tín
+2. Thần Hỏa
+3. Thần Cách
+4. Thần Quốc
+5. Thần Vực
+6. Thần Chủ
+7. Thiên Thần
+8. Chân Thần
 
-## 7. Kh? ??o (Luy?n V?t)
-Luy?n kh?, luy?n b?o, t?o h?a th?n binh, dung h?p ??o kh?.
-1. Linh Kh?
-2. ??o Kh?
-3. Ti?n Kh?
-4. Ch?n Kh?
-5. Th?n Binh
-6. ??o Binh
-7. Chung C?c Chi Kh?
+## 7. Khí Đạo (Luyện Vật)
+Luyện khí, luyện bảo, tạo hóa thần binh, dung hợp đạo khí.
+1. Linh Khí
+2. Đạo Khí
+3. Tiên Khí
+4. Chân Khí
+5. Thần Binh
+6. Đạo Binh
+7. Chung Cực Chi Khí
 
 ---
 
-## 8. Kh? Huy?t ??o ? ??c B?n Duy Nh?t C?n S?t L?i Tr?n Tr?i ??t
-Sau ??i bi?n c? c? x?a, linh kh? c?n ki?t, c?c con ???ng tu luy?n kh?c b? phong ?n c?t ??t. Con ng??i Tr?i ??t ch? c?n khai th?c ???c ti?m n?ng kh? huy?t n?i t?i.
-1. Luy?n Th?
-2. Kh? C?m
-3. Kh? H?i
-4. Ti?n Thi?n
-5. T?ng S?
-6. ??i T?ng S?
-7. Ph? C?nh (??nh cao Tr?i ??t hi?n t?i, nh?ng ch? t??ng ???ng t?ng kh?i ??u trong ??i v? tr?)
+## 8. Khí Huyết Đạo — Độc Bản Duy Nhất Còn Sót Lại Trên Trái Đất
+Sau đại biến cố cổ xưa, linh khí cạn kiệt, các con đường tu luyện khác bị phong ấn cắt đứt. Con người Trái Đất chỉ còn khai thác được tiềm năng khí huyết nội tại.
+1. Luyện Thể
+2. Khí Cảm
+3. Khí Hải
+4. Tiên Thiên
+5. Tông Sư
+6. Đại Tông Sư
+7. Phá Cảnh (Đỉnh cao Trái Đất hiện tại, nhưng chỉ tương đương tầng khởi đầu trong đại vũ trụ)

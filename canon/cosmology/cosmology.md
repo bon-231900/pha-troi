@@ -1,32 +1,32 @@
-# C?U TR?C V? TR? & B?N ?? TH? GI?I ? WORLD_MAP_MASTER
+# CẤU TRÚC VŨ TRỤ & BẢN ĐỒ THẾ GIỚI — WORLD_MAP_MASTER
 
-D?a tr?n t?i li?u tham chi?u g?c `WORLD_MAP_MASTER.jpg`:
-"NGUY?N TH?N R?I V?O TH? GI?I N?Y ? Khi ??nh cao nh?t c?ng c? th? l?c xu?ng ??y c?ng"
+Dựa trên tài liệu tham chiếu gốc `WORLD_MAP_MASTER.jpg`:
+"NGUYÊN THẦN RƠI VÀO THẾ GIỚI NÀY — Khi đỉnh cao nhất cũng có thể lạc xuống đáy cùng"
 
-## 1. Ph?n T?ng Kh?ng Gian (T? Cao Xu?ng Th?p)
-1. **??I ??I GI?I (V? t?n v? di?n)**:
-   - T?ng t?n t?i cao nh?t, bao tr?m t?t c? c?c v? di?n.
-   - N?i ??y t?n t?i c?c ??i ??o, ch? t?n, v? nh?ng quy t?c v??t ngo?i hi?u bi?t c?a ph?m nh?n.
-2. **C?C V?C (V? s? v?c)**:
-   - M?i V?c l? m?t khu v?c kh?ng l? ch?a v? s? Tinh H?i.
-   - C?c V?c kh?ng c? ranh gi?i r? r?ng nh?ng c? nh?ng quy t?c v? ??c ?i?m ri?ng.
-   - V? d? c?c V?c: *V?c H?n Mang, V?c Th?n Ma, V?c C?u Thi?n, V?c Th?i Kh?ng, V?c Linh Gi?i...*
-3. **C?C TINH H?I (V? s? tinh h?i)**:
-   - T?p h?p nhi?u v? di?n, m?i tinh h?i c? th? ch?a h?ng ng?n, h?ng v?n th? gi?i kh?c nhau.
-4. **C?C V? DI?N (M?i v? di?n m?t quy t?c)**:
-   - M?i v? di?n c? m?t h? th?ng tu luy?n, thi?n ??o v? gi?i h?n ri?ng.
-   - V? d?: V? di?n Linh ??o, V? di?n Th? ??o, V? di?n H?n ??o, V? di?n Ph?p T?c ??o, V? di?n Nh?n Qu? ??o, V? di?n T?n Ng??ng ??o, V? di?n Kh? ??o.
-5. **TH? GI?I (??n v? nh? nh?t)**:
-   - L? n?i sinh linh t?n t?i, c? sinh m?nh, thi?n nhi?n, quy t?c ri?ng.
-6. **TR?I ??T (V? di?n ??c bi?t)**:
-   - ?i?m cu?i c?ng c?a nhi?u con ???ng, nh?ng c?ng l? n?i b? c? l?p nh?t.
-   - M?t v? di?n b? phong ?n. T?t c? c?c con ???ng tu luy?n kh?c ??u ?? b? c?t ??t.
-   - Ch? c?n t?n t?i duy nh?t: **Kh? Huy?t ??o**.
-   - *"M?t th? gi?i t?ng ??ng tr?n ??nh cao, gi? ??y ch? c?n l? m?t gi?c m? b? l?ng qu?n..."*
+## 1. Phân Tầng Không Gian (Từ Cao Xuống Thấp)
+1. **ĐẠI ĐẠI GIỚI (Vô tận vị diện)**:
+   - Tầng tồn tại cao nhất, bao trùm tất cả các vị diện.
+   - Nơi đây tồn tại các đại đạo, chí tôn, và những quy tắc vượt ngoài hiểu biết của phàm nhân.
+2. **CÁC VỰC (Vô số vực)**:
+   - Mỗi Vực là một khu vực khổng lồ chứa vô số Tinh Hải.
+   - Các Vực không có ranh giới rõ ràng nhưng có những quy tắc và đặc điểm riêng.
+   - Ví dụ các Vực: *Vực Hỗn Mang, Vực Thần Ma, Vực Cửu Thiên, Vực Thời Không, Vực Linh Giới...*
+3. **CÁC TINH HẢI (Vô số tinh hải)**:
+   - Tập hợp nhiều vị diện, mỗi tinh hải có thể chứa hàng ngàn, hàng vạn thế giới khác nhau.
+4. **CÁC VỊ DIỆN (Mỗi vị diện một quy tắc)**:
+   - Mỗi vị diện có một hệ thống tu luyện, thiên đạo và giới hạn riêng.
+   - Ví dụ: Vị diện Linh Đạo, Vị diện Thể Đạo, Vị diện Hồn Đạo, Vị diện Pháp Tắc Đạo, Vị diện Nhân Quả Đạo, Vị diện Tín Ngưỡng Đạo, Vị diện Khí Đạo.
+5. **THẾ GIỚI (Đơn vị nhỏ nhất)**:
+   - Là nơi sinh linh tồn tại, có sinh mệnh, thiên nhiên, quy tắc riêng.
+6. **TRÁI ĐẤT (Vị diện đặc biệt)**:
+   - Điểm cuối cùng của nhiều con đường, nhưng cũng là nơi bị cô lập nhất.
+   - Một vị diện bị phong ấn. Tất cả các con đường tu luyện khác đều đã bị cắt đứt.
+   - Chỉ còn tồn tại duy nhất: **Khí Huyết Đạo**.
+   - *"Một thế giới từng đứng trên đỉnh cao, giờ đây chỉ còn là một giấc mơ bị lãng quên..."*
 
-## 2. C?c Con ???ng ?i V?o Kh?c Nhau (Gateways & Routes)
-- T? **??i ??i Gi?i -> Xu?ng V?c**: Qua c?c ??i ??o, c?m v?c.
-- T? **V?c -> Tinh H?i**: Qua tinh ??o, h?i v?c.
-- T? **Tinh H?i -> V? Di?n**: Qua gi?i gi?i, thi?n m?n.
-- T? **V? Di?n -> Th? Gi?i**: Qua th?n gi?i, linh v?c.
-- **??c bi?t Tr?i ??t**: ?i?m cu?i c?ng c?a nhi?u con ???ng, nh?ng b? phong ?n tr?ng tr?ng.
+## 2. Các Con Đường Đi Vào Khác Nhau (Gateways & Routes)
+- Từ **Đại Đại Giới -> Xuống Vực**: Qua các đại đạo, cấm vực.
+- Từ **Vực -> Tinh Hải**: Qua tinh đạo, hải vực.
+- Từ **Tinh Hải -> Vị Diện**: Qua giới giới, thiên môn.
+- Từ **Vị Diện -> Thế Giới**: Qua thần giới, linh vực.
+- **Đặc biệt Trái Đất**: Điểm cuối cùng của nhiều con đường, nhưng bị phong ấn trùng trùng.

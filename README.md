@@ -1,41 +1,44 @@
-# NOVEL OS ? PH? TR?I (PHA_TROI)
+# NOVEL OS — PHÁ TRỜI (PHA_TROI)
 
-> **H? ?i?u h?nh s?ng t?c & Qu?n tr? th?c th? chuy?n bi?t cho ti?u thuy?t tr??ng thi?n 2.000+ ch??ng: ?Ph? Tr?i?.**
+> **Hệ điều hành sáng tác & Quản trị thực thể chuyên biệt cho tiểu thuyết trường thiên 2.000+ chương: “Phá Trời”.**
 
-## Gi?i thi?u
-Novel OS ???c thi?t k? theo t? duy *Novels as Codebases*, gi?i quy?t tri?t ?? c?c v?n ?? kinh ?i?n c?a ti?u thuy?t tr??ng thi?n:
-- R? r? th?ng tin tr??c th?i h?n (Premature Knowledge Leaks)
-- Sai l?ch d?ng th?i gian & kho?ng c?ch ??a l? (Impossible Travel & Timeline Contradictions)
-- L?m ph?t s?c m?nh phi l? (Power Creep & Realm Mismatches)
-- L?ng qu?n ph?c b?t (Forgotten Foreshadowing & Chekhov's Guns)
-- M?t t?nh c?ch nh?n v?t (Character Voice & Behavior Drift)
-- M?t d?u b? m?t c?a t?c gi? (Author Secret Isolation)
+## 1. Giới thiệu
+Novel OS được thiết kế theo tư duy *Novels as Codebases*, giải quyết triệt để các vấn đề kinh điển của tiểu thuyết trường thiên:
+- Rò rỉ thông tin trước thời hạn (Premature Knowledge Leaks)
+- Sai lệch dòng thời gian & khoảng cách địa lý (Impossible Travel & Timeline Contradictions)
+- Lạm phát sức mạnh phi lý (Power Creep & Realm Mismatches)
+- Lãng quên phục bút (Forgotten Foreshadowing & Chekhov's Guns)
+- Mất tính cách nhân vật (Character Voice & Behavior Drift)
+- Mất dấu bí mật của tác giả (Author Secret Isolation)
 
-## C?u tr?c c?t l?i
-- **Author Authority**: Quy?n tuy?t ??i thu?c v? T?c gi?. M?i thay ??i canon l?n ??u ph?i c? s? ph? duy?t qua Proposal Engine.
-- **Source of Truth**: Markdown cho b?n th?o (Manuscript) & Story Bible; SQLite (`database/novel_os.db`) cho graph, state, timeline, audit logs.
-- **Word / Markdown Pipeline**: Vi?t b?n th?o b?ng Markdown chu?n, t? ??ng bi?n d?ch v? ??ng b? h?a sang file Word (.docx) chuy?n nghi?p.
-- **Web Studio & CLI**: Giao di?n ?i?u khi?n tr?c quan t?i `http://localhost:8765` c?ng b? l?nh CLI tr?c ti?p.
+## 2. Cấu trúc cốt lõi
+- **Author Authority**: Quyền tuyệt đối thuộc về Tác giả. Mọi thay đổi canon lớn đều phải có sự phê duyệt qua Proposal Engine.
+- **Source of Truth**: Markdown cho bản thảo (Manuscript) & Story Bible; SQLite (`database/novel_os.db`) cho đồ thị, trạng thái, dòng thời gian, nhật ký kiểm tra.
+- **Quy trình Word / Markdown**: Viết bản thảo bằng Markdown chuẩn, tự động biên dịch và đồng bộ hóa sang file Word (.docx) chuyên nghiệp.
+- **Web Studio & CLI**: Giao diện điều khiển trực quan tại `http://127.0.0.1:8765` cùng bộ lệnh CLI tiếng Việt trực tiếp.
 
-## Kh?i ??ng Web Studio
+## 3. Khởi động Web Studio
+Chạy file `Chay_Studio.bat` hoặc gõ:
 ```bash
-python -m system.web.app
+python -m system.cli studio
 ```
 
-## L?nh CLI ch?nh
+## 4. Lệnh CLI chính (Hỗ trợ 100% tiếng Việt)
 ```bash
-# Vi?t ti?p ch??ng m?i (T? ??ng ??c tr?ng th?i, context, draft, critique, update state)
-python -m system.cli write-next
+# Sáng tác tiếp chương mới tự động
+python -m system.cli viet-tiep --chuong 2
 
-# Vi?t l?i ch??ng hi?n t?i
-python -m system.cli rewrite
+# Kiểm tra tính toàn vẹn (Continuity & Canon)
+python -m system.cli kiem-tra
 
-# Ki?m tra t?nh to?n v?n (Continuity & Canon Audit)
-python -m system.cli audit
+# Xuất bản thảo ra Word (.docx)
+python -m system.cli xuat-word --chuong 1
 
-# Xu?t b?n th?o ra Word (.docx)
-python -m system.cli export-word
-
-# Ch?y b? ki?m th? narrative (20 edge cases)
-python -m system.cli test
+# Tra cứu dữ liệu
+python -m system.cli canon
+python -m system.cli nhan-vat
+python -m system.cli thoi-gian
+python -m system.cli the-gioi
+python -m system.cli phuc-but
+python -m system.cli de-xuat
 ```

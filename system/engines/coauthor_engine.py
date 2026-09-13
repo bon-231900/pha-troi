@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import os
 import json
 import sqlite3
@@ -9,7 +10,7 @@ from system.engines.docx_pipeline import DocxPipeline
 from system.core.git_manager import GitManager
 
 class CoAuthorEngine:
-    """Th?c thi h?p ??ng 'Vi?t ti?p': ??c state -> Context -> Narrative Move -> Draft -> Critique -> Revise -> Update -> Save -> Docx -> Commit."""
+    """Thực thi hợp đồng 'Viết tiếp': Đọc state -> Context -> Narrative Move -> Draft -> Critique -> Revise -> Update -> Save -> Docx -> Commit."""
 
     def __init__(self, db_path: str = DB_PATH):
         self.db_path = db_path
@@ -19,14 +20,14 @@ class CoAuthorEngine:
         self.docx_pipeline = DocxPipeline()
         self.git_manager = GitManager(ROOT_DIR)
 
-    def write_next_chapter(self, target_chapter_num: int = 1, pov: str = "Nguy?n Minh An (First Person)", custom_draft_prose: str = None) -> dict:
+    def write_next_chapter(self, target_chapter_num: int = 1, pov: str = "Nguyễn Minh An (Ngôi thứ nhất)", custom_draft_prose: str = None) -> dict:
         active_chars = ["char_minh_an", "char_lam_tich"]
         location_id = "loc_hcmc"
 
         # 1. Build Context
         context_pack = self.context_builder.build_context_pack(target_chapter_num, pov, active_chars, location_id)
 
-        # 2. So?n b?n th?o (N?u kh?ng truy?n text custom th? t?o b?n th?o chu?n ch? theo Canon)
+        # 2. Soạn bản thảo
         if custom_draft_prose:
             prose = custom_draft_prose
         else:
@@ -35,9 +36,8 @@ class CoAuthorEngine:
         # 3. Critique pass
         audit_res = self.critique_engine.audit_chapter_draft(target_chapter_num, pov, active_chars, prose)
 
-        # 4. Revision n?u c? issue nh?
+        # 4. Revision nếu có issue nhỏ
         if not audit_res["passed"]:
-            # N?u c? critical error th? kh?ng t? ? l?u ?? m? c?nh b?o
             crit_errors = [i for i in audit_res["issues"] if i["severity"] == "CRITICAL"]
             if crit_errors:
                 return {
@@ -46,24 +46,23 @@ class CoAuthorEngine:
                     "issues": audit_res["issues"]
                 }
         
-        # T? s?a c?c h?t s?n nh?
         refined_prose = self.revision_engine.auto_fix_minor_issues(prose, audit_res["issues"])
 
         # 5. Save Markdown Source of Truth
         md_file = os.path.join(MANUSCRIPT_MD_DIR, "volume_01", "arc_01", f"ch_{target_chapter_num:03d}.md")
         os.makedirs(os.path.dirname(md_file), exist_ok=True)
-        with open(md_file, "w", encoding="utf-8") as f:
-            f.write(refined_prose)
+        with open(md_file, "w", encoding="utf-8", newline="\n") as f:
+            f.write(refined_prose.strip() + "\n")
 
         # 6. Compile Word DOCX
         docx_file = os.path.join(MANUSCRIPT_WORD_DIR, "volume_01", f"ch_{target_chapter_num:03d}.docx")
-        self.docx_pipeline.export_chapter_to_docx(f"Ch??ng {target_chapter_num}: M?a Tr?n Ph? C?", target_chapter_num, refined_prose, docx_file)
+        self.docx_pipeline.export_chapter_to_docx(f"Chương {target_chapter_num}: Mưa Trên Phố Cũ", target_chapter_num, refined_prose, docx_file)
 
         # 7. Update State
         self._update_state_post_chapter(target_chapter_num)
 
         # 8. Git Commit Minor
-        self.git_manager.commit_minor(f"Completed Chapter {target_chapter_num} (Markdown + DOCX + State)")
+        self.git_manager.commit_minor(f"Cập nhật hoàn chỉnh Chương {target_chapter_num} (Markdown + DOCX + State)")
 
         return {
             "success": True,
@@ -75,67 +74,64 @@ class CoAuthorEngine:
         }
 
     def _generate_canonical_chapter_1(self) -> str:
-        """So?n b?n th?o Ch??ng 1 theo phong c?ch Modern Cinematic + Literary + Vietnam Realism."""
-        return """# CH??NG 1: M?A TR?N PH? C?
+        """Soạn bản thảo Chương 1 chuẩn mực: Modern Cinematic + Literary + Vietnam Realism."""
+        return """# CHƯƠNG 1: MƯA TRÊN PHỐ CŨ
 
-S?i G?n v?o th?ng Ch?n lu?n c? nh?ng bu?i chi?u k? l?. 
+Sài Gòn vào tháng Chín luôn có những buổi chiều kỳ lạ. 
 
-N?m gi? ba m??i, b?u tr?i tr?n ??u ng? t? H?ng Xanh v?n c?n v?ng v?t ?nh n?ng oi n?ng ??c tr?ng c?a mi?n nhi?t ??i, th? ?nh s?ng hanh hao r?i xu?ng d?ng xe c? ken ??c nh? n?m. Nh?ng ch? c?n kim ??ng h? nh?ch qua con s? s?u, t?ng cu?n m?y x?m x?t t? ph?a th??ng ngu?n s?ng ??ng Nai ?? ?o ?t tr?n v?, nu?t ch?ng nh?ng v?t r?ng chi?u cu?i c?ng. Gi? n?i l?n ph?n ph?t, cu?n theo b?i ???ng, m?i x?ng kh?i v? c? m?i h?i n??c ngai ng?i b?c l?n t? m?t ???ng nh?a b?ng r?t.
+Năm giờ ba mươi, bầu trời trên đầu ngã tư Hàng Xanh vẫn còn váng vất ánh nắng oi nồng đặc trưng của miền nhiệt đới, thứ ánh sáng hanh hao rọi xuống dòng xe cộ ken đặc như nêm. Nhưng chỉ cần kim đồng hồ nhích qua con số sáu, từng cuộn mây xám xịt từ phía thượng nguồn sông Đồng Nai đã ào ạt tràn về, nuốt chửng những vệt ráng chiều cuối cùng. Gió nổi lên phần phật, cuốn theo bụi đường, mùi xăng khói và cả mùi hơi nước ngai ngái bốc lên từ mặt đường nhựa bỏng rát.
 
-T?i k?o chi?c kh?u trang y t? l?n s?t s?ng m?i, g?t ch?n ch?ng chi?c xe Wave c? ?? c?ng m?nh ?i qua b?n n?m ??i h?c v? m?t n?m ?i l?m. ?i?n tho?i trong t?i qu?n rung l?n hai h?i ng?n ng?i ? th?ng b?o t? ?ng d?ng ng?n h?ng tr? ti?n b?a tr?a v? m?t email t? tr??ng ph?ng nh?c nh? b?ng s? li?u b?o c?o tu?n.
+Tôi kéo chiếc khẩu trang y tế lên sát sống mũi, gạt chân chống chiếc xe Wave cũ đã cùng mình đi qua bốn năm đại học và một năm đi làm. Điện thoại trong túi quần rung lên hai hồi ngắn ngủi — thông báo từ ứng dụng ngân hàng trừ tiền bữa trưa và một email từ trưởng phòng nhắc nhở bảng số liệu báo cáo tuần.
 
-T?i hai m??i l?m tu?i. Kh?ng c? g? n?i b?t gi?a t?m tri?u con ng??i ?ang h?i h? chen ch?c d??i l?n kh?i xe n?y. S?ng ?i l?m, chi?u v? ph?ng tr?, t?i m? m?y t?nh xem m?t b? phim c? ho?c l??t v?i di?n ??n r?i ch?m v?o gi?c ng?. M?t cu?c ??i b?nh l?ng ??n m?c n?u c? ai ?? h?i t?i ba n?m n?a m?nh s? ra sao, t?i c?ng ch? c? th? m?m c??i g?i ??u.
+Tôi hai mươi lăm tuổi. Không có gì nổi bật giữa tám triệu con người đang hối hả chen chúc dưới làn khói xe này. Sáng đi làm, chiều về phòng trọ, tối mở máy tính xem một bộ phim cũ hoặc lướt vài diễn đàn rồi chìm vào giấc ngủ. Một cuộc đời bình lặng đến mức nếu có ai đó hỏi tôi ba năm nữa mình sẽ ra sao, tôi cũng chỉ có thể mỉm cười gãi đầu.
 
-Ti?ng s?m ??u ti?n r?n vang ph?a ch?n tr?i, tr?m ??c v? kh? kh?c.
+Tiếng sấm đầu tiên rền vang phía chân trời, trầm đục và khô khốc.
 
-M?a ?? xu?ng.
+Mưa đổ xuống.
 
-Kh?ng ph?i t?ng h?t l?t ph?t b?o tr??c, m? l? c? m?t m?n n??c tr?ng x?a d?i th?ng t? tr?i cao, qu?t r?t m?t nh?ng ng??i ?i ???ng ch?a k?p t?p xe v?o l? m?c ?o m?a. T?i n?p v?i v?o m?i hi?n c?a m?t ti?m s?a kh?a ven ???ng Ung V?n Khi?m, n??c m?a t? m?p t?n ch?y x?i x? xu?ng ??i gi?y v?i ??t s?ng. 
+Không phải từng hạt lất phất báo trước, mà là cả một màn nước trắng xóa dội thẳng từ trời cao, quất rát mặt những người đi đường chưa kịp tấp xe vào lề mặc áo mưa. Tôi nép vội vào mái hiên của một tiệm sửa khóa ven đường Ung Văn Khiêm, nước mưa từ mép tôn chảy xối xả xuống đôi giày vải ướt sũng. 
 
-T?i ng?a ??u nh?n l?n v?m tr?i m?t m?. 
+Tôi ngửa đầu nhìn lên vòm trời mịt mù. 
 
-Gi?a nh?ng tia ch?p ch?ng ch?t r?ch ngang t?ng m?y ?en k?t, c? m?t kho?nh kh?c k? d? m? sau n?y d? tr?i qua bao nhi?u bi?n c?, t?i v?n kh?ng bao gi? qu?n ???c. 
+Giữa những tia chớp chằng chịt rạch ngang tầng mây đen kịt, có một khoảnh khắc kỳ dị mà sau này dù trải qua bao nhiêu biến cố, tôi vẫn không bao giờ quên được. 
 
-Kh?ng c? ?nh s?ng ch?i l?a, kh?ng c? ti?ng n? long tr?i l? ??t. Ch? c? m?t v?t m?u tro t?n r?t nh?t ? m?ng nh? m?t s?i t?, l?ng l? r?i xuy?n qua m?n m?a gi?ng d?y ??c. N? kh?ng mang theo nhi?t ??, kh?ng ph?t ra ?m thanh, r?i nhanh ??n m?c t?i c? ng? ?? ch? l? m?t ?o gi?c do m?t m?nh m?i m?t sau t?m ti?ng ??ng h? d?n ch?t v?o m?n h?nh m?y t?nh.
+Không có ánh sáng chói lòa, không có tiếng nổ long trời lở đất. Chỉ có một vệt màu tro tàn rất nhạt — mỏng như một sợi tơ, lặng lẽ rơi xuyên qua màn mưa giông dày đặc. Nó không mang theo nhiệt độ, không phát ra âm thanh, rơi nhanh đến mức tôi cứ ngỡ đó chỉ là một ảo giác do mắt mình mỏi mệt sau tám tiếng đồng hồ dán chặt vào màn hình máy tính.
 
-Nh?ng ngay khi v?t s?ng m? nh?t ?y l??t qua kho?ng kh?ng tr??c m?t t?i ch?ng m??i m?t, m?t c?n ?au nh?i ??t ng?t gi?ng th?ng v?o sau g?y.
+Nhưng ngay khi vệt sáng mờ nhạt ấy lướt qua khoảng không trước mặt tôi chừng mười mét, một cơn đau nhói đột ngột giáng thẳng vào sau gáy.
 
-?? kh?ng ph?i l? c?n ?au c?a da th?t. C?m gi?c ?y gi?ng nh? c? m?t gi?t s??ng b?ng gi? r?i th?ng v?o s?u trong t?m th?c, khi?n to?n b? th?n kinh t?i co gi?t d? d?i. T?i l?o ??o t?a l?ng v?o b?c t??ng g?ch loang l? r?u phong, h?i th? ngh?n l?i n?i cu?ng h?ng. ??i tai l?ng b?ng, ti?ng c?i xe inh ?i v? ti?ng m?a g?m r? xung quanh b?ng nhi?n tr?i d?t ra xa x?i, nh? th? t?i v?a b? k?o t?t xu?ng ??y c?a m?t h? n??c l?nh bu?t.
+Đó không phải là cơn đau của da thịt. Cảm giác ấy giống như có một giọt sương băng giá rơi thẳng vào sâu trong tâm thức, khiến toàn bộ thần kinh tôi co giật dữ dội. Tôi lảo đảo tựa lưng vào bức tường gạch loang lổ rêu phong, hơi thở nghẹn lại nơi cuống họng. Đôi tai lùng bùng, tiếng còi xe inh ỏi và tiếng mưa gầm rú xung quanh bỗng nhiên trôi dạt ra xa xôi, như thể tôi vừa bị kéo tụt xuống đáy của một hồ nước lạnh buốt.
 
-Trong c?i s?u th?m c?a s? m?ng mu?i ?y, t?i d??ng nh? tho?ng th?y m?t b?ng h?nh. 
+Trong cõi sâu thẳm của sự mông muội ấy, tôi dường như thoáng thấy một bóng hình. 
 
-M?t b?ng h?nh ??ng gi?a bi?n m?u ng?p tr?n v? nh?ng v?m tr?i ?? n?t, xung quanh l? v? s? v? sao ?ang l?i t?n nh? t?n thu?c. Ng??i ?? m?c b?ch y ?? r?ch n?t loang l? v?t ch?m, m?t tay n?m l?y chu?i ki?m g?y, m?i t?c d?i tung bay gi?a nh?ng lu?ng b?o t? cu?ng n? c? th? nghi?n n?t c? s?n h?. Nh?ng ?i?u khi?n l?ng ng?c t?i th?t l?i kh?ng ph?i l? c?nh t??ng h?y di?t ?y, m? l? ??i m?t c?a n?ng.
+Một bóng hình đứng giữa biển máu ngập tràn và những vòm trời đổ nát, xung quanh là vô số vì sao đang lụi tàn như tàn thuốc. Người đó mặc bạch y đã rách nát loang lổ vết chém, một tay nắm lấy chuôi kiếm gãy, mái tóc dài tung bay giữa những luồng bão tố cuồng nộ có thể nghiền nát cả sơn hà. Nhưng điều khiến lồng ngực tôi thắt lại không phải là cảnh tượng hủy diệt ấy, mà là đôi mắt của nàng.
 
-?? l? ??i m?t c?a m?t ng??i ?? chi?n ??u ??n h?i th? cu?i c?ng, ?? ??ng ch?n tr??c v? s? sinh linh ?? r?i ch?ng ki?n t?t c? tan bi?n, t?ch m?ch ??n m?c kh?ng c?n m?t gi?t n??c m?t.
+Đó là đôi mắt của một người đã chiến đấu đến hơi thở cuối cùng, đã đứng chắn trước vô số sinh linh để rồi chứng kiến tất cả tan biến, tịch mịch đến mức không còn một giọt nước mắt.
 
-M?t ti?ng th? d?i kh? kh?ng, m?ng manh nh? kh?i tho?ng, vang l?n ngay trong ??y l?ng t?i:
+Một tiếng thở dài khẽ khàng, mỏng manh như khói thoảng, vang lên ngay trong đáy lòng tôi:
 
-? *H?a ra... n?i n?y...*
+— Hóa ra... nơi này...
 
-C?n ?au bi?n m?t nhanh nh? khi n? xu?t hi?n.
+Cơn đau biến mất nhanh như khi nó xuất hiện.
 
-T?i b?ng t?nh, m? h?i l?nh to?t ra ??t ??m l?ng ?o s? mi h?a c?ng n??c m?a t?t v?o m?p hi?n. Tim t?i ??p th?nh th?ch nh? mu?n nh?y kh?i l?ng ng?c. ???ng ph? v?n l? ???ng ph?, d?ng ng??i m?c ?o m?a ?? s?c m?u v?n ki?n nh?n nh?ch t?ng m?t gi?a d?ng n??c b?t ??u d?ng ng?p n?a b?nh xe.
+Tôi bừng tỉnh, mồ hôi lạnh toát ra ướt đẫm lưng áo sơ mi hòa cùng nước mưa tạt vào mép hiên. Tim tôi đập thình thịch như muốn nhảy khỏi lồng ngực. Đường phố vẫn là đường phố, dòng người mặc áo mưa đủ sắc màu vẫn kiên nhẫn nhích từng mét giữa dòng nước bắt đầu dâng ngập nửa bánh xe.
 
-T?i ??a tay s? l?n sau g?y. Kh?ng c? v?t th??ng, kh?ng c? m?u, ch? c? l?n da v?n c?n l?nh l?nh.
+Tôi đưa tay sờ lên sau gáy. Không có vết thương, không có máu, chỉ có làn da vẫn còn lành lạnh.
 
-"Ch?c l? tr?ng gi? r?i..." T?i t? nh?, c? g?ng h?t m?t h?i th?t s?u ?? xua ?i c?m gi?c ?n l?nh k? l? v?a qu?t qua th?n th?.
+"Chắc là trúng gió rồi..." Tôi tự nhủ, cố gắng hít một hơi thật sâu để xua đi cảm giác ớn lạnh kỳ lạ vừa quét qua thân thể.
 
-M?a ng?t d?n. T?i d?t xe ra ???ng, h?a v?o d?ng ng??i ti?p t?c h?nh tr?nh tr? v? c?n ph?ng tr? nh? b? c?a m?nh, ho?n to?n kh?ng hay bi?t r?ng, b?nh xe c?a m?t ??nh m?nh v??t ngo?i t?m hi?u bi?t c?a th? gian ?? b?t ??u ch?m r?i xoay chuy?n.
+Mưa ngớt dần. Tôi dắt xe ra đường, hòa vào dòng người tiếp tục hành trình trở về căn phòng trọ nhỏ bé của mình, hoàn toàn không hay biết rằng, bánh xe của một định mệnh vượt ngoài tầm hiểu biết của thế gian đã bắt đầu chậm rãi xoay chuyển.
 """
 
     def _update_state_post_chapter(self, chapter_num: int):
-        conn = sqlite3.connect(self.db_path)
+        conn = sqlite3.connect(self.db_path, timeout=30.0)
         cur = conn.cursor()
-        # C?p nh?t timeline event
         cur.execute("""INSERT OR REPLACE INTO timeline_events (id, title, chapter_num, scene_num, absolute_time, location_id, participants_json, summary, outcome)
                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-                    (f"EVT-CH{chapter_num:03d}-01", "C?n m?a r?o ng? t? H?ng Xanh v? kho?nh kh?c t?n h?n r?i", chapter_num, 1,
-                     "2026-09-13T18:00:00+07:00", "loc_hcmc", json.dumps(["char_minh_an", "char_lam_tich"]),
-                     "Minh An tan s? tr? m?a ? Ung V?n Khi?m, b? t?n h?n L?m T?ch r?i tr?ng th?c h?i, tr?i qua c?n ?au nh?i v? tho?ng th?y ?o ?nh chi?n tr??ng vi?n c?.",
-                     "L?m T?ch ho?n t?t neo ??u v?o th?c h?i Minh An; Minh An ng? l? tr?ng gi?."))
+                    (f"EVT-CH{chapter_num:03d}-01", "Cơn mưa rào ngã tư Hàng Xanh và khoảnh khắc tàn hồn rơi", chapter_num, 1,
+                     "2026-09-13T18:00:00+07:00", "loc_hcmc", json.dumps(["char_minh_an", "char_lam_tich"], ensure_ascii=False),
+                     "Minh An tan sở trú mưa ở Ung Văn Khiêm, bị tàn hồn Lâm Tịch rơi trúng thức hải, trải qua cơn đau nhói và thoáng thấy ảo ảnh chiến trường viễn cổ.",
+                     "Lâm Tịch hoàn tất neo đậu vào thức hải Minh An; Minh An ngỡ là trúng gió cảm mạo."))
         
-        # C?p nh?t plot node status
         cur.execute("UPDATE plot_nodes SET status = 'CANONIZED' WHERE id = 'ch_001'")
-        
         conn.commit()
         conn.close()
