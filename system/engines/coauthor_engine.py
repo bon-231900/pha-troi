@@ -672,6 +672,35 @@ Mưa ngớt dần. Tôi dắt xe ra đường, hòa vào dòng người tiếp t
                         ("FSH-018", "Tia hào quang màu hổ phách vi mô thoáng ngưng tụ sâu trong đáy đồng tử Minh An khi khí huyết tràn qua đỉnh Bách Hội", 18, 1,
                          json.dumps(["Minh An", "Lâm Tịch"], ensure_ascii=False),
                          "Dấu tích khai mở Thần Mục Thể Đạo sơ khai, chuẩn bị cho khả năng nhìn thấu quỹ đạo dòng năng lượng và quy tắc ở Chương 32", 32, "PLANTED"))
+        elif chapter_num == 19:
+            cur.execute("""INSERT OR REPLACE INTO timeline_events (id, title, chapter_num, scene_num, absolute_time, location_id, participants_json, summary, outcome)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                        (f"EVT-CH{chapter_num:03d}-01", "Thế giới dưới tầng giác quan mới và khúc dạo đầu của bầu trời bị tha hóa", chapter_num, 1,
+                         "2026-09-21T12:30:00+07:00", "loc_hcmc", json.dumps(["char_minh_an", "char_lam_tich"], ensure_ascii=False),
+                         "Sáng và trưa thứ Hai 21/09/2026. Minh An trải nghiệm sự thăng hoa giác quan của Nhị Chu Thiên khi di chuyển qua ngã tư Hàng Xanh và giải quyết công việc kỹ thuật tại văn phòng Quận 1 với hiệu suất vượt bậc. Trong giờ nghỉ trưa trên sân thượng tòa nhà lộng gió nhìn ra sông Sài Gòn, Lâm Tịch hòa quyện cảm quan với Minh An, lần đầu tiên bùi ngùi nhắc về ký ức kinh hoàng khi 'Bầu trời bị tha hóa' nuốt chửng vị diện quê hương nàng.",
+                         "Khẳng định sự hòa hợp tuyệt đối giữa năng lực Nhị Chu Thiên và cuộc sống thường nhật; tiến triển mạnh mẽ cho phục bút FSH-005 chuẩn bị hồi báo ở Chương 20; gieo mầm phục bút FSH-019 về hiệu ứng rẽ sóng khí động học của màng chắn Khí Huyết."))
+            
+            # Character states
+            cur.execute("""INSERT INTO character_states (character_id, chapter_num, location_id, cultivation_realm, physical_condition, injuries_json, inventory_json, emotional_state)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                        ("char_minh_an", 19, "Sân thượng tòa cao ốc văn phòng Quận 1", "Phàm nhân (Khí Huyết Đạo Sơ Khai - Nhị Chu Thiên Thuần Thục)", "Nhị Chu Thiên vận hành tự nhiên theo từng nhịp thở, năng lực xử lý thông tin và phản xạ thị giác cực đỉnh, tâm thần thư thái",
+                         json.dumps([], ensure_ascii=False),
+                         json.dumps(["Điện thoại di động", "Ví tiền", "Chìa khóa xe Wave", "Thẻ nhân viên", "Hộp cơm trưa", "Danh thiếp gỗ của ông Ba Khiêm"], ensure_ascii=False),
+                         "Bình thản, sâu sắc, thấu cảm với nỗi đau diệt thế của Lâm Tịch, sẵn sàng đối mặt với chân tướng sự thật"))
+            
+            cur.execute("""INSERT INTO character_states (character_id, chapter_num, location_id, cultivation_realm, physical_condition, injuries_json, inventory_json, emotional_state)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                        ("char_lam_tich", 19, "Thức hải Minh An", "Đỉnh cao vị diện (tàn hồn an định)", "Tàn hồn được sưởi ấm trong kén Nhị Chu Thiên, cộng hưởng cảm quan qua đôi mắt Minh An để ngắm nhìn bầu trời trần thế",
+                         json.dumps(["Thân thể nát vụn hoàn toàn", "Đạo cơ vỡ nát", "Nguyên thần vỡ vụn"], ensure_ascii=False),
+                         json.dumps(["Mảnh kiếm gãy (dạng ý niệm)"], ensure_ascii=False),
+                         "Bùi ngùi xúc động, trút bỏ gánh nặng cô độc ngàn năm, mở lòng chia sẻ về quá khứ bi tráng"))
+            
+            # Foreshadowing seed FSH-019
+            cur.execute("""INSERT OR REPLACE INTO foreshadowing_ledger (id, seed_description, planted_chapter, planted_scene, notices_json, actual_meaning, payoff_chapter, status)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                        ("FSH-019", "Luồng gió mạnh trên sân thượng tòa cao ốc bị tách đôi rẽ sóng khí động học khi thổi qua thân mình Minh An", 19, 1,
+                         json.dumps(["Minh An", "Lâm Tịch"], ensure_ascii=False),
+                         "Hiện tượng màng chắn khí huyết Nhị Chu Thiên bắt đầu tương tác vật lý thụ động với trường khí quyển ngoại cảnh, chuẩn bị cho năng lực Ngự Khí Thể Đạo ở Chương 35", 35, "PLANTED"))
         else:
             cur.execute("""INSERT OR REPLACE INTO timeline_events (id, title, chapter_num, scene_num, absolute_time, location_id, participants_json, summary, outcome)
                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
