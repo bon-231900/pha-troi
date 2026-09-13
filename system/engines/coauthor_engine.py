@@ -546,6 +546,39 @@ Mưa ngớt dần. Tôi dắt xe ra đường, hòa vào dòng người tiếp t
                         ("FSH-014", "Cuốn cổ thư chép tay của môn phái ông Ba Khiêm ghi chép về dị tượng địa chấn ngầm và những tiền bối huyết khí dị thường thời cận đại", 14, 1,
                          json.dumps(["Minh An", "Lâm Tịch", "Võ sư Lê Bá Khiêm"], ensure_ascii=False),
                          "Manh mối lịch sử thế tục kết nối giữa đại trận phong ấn Cố Thổ dưới lòng đất phương Nam và con đường Khí Huyết Đạo thất truyền", 26, "PLANTED"))
+        elif chapter_num == 15:
+            cur.execute("""INSERT OR REPLACE INTO timeline_events (id, title, chapter_num, scene_num, absolute_time, location_id, participants_json, summary, outcome)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                        (f"EVT-CH{chapter_num:03d}-01", "Cuộc đối chiếu thực nghiệm hồ sơ NV-2026-X và phép thử quang phổ", chapter_num, 1,
+                         "2026-09-17T16:00:00+07:00", "loc_hcmc", json.dumps(["char_minh_an", "char_lam_tich", "char_trinh_hoai_nam"], ensure_ascii=False),
+                         "Chiều 17/09/2026, Minh An được mời vào phòng họp kỹ thuật tầng 12 đối chiếu dữ liệu với đoàn chuyên gia Viện Nghiên Cứu Năng Lượng Đô Thị do Tiến sĩ Trịnh Hoài Nam dẫn đầu. Tiến sĩ Nam phân tích đồ thị sụt giảm nhiệt độ dị thường của tệp NV-2026-X và dùng máy quét quang phổ phân giải cao quét trực tiếp thân thể Minh An. Nhờ màng chắn Vòng Chu Thiên Khí Huyết sinh học tự chủ, các thông số bức xạ nhiệt của Minh An hoàn toàn bình thường, giải trừ nghi vấn trực diện của khoa học thế tục.",
+                         "Hoàn tất thu hồi phục bút FSH-007 và FSH-010; khẳng định năng lực che chắn tuyệt đối của Chu Thiên Khí Huyết trước công nghệ cảm biến quang phổ; gieo mầm phục bút FSH-015 về xung dao động địa chấn ngầm ngoại ô Sài Gòn."))
+            
+            # Character states
+            cur.execute("""INSERT INTO character_states (character_id, chapter_num, location_id, cultivation_realm, physical_condition, injuries_json, inventory_json, emotional_state)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                        ("char_minh_an", 15, "Phòng họp kỹ thuật tầng 12 tòa cao ốc Quận 1", "Phàm nhân (Khí Huyết Đạo Sơ Khai - Chu Thiên Vững Vàng)", "Khí huyết lưu chuyển ổn định, thân nhiệt 36.8°C hoàn hảo, hô hấp sâu lắng, nhịp tim duy trì 62 nhịp/phút dưới máy đo",
+                         json.dumps([], ensure_ascii=False),
+                         json.dumps(["Điện thoại di động", "Ví tiền", "Chìa khóa xe Wave", "Thẻ nhân viên", "Danh thiếp gỗ của ông Ba Khiêm", "Bút bi"], ensure_ascii=False),
+                         "Điềm tĩnh, mẫn tuệ, bản lĩnh vững vàng trước các thiết bị đo lường công nghệ cao"))
+            
+            cur.execute("""INSERT INTO character_states (character_id, chapter_num, location_id, cultivation_realm, physical_condition, injuries_json, inventory_json, emotional_state)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                        ("char_lam_tich", 15, "Thức hải Minh An", "Đỉnh cao vị diện (tàn hồn an định)", "Tàn hồn nằm yên trong kén khí huyết chu thiên ấm áp, quy tắc Băng Phách thu liễm tuyệt đối không rò rỉ một tia gợn sóng",
+                         json.dumps(["Thân thể nát vụn hoàn toàn", "Đạo cơ vỡ nát", "Nguyên thần vỡ vụn"], ensure_ascii=False),
+                         json.dumps(["Mảnh kiếm gãy (dạng ý niệm)"], ensure_ascii=False),
+                         "Thán phục trước sự trầm tĩnh và tài ứng biến thế tục của Minh An, niềm tin đồng hành càng thêm bền chặt"))
+            
+            # Payoffs FSH-007 & FSH-010
+            cur.execute("""UPDATE foreshadowing_ledger SET status = 'PAID' WHERE id = 'FSH-007'""")
+            cur.execute("""UPDATE foreshadowing_ledger SET status = 'PAID' WHERE id = 'FSH-010'""")
+            
+            # Foreshadowing seed FSH-015
+            cur.execute("""INSERT OR REPLACE INTO foreshadowing_ledger (id, seed_description, planted_chapter, planted_scene, notices_json, actual_meaning, payoff_chapter, status)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                        ("FSH-015", "Tiến sĩ Trịnh Hoài Nam nhắc đến dữ liệu cảm biến địa chấn ngầm ngoại ô phía Đông Nam Sài Gòn ghi nhận một xung dao động tần số thấp cùng thời điểm đêm 16/09", 15, 1,
+                         json.dumps(["Minh An", "Lâm Tịch", "Tiến sĩ Trịnh Hoài Nam"], ensure_ascii=False),
+                         "Mối liên kết giữa khe nứt phong ấn đốt sống thứ bảy của Minh An với sự dao động của đại trận cổ xưa dưới lòng đất Trái Đất (tiến triển FSH-012 tới Ch 28)", 28, "PLANTED"))
         else:
             cur.execute("""INSERT OR REPLACE INTO timeline_events (id, title, chapter_num, scene_num, absolute_time, location_id, participants_json, summary, outcome)
                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",

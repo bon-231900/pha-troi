@@ -1,0 +1,159 @@
+# -*- coding: utf-8 -*-
+import sys
+import io
+
+# Set UTF-8 standard output
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+
+from system.engines.coauthor_engine import CoAuthorEngine
+
+ch15_prose = """# CHƯƠNG 15: SÓNG NGẦM DƯỚI LĂNG KÍNH
+
+Ba giờ ba mươi phút chiều ngày mười bảy tháng Chín.
+
+Khi tôi trở lại tòa cao ốc văn phòng ở Quận 1 sau buổi trò chuyện với ông Ba Khiêm, bầu không khí ở tầng trệt và khu vực sảnh thang máy dường như có một sự căng thẳng ngầm khác hẳn ngày thường.
+
+Hai nhân viên an ninh tòa nhà đứng gác nghiêm trang trước cửa thang máy vận chuyển kỹ thuật. Bên cạnh họ là ba chiếc vali chuyên dụng bằng hợp kim nhôm màu xám bạc có dán tem niêm phong màu đỏ: `Viện Nghiên Cứu Năng Lượng Đô Thị — Thiết Bị Đo Lường Trường Quang Phổ & Bức Xạ Vi Mô`.
+
+Vừa bước ra khỏi thang máy ở tầng mười hai, anh Tuấn đội trưởng an ninh đã đứng chờ sẵn ở hành lang. Trông thấy tôi, anh khẽ vẫy tay ra hiệu, gương mặt lộ rõ vẻ ái ngại:
+
+"Cậu An, may quá cậu đã về. Bên Viện Nghiên cứu Năng lượng họ cử một đoàn chuyên gia đến kiểm tra hiện trường sự cố nhiệt độ chiều hôm qua ở phòng trà nước. Vì cậu là người trực tiếp có mặt tại hiện trường lúc xô đá bị đổ, họ muốn mời cậu vào phòng họp kỹ thuật đối chiếu vài thông số."
+
+"Có chuyện gì nghiêm trọng không anh?" Tôi giữ vẻ mặt ngạc nhiên rất tự nhiên của một nhân viên công sở bình thường.
+
+"Không có gì lớn đâu," anh Tuấn cười xòa, vỗ nhẹ vai tôi để trấn an. "Mấy ông tiến sĩ nghiên cứu thiết bị nhạy cảm ấy mà, cứ thấy đồ thị cảm biến có một vết răng cưa bất thường là lập tức coi như phát hiện khoa học mới. Cậu cứ vào trả lời đúng như những gì đã khai trong biên bản hôm qua là xong."
+
+Tôi khẽ gật đầu, đưa tay chỉnh lại cổ áo sơ mi rồi bước theo anh Tuấn vào phòng họp kỹ thuật ở cuối hành lang.
+
+Trong phòng họp, rèm cửa sổ cuốn đã được kéo xuống phân nửa để cản bớt ánh nắng gay gắt buổi chiều. Nhiệt độ điều hòa duy trì ở mức hai mươi bốn độ C mát lạnh. 
+
+Ngồi ở vị trí trung tâm bàn họp là một người đàn ông trạc ngoài bốn mươi tuổi, dáng người gầy, mặc áo sơ mi trắng thắt cà vạt xám chỉn chu, đeo một cặp kính gọng titan mỏng. Gương mặt ông ta góc cạnh, đôi mắt sau tròng kính toát lên vẻ sắc lạnh, hoài nghi và cực kỳ tỉ mỉ của một học giả thực nghiệm lâu năm. Trên ngực áo ông ta ghim chiếc thẻ chức danh: `TS. Trịnh Hoài Nam — Trưởng phòng Thí nghiệm Cảm biến Bức xạ & Trường Vi mô`.
+
+Kỹ sư Hoàng — người hôm qua phụ trách dàn camera tầm nhiệt — đang ngồi bên cạnh, chăm chú theo dõi những dãy số nhảy múa trên màn hình máy trạm xách tay.
+
+"Chào cậu An, mời cậu ngồi," Tiến sĩ Nam cất tiếng chào bằng một giọng điệu đều đều, không vồn vã nhưng có sức nặng.
+
+Tôi kéo ghế ngồi xuống đối diện hai người, phong thái trầm tĩnh:
+
+"Chào Tiến sĩ Nam, chào anh Hoàng. Tôi nghe nói các chuyên gia cần xác minh lại sự việc ở phòng trà nước hôm qua?"
+
+Tiến sĩ Nam không trả lời ngay. Ông xoay màn hình máy trạm về phía tôi, gõ nhẹ ngón tay lên mặt bàn kính:
+
+"Cậu hãy nhìn vào đồ thị này. Đây là dữ liệu gốc được trích xuất từ camera cảm biến nhiệt độ hồng ngoại của tòa nhà, mã lưu trữ hồ sơ: NV-2026-X."
+
+Trên màn hình là một biểu đồ ba chiều mô phỏng lại không gian phòng pantry tầng mười hai vào đúng thời điểm chiều hôm qua. Những đám mây màu đỏ cam đại diện cho khối nước sôi gần một trăm độ C đang bay lơ lửng trong không trung. Nhưng ngay giữa đám mây nhiệt đó, một vệt ranh giới hình bán nguyệt màu xanh lam thẫm đột ngột xuất hiện, tựa như một lưỡi dao vô hình gạt phăng toàn bộ năng lượng nhiệt.
+
+"Cậu có thấy sự phi lý ở đây không?" Tiến sĩ Nam nhìn thẳng vào mắt tôi, giọng nói sắc bén như muốn xuyên thấu tâm can. "Định luật nhiệt động lực học thứ hai chỉ ra rằng nhiệt năng luôn truyền từ vật nóng sang vật lạnh theo một gradient mượt mà. Nhưng ở đây, gradient đó bị bẻ gãy hoàn toàn. Trong vòng chưa đầy hai phần mười giây, nhiệt độ sụt từ chín mươi tám độ C xuống còn bốn độ C, và vùng biên giới sụt giảm nhiệt này lại là một đường cong bán nguyệt hoàn hảo có bán kính đúng một mét hai mươi lăm phân."
+
+Ông ta dừng lại một nhịp, đẩy cặp kính lên sống mũi:
+
+"Và tâm điểm của đường cong bán nguyệt đó... trùng khớp hoàn toàn với vị trí cậu đang đứng khi vung tay đỡ lấy ấm nước."
+
+Căn phòng họp bỗng chốc trở nên yên tĩnh đến mức nghe rõ cả tiếng vo ve của quạt tản nhiệt máy tính.
+
+Nếu là một người bình thường chột dạ, dưới ánh mắt điều tra như dao cạo của một chuyên gia lão luyện, nhịp tim chắc chắn sẽ tăng vọt, mồ hôi trán sẽ rịn ra và ánh mắt sẽ đảo quanh tìm kiếm đường lùi.
+
+Nhưng tôi thì khác. 
+
+Dưới làn da tôi, vòng Chu Thiên Khí Huyết vẫn đang vận hành một cách êm ái, nhịp nhàng như dòng nước sâu dưới đáy đại dương. Hơi thở tôi dài và sâu, nhịp tim duy trì vững vàng ở mức sáu mươi hai nhịp mỗi phút. Chiếc kén khí huyết sinh học bao bọc lấy thức hải tựa như một bức tường thành kiên cố, khóa chặt toàn bộ sự hiện diện của Lâm Tịch vào cõi sâu vô hình.
+
+"Thú vị thật," Lâm Tịch khẽ truyền âm trong thức hải, thanh âm bình thản không chút gợn sóng. "Máy móc của thế giới này dường như ghi nhớ chi tiết đến từng khoảnh khắc. Người này rất nhạy bén, nhưng ông ta chỉ nhìn thấy cái vỏ của hiện tượng mà không thể chạm tới bản chất."
+
+Tôi mỉm cười nhẹ, ánh mắt nhìn thẳng vào Tiến sĩ Nam với vẻ chân thành và bình thản của một người hoàn toàn ngay thẳng:
+
+"Thưa Tiến sĩ Nam, tôi chỉ là một nhân viên phụ trách dự án, không am hiểu sâu về các định luật vật lý nhiệt động lực. Nhưng hôm qua, đúng lúc ấm nước sôi tuột tay chị nhân viên vệ sinh, tôi theo phản xạ nhảy lùi lại để tránh bị bỏng, đồng thời chân tôi đá trúng chiếc xô đựng đá viên dùng để chuẩn bị tiệc trà chiều đặt ngay mép kệ bếp. Toàn bộ khối đá viên đó văng tung tóe lên không trung. Thêm vào đó, miệng gió điều hòa trung tâm ở ngay trên đầu tôi bị kẹt van thổi hơi lạnh cực mạnh. Tôi nghĩ sự kết hợp ngẫu nhiên giữa khối đá viên vỡ vụn và luồng gió đối lưu đã tạo nên sự phân tán nhiệt đột ngột đó."
+
+Kỹ sư Hoàng ngồi bên cạnh cũng khẽ gật đầu tiếp lời:
+
+"Đúng vậy thưa thầy Nam, em cũng đã kiểm tra van gió tầng mười hai hôm qua, van điều áp thực sự có hiện tượng kẹt cơ học nhẹ."
+
+Tiến sĩ Nam khẽ nhíu mày. Lời giải thích của tôi rất hợp lý theo góc nhìn đời thường, không để lộ bất kỳ một sơ hở nào. Nhưng linh cảm của một nhà nghiên cứu chuyên sâu dường như vẫn khiến ông ta chưa thỏa mãn:
+
+"Một xô đá viên và luồng gió lạnh không thể tạo ra một đường cắt biên độ chuẩn xác đến từng milimét như vậy. Trừ phi... trong lúc đó, trên người cậu mang theo một thiết bị làm lạnh thử nghiệm, ví dụ như ống vi dẫn heli lỏng, vật liệu siêu dẫn nhiệt độ phòng hoặc một vi mạch tản nhiệt lượng tử đang được nghiên cứu bí mật."
+
+Nói đoạn, Tiến sĩ Nam đứng dậy, mở chiếc hộp nhôm trên bàn, lấy ra một thiết bị đo cầm tay hình trụ dài bằng kim loại mờ, có đầu quét cảm biến quang phổ hồng ngoại terahertz:
+
+"Cậu An, để loại trừ hoàn toàn giả thuyết có nguồn trường lạnh vi mô nhân tạo bám dính trên y phục hoặc cơ thể cậu, tôi xin phép dùng máy quét quang phổ này quét qua người cậu một lần. Nó hoàn toàn vô hại, chỉ thu thập bức xạ nhiệt tự nhiên của cơ thể."
+
+"Vâng, xin mời Tiến sĩ," tôi đứng dậy, hai tay buông thõng tự nhiên, mỉm cười hợp tác.
+
+Trong thức hải, Lâm Tịch khẽ nhắc nhở:
+
+"Thiết bị đó dùng sóng ánh sáng vô hình để kích thích và dò tìm dao động phân tử. Đừng gượng ép chống cự, hãy để dòng máu ấm áp của ngươi lưu chuyển tự nhiên, lấy khí huyết phàm nhân nuôi dưỡng toàn bộ bề mặt da thịt. Ta sẽ thu liễm tàn niệm sâu vào điểm lõi thức hải, bảo đảm không một hạt sóng nào có thể chạm tới."
+
+"Tôi hiểu," tôi thầm đáp lại.
+
+Tiến sĩ Nam bấm nút khởi động chiếc máy quét. Một tiếng bíp ngắn vang lên, kèm theo một dải sáng màu tím nhạt quét dọc từ đỉnh đầu tôi xuống đến gót chân.
+
+*Bíp... bíp... rè...*
+
+Đầu dò cảm biến quét qua vai tôi, đi dọc lồng ngực rồi dừng lại ngay trước đốt sống lưng thứ bảy — nơi mà đêm qua tôi vừa phá vỡ then cài phong ấn viễn cổ.
+
+Không gian trong phòng họp như cô đặc lại. Anh Tuấn nín thở nhìn vào màn hình thiết bị đo, trong khi đôi mắt của Tiến sĩ Nam dán chặt vào từng thông số đang nhảy múa liên tục:
+
+`Nhiệt độ bề mặt biểu bì: 36.8°C — Chuẩn sinh học.`
+`Tần số bức xạ hồng ngoại: 9.4 micromet — Dao động tự nhiên của mô người sống.`
+`Phổ trường lạnh ngoại lai: 0.0000 micro-Kelvin — Âm tính tuyệt đối.`
+`Bức xạ dị thường: Không phát hiện.`
+
+Chiếc máy quét kêu lên hai tiếng *tít tít* đều đặn màu xanh lục, báo hiệu kết thúc chu trình kiểm tra.
+
+Tiến sĩ Nam nhìn chằm chằm vào màn hình hiển thị, vẻ mặt lộ rõ sự kinh ngạc xen lẫn một chút thất vọng. Cơ thể tôi hoàn toàn là một cơ thể con người bằng xương bằng thịt khỏe mạnh, không có dấu vết của bất kỳ vật liệu siêu dẫn, không có tàn dư của hợp chất làm lạnh hóa học, cũng không có một tia năng lượng dị thường nào. 
+
+Vòng Chu Thiên Khí Huyết ấm áp đã hoàn thành xuất sắc nhiệm vụ của một tấm khiên sinh thái tự nhiên, đồng hóa và hòa tan hoàn toàn mọi dấu vết quy tắc vào dòng máu phàm trần.
+
+"Kết quả... hoàn toàn bình thường," Tiến sĩ Nam thở dài một hơi, hạ thiết bị quét xuống, ánh mắt nhìn tôi đã bớt đi vẻ dò xét, thay vào đó là sự ái ngại:
+
+"Cảm ơn sự hợp tác của cậu An. Xem ra giả thuyết về vật liệu tản nhiệt lượng tử bị rò rỉ là không chính xác. Sự cố hôm qua nhiều khả năng thực sự chỉ là một lỗi quang sai tạm thời của bộ cảm biến nhiệt kết hợp với sự ngưng tụ hơi lạnh của đá viên trong không khí."
+
+"Không có gì đâu ạ, giải tỏa được thắc mắc của Viện là tốt rồi," tôi mỉm cười nhã nhặn, khẽ thở phào như một người vừa trút được gánh nặng oan uổng.
+
+Anh Tuấn bên cạnh cũng cười xòa vỗ tay:
+
+"Đấy, em đã bảo thầy Nam rồi mà, cậu An ở đây hiền lành, làm dự án mẫn cán, làm sao mà dính dáng tới mấy cái vật liệu thí nghiệm bí mật được."
+
+Tiến sĩ Nam bắt đầu thu dọn máy móc vào vali nhôm, nhưng trước khi đóng nắp máy trạm, ông ta bỗng ngẩng đầu lên nhìn kỹ sư Hoàng, nói một câu dường như chỉ để giải tỏa sự băn khoăn trong lòng mình:
+
+"Thực ra tôi sốt sắng với hồ sơ NV-2026-X này là vì một nguyên nhân khác. Đêm qua, vào khoảng hai mươi ba giờ ba mươi phút, trạm quan trắc địa chấn ngầm ở vùng ngoại ô phía Đông Nam thành phố cũng ghi nhận một xung dao động tần số thấp cực ngắn truyền sâu từ lòng đất. Dạng sóng dao động đó có biên độ suy giảm rất kỳ lạ, tựa như một khe nứt vật lý vô hình vừa xuất hiện dưới tầng đá ngầm cổ xưa. Thời điểm đó lại trùng khớp với chu kỳ sụt giảm nhiệt độ tại đây, nên Viện chúng tôi mới đặt giả thiết có hiện tượng biến dạng trường năng lượng ngầm trong lòng đô thị..."
+
+Nghe đến đó, bàn tay tôi đang cầm cốc nước khẽ khựng lại một phần nghìn giây.
+
+*Hai mươi ba giờ ba mươi phút đêm qua! Xung dao động ngầm truyền sâu từ lòng đất ngoại ô!*
+
+Đó chính là thời khắc tôi dùng ý chí phá vỡ chiếc then cài phong ấn tại đốt sống thứ bảy, khơi thông vòng Chu Thiên Khí Huyết đầu tiên!
+
+Dao động sinh học cực nhỏ ấy khi xuyên qua cơ thể tôi truyền xuống lòng đất, quả thực đã đánh thức một phản ứng cộng hưởng vi mô từ đại trận phong ấn Cố Thổ nằm sâu trong lòng đất Trái Đất, đúng như Lâm Tịch từng dự đoán. 
+
+Và các nhà khoa học trần thế với những trạm quan trắc địa chấn tối tân đã bắt đầu ghi nhận được những chấn động đầu tiên của bức màn phong ấn vạn năm ấy!
+
+"Khoa học đô thị ngày nay phức tạp thật đấy," tôi khẽ lên tiếng phụ họa, giữ trọn vẻ thản nhiên của một người ngoài cuộc.
+
+"Đúng vậy, có những hiện tượng tự nhiên mà máy móc của chúng ta hiện nay vẫn chưa thể giải thích nổi," Tiến sĩ Nam mỉm cười nhẹ, bắt tay tôi tạm biệt rồi cùng đoàn chuyên gia xách vali rời khỏi phòng họp.
+
+Năm giờ ba mươi phút chiều.
+
+Tôi đứng bên cửa kính lớn của văn phòng, phóng tầm mắt nhìn ra dòng sông Sài Gòn đang lấp lánh ánh hoàng hôn đỏ rực. Mặt trời đang lặn dần sau những tòa cao ốc chọc trời, rải xuống mặt nước từng mảng ánh sáng màu đồng thau rực rỡ.
+
+Dưới lăng kính của công nghệ hiện đại, bí mật về nguồn năng lượng lạnh tạm thời được chôn sâu vào quá khứ. Nhưng tiếng chuông cảnh báo từ trạm địa chấn ngầm và cuốn cổ thư chép tay của võ sư Ba Khiêm cho tôi hiểu rằng: dòng chảy ngầm của lịch sử đang cuộn trào mãnh liệt hơn bao giờ hết.
+
+Dưới làn da tôi, dòng máu ấm áp vẫn chảy xiết, sẵn sàng cho những thử thách lớn hơn đang đợi ở phía chân trời."""
+
+def main():
+    print("--- KHỞI CHẠY QUY TRÌNH VIẾT CHƯƠNG 15 ---")
+    engine = CoAuthorEngine()
+    result = engine.write_next_chapter(
+        target_chapter_num=15,
+        pov="Nguyễn Minh An (Ngôi thứ nhất)",
+        custom_draft_prose=ch15_prose
+    )
+    print("Kết quả pipeline:", result["success"])
+    print("Đường dẫn Markdown:", result["md_path"])
+    print("Đường dẫn Word DOCX:", result["docx_path"])
+    print("Tổng số từ:", result["word_count"])
+    print("Kiểm duyệt (Audit Passed):", result["critique"]["passed"])
+    if not result["critique"]["passed"]:
+        print("Danh sách cảnh báo:", result["critique"]["issues"])
+    print("Hoàn tất!")
+
+if __name__ == "__main__":
+    main()
