@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import subprocess
 import os
 import shutil
@@ -9,7 +10,6 @@ class GitManager:
         self.git_bin = self._resolve_git()
 
     def _resolve_git(self) -> str:
-        # Check environment PATH
         g = shutil.which("git")
         if g:
             return g
@@ -36,7 +36,7 @@ class GitManager:
         return code == 0
 
     def commit_minor(self, message: str, files: list = None) -> tuple[bool, str]:
-        """T? ??ng commit cho c?c thay ??i nh? (state update, metadata, formatting, index)."""
+        """Tự động commit cho các thay đổi nhỏ (state update, metadata, formatting, index)."""
         if files:
             for f in files:
                 self._run_git(["add", f])

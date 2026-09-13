@@ -1,22 +1,22 @@
-# WORKFLOW V?N H?NH NOVEL OS
+# QUY TRÌNH VẬN HÀNH NOVEL OS
 
-## 1. Chu tr?nh "Vi?t ti?p" (Autonomous Continuation)
-Khi Author nh?p l?nh: **"Vi?t ti?p."**
-H? th?ng k?ch ho?t pipeline kh?p k?n g?m 10 b??c:
-1. **Read Current State**: X?c ??nh Volume, Arc, Chapter hi?n t?i; ??c tr?ng th?i ??a l?, th? ch?t, c?m x?c c?a c?c nh?n v?t tham gia.
-2. **Epistemic Filter**: ??c ma tr?n nh?n th?c c?a POV hi?n t?i v? c?c nh?n v?t trong c?nh (Ai bi?t g?, ai KH?NG bi?t g?).
-3. **Context Retrieval**: Context Builder t?o `Context Pack` tinh g?n, c?ch ly `author_secret`.
-4. **Narrative Decision**: X?c ??nh b??c chuy?n bi?n ti?p theo (ti?n tri?n xung ??t, kh?m ph? b? ?n, hay kho?nh kh?c ??i th??ng).
-5. **Drafting (Co-Author)**: Vi?t b?n th?o theo ??ng POV, phong c?ch Cinematic + Literary + Dark Fantasy.
-6. **Multi-Pass Critique**: Self-Critique Engine qu?t 11 chi?u t?m m?u thu?n.
-7. **Automated Revision**: S?a ch?a c?c h?t s?n nh?, c?nh b?o n?u c? l?i l?n.
-8. **State & Memory Update**: C?p nh?t v? tr?, th??ng t?ch, ma tr?n nh?n th?c, quan h?, timeline.
-9. **Persistence**: L?u Markdown v?o `manuscript/markdown/`, bi?n d?ch sang `manuscript/word/`.
-10. **Git Management**: T? ??ng t?o git commit cho c?c thay ??i nh?.
+## 1. Chu Trình 'Viết tiếp' (Autonomous Continuation)
+Khi Author ra lệnh: **"Viết tiếp."**
+Hệ thống kích hoạt pipeline khép kín gồm 10 bước:
+1. **Đọc Trạng Thái Hiện Tại**: Xác định Volume, Arc, Chapter hiện tại; đọc trạng thái địa lý, thể chất, cảm xúc của các nhân vật tham gia.
+2. **Lọc Ma Trận Nhận Thức**: Đọc ma trận nhận thức của POV hiện tại và các nhân vật trong cảnh (Ai biết gì, ai KHÔNG biết gì).
+3. **Đóng Gói Ngữ Cảnh**: Context Builder tạo `Context Pack` tinh gọn, cách ly tuyệt đối `author_secret`.
+4. **Quyết Định Hướng Đi Tự Sự**: Xác định bước chuyển biến tiếp theo (tiến triển xung đột, khám phá bí ẩn, hay khoảnh khắc đời thường).
+5. **Soạn Thảo (Co-Author)**: Viết bản thảo theo đúng POV, phong cách Cinematic + Literary + Dark Fantasy.
+6. **Tự Phản Biện Đa Chiều**: Self-Critique Engine quét 11 chiều kích tìm mâu thuẫn narrative.
+7. **Tự Động Chuẩn Hóa**: Sửa chữa các hạt sạn nhỏ, cảnh báo nếu có lỗi lớn.
+8. **Cập Nhật Trạng Thái & Bộ Nhớ**: Cập nhật vị trí, thương tích, ma trận nhận thức, quan hệ, timeline.
+9. **Lưu Trữ Bền Vững**: Lưu Markdown vào `manuscript/markdown/`, biên dịch sang `manuscript/word/`.
+10. **Quản Lý Git**: Tự động tạo git commit cho các thay đổi nhỏ.
 
-## 2. Chu tr?nh "Vi?t l?i" (Targeted Revision)
-Khi Author ra l?nh: **"Vi?t l?i."**
-1. X?c ??nh ph?m vi (c?u, c?nh, hay to?n b? ch??ng).
-2. T?i t?o Context Pack t?i th?i ?i?m tr??c khi ch??ng ???c vi?t.
-3. So?n l?i b?n th?o, s?a ??i c?c ?i?m ngh?n logic.
-4. C?p nh?t l?i state t??ng ?ng.
+## 2. Chu Trình 'Viết lại' (Targeted Revision)
+Khi Author ra lệnh: **"Viết lại."**
+1. Xác định phạm vi cần sửa (câu, cảnh, hay toàn bộ chương).
+2. Tái tạo Context Pack tại thời điểm trước khi chương được viết.
+3. Soạn lại bản thảo, sửa đổi các điểm nghẽn logic.
+4. Cập nhật lại state tương ứng.

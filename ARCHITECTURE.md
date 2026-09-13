@@ -1,26 +1,26 @@
-# KI?N TR?C NOVEL OS CHO ?PH? TR?I?
+# KIẾN TRÚC NOVEL OS CHO “PHÁ TRỜI”
 
-## 1. Tri?t l? Thi?t k?
-1. **Single-Novel Dedicated Engine**: Kh?ng c? l?p tr?u t??ng th?a. T?i ?u 100% cho c?u tr?c v? tr?, h? th?ng tu luy?n v? b?i c?nh TP.HCM 2026 c?a *Ph? Tr?i*.
-2. **Local-First & Data Durability**: D? li?u ho?n to?n tr?n m?y c?c b? (`D:\tieu-thuyet`). Kh?ng ph? thu?c v?o cloud AI service ?? l?u tr? state.
-3. **Air-Gapped Author Secret Vault**: Th? m?c `author_secret/` ???c c? l?p logic ? c?p ?? m? ngu?n. Kh?ng m?t truy v?n retrieval th?ng th??ng n?o cho v?n b?n draft ???c ph?p truy c?p v?o vault n?y.
-4. **Epistemic State Tracking**: Nh?n th?c c?a nh?n v?t ???c theo d?i ?a tr?ng th?i: `KNOWN`, `SUSPECTED`, `BELIEVED`, `MISUNDERSTOOD`, `FALSE_BELIEF`, `UNKNOWN`, `FORGOTTEN`.
+## 1. Triết Lý Thiết Kế
+1. **Single-Novel Dedicated Engine**: Không có lớp trừu tượng thừa. Tối ưu 100% cho cấu trúc vũ trụ, hệ thống tu luyện và bối cảnh TP.HCM 2026 của *Phá Trời*.
+2. **Local-First & Data Durability**: Dữ liệu hoàn toàn trên máy cục bộ (`D:\tieu-thuyet`). Không phụ thuộc vào cloud AI service để lưu trữ state.
+3. **Air-Gapped Author Secret Vault**: Thư mục `author_secret/` được cô lập logic ở cấp độ mã nguồn. Không một truy vấn retrieval thông thường nào cho văn bản draft được phép truy cập vào vault này.
+4. **Epistemic State Tracking**: Nhận thức của nhân vật được theo dõi đa trạng thái: `KNOWN`, `SUSPECTED`, `BELIEVED`, `MISUNDERSTOOD`, `FALSE_BELIEF`, `UNKNOWN`, `FORGOTTEN`.
 
-## 2. 17 ??ng c? L?i (Engines)
-- **CanonEngine**: Ph?n c?p 6 tr?ng th?i (`LOCKED`, `CONFIRMED`, `PROVISIONAL`, `UNKNOWN`, `FORBIDDEN_ASSUMPTION`, `PROPOSED`).
-- **WorldEngine**: M? h?nh h?a v? tr? theo ?? th? ph?n c?p t? *??i ??i Gi?i -> C?c V?c -> C?c Tinh H?i -> C?c V? Di?n -> Th? Gi?i -> Tr?i ??t*.
-- **CharacterEngine**: Qu?n l? profile, th??ng t?n th? x?c, linh h?n, t?i ?? (inventory) v? m?c ti?u nh?n v?t.
-- **KnowledgeEngine**: Ki?m so?t ph?t ng?n nh?n v?t d?a tr?n ma tr?n nh?n th?c.
-- **PowerEngine**: Qu?n l? 7 ??o tu luy?n ch?nh v? Kh? Huy?t ??o tr?n Tr?i ??t. Ch?n quy t?c "c?nh gi?i cao auto th?ng".
-- **TimelineEngine**: D?ng th?i gian tuy?t ??i & t??ng ??i, ki?m so?t s? ki?n song song, t?c ?? di chuy?n gi?a c?c ??a ?i?m.
-- **ForeshadowingEngine**: Qu?n l? s? c?i ph?c b?t (Setup - Clue - Payoff) qua h?ng ng?n ch??ng.
-- **ContextBuilder**: L?c v? ??ng g?i g?i ng? c?nh t?i ?u theo ng?n s?ch token (`minimal + relevant + sufficient`).
-- **CoAuthorEngine**: Tri?n khai h?p ??ng "Vi?t ti?p" v?i kh? n?ng t? ??a ra quy?t ??nh s?ng t?o h?p canon.
-- **SelfCritiqueEngine**: T? ph?n bi?n 11 chi?u (Canon, Character, POV, Timeline, Location, Power, Relationship, Foreshadowing, Style, Narrative, Research).
-- **RevisionEngine**: S?a ch?a ch?nh x?c theo ph?m vi (c?u, ?o?n, c?nh, ch??ng).
-- **DocxPipeline**: Tr?nh xu?t file Word t? ??ng theo quy chu?n xu?t b?n s?ch.
-- **ResearchVault**: Kho l?u tr? nghi?n c?u ??i th?c (TP.HCM 2026, khoa h?c), ph?n ??nh r? r?ng `RESEARCH != CANON`.
-- **ProposalManager**: C? ch? ?? xu?t ? t??ng l?n v? ch? Author ph? duy?t.
-- **RelationshipEngine**: Theo d?i ma tr?n c?m x?c v? l?ch s? t??ng t?c gi?a c?c nh?n v?t.
-- **PlotGraphEngine**: Qu?n l? c?y c?t truy?n (Master -> Volume -> Arc -> Chapter -> Scene).
-- **NarrativeTestRunner**: B? ki?m th? t? ??ng 20 t?nh hu?ng ph? v? continuity.
+## 2. 17 Động Cơ Lõi (Core Engines)
+- **CanonEngine**: Phân cấp 6 trạng thái (`LOCKED`, `CONFIRMED`, `PROVISIONAL`, `UNKNOWN`, `FORBIDDEN_ASSUMPTION`, `PROPOSED`).
+- **WorldEngine**: Mô hình hóa vũ trụ theo đồ thị phân cấp từ *Đại Đại Giới -> Các Vực -> Các Tinh Hải -> Các Vị Diện -> Thế Giới -> Trái Đất*.
+- **CharacterEngine**: Quản lý profile, thương tổn thể xác, linh hồn, túi đồ (inventory) và mục tiêu nhân vật.
+- **KnowledgeEngine**: Kiểm soát phát ngôn nhân vật dựa trên ma trận nhận thức.
+- **PowerEngine**: Quản lý 7 Đạo tu luyện chính và Khí Huyết Đạo trên Trái Đất. Chặn quy tắc "cảnh giới cao auto thắng".
+- **TimelineEngine**: Dòng thời gian tuyệt đối & tương đối, kiểm soát sự kiện song song, tốc độ di chuyển giữa các địa điểm.
+- **ForeshadowingEngine**: Quản lý sổ cái phục bút (Setup - Clue - Payoff) qua hàng ngàn chương.
+- **ContextBuilder**: Lọc và đóng gói gói ngữ cảnh tối ưu theo ngân sách token (`minimal + relevant + sufficient`).
+- **CoAuthorEngine**: Triển khai hợp đồng "Viết tiếp" với khả năng tự đưa ra quyết định sáng tạo hợp canon.
+- **SelfCritiqueEngine**: Tự phản biện 11 chiều (Canon, Character, POV, Timeline, Location, Power, Relationship, Foreshadowing, Style, Narrative, Research).
+- **RevisionEngine**: Sửa chữa chính xác theo phạm vi (câu, đoạn, cảnh, chương).
+- **DocxPipeline**: Trình xuất file Word tự động theo quy chuẩn xuất bản sách.
+- **ResearchVault**: Kho lưu trữ nghiên cứu đời thực (TP.HCM 2026, khoa học), phân định rõ ràng `RESEARCH != CANON`.
+- **ProposalManager**: Cơ chế đề xuất ý tưởng lớn và chờ Author phê duyệt.
+- **RelationshipEngine**: Theo dõi ma trận cảm xúc và lịch sử tương tác giữa các nhân vật.
+- **PlotGraphEngine**: Quản lý cây cốt truyện (Master -> Volume -> Arc -> Chapter -> Scene).
+- **NarrativeTestRunner**: Bộ kiểm thử tự động 20 tình huống phá vỡ continuity.

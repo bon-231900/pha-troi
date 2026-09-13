@@ -2,12 +2,12 @@
   "items": [
     {
       "id": "RES-001",
-      "topic": "HCMC 2026 Urban Life & Weather",
-      "source": "Observational & Meteorological Records",
+      "topic": "Đời sống đô thị TP.HCM năm 2026 & Thời tiết",
+      "source": "Ghi chép khí tượng và quan sát thực địa",
       "date": "2026-09-13",
       "reliability": "HIGH",
       "verified": true,
-      "possible_use": "B?i c?nh m? ??u c?a Nguy?n Minh An",
+      "possible_use": "Bối cảnh mở đầu của Nguyễn Minh An",
       "canon_status": "RESEARCH_ONLY"
     }
   ]

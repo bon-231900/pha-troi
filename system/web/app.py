@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import os
 import sqlite3
 import json
@@ -21,9 +22,8 @@ from system.engines.foreshadowing_engine import ForeshadowingEngine
 from system.engines.proposal_manager import ProposalManager
 from system.engines.test_runner import run_all_narrative_tests
 
-app = FastAPI(title="Novel OS ? Ph? Tr?i Studio")
+app = FastAPI(title="Novel OS — Xưởng Sáng Tác Phá Trời")
 
-# Static assets
 os.makedirs(os.path.join(ROOT_DIR, "system", "web", "static"), exist_ok=True)
 app.mount("/static", StaticFiles(directory=os.path.join(ROOT_DIR, "system", "web", "static")), name="static")
 
@@ -32,14 +32,13 @@ def get_world_map():
     map_path = os.path.join(ASSETS_DIR, "WORLD_MAP_MASTER.jpg")
     if os.path.exists(map_path):
         return FileResponse(map_path, media_type="image/jpeg")
-    raise HTTPException(status_code=404, detail="World map image not found")
+    raise HTTPException(status_code=404, detail="Không tìm thấy tệp bản đồ thế giới")
 
 @app.get("/api/status")
 def get_system_status():
     verify_novel_lock()
     gm = GitManager()
     
-    # Word count across all markdown manuscripts
     total_words = 0
     chapter_count = 0
     if os.path.exists(MANUSCRIPT_MD_DIR):
@@ -51,8 +50,8 @@ def get_system_status():
                         total_words += len(fl.read().split())
 
     return {
-        "project": "Ph? Tr?i (PHA_TROI)",
-        "author_authority": "ABSOLUTE",
+        "project": "Phá Trời (PHA_TROI)",
+        "author_authority": "TUYỆT ĐỐI",
         "chapter_count": chapter_count,
         "total_words": total_words,
         "git_status": gm.status().strip(),
@@ -63,7 +62,7 @@ def get_system_status():
 def get_chapter(chapter_num: int):
     md_file = os.path.join(MANUSCRIPT_MD_DIR, "volume_01", "arc_01", f"ch_{chapter_num:03d}.md")
     if not os.path.exists(md_file):
-        raise HTTPException(status_code=404, detail=f"Ch??ng {chapter_num} ch?a ???c kh?i t?o.")
+        raise HTTPException(status_code=404, detail=f"Chương {chapter_num} chưa được khởi tạo.")
     with open(md_file, "r", encoding="utf-8") as f:
         content = f.read()
     return {
@@ -75,7 +74,7 @@ def get_chapter(chapter_num: int):
 
 class WriteRequest(BaseModel):
     chapter_num: int = 1
-    pov: str = "Nguy?n Minh An (First Person)"
+    pov: str = "Nguyễn Minh An (Ngôi thứ nhất)"
     custom_text: Optional[str] = None
 
 @app.post("/api/write-next")
@@ -139,7 +138,7 @@ def reject_prop(prop_id: str):
 def export_docx(chapter_num: int):
     docx_file = os.path.join(MANUSCRIPT_WORD_DIR, "volume_01", f"ch_{chapter_num:03d}.docx")
     if not os.path.exists(docx_file):
-        raise HTTPException(status_code=404, detail="File DOCX ch?a ???c bi?n d?ch.")
+        raise HTTPException(status_code=404, detail="File DOCX chưa được biên dịch.")
     return FileResponse(docx_file, filename=f"Pha_Troi_Ch_{chapter_num:03d}.docx", media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
 
 @app.get("/", response_class=HTMLResponse)
@@ -148,11 +147,11 @@ def index_page():
     if os.path.exists(html_path):
         with open(html_path, "r", encoding="utf-8") as f:
             return f.read()
-    return "<h1>Novel OS Web Studio is loading...</h1>"
+    return "<h1>Đang nạp Novel OS Web Studio...</h1>"
 
 def run_server(port: int = 8765):
     import uvicorn
-    print(f"[*] Kh?i ch?y Novel OS Web Studio t?i http://127.0.0.1:{port}")
+    print(f"[*] Khởi chạy Novel OS Web Studio tại http://127.0.0.1:{port}")
     uvicorn.run("system.web.app:app", host="127.0.0.1", port=port, reload=False)
 
 if __name__ == "__main__":

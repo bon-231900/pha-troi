@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import json
 import os
 from system.core.config import STATE_DIR
@@ -16,7 +17,7 @@ class RelationshipEngine:
         alt_key = f"{char_b}_x_{char_a}"
         return pairs.get(pair_key) or pairs.get(alt_key) or {
             "source": char_a, "target": char_b, "trust": 0, "respect": 0,
-            "affection": 0, "fear": 0, "romantic_awareness": 0, "notes": "Ch?a t??ng t?c."
+            "affection": 0, "fear": 0, "romantic_awareness": 0, "notes": "Chưa tương tác."
         }
 
     def update_relationship(self, char_a: str, char_b: str, updates: dict, note: str = ""):

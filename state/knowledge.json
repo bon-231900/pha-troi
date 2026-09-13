@@ -1,19 +1,19 @@
 {
   "facts": {
     "fact_earth_sealed": {
-      "statement": "Tr?i ??t l? v? di?n b? phong ?n, c?c con ???ng tu luy?n kh?c ?? b? c?t ??t.",
+      "statement": "Trái Đất là vị diện bị phong ấn và các con đường tu luyện khác đã bị cắt đứt.",
       "char_minh_an": "UNKNOWN",
       "char_lam_tich": "SUSPECTED",
       "reader": "CONFIRMED"
     },
     "fact_lam_tich_presence": {
-      "statement": "C? m?t t?n h?n th??ng c? v?a r?i v?o ? th?c c?a Minh An.",
+      "statement": "Có một tàn hồn thượng cổ vừa rơi vào ý thức của Minh An.",
       "char_minh_an": "UNKNOWN",
       "char_lam_tich": "KNOWN",
       "reader": "CONFIRMED"
     },
     "fact_khi_huyet_dao": {
-      "statement": "Tr?n Tr?i ??t t?n t?i Kh? Huy?t ??o (Luy?n Th? ??n Ph? C?nh).",
+      "statement": "Trên Trái Đất tồn tại Khí Huyết Đạo (Luyện Thể đến Phá Cảnh).",
       "char_minh_an": "UNKNOWN",
       "char_lam_tich": "UNKNOWN",
       "reader": "CONFIRMED"

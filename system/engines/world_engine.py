@@ -1,15 +1,16 @@
+# -*- coding: utf-8 -*-
 import sqlite3
 import json
 from system.core.config import DB_PATH
 
 class WorldEngine:
     COSMOLOGY_RANKS = {
-        1: "??i ??i Gi?i",
-        2: "C?c V?c",
-        3: "C?c Tinh H?i",
-        4: "C?c V? Di?n",
-        5: "Th? Gi?i",
-        6: "Tr?i ??t"
+        1: "Đại Đại Giới",
+        2: "Các Vực",
+        3: "Các Tinh Hải",
+        4: "Các Vị Diện",
+        5: "Thế Giới",
+        6: "Trái Đất"
     }
 
     def __init__(self, db_path: str = DB_PATH):
@@ -24,7 +25,7 @@ class WorldEngine:
         if row:
             return {
                 "id": row[0], "name": row[1], "parent_id": row[2],
-                "rank": row[3], "rank_name": self.COSMOLOGY_RANKS.get(row[3], "Kh?ng x?c ??nh"),
+                "rank": row[3], "rank_name": self.COSMOLOGY_RANKS.get(row[3], "Không xác định"),
                 "cultivation_system": row[4], "status": row[5],
                 "access_conditions": row[6], "description": row[7]
             }
@@ -43,14 +44,12 @@ class WorldEngine:
         } for r in rows]
 
     def validate_travel(self, source_id: str, target_id: str, elapsed_hours: float) -> tuple[bool, str]:
-        # Ki?m tra th?i gian t?i thi?u h?p l? tr??c
         if elapsed_hours < 0:
-            return False, "Th?i gian di chuy?n ?m l? b?t h?p l?."
+            return False, "Thời gian di chuyển âm là bất hợp lý."
         
         if source_id == target_id:
-            return True, "C?ng m?t ??a ?i?m."
+            return True, "Cùng một địa điểm."
         
-        # Ki?m tra n?u di chuy?n t? ngo?i v?o Tr?i ??t ho?c ng??c l?i
         if source_id == "node_trai_dat" or target_id == "node_trai_dat":
             conn = sqlite3.connect(self.db_path, timeout=30.0)
             cur = conn.cursor()
@@ -58,6 +57,6 @@ class WorldEngine:
             row = cur.fetchone()
             conn.close()
             if row and row[0] == "SEALED":
-                return False, "Tr?i ??t l? v? di?n b? phong ?n! C?m di chuy?n th?ng th??ng tr? khi c? s? ki?n ??c bi?t (nh? t?n h?n r?i)."
+                return False, "Trái Đất là vị diện bị phong ấn! Cấm di chuyển thông thường trừ khi có sự kiện đặc biệt (như tàn hồn rơi)."
 
-        return True, "H?p l?."
+        return True, "Hợp lệ."

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import sqlite3
 import json
 from system.core.config import DB_PATH
@@ -35,7 +36,7 @@ class ForeshadowingEngine:
 
     def update_status(self, seed_id: str, new_status: str, payoff_chapter: int = None):
         if new_status not in self.STATUSES:
-            raise ValueError(f"Invalid foreshadowing status: {new_status}")
+            raise ValueError(f"Trạng thái phục bút không hợp lệ: {new_status}")
         conn = sqlite3.connect(self.db_path, timeout=30.0)
         cur = conn.cursor()
         if payoff_chapter:
@@ -49,5 +50,5 @@ class ForeshadowingEngine:
         dormant = []
         for s in self.list_seeds():
             if s["status"] in ["PLANTED", "ACTIVE"] and (current_chapter - s["planted_chapter"] > threshold_chapters):
-                dormant.append(f"DORMANT_FORESHADOWING: Ph?c b?t '{s['seed_description']}' (ID: {s['id']}) gieo t? ch??ng {s['planted_chapter']} ?? qua {current_chapter - s['planted_chapter']} ch??ng ch?a c? ??ng th?i!")
+                dormant.append(f"DORMANT_FORESHADOWING: Phục bút '{s['seed_description']}' (Mã: {s['id']}) gieo từ chương {s['planted_chapter']} đã qua {current_chapter - s['planted_chapter']} chương chưa có động thái thu hồi!")
         return dormant

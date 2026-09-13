@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import os
 import json
 import sqlite3
@@ -8,7 +9,7 @@ class ContextBuilder:
         self.db_path = db_path
 
     def build_context_pack(self, chapter_num: int, pov: str, active_characters: list, location_id: str) -> dict:
-        """T?o g?i ng? c?nh tinh g?n (Context Pack) t?i ?u ng?n s?ch token, c?ch ly tuy?t ??i AUTHOR_SECRET."""
+        """Tạo gói ngữ cảnh tinh gọn (Context Pack) tối ưu ngân sách token, cách ly tuyệt đối AUTHOR_SECRET."""
         pack = {
             "chapter_num": chapter_num,
             "pov": pov,
@@ -19,24 +20,22 @@ class ContextBuilder:
             "active_foreshadowing": [],
             "recent_events": [],
             "style_constraints": [
-                "Modern Cinematic: Gi?u h?nh ?nh, nh?p phim, kh?ng gian r? r?ng, tho?i t? nhi?n ??i th?c.",
-                "Literary Depth: Kh?c h?a n?i t?m, k?t c?u c?m x?c s?u, c? ? ngh?a nh?n sinh.",
-                "Mature Dark Fantasy: Nghi?m t?c, t?n kh?c khi c?n, kh?ng l?m d?ng b?o l?c v? ngh?a.",
-                "Vietnam 2026: ??i th??ng TP.HCM, k?t xe, th?i ti?t, c?n h?, th?i quen sinh ho?t th?c t?.",
-                "Kh?ng dump lore! M?i th?ng tin m? ra qua h?nh ??ng, quan s?t v? ??i tho?i.",
-                "Minh An 100% l? ng??i b?nh th??ng. C?m m?i suy di?n gian l?n/h? th?ng/chuy?n sinh."
+                "Modern Cinematic: Giàu hình ảnh, nhịp phim, không gian rõ ràng, thoại tự nhiên đời thực.",
+                "Literary Depth: Khắc họa nội tâm, kết cấu cảm xúc sâu, có ý nghĩa nhân sinh.",
+                "Mature Dark Fantasy: Nghiêm túc, tàn khốc khi cần, không lạm dụng bạo lực vô nghĩa.",
+                "Vietnam 2026: Đời thường TP.HCM, kẹt xe, thời tiết, căn hộ, thói quen sinh hoạt thực tế.",
+                "Không dump lore! Mọi thông tin mở ra qua hành động, quan sát và đối thoại.",
+                "Minh An 100% là người bình thường. Cấm mọi suy diễn gian lận/hệ thống/chuyển sinh."
             ]
         }
 
-        conn = sqlite3.connect(self.db_path)
+        conn = sqlite3.connect(self.db_path, timeout=30.0)
         cur = conn.cursor()
 
-        # 1. Canon t?m t?t
         cur.execute("SELECT key, title, content FROM canon_entries WHERE level IN ('LOCKED', 'CONFIRMED')")
         for row in cur.fetchall():
             pack["canon_summary"].append(f"[{row[0]}] {row[1]}: {row[2]}")
 
-        # 2. Tr?ng th?i c?c nh?n v?t tham gia
         for cid in active_characters:
             cur.execute("""SELECT cultivation_realm, physical_condition, injuries_json, inventory_json, emotional_state
                            FROM character_states WHERE character_id = ? ORDER BY chapter_num DESC LIMIT 1""", (cid,))
@@ -49,18 +48,15 @@ class ContextBuilder:
                     "emotion": st[4]
                 }
 
-        # 3. Ma tr?n nh?n th?c cho c?c nh?n v?t n?y
         for cid in active_characters:
             cur.execute("SELECT statement, epistemic_status FROM knowledge_matrix WHERE character_id = ?", (cid,))
             knows = cur.fetchall()
             pack["epistemic_knowledge"][cid] = {k[0]: k[1] for k in knows}
 
-        # 4. Foreshadowing ?ang ho?t ??ng
         cur.execute("SELECT id, seed_description, actual_meaning FROM foreshadowing_ledger WHERE status IN ('PLANTED', 'ACTIVE')")
         for r in cur.fetchall():
             pack["active_foreshadowing"].append({"id": r[0], "seed": r[1], "meaning": r[2]})
 
-        # 5. S? ki?n g?n nh?t
         cur.execute("SELECT title, summary FROM timeline_events ORDER BY chapter_num DESC, scene_num DESC LIMIT 3")
         for r in cur.fetchall():
             pack["recent_events"].append(f"{r[0]}: {r[1]}")

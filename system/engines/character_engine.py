@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import sqlite3
 import json
 import os
@@ -23,14 +24,12 @@ class CharacterEngine:
             "metadata": json.loads(row[5]) if row[5] else {}
         }
         
-        # Merge JSON profile if exists
         char_json_file = os.path.join(ROOT_DIR, "canon", "characters", f"{character_id.replace('char_', '')}.json")
         if os.path.exists(char_json_file):
             with open(char_json_file, "r", encoding="utf-8") as f:
                 extra = json.load(f)
                 char_info.update(extra)
 
-        # Get latest state
         cur.execute("""SELECT chapter_num, location_id, cultivation_realm, physical_condition, injuries_json, inventory_json, emotional_state
                        FROM character_states WHERE character_id = ? ORDER BY chapter_num DESC LIMIT 1""", (character_id,))
         st = cur.fetchone()
@@ -57,7 +56,7 @@ class CharacterEngine:
         cur = conn.cursor()
         cur.execute("UPDATE entities SET status = 'DEAD', updated_at = CURRENT_TIMESTAMP WHERE id = ?", (character_id,))
         cur.execute("""INSERT INTO audit_log (action_type, description, details_json)
-                       VALUES ('CHARACTER_DEATH', ?, ?)""", (f"Nh?n v?t {character_id} ?? ch?t t?i ch??ng {chapter_num}", json.dumps({"reason": reason})))
+                       VALUES ('CHARACTER_DEATH', ?, ?)""", (f"Nhân vật {character_id} đã chết tại chương {chapter_num}", json.dumps({"reason": reason}, ensure_ascii=False)))
         conn.commit()
         conn.close()
 

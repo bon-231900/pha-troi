@@ -1,14 +1,14 @@
-# NGHI?N C?U TH?C ??A: TP. H? CH? MINH N?M 2026
+# NGHIÊN CỨU THỰC ĐỊA: TP. HỒ CHÍ MINH NĂM 2026
 
-## 1. Giao th?ng & ?? th?
-- Tuy?n Metro S? 1 (B?n Th?nh - Su?i Ti?n) ?? ?i v?o v?n h?nh th??ng m?i, thay ??i th?i quen di chuy?n c?a m?t b? ph?n ng??i d?n qua tr?c ??ng - Trung t?m.
-- Tuy nhi?n, xe m?y c? nh?n (xe x?ng v? xe m?y ?i?n VinFast/Dat Bike) v?n l? ph??ng ti?n th?ng tr? ?p ??o.
-- C?c ?i?m ngh?n giao th?ng kinh ?i?n: Ng? t? H?ng Xanh, ???ng X? Vi?t Ngh? T?nh, c?u R?ch Chi?c, ???ng ?i?n Bi?n Ph? v?o gi? tan t?m (17h30 - 19h30) khi tr?i ?? m?a d?ng l?n.
+## 1. Giao thông & Đô thị
+- Tuyến Metro Số 1 (Bến Thành - Suối Tiên) đã đi vào vận hành thương mại, thay đổi thói quen di chuyển của một bộ phận người dân qua trục Đông - Trung tâm.
+- Tuy nhiên, xe máy cá nhân (xe xăng và xe máy điện VinFast/Dat Bike) vẫn là phương tiện thống trị áp đảo.
+- Các điểm nghẽn giao thông kinh điển: Ngã tư Hàng Xanh, đường Xô Viết Nghệ Tĩnh, cầu Rạch Chiếc, đường Điện Biên Phủ vào giờ tan tầm (17h30 - 19h30) khi trời đổ mưa dông lớn.
 
-## 2. ??i s?ng V?n ph?ng & Chi ph?
-- Ng??i tr? 25 tu?i th??ng ? nh? tr? ho?c c?n h? chung c? mini/chung c? c? v?i gi? thu? dao ??ng 4 - 7 tri?u VND/th?ng.
-- V?n h?a: ??t ?? ?n qua GrabFood/ShopeeFood, u?ng c? ph? v?a h? ho?c Highland/Ph?c Long, thanh to?n ho?n to?n b?ng m? QR / chuy?n kho?n VietQR / MoMo.
-- Nh?p s?ng h?i h?, nhi?u ?p l?c kinh t?, nh?ng tr?n tr? v? ??nh h??ng t??ng lai sau v?i n?m ?i l?m.
+## 2. Đời sống Văn phòng & Chi phí
+- Người trẻ 25 tuổi thường ở nhà trọ hoặc căn hộ chung cư mini/chung cư cũ với giá thuê dao động 4 - 7 triệu VND/tháng.
+- Văn hóa: Đặt đồ ăn qua GrabFood/ShopeeFood, uống cà phê vỉa hè hoặc Highland/Phúc Long, thanh toán hoàn toàn bằng mã QR / chuyển khoản VietQR / MoMo.
+- Nhịp sống hối hả, nhiều áp lực kinh tế, những trăn trở về định hướng tương lai sau vài năm đi làm.
 
-## 3. Th?i ti?t th?ng 9 TP.HCM
-- M?a m?a Nam B?: Nh?ng c?n m?a r?o b?t ch?t v?o cu?i bu?i chi?u, m?y ?en x?m x?t k?o ??n nhanh ch?ng, s?m ch?p r?ch ngang tr?i r?i m?a x?i x? l?m d?u ?i c?i ng?t ng?t c?a bu?i tr?a.
+## 3. Thời tiết tháng 9 TP.HCM
+- Mùa mưa Nam Bộ: Những cơn mưa rào bất chợt vào cuối buổi chiều, mây đen xám xịt kéo đến nhanh chóng, sấm chớp rạch ngang trời rồi mưa xối xả làm dịu đi cái ngột ngạt của buổi trưa.

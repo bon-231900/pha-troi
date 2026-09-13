@@ -1,12 +1,12 @@
-# DECISION LOG ? PH? TR?I
+# NHẬT KÝ QUYẾT ĐỊNH CANON — PHÁ TRỜI
 
-| ID | Ng?y Ch?t | Ch? ?? | N?i Dung Quy?t ??nh | Tr?ng Th?i |
+| Mã Định Danh | Ngày Chốt | Chủ Đề | Nội Dung Quyết Định | Trạng Thái |
 |---|---|---|---|---|
-| DEC-001 | 2026-09-13 | Premise Nh?n V?t Nam | Nguy?n Minh An 25 tu?i, nh?n vi?n v?n ph?ng b?nh th??ng t?i TP.HCM 2026. Tuy?t ??i kh?ng chuy?n sinh, kh?ng h? th?ng, kh?ng huy?t m?ch ?n, kh?ng thi?n m?nh chi t?. | LOCKED |
-| DEC-002 | 2026-09-13 | Premise Nh?n V?t N? | L?m T?ch l? t?n t?i vi?n c? g?n ??nh cao, th?n th? v? n?t sau ??i chi?n di?t th?, t?n h?n neo v?o ? th?c Minh An. B? gi?i h?n nghi?m ng?t b?i quy t?c Tr?i ??t. | LOCKED |
-| DEC-003 | 2026-09-13 | Tr?c C?m X?c C?t L?i | Minh An nh?n L?m T?ch nh? m?t con ng??i m?i m?t c?n s? b?nh y?n ("C? c? m?t kh?ng?"), kh?ng nh?n n?ng nh? th?n linh. | LOCKED |
-| DEC-004 | 2026-09-13 | H? Th?ng Tu Luy?n | 7 ??o ch?nh (Linh, Th?, H?n, Ph?p T?c, Nh?n Qu?, T?n Ng??ng, Kh? ??o). Tr?i ??t ch? c?n Kh? Huy?t ??o sau ??i bi?n c? c? x?a. | LOCKED |
-| DEC-005 | 2026-09-13 | Quy T?c C?i Ch?t | C?i ch?t g?n nh? tuy?t ??i. Kh?ng h?i sinh d? d?i. | LOCKED |
-| DEC-006 | 2026-09-13 | T?nh C?m | Nguy?n Minh An x L?m T?ch l? Extremely Slow Burn, ph?t tri?n qua th?u hi?u v? ho?n n?n. | LOCKED |
-| DEC-007 | 2026-09-13 | Quy M? T?c Ph?m | H??ng t?i 2.000+ ch??ng, t? ch?c theo Volume -> Arc -> Chapter -> Scene linh ho?t. | LOCKED |
-| DEC-008 | 2026-09-13 | T?nh Ch?n Th?c VN 2026 | B?i c?nh TP.HCM n?m 2026 ph?i ch?n th?c, ??i th??ng, ng?n ng? t? nhi?n c?a ng??i Vi?t tr?. | LOCKED |
+| DEC-001 | 2026-09-13 | Premise Nhân Vật Nam | Nguyễn Minh An 25 tuổi, nhân viên văn phòng bình thường tại TP.HCM 2026. Tuyệt đối không chuyển sinh, không hệ thống, không huyết mạch ẩn, không thiên mệnh chi tử. | LOCKED |
+| DEC-002 | 2026-09-13 | Premise Nhân Vật Nữ | Lâm Tịch là tồn tại viễn cổ gần đỉnh cao, thân thể vỡ nát sau đại chiến diệt thế, tàn hồn neo vào ý thức Minh An. Bị giới hạn nghiêm ngặt bởi quy tắc Trái Đất. | LOCKED |
+| DEC-003 | 2026-09-13 | Trục Cảm Xúc Cốt Lõi | Minh An nhìn Lâm Tịch như một con người mỏi mệt cần sự bình yên ("Cô có mệt không?"), không nhìn nàng như thần linh. | LOCKED |
+| DEC-004 | 2026-09-13 | Hệ Thống Tu Luyện | 7 Đạo chính (Linh, Thể, Hồn, Pháp Tắc, Nhân Quả, Tín Ngưỡng, Khí Đạo). Trái Đất chỉ còn Khí Huyết Đạo sau đại biến cố cổ xưa. | LOCKED |
+| DEC-005 | 2026-09-13 | Quy Tắc Cái Chết | Cái chết gần như tuyệt đối. Không hồi sinh dễ dãi. | LOCKED |
+| DEC-006 | 2026-09-13 | Tình Cảm | Nguyễn Minh An x Lâm Tịch là Extremely Slow Burn, phát triển qua thấu hiểu và hoạn nạn. | LOCKED |
+| DEC-007 | 2026-09-13 | Quy Mô Tác Phẩm | Hướng tới 2.000+ chương, tổ chức theo Volume -> Arc -> Chapter -> Scene linh hoạt. | LOCKED |
+| DEC-008 | 2026-09-13 | Tính Chân Thực VN 2026 | Bối cảnh TP.HCM năm 2026 phải chân thực, đời thường, ngôn ngữ tự nhiên của người Việt trẻ. | LOCKED |

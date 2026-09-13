@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import sqlite3
 import json
 from datetime import datetime
@@ -32,15 +33,15 @@ class TimelineEngine:
         } for r in rows]
 
     def validate_chronology(self, chapter_num: int, event_time_str: str) -> tuple[bool, str]:
-        """Ki?m tra th?i gian kh?ng b? ??o l?n v? l? so v?i c?c ch??ng tr??c ho?c m?c kh?i ??u."""
+        """Kiểm tra thời gian không bị đảo lộn vô lý so với các chương trước hoặc mốc khởi đầu."""
         if not event_time_str:
-            return True, "H?p l?."
+            return True, "Hợp lệ."
         
         try:
             curr_dt = datetime.fromisoformat(event_time_str)
             start_dt = datetime.fromisoformat(self.START_DATE_STR)
             if curr_dt < start_dt:
-                return False, f"TIMELINE_ERROR: Th?i gian ({event_time_str}) tr??c ng?y b?t ??u t?c ph?m (2026-09-13) m? kh?ng g?n tag Flashback!"
+                return False, f"TIMELINE_ERROR: Thời gian ({event_time_str}) trước ngày bắt đầu tác phẩm (2026-09-13) mà không gắn tag Flashback!"
 
             conn = sqlite3.connect(self.db_path, timeout=30.0)
             cur = conn.cursor()
@@ -53,7 +54,7 @@ class TimelineEngine:
             if prev and prev[1]:
                 prev_dt = datetime.fromisoformat(prev[1])
                 if curr_dt < prev_dt and chapter_num >= prev[0]:
-                    return False, f"TIMELINE_ERROR: Th?i gian ({event_time_str}) s?m h?n s? ki?n tr??c ({prev[1]}) m? kh?ng c? th? Flashback!"
+                    return False, f"TIMELINE_ERROR: Thời gian ({event_time_str}) sớm hơn sự kiện trước ({prev[1]}) mà không có thẻ Flashback!"
         except Exception:
             pass
-        return True, "H?p l?."
+        return True, "Hợp lệ."

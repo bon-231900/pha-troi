@@ -3,25 +3,25 @@
   "events": [
     {
       "id": "EVT-000",
-      "title": "??i chi?n Di?t Th? t?i Th??ng V? Di?n",
-      "time": "Vi?n c? / Th?i kh?ng kh?ng x?c ??nh",
-      "location": "Tuy?n ph?ng th? cu?i c?ng c?a Th??ng V? Di?n",
+      "title": "Đại chiến Diệt Thế tại Thượng Vị Diện",
+      "time": "Viễn cổ / Thời không không xác định",
+      "location": "Tuyến phòng thủ cuối cùng của Thượng Vị Diện",
       "participants": [
-        "L?m T?ch",
-        "Th? l?c x?m l??c"
+        "Lâm Tịch",
+        "Thế lực xâm lược"
       ],
-      "outcome": "Th?n th? L?m T?ch b? ph? h?y, t?n h?n r?i v?o h? v?."
+      "outcome": "Thân thể Lâm Tịch bị phá hủy, tàn hồn rơi vào hư vô."
     },
     {
       "id": "EVT-001",
-      "title": "T?n h?n r?i v?o TP.HCM",
-      "time": "2026-09-13T19:15:00+07:00",
-      "location": "B?u tr?i TP.HCM -> ? th?c Nguy?n Minh An",
+      "title": "Tàn hồn rơi vào TP.HCM",
+      "time": "2026-09-13T18:00:00+07:00",
+      "location": "Bầu trời TP.HCM -> Ý thức Nguyễn Minh An",
       "participants": [
-        "L?m T?ch",
-        "Nguy?n Minh An"
+        "Lâm Tịch",
+        "Nguyễn Minh An"
       ],
-      "outcome": "M?nh nguy?n th?n neo l?i trong t?m th?c Minh An khi h?n tan s? v? nh?."
+      "outcome": "Mảnh nguyên thần neo lại trong tâm thức Minh An khi hắn tan sở về nhà."
     }
   ]
 }

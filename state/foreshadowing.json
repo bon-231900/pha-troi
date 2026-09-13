@@ -2,14 +2,14 @@
   "ledger": [
     {
       "id": "FSH-001",
-      "seed": "C?n ?au nh?i tho?ng qua sau g?y c?a Minh An gi?a c?n m?a r?o ng? t? H?ng Xanh",
+      "seed_description": "Cơn đau nhói thoáng qua sau gáy của Minh An giữa cơn mưa rào Hàng Xanh",
       "planted_chapter": 1,
       "planted_scene": 1,
       "notices": [
-        "Minh An (ngh? do tr?ng gi? c?m m?o)"
+        "Minh An"
       ],
-      "actual_meaning": "Th?i kh?c m?nh nguy?n th?n L?m T?ch ho?n t?t neo ??u v?o th?c h?i",
-      "payoff_candidate": "Ch??ng 2-3 khi gi?ng n?i ??u ti?n vang l?n",
+      "actual_meaning": "Thời khắc mảnh tàn hồn Lâm Tịch neo đậu vào thức hải",
+      "payoff_candidate": "Chương 2-3 khi giọng nói đầu tiên vang lên",
       "status": "PLANTED"
     }
   ]

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import json
 import os
 from system.core.config import RESEARCH_DIR
@@ -17,7 +18,7 @@ class ResearchVault:
             "id": item_id, "topic": topic, "source": source, "date": date,
             "summary": summary, "reliability": reliability, "verified": verified,
             "possible_use": possible_use,
-            "canon_status": "RESEARCH_ONLY" # Kh?ng t? ??ng th?nh canon!
+            "canon_status": "RESEARCH_ONLY"
         }
         data["items"].append(item)
         with open(self.ledger_file, "w", encoding="utf-8") as f:

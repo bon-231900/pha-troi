@@ -1,34 +1,34 @@
 {
   "char_minh_an": {
-    "current_location": "loc_hcmc_apartment",
-    "physical_condition": "Kh?e m?nh, m?t m?i sau gi? l?m",
+    "current_location": "loc_hcmc",
+    "physical_condition": "Khỏe mạnh, mệt mỏi sau giờ làm",
     "injuries": [],
-    "cultivation_realm": "Ph?m nh?n",
+    "cultivation_realm": "Phàm nhân",
     "inventory": [
-      "Smartphone",
-      "Ch?a kh?a xe m?y",
-      "V? ti?n",
-      "Th? nh?n vi?n"
+      "Điện thoại",
+      "Ví tiền",
+      "Chìa khóa xe máy",
+      "Thẻ nhân viên"
     ],
-    "emotional_state": "B?nh l?ng, tr?m m?c, h?i c? ??n",
+    "emotional_state": "Bình lặng, trầm mặc, hơi cô đơn",
     "active_goals": [
-      "Ho?n th?nh c?ng vi?c",
-      "Ngh? ng?i bu?i t?i"
+      "Hoàn thành công việc",
+      "Nghỉ ngơi buổi tối"
     ]
   },
   "char_lam_tich": {
-    "current_location": "loc_consciousness_minh_an",
-    "physical_condition": "Kh?ng c? th? x?c, m?nh t?n h?n suy y?u c?n k? tan r?",
+    "current_location": "loc_hcmc",
+    "physical_condition": "Không có thể xác, mảnh tàn hồn suy yếu cận kề tan rã",
     "injuries": [
-      "??o c? v? n?t",
-      "Nguy?n th?n x? r?ch 90%"
+      "Đạo cơ vỡ nát",
+      "Nguyên thần xé rách 90%"
     ],
-    "cultivation_realm": "T?n h?n c?c h?n suy y?u",
+    "cultivation_realm": "Nguyên Thần Tàn Phiến (Mảnh vỡ linh hồn)",
     "inventory": [],
-    "emotional_state": "Tr?m l?ng, c?nh gi?c, ki?t qu? sau tr?n chi?n di?t th?",
+    "emotional_state": "Trầm lặng, cảnh giác, kiệt quệ sau trận chiến diệt thế",
     "active_goals": [
-      "Neo gi? m?nh ? th?c kh?ng b? ti?u t?n",
-      "Quan s?t m?i tr??ng m?i"
+      "Neo giữ mảnh ý thức không bị tiêu tán",
+      "Quan sát môi trường mới"
     ]
   }
 }
