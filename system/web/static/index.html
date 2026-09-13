@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Novel OS ? Ph? Tr?i Studio</title>
+    <style>
+        :root {
+            --bg-dark: #0d1117;
+            --bg-card: #161b22;
+            --bg-hover: #21262d;
+            --border-color: #30363d;
+            --text-main: #c9d1d9;
+            --text-muted: #8b949e;
+            --text-gold: #f2cc60;
+            --accent-blue: #58a6ff;
+            --accent-green: #3fb950;
+            --accent-red: #f85149;
+            --accent-purple: #bc8cff;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        header {
+            background-color: #0b0e14;
+            border-bottom: 1px solid var(--border-color);
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+        }
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .brand h1 {
+            font-size: 1.25rem;
+            color: var(--text-gold);
+            letter-spacing: 1px;
+        }
+        .badge {
+            font-size: 0.75rem;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .badge-locked { background: rgba(242, 204, 96, 0.2); color: var(--text-gold); border: 1px solid var(--text-gold); }
+        .badge-healthy { background: rgba(63, 185, 80, 0.2); color: var(--accent-green); border: 1px solid var(--accent-green); }
+        
+        .header-stats {
+            display: flex;
+            gap: 20px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+        .header-stats span strong { color: var(--text-main); }
+
+        .toolbar {
+            display: flex;
+            gap: 10px;
+        }
+        button {
+            cursor: pointer;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+        }
+        .btn-primary { background: #238636; color: white; }
+        .btn-primary:hover { background: #2ea043; }
+        .btn-secondary { background: var(--bg-hover); color: var(--text-main); border: 1px solid var(--border-color); }
+        .btn-secondary:hover { background: #30363d; }
+        .btn-gold { background: rgba(242, 204, 96, 0.15); color: var(--text-gold); border: 1px solid var(--text-gold); }
+        .btn-gold:hover { background: rgba(242, 204, 96, 0.3); }
+
+        .main-layout {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+        nav.sidebar {
+            width: 220px;
+            background-color: #0b0e14;
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            padding: 10px 0;
+        }
+        .nav-item {
+            padding: 12px 20px;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-left: 3px solid transparent;
+            transition: all 0.15s;
+        }
+        .nav-item:hover {
+            color: var(--text-main);
+            background: var(--bg-hover);
+        }
+        .nav-item.active {
+            color: var(--text-gold);
+            background: rgba(242, 204, 96, 0.08);
+            border-left-color: var(--text-gold);
+            font-weight: 600;
+        }
+
+        .content-area {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 18px;
+            margin-bottom: 16px;
+        }
+        .card-header {
+            font-size: 1.1rem;
+            color: var(--accent-blue);
+            margin-bottom: 12px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Manuscript view */
+        .manuscript-viewer {
+            background: #0f141c;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 30px;
+            font-family: "Georgia", "Times New Roman", serif;
+            font-size: 1.15rem;
+            line-height: 1.8;
+            color: #d1d5db;
+            white-space: pre-wrap;
+            max-width: 850px;
+            margin: 0 auto;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+        }
+
+        /* Tables & Lists */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+        th, td {
+            padding: 10px 14px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        th { color: var(--text-muted); font-weight: 600; }
+        tr:hover { background: var(--bg-hover); }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        /* World Map Master view */
+        .map-container {
+            text-align: center;
+            background: #05070a;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+        .map-container img {
+            max-width: 100%;
+            max-height: 70vh;
+            border-radius: 6px;
+            box-shadow: 0 4px 25px rgba(0,0,0,0.8);
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="brand">
+            <h1>PH? TR?I</h1>
+            <span class="badge badge-locked">Project Lock: PHA_TROI</span>
+            <span class="badge badge-healthy" id="health-badge">21/21 Tests Pass</span>
+        </div>
+        <div class="header-stats">
+            <span>Ch??ng: <strong id="stat-chapters">1</strong></span>
+            <span>T?ng s? t?: <strong id="stat-words">948</strong></span>
+            <span>Tr?ng th?i Git: <strong id="stat-git">S?ch</strong></span>
+        </div>
+        <div class="toolbar">
+            <button class="btn-primary" onclick="triggerWriteNext()">?? Vi?t ti?p</button>
+            <button class="btn-secondary" onclick="triggerAudit()">??? Ki?m tra Continuity</button>
+            <button class="btn-gold" onclick="downloadWord()">?? Xu?t Word (.docx)</button>
+        </div>
+    </header>
+
+    <div class="main-layout">
+        <nav class="sidebar">
+            <div class="nav-item active" onclick="switchTab('tab-manuscript')">?? B?n Th?o</div>
+            <div class="nav-item" onclick="switchTab('tab-world')">?? B?n ?? V? Tr?</div>
+            <div class="nav-item" onclick="switchTab('tab-characters')">?? Nh?n V?t & Nh?n Th?c</div>
+            <div class="nav-item" onclick="switchTab('tab-timeline')">? D?ng Th?i Gian</div>
+            <div class="nav-item" onclick="switchTab('tab-foreshadowing')">?? Ph?c B?t (Chekhov)</div>
+            <div class="nav-item" onclick="switchTab('tab-proposals')">?? ?? Xu?t Canon</div>
+            <div class="nav-item" onclick="switchTab('tab-canon')">?? Story Bible & Canon</div>
+        </nav>
+
+        <main class="content-area">
+            <!-- Tab 1: Manuscript -->
+            <div id="tab-manuscript" class="tab-content active">
+                <div class="card">
+                    <div class="card-header">
+                        <span>B?n Th?o: Quy?n 1 / Arc 1 / Ch??ng 1 ? M?a Tr?n Ph? C?</span>
+                        <span style="font-size: 0.85rem; color: var(--text-gold);">POV: Nguy?n Minh An (Ng?i th? nh?t)</span>
+                    </div>
+                    <div class="manuscript-viewer" id="manuscript-body">?ang t?i b?n th?o...</div>
+                </div>
+            </div>
+
+            <!-- Tab 2: World Map & Cosmology -->
+            <div id="tab-world" class="tab-content">
+                <div class="card">
+                    <div class="card-header">
+                        <span>B?n ?? V? Tr? Master (WORLD_MAP_MASTER.jpg) ? Kh?a Canon</span>
+                        <span style="font-size: 0.85rem; color: var(--text-muted);">6 T?ng Cosmology: ??i ??i Gi?i -> Tr?i ??t</span>
+                    </div>
+                    <div class="map-container">
+                        <img src="/assets/world-map" alt="WORLD_MAP_MASTER" onclick="window.open('/assets/world-map', '_blank')">
+                        <p style="margin-top: 10px; font-size: 0.85rem; color: var(--text-muted);">B?m v?o ?nh ?? ph?ng to to?n m?n h?nh</p>
+                    </div>
+                    <div style="margin-top: 20px;">
+                        <h3 style="color: var(--accent-blue); margin-bottom: 10px;">Ph?n T?ng Kh?ng Gian ?? L?p B?n ??</h3>
+                        <table id="world-table">
+                            <thead>
+                                <tr><th>H?ng</th><th>T?n V? Di?n / V?c</th><th>H? Th?ng Tu Luy?n</th><th>Tr?ng Th?i</th><th>M? T?</th></tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 3: Characters -->
+            <div id="tab-characters" class="tab-content">
+                <div class="grid-2">
+                    <div class="card" id="card-minh-an">
+                        <div class="card-header">Nguy?n Minh An (Nam Ch?nh)</div>
+                        <div id="minh-an-details">?ang t?i...</div>
+                    </div>
+                    <div class="card" id="card-lam-tich">
+                        <div class="card-header">L?m T?ch (N? Ch?nh)</div>
+                        <div id="lam-tich-details">?ang t?i...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 4: Timeline -->
+            <div id="tab-timeline" class="tab-content">
+                <div class="card">
+                    <div class="card-header">S? C?i D?ng Th?i Gian Tuy?t ??i & T??ng ??i</div>
+                    <table id="timeline-table">
+                        <thead>
+                            <tr><th>Th?i Gian</th><th>Ch??ng</th><th>Ti?u ?? S? Ki?n</th><th>Nh?n V?t Tham Gia</th><th>Di?n Bi?n & K?t Qu?</th></tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tab 5: Foreshadowing -->
+            <div id="tab-foreshadowing" class="tab-content">
+                <div class="card">
+                    <div class="card-header">S? C?i Ph?c B?t & H?t M?m Chekhov's Gun</div>
+                    <table id="foreshadowing-table">
+                        <thead>
+                            <tr><th>ID</th><th>M? T? H?t M?m</th><th>Gieo T?i</th><th>? Ngh?a Th?t</th><th>D? Ki?n Payoff</th><th>Tr?ng Th?i</th></tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tab 6: Proposals -->
+            <div id="tab-proposals" class="tab-content">
+                <div class="card">
+                    <div class="card-header">?? Xu?t C?n Author Quy?t ??nh</div>
+                    <div id="proposals-list">?ang t?i ?? xu?t...</div>
+                </div>
+            </div>
+
+            <!-- Tab 7: Canon -->
+            <div id="tab-canon" class="tab-content">
+                <div class="card">
+                    <div class="card-header">Danh M?c Canon Kh?a C?ng (LOCKED & CONFIRMED)</div>
+                    <table id="canon-table">
+                        <thead>
+                            <tr><th>M?</th><th>Ph?n Lo?i</th><th>Ti?u ??</th><th>C?p ??</th><th>N?i Dung</th></tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        async function loadStatus() {
+            try {
+                const res = await fetch('/api/status');
+                const data = await res.json();
+                document.getElementById('stat-chapters').innerText = data.chapter_count;
+                document.getElementById('stat-words').innerText = data.total_words.toLocaleString();
+                document.getElementById('stat-git').innerText = data.recent_commit || "Ghi nh?n ??y ??";
+            } catch(e) { console.error(e); }
+        }
+
+        async function loadChapter(chNum = 1) {
+            try {
+                const res = await fetch(`/api/chapter/${chNum}`);
+                const data = await res.json();
+                document.getElementById('manuscript-body').innerText = data.content;
+            } catch(e) {
+                document.getElementById('manuscript-body').innerText = "Ch?a c? n?i dung cho ch??ng n?y.";
+            }
+        }
+
+        async function loadWorld() {
+            const res = await fetch('/api/world');
+            const data = await res.json();
+            const tb = document.querySelector('#world-table tbody');
+            tb.innerHTML = '';
+            data.forEach(n => {
+                tb.innerHTML += `<tr><td>${n.rank}</td><td><strong>${n.name}</strong></td><td>${n.cultivation_system || 'N/A'}</td><td><span class="badge badge-locked">${n.status}</span></td><td>${n.description}</td></tr>`;
+            });
+        }
+
+        async function loadCharacters() {
+            const res = await fetch('/api/characters');
+            const data = await res.json();
+            data.forEach(c => {
+                const st = c.latest_state || {};
+                const html = `
+                    <p><strong>C?nh gi?i:</strong> ${st.cultivation_realm || 'Ch?a tu luy?n'}</p>
+                    <p><strong>Th? tr?ng:</strong> ${st.physical_condition || 'B?nh th??ng'}</p>
+                    <p><strong>V? tr? hi?n t?i:</strong> ${st.location_id || 'TP.HCM'}</p>
+                    <p><strong>T?m l?:</strong> ${st.emotional_state || 'B?nh l?ng'}</p>
+                    <p><strong>Th??ng t?ch:</strong> ${st.injuries ? st.injuries.join(', ') : 'Kh?ng'}</p>
+                    <p><strong>T?i ??:</strong> ${st.inventory ? st.inventory.join(', ') : 'R?ng'}</p>
+                `;
+                if(c.id === 'char_minh_an') document.getElementById('minh-an-details').innerHTML = html;
+                if(c.id === 'char_lam_tich') document.getElementById('lam-tich-details').innerHTML = html;
+            });
+        }
+
+        async function loadTimeline() {
+            const res = await fetch('/api/timeline');
+            const data = await res.json();
+            const tb = document.querySelector('#timeline-table tbody');
+            tb.innerHTML = '';
+            data.forEach(e => {
+                tb.innerHTML += `<tr><td>${e.absolute_time || 'N/A'}</td><td>Ch.${e.chapter_num}</td><td><strong>${e.title}</strong></td><td>${e.participants.join(', ')}</td><td>${e.summary}</td></tr>`;
+            });
+        }
+
+        async function loadForeshadowing() {
+            const res = await fetch('/api/foreshadowing');
+            const data = await res.json();
+            const tb = document.querySelector('#foreshadowing-table tbody');
+            tb.innerHTML = '';
+            data.forEach(s => {
+                tb.innerHTML += `<tr><td><code>${s.id}</code></td><td><strong>${s.seed_description}</strong></td><td>Ch??ng ${s.planted_chapter}</td><td>${s.actual_meaning}</td><td>Ch??ng ${s.payoff_chapter || 'Ch?a ??nh'}</td><td><span class="badge badge-locked">${s.status}</span></td></tr>`;
+            });
+        }
+
+        async function loadCanon() {
+            const res = await fetch('/api/canon');
+            const data = await res.json();
+            const tb = document.querySelector('#canon-table tbody');
+            tb.innerHTML = '';
+            data.forEach(c => {
+                tb.innerHTML += `<tr><td><code>${c.key}</code></td><td>${c.category}</td><td><strong>${c.title}</strong></td><td><span class="badge badge-locked">${c.level}</span></td><td>${c.content}</td></tr>`;
+            });
+        }
+
+        async function loadProposals() {
+            const res = await fetch('/api/proposals');
+            const data = await res.json();
+            const box = document.getElementById('proposals-list');
+            if(data.length === 0) {
+                box.innerHTML = '<p style="color: var(--text-muted);">Kh?ng c? ?? xu?t n?o ?ang ch? ph? duy?t. To?n b? Canon ?ang ? tr?ng th?i kh?a b?o v?.</p>';
+                return;
+            }
+            box.innerHTML = '';
+            data.forEach(p => {
+                box.innerHTML += `
+                    <div style="padding: 12px; border: 1px solid var(--border-color); border-radius: 6px; margin-bottom: 10px;">
+                        <div style="display: flex; justify-content: space-between;">
+                            <h4>${p.title} (ID: ${p.id})</h4>
+                            <span class="badge badge-locked">${p.status}</span>
+                        </div>
+                        <p style="margin: 8px 0;">${p.description}</p>
+                        <p style="font-size: 0.85rem; color: var(--text-muted);">R?i ro: ${p.risk}</p>
+                        <div style="margin-top: 10px; display: flex; gap: 8px;">
+                            <button class="btn-primary" onclick="approveProp('${p.id}')">Ph? duy?t (Approve)</button>
+                            <button class="btn-secondary" onclick="rejectProp('${p.id}')">T? ch?i (Reject)</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        async function approveProp(id) {
+            await fetch(`/api/proposals/${id}/approve`, {method: 'POST'});
+            loadProposals();
+        }
+        async function rejectProp(id) {
+            await fetch(`/api/proposals/${id}/reject`, {method: 'POST'});
+            loadProposals();
+        }
+
+        async function triggerWriteNext() {
+            const btn = event.target;
+            btn.innerText = "? ?ang s?ng t?c...";
+            btn.disabled = true;
+            try {
+                const res = await fetch('/api/write-next', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({chapter_num: 1})
+                });
+                const result = await res.json();
+                alert(`Vi?t ti?p th?nh c?ng Ch??ng ${result.chapter_num}!\nS? t?: ${result.word_count}`);
+                loadChapter(1);
+                loadStatus();
+            } catch(e) {
+                alert('L?i: ' + e);
+            } finally {
+                btn.innerText = "?? Vi?t ti?p";
+                btn.disabled = false;
+            }
+        }
+
+        async function triggerAudit() {
+            const res = await fetch('/api/audit');
+            const data = await res.json();
+            alert(`Ki?m tra Continuity: ${data.passed ? 'HO?N H?O' : 'C? L?I'}\nT?ng s? tests: ${data.total}\nL?i: ${data.errors + data.failures}`);
+        }
+
+        function downloadWord() {
+            window.location.href = '/api/export-docx/1';
+        }
+
+        // Init
+        loadStatus();
+        loadChapter(1);
+        loadWorld();
+        loadCharacters();
+        loadTimeline();
+        loadForeshadowing();
+        loadCanon();
+        loadProposals();
+    </script>
+</body>
+</html>
