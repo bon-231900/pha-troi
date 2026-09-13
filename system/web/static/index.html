@@ -517,7 +517,7 @@
             event.target.classList.add('active');
         }
 
-        let currentChapter = 19;
+        let currentChapter = 20;
 
         async function loadStatus() {
             try {
@@ -549,7 +549,8 @@
                         16: "Chương 16: Võ Đường Trong Hẻm Cổ",
                         17: "Chương 17: Ánh Đèn Bên Dòng Kênh",
                         18: "Chương 18: Khí Huyết Thấu Não",
-                        19: "Chương 19: Thế Giới Dưới Tầng Giác Quan"
+                        19: "Chương 19: Thế Giới Dưới Tầng Giác Quan",
+                        20: "Chương 20: Bầu Trời Bị Tha Hóa"
                     };
                     for (let i = 1; i <= data.chapter_count; i++) {
                         const opt = document.createElement('option');
@@ -769,7 +770,7 @@
 
         // Tự động nạp dữ liệu khi mở trang
         loadStatus();
-        loadChapter(19);
+        loadChapter(20);
         loadWorld();
         loadCharacters();
         loadTimeline();
