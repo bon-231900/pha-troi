@@ -1,4 +1,22 @@
----
+# -*- coding: utf-8 -*-
+"""Script viết lại bản thảo Chương 43: Thủy Môn Cổ Phách Và Dấu Vết Vực Sâu Ngoại Giới."""
+
+import os
+import sys
+import json
+import sqlite3
+from datetime import datetime
+
+sys.path.insert(0, r"d:\tieu-thuyet")
+
+if sys.stdout and hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+
+DB_PATH = r"d:\tieu-thuyet\database\novel_os.db"
+MANUSCRIPT_DIR = r"d:\tieu-thuyet\manuscript\markdown\volume_01\arc_01"
+CH43_PATH = os.path.join(MANUSCRIPT_DIR, "ch_043.md")
+
+CHAPTER_CONTENT = """---
 chapter: 43
 title: "Thủy Môn Cổ Phách Và Dấu Vết Vực Sâu Ngoại Giới"
 arc: 1
@@ -6,7 +24,7 @@ volume: 1
 pov: "Nguyễn Minh An"
 location: "Ngã ba sông Nhà Bè (độ sâu 40m), TP.HCM"
 date: "2026-10-07"
-word_count: 2876
+word_count: 2850
 ---
 
 # Chương 43: Thủy Môn Cổ Phách Và Dấu Vết Vực Sâu Ngoại Giới
@@ -164,3 +182,139 @@ Xung quanh tôi, dòng xoáy hắc khí đen ngòm đang bốc lên ngùn ngụt
 Đứng trước sự xâm thực tàn bạo của lực lượng tha hóa từ cõi vực sâu ngoài hành tinh, lần đầu tiên trong đời, tôi cảm nhận sâu sắc sự nhỏ bé, mong manh và bất lực của một phàm nhân bằng xương bằng thịt.
 
 Nhưng sâu trong lồng ngực tôi, dòng máu Tam Chu Thiên bỗng nhiên sôi trào cuộn sóng, và hai trăm linh sáu mảnh xương tủy kiên định của tôi cất lên một tiếng ngân vang đầy kiêu hãnh giữa bóng tối ngàn trùng!
+"""
+
+def execute_drafting():
+    print("[1/5] Ghi bản thảo Chương 43 viết lại vào manuscript...")
+    with open(CH43_PATH, "w", encoding="utf-8") as f:
+        f.write(CHAPTER_CONTENT.strip() + "\n")
+    print(f"    -> Đã cập nhật tệp: {CH43_PATH}")
+
+    # 2. Kiểm duyệt bằng CritiqueEngine
+    print("[2/5] Kiểm duyệt bản thảo Chương 43 bằng CritiqueEngine...")
+    from system.engines.critique_engine import CritiqueEngine
+    critique = CritiqueEngine(DB_PATH)
+    audit_res = critique.audit_chapter_draft(
+        chapter_num=43,
+        pov="Nguyễn Minh An",
+        active_characters=["char_minh_an", "char_lam_tich"],
+        text=CHAPTER_CONTENT
+    )
+    print(f"    -> Kết quả kiểm duyệt: Passed={audit_res['passed']}, Tổng lỗi={audit_res['total_issues']}")
+    if audit_res["issues"]:
+        for iss in audit_res["issues"]:
+            print(f"       * [{iss['category']} - {iss['severity']}]: {iss['description']}")
+    
+    if not audit_res["passed"]:
+        print("[-] Kiểm duyệt thất bại! Có lỗi CRITICAL/HIGH.")
+        return False
+
+    # 3. Cập nhật Database
+    print("[3/5] Đồng bộ trạng thái vào cơ sở dữ liệu novel_os.db...")
+    conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
+    now_iso = datetime.now().isoformat()
+    word_count = len(CHAPTER_CONTENT.split())
+
+    # 3.1 story_hierarchy
+    cur.execute("""
+    INSERT OR REPLACE INTO story_hierarchy (id, level, parent_id, order_index, title, summary, word_count, status, pov, created_at, updated_at)
+    VALUES (?, 'chapter', 'mini_arc_01_03', 43, ?, ?, ?, 'LOCKED', 'Nguyễn Minh An', ?, ?)
+    """, (
+        "ch_043", "Chương 43: Thủy Môn Cổ Phách Và Dấu Vết Vực Sâu Ngoại Giới",
+        "Tàu Đại Dương 09 buông neo tại ngã ba sông Nhà Bè lúc 12:40 trong màn sương mù xám bạc và từ trường hỗn loạn. Minh An cùng hai thợ lặn đặc nhiệm hải quân hạ lồng xuống độ sâu 40m đáy sông Soài Rạp. Họ phát hiện Thủy Môn Cổ Phách và viên Huyết Ngọc Trấn Ba đang bị quấn quanh bởi những sợi tơ hắc khí lạnh buốt — dấu vết của lực lượng Hư Không Tha Hóa từ rãnh biển sâu ngoài khơi Cần Giờ gặm nhấm phong ấn viễn cổ. Lâm Tịch kinh hoàng nhận ra kẻ thù diệt thế viễn cổ, hé lộ sự thật Trái Đất là Vị Diện Phong Ấn Tầng Thứ Sáu. Luồng hắc khí bị kích động bùng phát lốc xoáy đen ngầm, ăn mòn lớp giáp titan của thợ lặn Lặn 01. Minh An đẩy đồng đội về lồng an toàn, một mình đứng chặn trước dòng xoáy hắc ám để bảo vệ Thủy Môn.",
+        word_count, now_iso, now_iso
+    ))
+
+    # 3.2 timeline_events
+    cur.execute("""
+    INSERT OR REPLACE INTO timeline_events (id, title, chapter_num, scene_num, absolute_time, relative_order, location_id, participants_json, summary, outcome)
+    VALUES (?, ?, 43, 1, '2026-10-07T13:15:00+07:00', 43, 'loc_nha_be', ?, ?, ?)
+    """, (
+        "EVT-CH043-01", "Khảo sát đáy sâu 40m Nhà Bè và phát hiện dấu vết Hư Không Tha Hóa xâm thực Thủy Môn",
+        json.dumps(["char_minh_an", "char_lam_tich", "Đại úy Hùng", "Tiến sĩ Nam", "chú Tùng", "Lặn 01 Dũng", "Lặn 02 Thành"], ensure_ascii=False),
+        "Trưa 07/10/2026 (~12:40 - 13:15). Tàu Đại Dương 09 ghi nhận dị thường từ trường và sóng âm tại ngã ba sông Nhà Bè. Minh An dẫn đầu đội lặn áp lực cao tiếp cận độ sâu 40m đáy sông Soài Rạp. Phát hiện Thủy Môn Cổ Phách và viên Huyết Ngọc Trấn Ba đang bị ăn mòn bởi hắc khí Hư Không Tha Hóa từ biển sâu tràn vào. Lâm Tịch xác nhận Trái Đất là vị diện phong ấn tầng thứ sáu đang bị rạn nứt. Luồng hắc khí kích động tạo xoáy nước đen, ăn mòn giáp titan của Lặn 01. Minh An yểm trợ đồng đội rút lui an toàn, một mình đối mặt hiểm nguy tột cùng.",
+        "Phát hiện chấn động: Trái Đất là vị diện phong ấn tầng 6 và phong ấn đang bị xâm thực từ biển sâu; Lặn 01 bị thương do hắc khí; Minh An một mình đứng lại trước Thủy Môn đối mặt cơn lốc xoáy hắc ám."
+    ))
+
+    # 3.3 character_states
+    cur.execute("""
+    INSERT INTO character_states (character_id, chapter_num, location_id, cultivation_realm, physical_condition, injuries_json, inventory_json, emotional_state)
+    VALUES (?, 43, 'loc_nha_be', ?, ?, ?, ?, ?)
+    """, (
+        "char_minh_an",
+        "Phàm nhân (Khí Huyết Đạo - Luyện Cốt Sơ kỳ, Tam Chu Thiên vận khí chống cự áp suất nước 5 bar và khí lạnh tha hóa)",
+        "Thể xác căng thẳng tột độ dưới áp lực nước 40m, xương tủy đau buốt do tiếp xúc khí tức Hư Không, khí huyết sôi trào bảo vệ tim mạch",
+        json.dumps(["Khớp xương buốt nhức do khí lạnh tha hóa"], ensure_ascii=False),
+        json.dumps(["Bộ đồ lặn neoprene bọc kevlar", "Bình khí Nitrox", "Mũ lặn áp lực cao đèn halogen", "Chiếc trâm ngọc cổ"], ensure_ascii=False),
+        "Kinh hoàng trước bí mật phong ấn vị diện nhưng ý chí sắt đá, quyết tâm bảo vệ đồng đội và trật tự nhân gian"
+    ))
+
+    cur.execute("""
+    INSERT INTO character_states (character_id, chapter_num, location_id, cultivation_realm, physical_condition, injuries_json, inventory_json, emotional_state)
+    VALUES (?, 43, 'Thức hải Minh An', ?, ?, ?, ?, ?)
+    """, (
+        "char_lam_tich",
+        "Tàn hồn viễn cổ (chấn động tột cùng khi chạm trán khí tức kẻ thù diệt thế Cửu U Vực Sâu)",
+        "Nguyên thần rung chuyển, tàn lực bị kích động, ký ức phong ấn vị diện tầng 6 thức tỉnh một phần",
+        json.dumps(["Đạo cơ vỡ nát", "Tàn hồn chấn động dữ dội"], ensure_ascii=False),
+        json.dumps(["Bản thể kiếm tàn Băng Phách Trảm Tuyết"], ensure_ascii=False),
+        "Kinh hãi, căm phẫn, lo lắng tột cùng cho an nguy của Minh An trước thế lực Hư Không Tha Hóa"
+    ))
+
+    # 3.4 story_threads
+    # Mở story thread mới cho tầm vóc 3000 chương!
+    cur.execute("""
+    INSERT OR REPLACE INTO story_threads (thread_id, thread_type, title, description, origin_chapter, target_resolution_chapter, status, current_state, known_info, hidden_info, reader_knowledge, last_touched_chapter, revisit_window_chapters, urgency, importance, created_at, updated_at)
+    VALUES (?, ?, ?, ?, 43, 500, 'ACTIVE', ?, ?, ?, ?, 43, 20, 'HIGH', 'CRITICAL', ?, ?)
+    """, (
+        "TH-MYS-003", "MYSTERY", "Sự Rạn Nứt Của Lưới Phong Ấn Trái Đất (Cực Tù Tầng 6)",
+        "Trái Đất là vị diện phong ấn tầng thứ sáu do đại năng viễn cổ thiết lập để cách ly hoặc giam cầm một bí mật vũ trụ. Chu kỳ phong ấn vạn năm đang suy thoái, khiến các vết rạn xuất hiện dọc theo các rãnh biển sâu và long mạch toàn cầu, để lộ khe hở cho Hư Không Tha Hóa xâm nhập.",
+        "Phát hiện dấu vết Hư Không Tha Hóa đầu tiên tại Thủy Môn Nhà Bè, xác nhận Trái Đất là vị diện phong ấn tầng thứ sáu.",
+        "Minh An và Lâm Tịch đã chứng kiến hắc khí tha hóa ăn mòn Thủy Môn dưới đáy sông 40m.",
+        "Nguyên nhân Trái Đất bị biến thành nhà tù phong ấn tầng 6 và thực thể bị phong ấn sâu trong lõi hành tinh là gì.",
+        "Người đọc bắt đầu nhận ra quy mô thực sự của thế giới không chỉ gói gọn trong đô thị Sài Gòn mà gắn liền với vận mệnh vũ trụ.",
+        now_iso, now_iso
+    ))
+
+    cur.execute("""
+    UPDATE story_threads SET last_touched_chapter = 43, current_state = ?, updated_at = ? WHERE thread_id = 'TH-MYS-001'
+    """, ("Thủy Môn Cổ Phách lộ diện là Trấn Hải Chi Môn bảo vệ cửa biển phương Nam, đang bị hắc khí Hư Không Tha Hóa tấn công.", now_iso))
+
+    cur.execute("""
+    UPDATE story_threads SET last_touched_chapter = 43, current_state = ?, updated_at = ? WHERE thread_id = 'TH-PLT-002'
+    """, ("Minh An đối mặt với áp lực nước 40m và khí tức tịch diệt của Hư Không, vận khí Tam Chu Thiên kiên cường trụ vững.", now_iso))
+
+    conn.commit()
+    conn.close()
+    print("[+] Đồng bộ cơ sở dữ liệu hoàn tất!")
+
+    # 4. Cập nhật FTS5 Search Index
+    print("[4/5] Đánh chỉ mục FTS5 cho Chương 43...")
+    from system.engines.retrieval_engine import RetrievalEngine
+    retrieval = RetrievalEngine(DB_PATH)
+    retrieval.index_chapter(CH43_PATH)
+    print("    -> Đã lập chỉ mục BM25 cho Chương 43.")
+
+    # 5. Xuất bản Word .docx
+    print("[5/5] Xuất bản thảo sang định dạng Word (.docx)...")
+    from system.engines.docx_pipeline import DocxPipeline
+    from system.core.config import MANUSCRIPT_WORD_DIR
+    docx_pipe = DocxPipeline()
+    out_docx_path = os.path.join(MANUSCRIPT_WORD_DIR, "volume_01", "arc_01", "ch_043.docx")
+    out_docx = docx_pipe.export_chapter_to_docx(
+        title="Chương 43: Thủy Môn Cổ Phách Và Dấu Vết Vực Sâu Ngoại Giới",
+        chapter_num=43,
+        content_md=CHAPTER_CONTENT,
+        output_docx_path=out_docx_path
+    )
+    print(f"    -> Đã xuất tệp Word: {out_docx}")
+
+    return True
+
+if __name__ == "__main__":
+    success = execute_drafting()
+    if success:
+        print("\n=== HOÀN TẤT VIẾT LẠI CHƯƠNG 43 THÀNH CÔNG ===")
+    else:
+        sys.exit(1)

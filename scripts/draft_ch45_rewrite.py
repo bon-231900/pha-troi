@@ -1,4 +1,22 @@
----
+# -*- coding: utf-8 -*-
+"""Script viết lại bản thảo Chương 45: Lâm Tịch Trầm Miên Và Người Gác Cổng Cô Độc."""
+
+import os
+import sys
+import json
+import sqlite3
+from datetime import datetime
+
+sys.path.insert(0, r"d:\tieu-thuyet")
+
+if sys.stdout and hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+
+DB_PATH = r"d:\tieu-thuyet\database\novel_os.db"
+MANUSCRIPT_DIR = r"d:\tieu-thuyet\manuscript\markdown\volume_01\arc_01"
+CH45_PATH = os.path.join(MANUSCRIPT_DIR, "ch_045.md")
+
+CHAPTER_CONTENT = """---
 chapter: 45
 title: "Lâm Tịch Trầm Miên Và Người Gác Cổng Cô Độc"
 arc: 1
@@ -6,7 +24,7 @@ volume: 1
 pov: "Nguyễn Minh An"
 location: "Cảng Tân Thuận (Quận 7) & Phòng trọ Bình Thạnh, TP.HCM"
 date: "2026-10-07"
-word_count: 3292
+word_count: 3120
 ---
 
 # Chương 45: Lâm Tịch Trầm Miên Và Người Gác Cổng Cô Độc
@@ -184,3 +202,133 @@ Tôi nắm chặt chiếc trâm ngọc trong lòng bàn tay, hai cánh tay rạn
 Một thế giới tươi đẹp đến nhường này, một cõi nhân gian ấm áp và kiên cường đến nhường này...
 
 Tôi nhất định sẽ dùng đôi bàn tay phàm trần này để bảo vệ đến cùng!
+"""
+
+def execute_drafting():
+    print("[1/5] Ghi bản thảo Chương 45 viết lại vào manuscript...")
+    with open(CH45_PATH, "w", encoding="utf-8") as f:
+        f.write(CHAPTER_CONTENT.strip() + "\n")
+    print(f"    -> Đã cập nhật tệp: {CH45_PATH}")
+
+    # 2. Kiểm duyệt bằng CritiqueEngine
+    print("[2/5] Kiểm duyệt bản thảo Chương 45 bằng CritiqueEngine...")
+    from system.engines.critique_engine import CritiqueEngine
+    critique = CritiqueEngine(DB_PATH)
+    audit_res = critique.audit_chapter_draft(
+        chapter_num=45,
+        pov="Nguyễn Minh An",
+        active_characters=["char_minh_an", "char_lam_tich"],
+        text=CHAPTER_CONTENT
+    )
+    print(f"    -> Kết quả kiểm duyệt: Passed={audit_res['passed']}, Tổng lỗi={audit_res['total_issues']}")
+    if audit_res["issues"]:
+        for iss in audit_res["issues"]:
+            print(f"       * [{iss['category']} - {iss['severity']}]: {iss['description']}")
+    
+    if not audit_res["passed"]:
+        print("[-] Kiểm duyệt thất bại! Có lỗi CRITICAL/HIGH.")
+        return False
+
+    # 3. Cập nhật Database
+    print("[3/5] Đồng bộ trạng thái vào cơ sở dữ liệu novel_os.db...")
+    conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
+    now_iso = datetime.now().isoformat()
+    word_count = len(CHAPTER_CONTENT.split())
+
+    # 3.1 story_hierarchy
+    cur.execute("""
+    INSERT OR REPLACE INTO story_hierarchy (id, level, parent_id, order_index, title, summary, word_count, status, pov, created_at, updated_at)
+    VALUES (?, 'chapter', 'mini_arc_01_03', 45, ?, ?, ?, 'LOCKED', 'Nguyễn Minh An', ?, ?)
+    """, (
+        "ch_045", "Chương 45: Lâm Tịch Trầm Miên Và Người Gác Cổng Cô Độc",
+        "Minh An hồi phục trong buồng giải áp tàu Đại Dương 09, các vết rạn xương cẳng tay tự khép miệng kỳ diệu nhờ Luyện Cốt sơ kỳ. Toàn bộ hồ sơ sự cố Nhà Bè được niêm phong cấp Tuyệt Mật Quốc gia. Minh An trở về phòng trọ Bình Thạnh, phê duyệt đóng hồ sơ dữ liệu với tư cách Giám đốc Kỹ thuật Dữ liệu, gọi điện ấm áp cho mẹ ở quê. Đêm muộn, Lâm Tịch hiện diện lần cuối trong thức hải, hé lộ bí mật chấn động: Trái Đất là Cõi Giới Phong Ấn Tầng Thứ Sáu đang bước vào thời kỳ phong ấn suy thoái, vết nứt Nhà Bè chỉ là phát súng lệnh đầu tiên cho đại kiếp nạn Biển Đông. Lâm Tịch cạn kiệt nguyên thần chính thức tiến vào trầm miên dài hạn trong trâm ngọc. Minh An đón nhận sứ mệnh Người Gác Cổng Cô Độc, quyết tâm rèn luyện Thể Đạo độc lập để bảo vệ thế giới phàm trần.",
+        word_count, now_iso, now_iso
+    ))
+
+    # 3.2 timeline_events
+    cur.execute("""
+    INSERT OR REPLACE INTO timeline_events (id, title, chapter_num, scene_num, absolute_time, relative_order, location_id, participants_json, summary, outcome)
+    VALUES (?, ?, 45, 1, '2026-10-07T22:30:00+07:00', 45, 'loc_binh_thanh', ?, ?, ?)
+    """, (
+        "EVT-CH045-01", "Hồi phục sau chiến dịch Nhà Bè, Lâm Tịch hé lộ bí mật cõi giới phong ấn tầng 6 và bước vào trầm miên",
+        json.dumps(["char_minh_an", "char_lam_tich", "Đại úy Hùng", "Tiến sĩ Nam", "Mẹ Minh An"], ensure_ascii=False),
+        "Chiều và tối 07/10/2026 (~16:00 - 22:30). Minh An hồi phục trong buồng giải áp; hồ sơ Nhà Bè niêm phong Tuyệt Mật. Minh An về phòng trọ Bình Thạnh, hoàn thành trách nhiệm công việc Viện và gọi điện cho mẹ. Đêm muộn, Lâm Tịch đối thoại lần cuối, giải mã Trái Đất là Cõi Giới Phong Ấn Tầng 6 đang rạn nứt theo chu kỳ vạn năm, rồi chính thức trầm miên trong chiếc trâm ngọc cổ. Minh An trở thành Người Gác Cổng Cô Độc.",
+        "Hồ sơ Nhà Bè được niêm phong an toàn; Minh An bắt đầu quá trình tự chữa lành xương tủy; hé lộ toàn cảnh cosmology Trái Đất tầng 6; Lâm Tịch bước vào trầm miên dài hạn; Minh An xác lập động lực tu luyện tối thượng cho hành trình 3000 chương."
+    ))
+
+    # 3.3 character_states
+    cur.execute("""
+    INSERT INTO character_states (character_id, chapter_num, location_id, cultivation_realm, physical_condition, injuries_json, inventory_json, emotional_state)
+    VALUES (?, 45, 'Phòng trọ Bình Thạnh, TP.HCM', ?, ?, ?, ?, ?)
+    """, (
+        "char_minh_an",
+        "Phàm nhân (Khí Huyết Đạo - Luyện Cốt Sơ kỳ viên mãn, chuẩn bị đột phá Luyện Cốt Trung kỳ Cốt Nhược Kim Thạch)",
+        "Các vết rạn vi mô trên xương cẳng tay đang được tủy xương tự hàn gắn nhanh chóng, kinh mạch thông suốt, thể lực hồi phục 80%",
+        json.dumps(["Rạn nứt vi mô xương cẳng tay đang trong quá trình tự chữa lành"], ensure_ascii=False),
+        json.dumps(["Chiếc trâm ngọc cổ (Lâm Tịch đang trầm miên)", "Laptop làm việc Viện Nghiên cứu", "Điện thoại thông minh"], ensure_ascii=False),
+        "Kiên định, trầm tĩnh, mang tâm thế của Người Gác Cổng Cô Độc, sẵn sàng tự lập gánh vác trách nhiệm bảo vệ cõi nhân gian"
+    ))
+
+    cur.execute("""
+    INSERT INTO character_states (character_id, chapter_num, location_id, cultivation_realm, physical_condition, injuries_json, inventory_json, emotional_state)
+    VALUES (?, 45, 'Thức hải Minh An', ?, ?, ?, ?, ?)
+    """, (
+        "char_lam_tich",
+        "Tàn hồn viễn cổ (chính thức tiến vào trạng thái Trầm Miên sâu dài hạn trong chiếc trâm ngọc cổ)",
+        "Nguyên thần ngủ say tĩnh lặng tuyệt đối, phong bế toàn bộ ý thức để phục hồi bản nguyên, không còn khả năng giao tiếp",
+        json.dumps(["Đạo cơ vỡ nát", "Nguyên thần cạn kiệt sức mạnh chìm vào trầm miên"], ensure_ascii=False),
+        json.dumps(["Bản thể kiếm tàn Băng Phách Trảm Tuyết (hoàn toàn ngủ say)"], ensure_ascii=False),
+        "Thanh thản, an lòng, hoàn toàn tin tưởng và gửi gắm vận mệnh thế giới vào ý chí của Minh An"
+    ))
+
+    # 3.4 story_threads
+    cur.execute("""
+    UPDATE story_threads SET last_touched_chapter = 45, current_state = ?, updated_at = ? WHERE thread_id = 'TH-MYS-003'
+    """, ("Lâm Tịch xác nhận Trái Đất là Cõi Giới Phong Ấn Tầng Thứ Sáu đang bước vào chu kỳ suy thoái, các vết rạn sẽ lan rộng ra Biển Đông và toàn cầu.", now_iso))
+
+    cur.execute("""
+    UPDATE story_threads SET last_touched_chapter = 45, current_state = ?, updated_at = ? WHERE thread_id = 'TH-PLT-001'
+    """, ("Lâm Tịch chính thức bước vào trầm miên sâu dài hạn, Minh An bắt đầu giai đoạn tự lực cánh sinh trên con đường Thể Đạo.", now_iso))
+
+    cur.execute("""
+    UPDATE story_threads SET last_touched_chapter = 45, current_state = ?, updated_at = ? WHERE thread_id = 'TH-CHR-001'
+    """, ("Minh An giữ vững vị thế Giám đốc Kỹ thuật Dữ liệu, hoàn thành trách nhiệm công việc và gắn kết bền chặt với tình thân gia đình.", now_iso))
+
+    cur.execute("""
+    UPDATE story_threads SET last_touched_chapter = 45, current_state = ?, updated_at = ? WHERE thread_id = 'TH-REL-001'
+    """, ("Lâm Tịch khâm phục ý chí phàm nhân của Minh An trước khi trầm miên, mối quan hệ giữa hai người đạt độ tin cậy thiêng liêng cao nhất.", now_iso))
+
+    conn.commit()
+    conn.close()
+    print("[+] Đồng bộ cơ sở dữ liệu hoàn tất!")
+
+    # 4. Cập nhật FTS5 Search Index
+    print("[4/5] Đánh chỉ mục FTS5 cho Chương 45...")
+    from system.engines.retrieval_engine import RetrievalEngine
+    retrieval = RetrievalEngine(DB_PATH)
+    retrieval.index_chapter(CH45_PATH)
+    print("    -> Đã lập chỉ mục BM25 cho Chương 45.")
+
+    # 5. Xuất bản Word .docx
+    print("[5/5] Xuất bản thảo sang định dạng Word (.docx)...")
+    from system.engines.docx_pipeline import DocxPipeline
+    from system.core.config import MANUSCRIPT_WORD_DIR
+    docx_pipe = DocxPipeline()
+    out_docx_path = os.path.join(MANUSCRIPT_WORD_DIR, "volume_01", "arc_01", "ch_045.docx")
+    out_docx = docx_pipe.export_chapter_to_docx(
+        title="Chương 45: Lâm Tịch Trầm Miên Và Người Gác Cổng Cô Độc",
+        chapter_num=45,
+        content_md=CHAPTER_CONTENT,
+        output_docx_path=out_docx_path
+    )
+    print(f"    -> Đã xuất tệp Word: {out_docx}")
+
+    return True
+
+if __name__ == "__main__":
+    success = execute_drafting()
+    if success:
+        print("\n=== HOÀN TẤT VIẾT LẠI CHƯƠNG 45 THÀNH CÔNG ===")
+    else:
+        sys.exit(1)

@@ -1,4 +1,22 @@
----
+# -*- coding: utf-8 -*-
+"""Script viết lại bản thảo Chương 44: Vết Rạn Phong Ấn Và Cái Giá Của Phàm Nhân."""
+
+import os
+import sys
+import json
+import sqlite3
+from datetime import datetime
+
+sys.path.insert(0, r"d:\tieu-thuyet")
+
+if sys.stdout and hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+
+DB_PATH = r"d:\tieu-thuyet\database\novel_os.db"
+MANUSCRIPT_DIR = r"d:\tieu-thuyet\manuscript\markdown\volume_01\arc_01"
+CH44_PATH = os.path.join(MANUSCRIPT_DIR, "ch_044.md")
+
+CHAPTER_CONTENT = """---
 chapter: 44
 title: "Vết Rạn Phong Ấn Và Cái Giá Của Phàm Nhân"
 arc: 1
@@ -6,7 +24,7 @@ volume: 1
 pov: "Nguyễn Minh An"
 location: "Đáy ngã ba sông Nhà Bè (độ sâu 40m) & Buồng giải áp tàu Đại Dương 09, TP.HCM"
 date: "2026-10-07"
-word_count: 2360
+word_count: 2980
 ---
 
 # Chương 44: Vết Rạn Phong Ấn Và Cái Giá Của Phàm Nhân
@@ -162,3 +180,133 @@ Nằm trên chiếc giường nệm của buồng giải áp, giữa lằn ranh 
 Bên ngoài boong tàu, bầu trời ngã ba sông Nhà Bè đã trong xanh trở lại, những tia nắng vàng rực rỡ chiếu rọi mặt nước bình yên. Dưới đáy sâu bốn mươi mét kia, hiểm họa diệt thế đã bị đẩy lùi bởi xương tủy và dòng máu nóng của một người phàm trần.
 
 Và sâu trong tâm thức tôi, một đốm sáng màu lam ngọc mờ ảo khẽ run rẩy một nhịp cuối cùng, trước khi chìm sâu vào một giấc ngủ tĩnh lặng vô tận.
+"""
+
+def execute_drafting():
+    print("[1/5] Ghi bản thảo Chương 44 viết lại vào manuscript...")
+    with open(CH44_PATH, "w", encoding="utf-8") as f:
+        f.write(CHAPTER_CONTENT.strip() + "\n")
+    print(f"    -> Đã cập nhật tệp: {CH44_PATH}")
+
+    # 2. Kiểm duyệt bằng CritiqueEngine
+    print("[2/5] Kiểm duyệt bản thảo Chương 44 bằng CritiqueEngine...")
+    from system.engines.critique_engine import CritiqueEngine
+    critique = CritiqueEngine(DB_PATH)
+    audit_res = critique.audit_chapter_draft(
+        chapter_num=44,
+        pov="Nguyễn Minh An",
+        active_characters=["char_minh_an", "char_lam_tich"],
+        text=CHAPTER_CONTENT
+    )
+    print(f"    -> Kết quả kiểm duyệt: Passed={audit_res['passed']}, Tổng lỗi={audit_res['total_issues']}")
+    if audit_res["issues"]:
+        for iss in audit_res["issues"]:
+            print(f"       * [{iss['category']} - {iss['severity']}]: {iss['description']}")
+    
+    if not audit_res["passed"]:
+        print("[-] Kiểm duyệt thất bại! Có lỗi CRITICAL/HIGH.")
+        return False
+
+    # 3. Cập nhật Database
+    print("[3/5] Đồng bộ trạng thái vào cơ sở dữ liệu novel_os.db...")
+    conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
+    now_iso = datetime.now().isoformat()
+    word_count = len(CHAPTER_CONTENT.split())
+
+    # 3.1 story_hierarchy
+    cur.execute("""
+    INSERT OR REPLACE INTO story_hierarchy (id, level, parent_id, order_index, title, summary, word_count, status, pov, created_at, updated_at)
+    VALUES (?, 'chapter', 'mini_arc_01_03', 44, ?, ?, ?, 'LOCKED', 'Nguyễn Minh An', ?, ?)
+    """, (
+        "ch_044", "Chương 44: Vết Rạn Phong Ấn Và Cái Giá Của Phàm Nhân",
+        "Tại độ sâu 40m ngã ba sông Nhà Bè, luồng hắc khí Hư Không Tha Hóa đe dọa phá hủy Thủy Môn và nghiền nát lồng lặn. Lặn 01 bất tỉnh, Minh An lệnh cho Lặn 02 khóa cửa lồng an toàn rồi một mình đối mặt hiểm nguy. Lâm Tịch dốc cạn tàn lực thi triển kiếm ý Băng Phách Trảm Tuyết mượn thân xác Minh An làm vật dẫn đông kết dòng xoáy tha hóa trong 30 giây. Lực phản chấn khiến xương cẳng tay và màng tủy của Minh An rạn nứt dữ dội. Trong khoảnh khắc sinh tử, Minh An dùng máu nóng và ý chí kiên định xoay then đồng Trấn Hải Khóa Trận, kích hoạt viên Huyết Ngọc Trấn Ba bộc phát thần quang quét sạch hắc khí, khép kín miệng rạn phong ấn viễn cổ. Minh An kiệt sức ngã gục, được Lặn 02 kéo vào lồng và đưa gấp lên buồng giải áp cao áp tàu Đại Dương 09.",
+        word_count, now_iso, now_iso
+    ))
+
+    # 3.2 timeline_events
+    cur.execute("""
+    INSERT OR REPLACE INTO timeline_events (id, title, chapter_num, scene_num, absolute_time, relative_order, location_id, participants_json, summary, outcome)
+    VALUES (?, ?, 44, 1, '2026-10-07T14:45:00+07:00', 44, 'loc_nha_be', ?, ?, ?)
+    """, (
+        "EVT-CH044-01", "Chiến đấu đáy sâu 40m, kích hoạt Trấn Hải Khóa Trận và đóng lại vết rạn phong ấn viễn cổ",
+        json.dumps(["char_minh_an", "char_lam_tich", "Đại úy Hùng", "Tiến sĩ Nam", "Lặn 01 Dũng", "Lặn 02 Thành"], ensure_ascii=False),
+        "Chiều 07/10/2026 (~13:15 - 14:45). Minh An một mình bọc hậu dưới đáy sông 40m. Lâm Tịch dẫn kiếm ý Băng Phách qua thân thể Minh An đông kết hắc khí tha hóa. Minh An gánh chịu phản chấn nứt xương cẳng tay, kiên cường xoay then đồng Ngạc Khảm kích hoạt thần quang Huyết Ngọc tiêu diệt tà khí, vá kín vết rạn phong ấn. Minh An ngất lịm, được kéo khẩn cấp lên tàu Đại Dương 09 đưa vào buồng giải áp cao áp điều trị.",
+        "Khép kín thành công vết rạn phong ấn Thủy Môn; tiêu diệt hắc khí Hư Không Tha Hóa; bảo vệ toàn vẹn luồng hàng hải và hạ lưu Sài Gòn; Minh An bị rạn xương cẳng tay do phản chấn kiếm ý; Lâm Tịch tiêu hao cạn kiệt nguyên thần rơi vào hôn mê sâu."
+    ))
+
+    # 3.3 character_states
+    cur.execute("""
+    INSERT INTO character_states (character_id, chapter_num, location_id, cultivation_realm, physical_condition, injuries_json, inventory_json, emotional_state)
+    VALUES (?, 44, 'Buồng giải áp tàu Đại Dương 09, TP.HCM', ?, ?, ?, ?, ?)
+    """, (
+        "char_minh_an",
+        "Phàm nhân (Khí Huyết Đạo - Luyện Cốt Sơ kỳ cực hạn, tủy xương kích phát năng lực tự chữa lành vi mô)",
+        "Kiệt sức hoàn toàn, hai cẳng tay và cổ tay bị rạn nứt xương do phản chấn kiếm ý viễn cổ, khóe miệng chảy máu, nhịp tim 55 bpm đang hồi phục trong buồng oxy cao áp",
+        json.dumps(["Rạn nứt vi mô xương cẳng tay và cổ tay hai bên", "Chấn thương màng tủy do phản chấn kiếm ý viễn cổ"], ensure_ascii=False),
+        json.dumps(["Bộ đồ lặn neoprene rách găng tay", "Nẹp cố định y tế hai tay", "Chiếc trâm ngọc cổ (mờ tối)"], ensure_ascii=False),
+        "Thanh thản, kiêu hãnh vì đã bảo vệ được thành phố, cảm nhận sâu sắc sự tàn khốc của quy tắc vũ trụ và ý chí kiên định của Thể Đạo"
+    ))
+
+    cur.execute("""
+    INSERT INTO character_states (character_id, chapter_num, location_id, cultivation_realm, physical_condition, injuries_json, inventory_json, emotional_state)
+    VALUES (?, 44, 'Thức hải Minh An', ?, ?, ?, ?, ?)
+    """, (
+        "char_lam_tich",
+        "Tàn hồn viễn cổ (nguyên thần cạn kiệt hoàn toàn sau khi xuất kiếm ý Băng Phách Trảm Tuyết, rơi vào trạng thái ngủ say bất tỉnh)",
+        "Nguyên thần suy kiệt 99%, ý thức phong bế tuyệt đối để tự bảo tồn, không còn khả năng phát ra âm thanh hay truyền niệm",
+        json.dumps(["Đạo cơ vỡ nát", "Nguyên thần cạn kiệt sức mạnh chìm vào hôn mê"], ensure_ascii=False),
+        json.dumps(["Bản thể kiếm tàn Băng Phách Trảm Tuyết (hoàn toàn ảm đạm)"], ensure_ascii=False),
+        "Thanh thản, khâm phục ý chí kiên cường và nhân cách phi phàm của Minh An"
+    ))
+
+    # 3.4 story_threads
+    cur.execute("""
+    UPDATE story_threads SET last_touched_chapter = 44, current_state = ?, updated_at = ? WHERE thread_id = 'TH-MYS-003'
+    """, ("Vết rạn phong ấn Thủy Môn Nhà Bè đã được đóng lại tạm thời nhờ Trấn Hải Khóa Trận, nhưng để lộ sự thật phong ấn Trái Đất đang già cỗi.", now_iso))
+
+    cur.execute("""
+    UPDATE story_threads SET last_touched_chapter = 44, current_state = ?, updated_at = ? WHERE thread_id = 'TH-PLT-001'
+    """, ("Lâm Tịch cạn kiệt nguyên thần sau nhát kiếm đáy sông, rơi vào hôn mê sâu chuẩn bị bước vào giai đoạn trầm miên dài hạn.", now_iso))
+
+    cur.execute("""
+    UPDATE story_threads SET last_touched_chapter = 44, current_state = ?, updated_at = ? WHERE thread_id = 'TH-PLT-002'
+    """, ("Minh An nếm trải cái giá của phàm nhân, gánh chịu phản chấn rạn xương cẳng tay, ý chí Thể Đạo tôi luyện đạt bước nhảy vọt tâm tính.", now_iso))
+
+    cur.execute("""
+    UPDATE story_threads SET last_touched_chapter = 44, current_state = ?, updated_at = ? WHERE thread_id = 'TH-MYS-001'
+    """, ("Thủy Môn Cổ Phách được bảo vệ nguyên vẹn, cơ chế phong tỏa cửa biển vận hành hoàn tất.", now_iso))
+
+    conn.commit()
+    conn.close()
+    print("[+] Đồng bộ cơ sở dữ liệu hoàn tất!")
+
+    # 4. Cập nhật FTS5 Search Index
+    print("[4/5] Đánh chỉ mục FTS5 cho Chương 44...")
+    from system.engines.retrieval_engine import RetrievalEngine
+    retrieval = RetrievalEngine(DB_PATH)
+    retrieval.index_chapter(CH44_PATH)
+    print("    -> Đã lập chỉ mục BM25 cho Chương 44.")
+
+    # 5. Xuất bản Word .docx
+    print("[5/5] Xuất bản thảo sang định dạng Word (.docx)...")
+    from system.engines.docx_pipeline import DocxPipeline
+    from system.core.config import MANUSCRIPT_WORD_DIR
+    docx_pipe = DocxPipeline()
+    out_docx_path = os.path.join(MANUSCRIPT_WORD_DIR, "volume_01", "arc_01", "ch_044.docx")
+    out_docx = docx_pipe.export_chapter_to_docx(
+        title="Chương 44: Vết Rạn Phong Ấn Và Cái Giá Của Phàm Nhân",
+        chapter_num=44,
+        content_md=CHAPTER_CONTENT,
+        output_docx_path=out_docx_path
+    )
+    print(f"    -> Đã xuất tệp Word: {out_docx}")
+
+    return True
+
+if __name__ == "__main__":
+    success = execute_drafting()
+    if success:
+        print("\n=== HOÀN TẤT VIẾT LẠI CHƯƠNG 44 THÀNH CÔNG ===")
+    else:
+        sys.exit(1)
