@@ -652,12 +652,23 @@ def build():
     data_dir = os.path.join(DIST_DIR, "data")
     os.makedirs(data_dir, exist_ok=True)
 
-    # 1. Parse all chapters
-    files = sorted([f for f in os.listdir(MANUSCRIPT_DIR) if f.endswith(".md") and f.startswith("ch_")])
+    # 1. Parse all chapters recursively from manuscript directory
+    chapter_paths = []
+    base_manuscript = os.path.join(BASE_DIR, "manuscript", "markdown")
+    for root, _, flist in os.walk(base_manuscript):
+        for f in flist:
+            if f.endswith(".md") and f.startswith("ch_"):
+                chapter_paths.append(os.path.join(root, f))
+    
+    def extract_ch(p):
+        m = re.search(r'ch_(\d+)', os.path.basename(p))
+        return int(m.group(1)) if m else 9999
+    
+    chapter_paths.sort(key=extract_ch)
+
     chapters_index = []
     total_words = 0
-    for f in files:
-        path = os.path.join(MANUSCRIPT_DIR, f)
+    for path in chapter_paths:
         info = parse_chapter_file(path)
         total_words += info["word_count"]
         
@@ -721,7 +732,7 @@ def build():
     dst_icon = os.path.join(DIST_DIR, "icon.svg")
     shutil.copy2(src_icon, dst_icon)
 
-    print(f"[Build Complete] 46 chuong ({total_words:,} tu) -> {DIST_DIR}")
+    print(f"[Build Complete] {len(chapters_index)} chuong ({total_words:,} tu) -> {DIST_DIR}")
     return len(chapters_index), total_words
 
 if __name__ == "__main__":

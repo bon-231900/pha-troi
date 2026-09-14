@@ -1,0 +1,69 @@
+{
+  "last_updated": "2026-09-15T01:30:00+07:00",
+  "holder": "Nguyễn Minh An",
+  "cultivation_realm": "Luyện Cốt Trung kỳ (Cốt Nhược Kim Thạch)",
+  "core_weapons_and_artifacts": [
+    {
+      "name": "Trâm Ngọc Cổ Lâm Tịch (Cố Hồn Trâm)",
+      "type": "Di vật bản mệnh / Cố hồn khí",
+      "location": "Túi áo trong bên ngực trái",
+      "condition": "Ba vết rạn li ti, thu liễm quang hoa, nguyên vẹn",
+      "durability": "100/100",
+      "function": "Cầu nối vật lý với thức hải và đài sen Lâm Tịch, bảo vệ tâm mạch"
+    },
+    {
+      "name": "Thanh Đoản Côn Hắc Thiết (Hắc Thiết Đoản Côn)",
+      "type": "Vũ khí cận chiến Thể Đạo chính",
+      "location": "Bao da bên hông balo dã chiến / Cốp xe Wave",
+      "condition": "Mới rèn nâng cấp (Chương 55), dài 52cm, nặng 3.2kg, tôi bột chu sa thạch anh ánh đỏ sẫm, quấn da bò",
+      "durability": "100/100",
+      "function": "Vũ khí thực chiến chính, chịu va đập đạn bắn, miễn nhiễm âm sát, dẫn truyền Kính Kình tối ưu"
+    },
+    {
+      "name": "Thanh Đoản Đao Đồng Rỉ Xanh (Trấn Thủy Đoản Đao)",
+      "type": "Cổ khí trấn thủy / Cọc định hải",
+      "location": "Bọc ba lớp vải bố dày cất sâu trong balo dã chiến",
+      "condition": "Đồng thau cổ phủ rỉ xanh dày, âm sát thủy khí cực mạnh",
+      "durability": "90/100",
+      "function": "Cổ khí thu từ Chợ Lớn, đang bị phong tỏa cách ly"
+    },
+    {
+      "name": "Mẩu Vụn Chu Sa Thạch Anh (Huyết Ngọc Tiềm Thạch)",
+      "type": "Mảnh vỡ chốt chặn phong ấn cổ",
+      "location": "Bọc túi nhung đen dưới đáy balo dã chiến",
+      "condition": "Còn 95% thể tích sau khi dùng một nhúm bột tôi thanh đoản côn (Chương 55)",
+      "durability": "100/100",
+      "function": "Cảm ứng và cộng hưởng dao động phong ấn ngầm trong bán kính 10m"
+    },
+    {
+      "name": "Bình Rượu Thuốc Đoán Cốt Cổ Phương",
+      "type": "Dược liệu bồi bổ khí huyết tủy xương",
+      "location": "Gầm giường phòng trọ Nơ Trang Long",
+      "condition": "Còn khoảng 0.65 lít sau khi tẩy độc 4 vết đạn chì (Chương 54)",
+      "durability": "20%",
+      "function": "Uống và xoa bóp hồi phục sau khi luyện Đoán Cốt hoặc va đập mạnh"
+    }
+  ],
+  "core_skills": [
+    {
+      "name": "Đoán Cốt Thập Nhị Thức",
+      "type": "Thể Đạo / Luyện Cốt quyền pháp",
+      "stage": "Luyện Cốt Trung kỳ (Thông thạo đến Thức thứ 5: Thiết Lương Thập Phách)"
+    },
+    {
+      "name": "Kính Kình Thể Thuật (Kính Phách Phản Chấn Quyết)",
+      "type": "Thể Đạo / Ngự lực phản kình",
+      "stage": "Sơ ngộ (Hấp thu 40% lực chấn, trả lại 60% phản chấn qua vũ khí)"
+    },
+    {
+      "name": "Quy Tức Quyết (Liễm Tức Pháp)",
+      "type": "Ẩn nặc khí tức / Điều tức",
+      "stage": "Thuần thục"
+    },
+    {
+      "name": "Nhập Định Quan Tưởng (Thanh Liên Thức Hải)",
+      "type": "Tâm pháp thần niệm",
+      "stage": "Quan tưởng đài sen, ngắm Lâm Tịch trầm miên"
+    }
+  ]
+}
