@@ -72,3 +72,59 @@ class KnowledgeEngine:
                 if "chiến trường hạch tâm" in lower_text or "tần số ý chí không khuất phục" in lower_text:
                     leaks.append(f"CRITICAL_AUTHOR_SECRET_LEAK: Nội dung chứa từ khóa bí mật tác giả ({sec.get('id')})!")
         return leaks
+
+    def record_world_truth(self, fact_key: str, truth_statement: str):
+        """Ghi nhận Chân Lý Thế Giới (World Truth) khách quan, bất biến."""
+        conn = sqlite3.connect(self.db_path, timeout=30.0)
+        cur = conn.cursor()
+        cur.execute("""INSERT INTO knowledge_matrix (fact_key, statement, character_id, epistemic_status, chapter_num)
+                       VALUES (?, ?, '__WORLD__', 'KNOWN', 0)""", (fact_key, truth_statement))
+        conn.commit()
+        conn.close()
+
+    def record_reader_knowledge(self, fact_key: str, reader_statement: str, chapter_num: int):
+        """Ghi nhận những gì Độc Giả (Reader Knowledge) đã được biết qua các chương đã xuất bản."""
+        conn = sqlite3.connect(self.db_path, timeout=30.0)
+        cur = conn.cursor()
+        cur.execute("""INSERT INTO knowledge_matrix (fact_key, statement, character_id, epistemic_status, chapter_num)
+                       VALUES (?, ?, '__READER__', 'KNOWN', ?)""", (fact_key, reader_statement, chapter_num))
+        conn.commit()
+        conn.close()
+
+    def get_epistemic_quadrant(self, character_id: str, fact_key: str) -> dict:
+        """Trích xuất ma trận 4 góc nhận thức cho một sự kiện/bí mật:
+        1. World Truth (Sự thật khách quan)
+        2. Character Belief (Điều nhân vật tin)
+        3. Character Suspicion (Điều nhân vật nghi ngờ)
+        4. Reader Knowledge (Điều độc giả biết)
+        """
+        conn = sqlite3.connect(self.db_path, timeout=30.0)
+        cur = conn.cursor()
+
+        # World truth
+        cur.execute("SELECT statement FROM knowledge_matrix WHERE character_id = '__WORLD__' AND fact_key = ? ORDER BY id DESC LIMIT 1", (fact_key,))
+        w_row = cur.fetchone()
+
+        # Reader knowledge
+        cur.execute("SELECT statement FROM knowledge_matrix WHERE character_id = '__READER__' AND fact_key = ? ORDER BY id DESC LIMIT 1", (fact_key,))
+        r_row = cur.fetchone()
+
+        # Character status & statement
+        cur.execute("""SELECT statement, epistemic_status FROM knowledge_matrix 
+                       WHERE character_id = ? AND fact_key = ? ORDER BY id DESC LIMIT 1""", (character_id, fact_key))
+        c_row = cur.fetchone()
+        conn.close()
+
+        c_stmt = c_row[0] if c_row else "Chưa từng tiếp cận"
+        c_status = c_row[1] if c_row else "UNKNOWN"
+
+        return {
+            "fact_key": fact_key,
+            "character_id": character_id,
+            "world_truth": w_row[0] if w_row else "Chưa định nghĩa",
+            "reader_knowledge": r_row[0] if r_row else "Chưa tiết lộ cho độc giả",
+            "character_belief": c_stmt if c_status in ("KNOWN", "BELIEVED", "FALSE_BELIEF") else None,
+            "character_suspicion": c_stmt if c_status == "SUSPECTED" else None,
+            "epistemic_status": c_status
+        }
+

@@ -1,13 +1,15 @@
 # NOVEL OS — PHÁ TRỜI (PHA_TROI)
 
-> **Hệ điều hành sáng tác & Quản trị thực thể chuyên biệt cho tiểu thuyết trường thiên 2.000+ chương: “Phá Trời”.**
+> **Hệ điều hành sáng tác & Quản trị thực thể chuyên biệt cho tiểu thuyết trường thiên 3.000+ chương: “Phá Trời”.**
 
 ## 1. Giới thiệu
-Novel OS được thiết kế theo tư duy *Novels as Codebases*, giải quyết triệt để các vấn đề kinh điển của tiểu thuyết trường thiên:
-- Rò rỉ thông tin trước thời hạn (Premature Knowledge Leaks)
+Novel OS được thiết kế theo tư duy *Novels as Codebases*, giải quyết triệt để các vấn đề kinh điển của tiểu thuyết trường thiên quy mô hàng nghìn chương:
+- Rò rỉ thông tin trước thời hạn (Premature Knowledge Leaks & Epistemic Separation)
+- Thất lạc và đứt gãy tuyến truyện (Story Thread Amnesia & Dormancy Audits)
 - Sai lệch dòng thời gian & khoảng cách địa lý (Impossible Travel & Timeline Contradictions)
-- Lạm phát sức mạnh phi lý (Power Creep & Realm Mismatches)
+- Lạm phát sức mạnh & phá vỡ trần quy mô (Power Creep & Multi-Axis Escalation Budgets)
 - Lãng quên phục bút (Forgotten Foreshadowing & Chekhov's Guns)
+- Bão hòa công thức tự sự & sáo ngữ kết chương (Narrative Fatigue & Formulaic Cliffhanger Repetition)
 - Mất tính cách nhân vật (Character Voice & Behavior Drift)
 - Mất dấu bí mật của tác giả (Author Secret Isolation)
 

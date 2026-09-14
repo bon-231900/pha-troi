@@ -100,6 +100,17 @@ class CritiqueEngine:
                             "description": f"INVENTORY_VIOLATION: Minh An sử dụng '{fi}' nhưng đồ vật này không có trong túi đồ được ghi nhận!"
                         })
 
+        # 9.5. Kiểm tra Bão Hòa Tự Sự & Sáo Ngữ (Narrative Fatigue)
+        from system.engines.fatigue_engine import FatigueEngine
+        fe = FatigueEngine(self.db_path)
+        fatigue_res = fe.analyze_chapter_text(chapter_num, text)
+        for alert in fatigue_res["alerts"]:
+            issues.append({
+                "category": "FATIGUE",
+                "severity": alert["severity"],
+                "description": alert["details"]
+            })
+
         # 10. Ghi nhận Telemetry (Viễn trắc kiểm tra tất định)
         from system.engines.telemetry_engine import TelemetryEngine
         te = TelemetryEngine(self.db_path)

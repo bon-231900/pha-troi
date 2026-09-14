@@ -7,7 +7,7 @@ project_type: "Hệ Điều Hành Chuyên Biệt Cho Một Tiểu Thuyết Duy N
 author_authority: "TUYỆT ĐỐI"
 multi_novel_support: "NGHIÊM CẤM"
 generic_novel_generator: "NGHIÊM CẤM"
-target_scale: "2.000+ Chương"
+target_scale: "3.000+ Chương"
 canon_scope: "Duy Nhất Tiểu Thuyết Này"
 storage_root: "D:/tieu-thuyet"
 lock_timestamp: "2026-09-13T21:45:00+07:00"

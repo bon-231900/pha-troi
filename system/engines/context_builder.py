@@ -5,6 +5,9 @@ import sqlite3
 from system.core.config import DB_PATH, CANON_DIR
 from system.engines.retrieval_engine import RetrievalEngine
 from system.engines.telemetry_engine import TelemetryEngine
+from system.engines.hierarchy_engine import HierarchyEngine
+from system.engines.thread_engine import StoryThreadEngine
+from system.engines.escalation_engine import EscalationEngine
 
 class ContextBuilder:
     """Động cơ Đóng Gói Ngữ Cảnh Tinh Gọn & Thích Ứng (Adaptive Hierarchical Context Pack).
@@ -25,6 +28,9 @@ class ContextBuilder:
         self.db_path = db_path
         self.retrieval_engine = RetrievalEngine(db_path)
         self.telemetry_engine = TelemetryEngine(db_path)
+        self.hierarchy_engine = HierarchyEngine(db_path)
+        self.thread_engine = StoryThreadEngine(db_path)
+        self.escalation_engine = EscalationEngine(db_path)
 
     def build_context_pack(self, chapter_num: int, pov: str, active_characters: list, location_id: str, scene_objective: str = "") -> dict:
         """Tạo gói ngữ cảnh phân tầng thích ứng (Adaptive Context Pack).
@@ -35,6 +41,9 @@ class ContextBuilder:
             "pov": pov,
             "location_id": location_id,
             "canon_summary": [],
+            "hierarchy_context": {},
+            "active_story_threads": [],
+            "escalation_limits": {},
             "character_states": {},
             "epistemic_knowledge": {},
             "active_foreshadowing": [],
@@ -59,6 +68,16 @@ class ContextBuilder:
             lore_entry = f"[{tl['doc_id']}] {tl['title']}: {tl['content']}"
             if lore_entry not in pack["canon_summary"]:
                 pack["canon_summary"].append(lore_entry)
+
+        # 1.5. LÁT CẮT PHÂN CẤP & ĐẠI CƯƠNG (Hierarchical Context Slice)
+        pack["hierarchy_context"] = self.hierarchy_engine.get_chapter_hierarchy_context(chapter_num)
+
+        # 1.6. TUYẾN TRUYỆN CẦN CHĂM SÓC (Active Story Threads)
+        pack["active_story_threads"] = self.thread_engine.get_threads_for_chapter_context(chapter_num, limit=3)
+
+        # 1.7. GIỚI HẠN LEO THANG (Escalation Limits)
+        budgets = self.escalation_engine.list_budgets(scope_id="volume_01")
+        pack["escalation_limits"] = {b["axis"]: {"current": b["current_level"], "ceiling": b["allowed_ceiling"]} for b in budgets}
 
         # 2. DELTA THỰC THỂ HOẠT ĐỘNG (Active Entities Delta Only)
         # Chỉ nạp trạng thái của nhân vật tham gia phân cảnh, bỏ qua toàn bộ dàn nhân vật phụ không có mặt

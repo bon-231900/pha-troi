@@ -12,7 +12,7 @@ PROPOSALS_DIR = os.path.join(ROOT_DIR, "proposals")
 ASSETS_DIR = os.path.join(ROOT_DIR, "assets")
 
 PROJECT_ID = "PHA_TROI"
-PROJECT_NAME = "Ph? Tr?i"
+PROJECT_NAME = "Phá Trời"
 AUTHOR_AUTHORITY = "ABSOLUTE"
-DEFAULT_POV = "Nguy?n Minh An (First Person)"
-TARGET_CHAPTERS = 2000
+DEFAULT_POV = "Nguyễn Minh An (Ngôi thứ nhất)"
+TARGET_CHAPTERS = 3000
