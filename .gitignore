@@ -11,3 +11,4 @@ database/*.db-journal
 database/*.db-wal
 database/*.db-shm
 tests/*.db*
+system/reader_app/dist/
