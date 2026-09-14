@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Phá Trời — Đọc Truyện Real-time</title>
+  <link rel="manifest" href="/static/manifest.json">
+  <link rel="icon" href="/static/icon.svg" type="image/svg+xml">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Phá Trời">
+  <style>
+    :root {
+      --bg-color: #0d0e12;
+      --text-color: #d1d5db;
+      --header-bg: rgba(13, 14, 18, 0.92);
+      --card-bg: #16181f;
+      --border-color: #242735;
+      --accent-color: #e53e3e;
+      --gold-color: #d4af37;
+      --font-family: -apple-system, BlinkMacSystemFont, "Bookerly", "Georgia", "Palatino", serif;
+      --font-size: 19px;
+      --line-height: 1.8;
+      --max-width: 680px;
+    }
+
+    body.theme-sepia {
+      --bg-color: #fbf0d9;
+      --text-color: #3b2d1d;
+      --header-bg: rgba(251, 240, 217, 0.95);
+      --card-bg: #f3e5c8;
+      --border-color: #e2d2b0;
+      --accent-color: #8b0000;
+      --gold-color: #8c6d1f;
+    }
+
+    body.theme-light {
+      --bg-color: #ffffff;
+      --text-color: #1a1a1a;
+      --header-bg: rgba(255, 255, 255, 0.95);
+      --card-bg: #f4f5f7;
+      --border-color: #e2e8f0;
+      --accent-color: #c53030;
+      --gold-color: #97741d;
+    }
+
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body {
+      margin: 0; padding: 0;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      font-family: var(--font-family);
+      font-size: var(--font-size);
+      line-height: var(--line-height);
+      min-height: 100vh;
+      transition: background-color 0.25s ease, color 0.25s ease;
+      overflow-x: hidden;
+    }
+
+    /* HEADER */
+    header {
+      position: fixed; top: 0; left: 0; right: 0; height: 56px;
+      background: var(--header-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-color);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 16px; z-index: 100;
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    header.hidden { transform: translateY(-100%); }
+
+    .btn-icon {
+      background: none; border: none; color: var(--text-color);
+      font-size: 20px; padding: 8px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 8px;
+    }
+    .header-title {
+      font-size: 15px; font-weight: 600; color: var(--gold-color);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      max-width: 55%; text-align: center;
+    }
+    .live-status {
+      display: flex; align-items: center; gap: 6px; font-size: 11px; color: #10b981;
+    }
+    .live-dot {
+      width: 7px; height: 7px; border-radius: 50%; background: #10b981;
+      box-shadow: 0 0 8px #10b981; animation: pulse 2s infinite;
+    }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+    /* CONTENT */
+    main {
+      max-width: var(--max-width); margin: 0 auto;
+      padding: 76px 20px 100px 20px;
+    }
+    .chapter-heading {
+      text-align: center; margin-bottom: 28px;
+    }
+    .chapter-meta {
+      font-size: 13px; color: var(--gold-color); opacity: 0.85; margin-bottom: 8px;
+      text-transform: uppercase; letter-spacing: 1px; font-weight: 600;
+    }
+    .chapter-title-main {
+      font-size: 1.5em; font-weight: 800; color: var(--accent-color);
+      line-height: 1.35; margin: 0 0 16px 0;
+    }
+    .novel-body p {
+      text-indent: 1.6em; margin-top: 0; margin-bottom: 0.8em;
+      text-align: justify; word-break: break-word;
+    }
+    .novel-body strong { font-weight: 700; }
+    .novel-body em { font-style: italic; }
+    .novel-body hr {
+      border: none; border-top: 1px dashed var(--border-color);
+      margin: 2em auto; width: 60%;
+    }
+
+    /* FOOTER NAV */
+    footer {
+      position: fixed; bottom: 0; left: 0; right: 0; height: 56px;
+      background: var(--header-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-top: 1px solid var(--border-color);
+      display: flex; align-items: center; justify-content: space-around;
+      padding: 0 16px; z-index: 100;
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    footer.hidden { transform: translateY(100%); }
+
+    .nav-btn {
+      background: var(--card-bg); border: 1px solid var(--border-color);
+      color: var(--text-color); font-size: 14px; font-weight: 600;
+      padding: 7px 18px; border-radius: 20px; cursor: pointer;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .nav-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+    /* TOAST ALERT */
+    .toast {
+      position: fixed; top: 68px; left: 50%; transform: translateX(-50%) translateY(-30px);
+      background: var(--accent-color); color: #ffffff;
+      padding: 10px 20px; border-radius: 25px; font-size: 13px; font-weight: 600;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.4); z-index: 200;
+      opacity: 0; pointer-events: none; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
+
+    /* DRAWER MENU (TOC) */
+    .drawer-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(4px); z-index: 300;
+      opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+    }
+    .drawer-overlay.open { opacity: 1; pointer-events: auto; }
+
+    .drawer {
+      position: fixed; top: 0; left: 0; bottom: 0; width: 85%; max-width: 360px;
+      background: var(--bg-color); z-index: 310;
+      transform: translateX(-100%); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex; flex-direction: column; border-right: 1px solid var(--border-color);
+    }
+    .drawer.open { transform: translateX(0); }
+
+    .drawer-header {
+      padding: 20px; border-bottom: 1px solid var(--border-color);
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .drawer-title { font-size: 18px; font-weight: bold; color: var(--gold-color); margin: 0; }
+    .drawer-list {
+      flex: 1; overflow-y: auto; padding: 10px 0; margin: 0; list-style: none;
+    }
+    .drawer-item {
+      padding: 13px 20px; border-bottom: 1px solid var(--border-color);
+      cursor: pointer; display: flex; flex-direction: column; gap: 4px;
+      font-size: 14px;
+    }
+    .drawer-item:hover, .drawer-item.active {
+      background: var(--card-bg); color: var(--gold-color);
+    }
+    .drawer-item-title { font-weight: 600; line-height: 1.35; }
+    .drawer-item-meta { font-size: 12px; opacity: 0.6; }
+
+    /* SETTINGS MODAL */
+    .modal-sheet {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: var(--card-bg); border-top: 1px solid var(--border-color);
+      border-radius: 24px 24px 0 0; padding: 24px 20px 36px 20px;
+      z-index: 320; transform: translateY(100%);
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .modal-sheet.open { transform: translateY(0); }
+    .sheet-title { font-size: 16px; font-weight: bold; margin-bottom: 16px; text-align: center; color: var(--gold-color); }
+    .sheet-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+    .theme-group { display: flex; gap: 10px; }
+    .theme-btn {
+      width: 42px; height: 42px; border-radius: 50%; border: 2px solid transparent;
+      cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px;
+    }
+    .theme-btn.active { border-color: var(--gold-color); }
+    .font-ctrl-btn {
+      background: var(--bg-color); border: 1px solid var(--border-color);
+      color: var(--text-color); font-size: 16px; font-weight: bold;
+      width: 44px; height: 38px; border-radius: 8px; cursor: pointer;
+    }
+
+    /* READING PROGRESS BAR */
+    .progress-bar {
+      position: fixed; top: 0; left: 0; height: 3px; background: var(--accent-color);
+      width: 0%; z-index: 101; transition: width 0.1s linear;
+    }
+  </style>
+</head>
+<body class="theme-dark">
+  <div class="progress-bar" id="progressBar"></div>
+
+  <!-- HEADER -->
+  <header id="topHeader">
+    <button class="btn-icon" id="btnMenu" aria-label="Mục lục">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+    </button>
+    <div class="header-title" id="headerTitle">Đang tải...</div>
+    <div style="display:flex; align-items:center; gap:8px;">
+      <div class="live-status"><div class="live-dot"></div><span>Live</span></div>
+      <button class="btn-icon" id="btnSettings" aria-label="Cài đặt">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- TOAST NOTIFICATION -->
+  <div class="toast" id="liveToast">⚡ Có chương mới vừa được viết!</div>
+
+  <!-- MAIN READING CONTAINER -->
+  <main id="mainContainer">
+    <div class="chapter-heading">
+      <div class="chapter-meta" id="chapterMeta">QUYỂN 1 — HỒI 1</div>
+      <h1 class="chapter-title-main" id="chapterTitle">Đang tải bản thảo...</h1>
+    </div>
+    <article class="novel-body" id="novelContent">
+      <p style="text-align:center; opacity:0.6;">Đang kết nối tới máy chủ Phá Trời...</p>
+    </article>
+  </main>
+
+  <!-- FOOTER CONTROLS -->
+  <footer id="bottomFooter">
+    <button class="nav-btn" id="btnPrev">← Trước</button>
+    <button class="nav-btn" id="btnTocSmall">Mục Lục</button>
+    <button class="nav-btn" id="btnNext">Sau →</button>
+  </footer>
+
+  <!-- DRAWER OVERLAY -->
+  <div class="drawer-overlay" id="drawerOverlay"></div>
+
+  <!-- TOC DRAWER -->
+  <aside class="drawer" id="tocDrawer">
+    <div class="drawer-header">
+      <h2 class="drawer-title">MỤC LỤC BẢN THẢO</h2>
+      <button class="btn-icon" id="btnCloseDrawer">✕</button>
+    </div>
+    <ul class="drawer-list" id="tocList"></ul>
+  </aside>
+
+  <!-- SETTINGS MODAL SHEET -->
+  <div class="modal-sheet" id="settingsSheet">
+    <div class="sheet-title">CÀI ĐẶT ĐỌC SÁCH</div>
+    <div class="sheet-row">
+      <span>Giao diện</span>
+      <div class="theme-group">
+        <button class="theme-btn active" data-theme="theme-dark" style="background:#0d0e12; color:#fff;" title="Đêm">🌙</button>
+        <button class="theme-btn" data-theme="theme-sepia" style="background:#fbf0d9; color:#3b2d1d;" title="Sepia">☕</button>
+        <button class="theme-btn" data-theme="theme-light" style="background:#ffffff; color:#000;" title="Sáng">☀️</button>
+      </div>
+    </div>
+    <div class="sheet-row">
+      <span>Cỡ chữ (<span id="fontSizeVal">19</span>px)</span>
+      <div style="display:flex; gap:10px; align-items:center;">
+        <button class="font-ctrl-btn" id="btnFontDec">A-</button>
+        <button class="font-ctrl-btn" id="btnFontInc">A+</button>
+      </div>
+    </div>
+    <div class="sheet-row">
+      <span>Font chữ</span>
+      <div style="display:flex; gap:8px;">
+        <button class="nav-btn" id="btnFontSerif" style="padding:6px 12px; font-size:13px;">Serif (Sách)</button>
+        <button class="nav-btn" id="btnFontSans" style="padding:6px 12px; font-size:13px;">Sans (Hiện đại)</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentChapter = parseInt(localStorage.getItem('pha_troi_cur_ch') || '46');
+    let totalChapters = 46;
+    let chaptersList = [];
+    let uiVisible = true;
+
+    // Elements
+    const topHeader = document.getElementById('topHeader');
+    const bottomFooter = document.getElementById('bottomFooter');
+    const headerTitle = document.getElementById('headerTitle');
+    const chapterMeta = document.getElementById('chapterMeta');
+    const chapterTitle = document.getElementById('chapterTitle');
+    const novelContent = document.getElementById('novelContent');
+    const btnPrev = document.getElementById('btnPrev');
+    const btnNext = document.getElementById('btnNext');
+    const btnMenu = document.getElementById('btnMenu');
+    const btnTocSmall = document.getElementById('btnTocSmall');
+    const btnSettings = document.getElementById('btnSettings');
+    const drawerOverlay = document.getElementById('drawerOverlay');
+    const tocDrawer = document.getElementById('tocDrawer');
+    const btnCloseDrawer = document.getElementById('btnCloseDrawer');
+    const tocList = document.getElementById('tocList');
+    const settingsSheet = document.getElementById('settingsSheet');
+    const progressBar = document.getElementById('progressBar');
+    const liveToast = document.getElementById('liveToast');
+
+    // 1. Tải danh sách chương
+    async function loadChapters(autoLoad = true) {
+      try {
+        const res = await fetch('/api/chapters');
+        const data = await res.json();
+        chaptersList = data.chapters || [];
+        const oldTotal = totalChapters;
+        totalChapters = chaptersList.length;
+
+        // Render TOC
+        tocList.innerHTML = '';
+        chaptersList.forEach(ch => {
+          const li = document.createElement('li');
+          li.className = 'drawer-item' + (ch.chapter === currentChapter ? ' active' : '');
+          li.innerHTML = `
+            <div class="drawer-item-title">${ch.title}</div>
+            <div class="drawer-item-meta">${ch.word_count ? ch.word_count.toLocaleString() + ' từ' : ''} • ${ch.date || '2026'}</div>
+          `;
+          li.onclick = () => {
+            loadChapter(ch.chapter);
+            closeDrawer();
+          };
+          tocList.appendChild(li);
+        });
+
+        // Toast nếu có chương mới
+        if (totalChapters > oldTotal) {
+          showToast(`⚡ Đã có Chương ${totalChapters}: ${chaptersList[chaptersList.length - 1].title}`);
+        }
+
+        if (autoLoad) {
+          loadChapter(currentChapter);
+        }
+      } catch (err) {
+        console.error('Lỗi tải danh mục chương:', err);
+      }
+    }
+
+    // 2. Tải nội dung chương
+    async function loadChapter(num) {
+      currentChapter = num;
+      localStorage.setItem('pha_troi_cur_ch', num);
+      window.scrollTo(0, 0);
+
+      btnPrev.disabled = (currentChapter <= 1);
+      btnNext.disabled = (currentChapter >= totalChapters);
+
+      try {
+        chapterTitle.innerText = 'Đang tải nội dung...';
+        const res = await fetch(`/api/chapter/${num}`);
+        const data = await res.json();
+
+        headerTitle.innerText = data.title;
+        chapterTitle.innerText = data.title;
+        chapterMeta.innerText = `QUYỂN ${data.volume || 1} • HỒI ${data.arc || 1} • ${data.word_count ? data.word_count.toLocaleString() + ' TỪ' : ''}`;
+        novelContent.innerHTML = data.html;
+
+        // Update active class in TOC
+        document.querySelectorAll('.drawer-item').forEach((el, idx) => {
+          el.classList.toggle('active', (idx + 1) === currentChapter);
+        });
+      } catch (err) {
+        novelContent.innerHTML = `<p style="color:red; text-align:center;">Không thể tải chương ${num}. Vui lòng thử lại.</p>`;
+      }
+    }
+
+    // 3. Tiến trình đọc
+    window.addEventListener('scroll', () => {
+      const winScroll = document.documentElement.scrollTop || document.body.scrollTop;
+      const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+      const scrolled = (height > 0) ? (winScroll / height) * 100 : 0;
+      progressBar.style.width = scrolled + '%';
+    });
+
+    // 4. Toggle UI khi chạm vào màn hình (distraction-free reading)
+    document.getElementById('mainContainer').addEventListener('click', (e) => {
+      // Chỉ toggle nếu không click vào link/button
+      if (e.target.tagName !== 'A' && e.target.tagName !== 'BUTTON') {
+        uiVisible = !uiVisible;
+        topHeader.classList.toggle('hidden', !uiVisible);
+        bottomFooter.classList.toggle('hidden', !uiVisible);
+      }
+    });
+
+    // Nav buttons
+    btnPrev.onclick = () => { if (currentChapter > 1) loadChapter(currentChapter - 1); };
+    btnNext.onclick = () => { if (currentChapter < totalChapters) loadChapter(currentChapter + 1); };
+
+    // Drawer
+    function openDrawer() { drawerOverlay.classList.add('open'); tocDrawer.classList.add('open'); }
+    function closeDrawer() { drawerOverlay.classList.remove('open'); tocDrawer.classList.remove('open'); settingsSheet.classList.remove('open'); }
+    btnMenu.onclick = openDrawer;
+    btnTocSmall.onclick = openDrawer;
+    btnCloseDrawer.onclick = closeDrawer;
+    drawerOverlay.onclick = closeDrawer;
+
+    // Settings
+    btnSettings.onclick = () => {
+      drawerOverlay.classList.add('open');
+      settingsSheet.classList.add('open');
+    };
+
+    // Themes
+    document.querySelectorAll('.theme-btn').forEach(btn => {
+      btn.onclick = () => {
+        document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const theme = btn.dataset.theme;
+        document.body.className = theme;
+        localStorage.setItem('pha_troi_theme', theme);
+      };
+    });
+
+    // Font size
+    let curFontSize = parseInt(localStorage.getItem('pha_troi_font_size') || '19');
+    function updateFontSize(sz) {
+      curFontSize = Math.min(Math.max(sz, 15), 28);
+      document.documentElement.style.setProperty('--font-size', curFontSize + 'px');
+      document.getElementById('fontSizeVal').innerText = curFontSize;
+      localStorage.setItem('pha_troi_font_size', curFontSize);
+    }
+    document.getElementById('btnFontInc').onclick = () => updateFontSize(curFontSize + 1);
+    document.getElementById('btnFontDec').onclick = () => updateFontSize(curFontSize - 1);
+
+    // Font Family
+    document.getElementById('btnFontSerif').onclick = () => {
+      document.documentElement.style.setProperty('--font-family', '-apple-system, BlinkMacSystemFont, "Bookerly", "Georgia", "Palatino", serif');
+      localStorage.setItem('pha_troi_font_family', 'serif');
+    };
+    document.getElementById('btnFontSans').onclick = () => {
+      document.documentElement.style.setProperty('--font-family', '-apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif');
+      localStorage.setItem('pha_troi_font_family', 'sans');
+    };
+
+    // Toast
+    function showToast(msg) {
+      liveToast.innerText = msg;
+      liveToast.classList.add('show');
+      setTimeout(() => liveToast.classList.remove('show'), 4000);
+    }
+
+    // 5. REAL-TIME LIVE POLLING (Mỗi 3 giây tự kiểm tra xem PC có viết chap mới không)
+    setInterval(() => {
+      loadChapters(false);
+    }, 3500);
+
+    // Khởi tạo cài đặt đã lưu
+    const savedTheme = localStorage.getItem('pha_troi_theme') || 'theme-dark';
+    document.body.className = savedTheme;
+    document.querySelectorAll('.theme-btn').forEach(b => b.classList.toggle('active', b.dataset.theme === savedTheme));
+    updateFontSize(curFontSize);
+
+    // Bắt đầu
+    loadChapters(true);
+
+    // Đăng ký Service Worker cho PWA
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/static/sw.js').catch(console.error);
+    }
+  </script>
+</body>
+</html>
