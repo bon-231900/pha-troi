@@ -105,13 +105,15 @@ class ContextBuilder:
         # 4. SỔ CÁI PHỤC BÚT CẬN KỀ (Proximity-based Foreshadowing)
         # Chỉ nạp những hạt mầm có kỳ vọng thu hồi gần chương hiện tại hoặc vừa gieo
         cur.execute("""SELECT id, seed_description, actual_meaning FROM foreshadowing_ledger 
-                       WHERE status IN ('PLANTED', 'ACTIVE')
-                       ORDER BY planted_chapter DESC LIMIT 3""")
+                       WHERE status IN ('PLANTED', 'ACTIVE') AND planted_chapter <= ?
+                       ORDER BY planted_chapter DESC LIMIT 3""", (chapter_num,))
         for r in cur.fetchall():
             pack["active_foreshadowing"].append({"id": r[0], "seed": r[1], "meaning": r[2]})
 
         # 5. DÒNG THỜI GIAN NGAY TRƯỚC ĐÓ (Recent Events)
-        cur.execute("SELECT title, summary FROM timeline_events ORDER BY chapter_num DESC, scene_num DESC LIMIT 2")
+        cur.execute("""SELECT title, summary FROM timeline_events 
+                       WHERE chapter_num < ? 
+                       ORDER BY chapter_num DESC, scene_num DESC LIMIT 2""", (chapter_num,))
         for r in cur.fetchall():
             pack["recent_events"].append(f"{r[0]}: {r[1]}")
 
