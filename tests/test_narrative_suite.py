@@ -71,8 +71,11 @@ class TestNovelOSNarrativeSuite(unittest.TestCase):
 
     # Test 6: Phục bút bị bỏ quên quá lâu
     def test_06_foreshadowing_forgotten(self):
+        # Gieo phục bút ở chương 1, kiểm tra ở chương 80 (vượt ngưỡng 50 chương)
+        self.fsh_eng.plant_seed("FSH-TEST-DORMANT", "Bảo vật cổ xưa bị bỏ quên", 1, 1, ["Minh An"], "Ý nghĩa thử nghiệm", payoff_chapter=200)
         dormant = self.fsh_eng.audit_dormant_seeds(current_chapter=80, threshold_chapters=50)
         self.assertTrue(len(dormant) > 0, "Hệ thống phải cảnh báo phục bút bị bỏ quên quá lâu!")
+        self.fsh_eng.update_status("FSH-TEST-DORMANT", "PAID", payoff_chapter=200)
 
     # Test 7: Mâu thuẫn địa lý và thời gian âm
     def test_07_location_contradiction(self):
