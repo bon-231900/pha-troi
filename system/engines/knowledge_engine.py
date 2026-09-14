@@ -34,8 +34,17 @@ class KnowledgeEngine:
         violations = []
         conn = sqlite3.connect(self.db_path, timeout=30.0)
         cur = conn.cursor()
-        cur.execute("""SELECT fact_key, statement, epistemic_status FROM knowledge_matrix 
-                       WHERE character_id = ? AND epistemic_status IN ('UNKNOWN', 'FORGOTTEN')""", (character_id,))
+        cur.execute("""
+            SELECT k1.fact_key, k1.statement, k1.epistemic_status 
+            FROM knowledge_matrix k1
+            INNER JOIN (
+                SELECT character_id, fact_key, MAX(id) AS max_id
+                FROM knowledge_matrix
+                WHERE character_id = ?
+                GROUP BY character_id, fact_key
+            ) latest ON k1.id = latest.max_id
+            WHERE k1.epistemic_status IN ('UNKNOWN', 'FORGOTTEN')
+        """, (character_id,))
         rows = cur.fetchall()
         conn.close()
 
