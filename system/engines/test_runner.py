@@ -3,9 +3,11 @@ import io
 import os
 import sys
 
+from system.core.config import ROOT_DIR
+
 def run_all_narrative_tests() -> dict:
     loader = unittest.TestLoader()
-    suite = loader.discover(start_dir=r"d:\tieu-thuyet\tests", pattern="test_*.py")
+    suite = loader.discover(start_dir=os.path.join(ROOT_DIR, "tests"), pattern="test_*.py")
     stream = io.StringIO()
     runner = unittest.TextTestRunner(stream=stream, verbosity=2)
     result = runner.run(suite)

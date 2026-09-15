@@ -25,7 +25,7 @@ if sys.stdout and hasattr(sys.stdout, 'reconfigure'):
     try: sys.stdout.reconfigure(encoding='utf-8', errors='replace')
     except Exception: pass
 
-BENCH_DB = r"d:\tieu-thuyet\tests\test_synthetic_3000.db"
+BENCH_DB = os.path.join(os.path.dirname(os.path.abspath(__file__)), "test_synthetic_3000.db")
 
 def setup_benchmark_schema(conn):
     cur = conn.cursor()

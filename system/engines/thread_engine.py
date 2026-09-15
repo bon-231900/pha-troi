@@ -111,7 +111,10 @@ class StoryThreadEngine:
         if thread_type:
             query += " AND thread_type = ?"
             params.append(thread_type)
-        query += " ORDER BY urgency DESC, importance ASC, last_touched_chapter ASC"
+        query += """ ORDER BY 
+            (CASE urgency WHEN 'CRITICAL' THEN 4 WHEN 'HIGH' THEN 3 WHEN 'MEDIUM' THEN 2 ELSE 1 END) DESC,
+            (CASE importance WHEN 'CORE' THEN 4 WHEN 'MAJOR' THEN 3 WHEN 'MINOR' THEN 2 ELSE 1 END) DESC,
+            last_touched_chapter ASC"""
         cur.execute(query, params)
         rows = cur.fetchall()
         conn.close()

@@ -5,7 +5,7 @@ import os
 
 class TestInventoryIntegrity(unittest.TestCase):
     def setUp(self):
-        self.base_dir = r"d:\tieu-thuyet"
+        self.base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         self.inventory_json = os.path.join(self.base_dir, "state", "inventory.json")
         self.inventory_md = os.path.join(self.base_dir, "canon", "items", "inventory.md")
 

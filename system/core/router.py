@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from enum import Enum
+from system.core.model_adapter import ModelConfig
 
 class TaskTier(str, Enum):
     CRITICAL_CREATIVE = "CRITICAL_CREATIVE"       # Sáng tác văn xuôi, nhịp điệu, cảm xúc (Mô hình cao nhất)
@@ -61,7 +62,7 @@ class TaskRouter:
             "task_name": task_name,
             "tier": tier.value,
             "requires_llm": TaskRouter.requires_llm(task_name),
-            "recommended_model": "pro" if tier == TaskTier.CRITICAL_CREATIVE else ("flash" if tier == TaskTier.HIGH_REASONING else "flash_lite"),
+            "recommended_model": ModelConfig.get_model_for_tier(tier.value),
             "token_cost_policy": "MAXIMUM_SAVINGS" if tier in (TaskTier.DETERMINISTIC, TaskTier.MECHANICAL) else "QUALITY_FIRST"
         }
 

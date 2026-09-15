@@ -19,7 +19,9 @@ import markdown
 if sys.stdout and hasattr(sys.stdout, 'reconfigure'):
     sys.stdout.reconfigure(encoding='utf-8', errors='replace')
 
-BASE_DIR = r"d:\tieu-thuyet"
+from pathlib import Path
+
+BASE_DIR = os.getenv("NOVEL_OS_ROOT", str(Path(__file__).resolve().parent.parent.parent))
 DIST_DIR = os.path.join(BASE_DIR, "system", "reader_app", "dist")
 STATIC_SRC_DIR = os.path.join(BASE_DIR, "system", "reader_app", "static")
 

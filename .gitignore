@@ -10,5 +10,11 @@ Thumbs.db
 database/*.db-journal
 database/*.db-wal
 database/*.db-shm
+database/*.db.bak*
 tests/*.db*
+author_secret/
+scratch/
+*.tmp
+*.bak
+.env
 system/reader_app/dist/

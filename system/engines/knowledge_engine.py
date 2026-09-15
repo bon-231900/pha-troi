@@ -69,8 +69,16 @@ class KnowledgeEngine:
         lower_text = text.lower()
         for sec in secrets:
             if sec.get("status") == "LOCKED":
-                if "chiến trường hạch tâm" in lower_text or "tần số ý chí không khuất phục" in lower_text:
-                    leaks.append(f"CRITICAL_AUTHOR_SECRET_LEAK: Nội dung chứa từ khóa bí mật tác giả ({sec.get('id')})!")
+                patterns = [p.lower() for p in sec.get("leak_patterns", [])]
+                if not patterns:
+                    desc = sec.get("description", "").lower()
+                    words = desc.split()
+                    if len(words) >= 4:
+                        patterns = [" ".join(words[i:i+4]) for i in range(0, len(words) - 3, 2)]
+                for pat in patterns:
+                    if pat and pat in lower_text:
+                        leaks.append(f"CRITICAL_AUTHOR_SECRET_LEAK: Nội dung chứa cụm từ rò rỉ bí mật tác giả ({sec.get('id')})!")
+                        break
         return leaks
 
     def record_world_truth(self, fact_key: str, truth_statement: str):

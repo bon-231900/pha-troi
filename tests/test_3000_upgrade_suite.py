@@ -24,10 +24,11 @@ from system.engines.fatigue_engine import FatigueEngine
 from system.engines.escalation_engine import EscalationEngine
 from system.engines.hierarchy_engine import HierarchyEngine
 from system.engines.knowledge_engine import KnowledgeEngine
+from tests.test_base import IsolatedDatabaseTestCase
 
-class Test3000UpgradeSuite(unittest.TestCase):
+class Test3000UpgradeSuite(IsolatedDatabaseTestCase):
     def setUp(self):
-        self.db_path = DB_PATH
+        super().setUp()
         self.thread_eng = StoryThreadEngine(self.db_path)
         self.fatigue_eng = FatigueEngine(self.db_path)
         self.escalation_eng = EscalationEngine(self.db_path)

@@ -36,24 +36,26 @@ class GitManager:
         return code == 0
 
     def commit_minor(self, message: str, files: list = None) -> tuple[bool, str]:
-        """Tự động commit cho các thay đổi nhỏ (state update, metadata, formatting, index)."""
-        if files:
-            for f in files:
-                self._run_git(["add", f])
-        else:
-            self._run_git(["add", "."])
+        """Tự động commit cho các thay đổi nhỏ (state update, metadata, formatting, index).
+        Bắt buộc phải có danh sách tệp tường minh (file manifest). Tuyệt đối không stage toàn repo."""
+        if not files:
+            return False, "FAIL_CLOSED: git commit_minor yêu cầu danh sách tệp (manifest) tường minh. 'git add .' bị cấm tuyệt đối!"
+        
+        for f in files:
+            self._run_git(["add", str(f)])
         
         full_msg = f"[NovelOS-Minor] {message}"
         code, out = self._run_git(["commit", "-m", full_msg])
         return (code == 0, out)
 
     def commit_major(self, message: str, files: list = None) -> tuple[bool, str]:
-        """Tự động commit cho các mốc kiến trúc hoặc sáng tác chương lớn."""
-        if files:
-            for f in files:
-                self._run_git(["add", f])
-        else:
-            self._run_git(["add", "."])
+        """Tự động commit cho các mốc kiến trúc hoặc sáng tác chương lớn.
+        Bắt buộc phải có danh sách tệp tường minh (file manifest). Tuyệt đối không stage toàn repo."""
+        if not files:
+            return False, "FAIL_CLOSED: git commit_major yêu cầu danh sách tệp (manifest) tường minh. 'git add .' bị cấm tuyệt đối!"
+        
+        for f in files:
+            self._run_git(["add", str(f)])
         
         full_msg = f"[NovelOS-Major] {message}"
         code, out = self._run_git(["commit", "-m", full_msg])

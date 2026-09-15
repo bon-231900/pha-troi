@@ -12,14 +12,39 @@ from system.core.config import DB_PATH
 class CritiqueEngine:
     """Động cơ Tự Phản Biện (Self-Critique Engine) Mức Độ Cao Nhất, kiểm duyệt 11 khía cạnh."""
 
-    def __init__(self, db_path: str = DB_PATH):
+    DEFAULT_NAME_TYPOS = {
+        "Minh Ánh": "Nguyễn Minh An",
+        "Minh Ang": "Nguyễn Minh An",
+        "Lâm Tích": "Lâm Tịch",
+        "Lâm Tịnh": "Lâm Tịch"
+    }
+
+    CHEAP_CLIFFHANGERS = [
+        "và hắn không biết rằng",
+        "hắn vĩnh viễn không thể ngờ được",
+        "chuyện gì đến cũng phải đến"
+    ]
+
+    FORBIDDEN_SPONTANEOUS_ITEMS = [
+        "thần kiếm",
+        "túi trữ vật",
+        "linh đan",
+        "ngọc giản",
+        "pháp bảo"
+    ]
+
+    def __init__(self, db_path: str = DB_PATH, name_typos: dict = None, forbidden_items: list = None, record_to_db: bool = True):
         self.db_path = db_path
+        self.record_to_db = record_to_db
+        self.name_typos = name_typos if name_typos is not None else self.DEFAULT_NAME_TYPOS.copy()
+        self.forbidden_spontaneous_items = forbidden_items if forbidden_items is not None else self.FORBIDDEN_SPONTANEOUS_ITEMS.copy()
+        self.cheap_cliffhangers = self.CHEAP_CLIFFHANGERS.copy()
         self.canon_eng = CanonEngine(db_path)
         self.know_eng = KnowledgeEngine(db_path)
         self.char_eng = CharacterEngine(db_path)
         self.power_eng = PowerEngine()
 
-    def audit_chapter_draft(self, chapter_num: int, pov: str, active_characters: list, text: str) -> dict:
+    def audit_chapter_draft(self, chapter_num: int, pov: str, active_characters: list, text: str, save_errors: bool = None) -> dict:
         issues = []
 
         # 1. Canon & Forbidden Assumptions
@@ -55,8 +80,7 @@ class CritiqueEngine:
                 })
 
         # 6. Style & Cheap Cliffhangers
-        cheap_cliffhangers = ["và hắn không biết rằng", "hắn vĩnh viễn không thể ngờ được", "chuyện gì đến cũng phải đến"]
-        for cc in cheap_cliffhangers:
+        for cc in self.cheap_cliffhangers:
             if cc in text.lower():
                 issues.append({
                     "category": "STYLE", "severity": "MEDIUM",
@@ -72,13 +96,7 @@ class CritiqueEngine:
             })
 
         # 8. Name & Alias Consistency Check
-        name_typos = {
-            "Minh Ánh": "Nguyễn Minh An",
-            "Minh Ang": "Nguyễn Minh An",
-            "Lâm Tích": "Lâm Tịch",
-            "Lâm Tịnh": "Lâm Tịch"
-        }
-        for typo, correct in name_typos.items():
+        for typo, correct in self.name_typos.items():
             if typo.lower() in text.lower():
                 issues.append({
                     "category": "CONSISTENCY", "severity": "MEDIUM",
@@ -88,8 +106,7 @@ class CritiqueEngine:
         # 9. Inventory Possession Check
         # Nếu nhân vật rút/sử dụng vũ khí đặc biệt mà không có trong túi đồ
         if "minh an" in pov.lower():
-            forbidden_spontaneous_items = ["thần kiếm", "túi trữ vật", "linh đan", "ngọc giản", "pháp bảo"]
-            for fi in forbidden_spontaneous_items:
+            for fi in self.forbidden_spontaneous_items:
                 if f"rút {fi}" in text.lower() or f"lấy {fi} ra" in text.lower() or f"cầm {fi}" in text.lower():
                     # Kiểm tra xem có trong inventory không
                     st = self.char_eng.get_character("char_minh_an").get("latest_state", {})
@@ -127,7 +144,8 @@ class CritiqueEngine:
         )
 
         # Lưu lỗi vào DB
-        if issues:
+        should_save = save_errors if save_errors is not None else self.record_to_db
+        if issues and should_save:
             conn = sqlite3.connect(self.db_path, timeout=30.0)
             cur = conn.cursor()
             for iss in issues:

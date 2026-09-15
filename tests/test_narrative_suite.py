@@ -16,13 +16,14 @@ from system.engines.critique_engine import CritiqueEngine
 from system.engines.relationship_engine import RelationshipEngine
 from system.engines.research_vault import ResearchVault
 from system.engines.proposal_manager import ProposalManager
+from tests.test_base import IsolatedDatabaseTestCase
 
-class TestNovelOSNarrativeSuite(unittest.TestCase):
+class TestNovelOSNarrativeSuite(IsolatedDatabaseTestCase):
     """Bộ kiểm thử narrative 20 tình huống phá hoại logic và mô phỏng trí nhớ dài hạn 2.000 chương."""
 
     @classmethod
     def setUpClass(cls):
-        cls.db_path = DB_PATH
+        super().setUpClass()
         cls.canon_eng = CanonEngine(cls.db_path)
         cls.world_eng = WorldEngine(cls.db_path)
         cls.char_eng = CharacterEngine(cls.db_path)

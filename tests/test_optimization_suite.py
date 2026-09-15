@@ -16,10 +16,11 @@ from system.engines.telemetry_engine import TelemetryEngine
 from system.engines.context_builder import ContextBuilder
 from system.engines.critique_engine import CritiqueEngine
 from system.engines.research_vault import ResearchVault
+from tests.test_base import IsolatedDatabaseTestCase
 
-class TestOptimizationSuite(unittest.TestCase):
+class TestOptimizationSuite(IsolatedDatabaseTestCase):
     def setUp(self):
-        self.db_path = DB_PATH
+        super().setUp()
         self.router = TaskRouter()
         self.retrieval = RetrievalEngine(self.db_path)
         self.telemetry = TelemetryEngine(self.db_path)
