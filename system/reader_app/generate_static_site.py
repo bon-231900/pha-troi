@@ -1,16 +1,17 @@
 # -*- coding: utf-8 -*-
 """
-NovelOS — Trình biên dịch Web Reader PWA cao cấp cho tiểu thuyết 'Phá Trời' (v2.1)
-Hỗ trợ:
-- 2 Giao diện chủ đạo: Tối Bình Yên (Peaceful Dark) & Sáng Nhẹ Nhàng (Gentle Light)
-- Hero Cinematic: Widescreen Horizontal trên Desktop, Vertical Portrait Cover trên Mobile
-- Bộ 3 Visual Assets: Logo Biểu Tượng, Bìa Dọc, Banner Ngang 16:9
-- Visual Hierarchy: Hero -> Continue Reading -> Mục Lục 58 Chương -> Bách Khoa -> Footer
-- Reader chuyên sâu không phân tâm, lưu tiến độ đọc, điều hướng bàn phím & cử chỉ
-- Bách khoa toàn thư tương tác (Codex): Hồ sơ Minh An, Kho Bảo Vật, Đài Sen Lâm Tịch
-- Bộ tổng hợp âm thanh thư giãn Web Audio API (Mưa đêm Sài Gòn & Sóng nước ven sông)
-- Bộ lọc mục lục theo Hồi 1 & Hồi 2, thanh cuộn nhảy nhanh chương
-- PWA Offline 24/7 toàn diện với Service Worker
+NovelOS — Trình biên dịch Web Reader PWA cao cấp cho tiểu thuyết 'Phá Trời' (v2.2)
+Phiên bản tối ưu hóa chuyển đổi độc giả mới (Conversion Funnel & Reader UX Overhaul):
+- Funnel chuẩn: Độc giả mới thấy "▶ Bắt Đầu Đọc — Chương 1", độc giả cũ thấy "▶ Tiếp Tục — Chương X"
+- Thẻ Hành Trình Khởi Đầu: Chào mừng người mới dấn thân vào đại phong ấn sông ngầm Sài Gòn
+- Tuyệt đối không còn lỗi placeholder 'Chương 58: Đang nạp... 0 từ • 2026-10-18'
+- Hook tóm tắt truyện: Đô thị Sài Gòn 2026, nhân viên văn phòng, đại phong ấn 2.5 triệu năm, Thể Đạo phàm nhân
+- Tên gọi chuẩn hóa: CODEX PHÁ TRỜI (Hồ sơ thế giới & bách khoa toàn thư)
+- Mở khóa Codex lũy tiến (Progressive Unlock) theo số chương đã đọc, bảo vệ 100% bí mật cốt truyện
+- Đánh dấu trạng thái trên Mục Lục: ✓ Đã đọc, ▶ Đang đọc, ○ Chưa đọc
+- Tùy biến khung đọc: 3 mức Chiều rộng (640 / 760 / 900px) & 3 mức Giãn dòng (1.65 / 1.85 / 2.1)
+- Âm thanh thư giãn mưa đêm Sài Gòn qua Web Audio API: Mặc định Tắt (OFF), lưu cấu hình
+- Tối ưu PWA Offline 24/7 với Service Worker v5
 """
 import os
 import re
@@ -99,13 +100,13 @@ def generate_cover_svg():
   <g transform="translate(600, 110)">
     <rect x="-190" y="-22" width="380" height="44" rx="22" fill="#131722" stroke="#10b981" stroke-width="1.5"/>
     <circle cx="-160" cy="0" r="5" fill="#10b981" filter="url(#glow)"/>
-    <text x="0" y="7" fill="#a7f3d0" font-family="-apple-system, sans-serif" font-size="14" font-weight="700" letter-spacing="3" text-anchor="middle">NOVEL OS • TRƯỜNG THIÊN 3.000 CHƯƠNG</text>
+    <text x="0" y="7" fill="#a7f3d0" font-family="-apple-system, sans-serif" font-size="14" font-weight="700" letter-spacing="3" text-anchor="middle">ĐÔ THỊ TU CHÂN • TRƯỜNG THIÊN ĐẠI TÁC</text>
   </g>
 
   <text x="600" y="270" fill="url(#goldText)" font-family="'Palatino', 'Georgia', serif" font-size="108" font-weight="900" letter-spacing="14" text-anchor="middle" filter="url(#glow)">PHÁ TRỜI</text>
   <text x="600" y="330" fill="#94a3b8" font-family="-apple-system, sans-serif" font-size="22" font-weight="500" letter-spacing="8" text-anchor="middle">TIỂU THUYẾT ĐÔ THỊ TU CHÂN • TP. HỒ CHÍ MINH 2026</text>
   <line x1="450" y1="365" x2="750" y2="365" stroke="url(#jadeAccent)" stroke-width="2.5" stroke-linecap="round"/>
-  <text x="600" y="420" fill="#cbd5e1" font-family="'Georgia', serif" font-size="20" font-style="italic" text-anchor="middle">"Lấy nhục thân phàm nhân vượt qua vạn trùng xiềng xích, đúc rèn ý chí kiên định giữa cõi nhân gian."</text>
+  <text x="600" y="420" fill="#cbd5e1" font-family="'Georgia', serif" font-size="20" font-style="italic" text-anchor="middle">"Một nhân viên văn phòng... cho đến khi phát hiện đại phong ấn sông ngầm Sài Gòn."</text>
 
   <g transform="translate(600, 500)">
     <text x="-320" y="0" fill="#f59e0b" font-family="-apple-system, sans-serif" font-size="15" font-weight="600" text-anchor="middle">📖 ĐỌC ONLINE / OFFLINE 24/7</text>
@@ -126,7 +127,7 @@ def generate_html(chapters_index, total_words):
   
   <!-- SEO & Social Open Graph Metadata -->
   <meta name="title" content="Phá Trời — Tiểu Thuyết Đô Thị Tu Chân Sài Gòn 2026">
-  <meta name="description" content="Trường thiên tiểu thuyết đô thị tu chân: Phá Trời (Phá Toái Thần Hoang). Một người bình thường bước chân vào Thể Đạo từ con số 0 giữa đô thị hiện đại. Đọc trọn bộ online & offline 24/7.">
+  <meta name="description" content="Trường thiên tiểu thuyết đô thị tu chân Phá Trời. Một nhân viên văn phòng tại TP.HCM phát hiện phong ấn sông ngầm 2.5 triệu năm. Thể Đạo từ số 0 giữa đô thị hiện đại. Đọc trọn bộ {total_ch} chương online & offline 24/7.">
   <meta name="keywords" content="Phá Trời, Phá Toái Thần Hoang, Novel OS, tiểu thuyết đô thị, tu chân, thể đạo, Nguyễn Minh An, Lâm Tịch, An Bình">
   <meta name="author" content="An Bình">
   
@@ -134,7 +135,7 @@ def generate_html(chapters_index, total_words):
   <meta property="og:type" content="book">
   <meta property="og:url" content="https://bon-231900.github.io/pha-troi/">
   <meta property="og:title" content="Phá Trời — Tiểu Thuyết Đô Thị Tu Chân Sài Gòn 2026">
-  <meta property="og:description" content="Một người bình thường bước chân vào Thể Đạo từ con số 0 giữa đô thị hiện đại. Đọc trọn bộ {total_ch} chương online & offline 24/7.">
+  <meta property="og:description" content="Một nhân viên văn phòng tại TP.HCM phát hiện phong ấn sông ngầm 2.5 triệu năm. Không hệ thống, lấy Thể Đạo phàm nhân phá vỡ xiềng xích. Đọc trọn bộ {total_ch} chương.">
   <meta property="og:image" content="https://bon-231900.github.io/pha-troi/assets/cover_vertical.jpg">
   <meta property="og:image:width" content="682">
   <meta property="og:image:height" content="1024">
@@ -142,7 +143,7 @@ def generate_html(chapters_index, total_words):
   <!-- Twitter Cards -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Phá Trời — Tiểu Thuyết Đô Thị Tu Chân Sài Gòn 2026">
-  <meta name="twitter:description" content="Một người bình thường bước chân vào Thể Đạo từ con số 0 giữa đô thị hiện đại. Đọc trọn bộ {total_ch} chương online & offline 24/7.">
+  <meta name="twitter:description" content="Một nhân viên văn phòng tại TP.HCM phát hiện phong ấn sông ngầm 2.5 triệu năm. Đọc trọn bộ {total_ch} chương online & offline 24/7.">
   <meta name="twitter:image" content="https://bon-231900.github.io/pha-troi/assets/hero_horizontal.jpg">
 
   <link rel="manifest" href="./manifest.json">
@@ -171,8 +172,8 @@ def generate_html(chapters_index, total_words):
     :root {{
       --font-family: 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       --font-size: 19px;
-      --line-height: 1.85;
-      --max-width: 760px;
+      --reader-line-height: 1.85;
+      --reader-max-width: 760px;
     }}
 
     /* Theme 1: Peaceful Dark (Mặc định - Tối Bình Yên / Dark Xianxia) */
@@ -181,7 +182,7 @@ def generate_html(chapters_index, total_words):
       --bg-gradient: radial-gradient(ellipse at 50% 10%, #0d121f 0%, #07090e 80%);
       --text-color: #d6dce7;
       --text-muted: #828d9f;
-      --header-bg: rgba(7, 9, 14, 0.88);
+      --header-bg: rgba(7, 9, 14, 0.9);
       --card-bg: rgba(14, 18, 27, 0.85);
       --card-bg-hover: rgba(22, 28, 42, 0.95);
       --border-color: rgba(255, 255, 255, 0.08);
@@ -211,148 +212,218 @@ def generate_html(chapters_index, total_words):
       --cyan-subtle: #0284c7;
     }}
 
-    /* Theme 3: OLED Pure Black */
+    /* Theme 3: OLED Pure Black (Đen Tuyền Tuyệt Đối) */
     html.theme-oled, body.theme-oled {{
       --bg-color: #000000;
       --bg-gradient: none;
-      --text-color: #cbd5e1;
-      --text-muted: #64748b;
-      --header-bg: rgba(0, 0, 0, 0.96);
-      --card-bg: #0a0c10;
-      --card-bg-hover: #131720;
-      --border-color: rgba(255, 255, 255, 0.1);
-      --border-glow: rgba(52, 211, 153, 0.25);
-      --accent-primary: #34d399;
-      --accent-glow: rgba(52, 211, 153, 0.3);
+      --text-color: #d1d5db;
+      --text-muted: #6b7280;
+      --header-bg: rgba(0, 0, 0, 0.95);
+      --card-bg: #09090b;
+      --card-bg-hover: #141417;
+      --border-color: #27272a;
+      --border-glow: rgba(16, 185, 129, 0.3);
+      --accent-primary: #10b981;
+      --accent-glow: rgba(16, 185, 129, 0.4);
       --gold-primary: #fbbf24;
       --gold-glow: rgba(251, 191, 36, 0.3);
       --cyan-subtle: #38bdf8;
     }}
 
-    /* Theme 4: Sepia Cổ Điển */
+    /* Theme 4: Sepia (Giấy Cũ Hoài Niệm) */
     html.theme-sepia, body.theme-sepia {{
       --bg-color: #f4edd8;
-      --bg-gradient: radial-gradient(circle at 50% 10%, #fbf4e2 0%, #f4edd8 85%);
+      --bg-gradient: radial-gradient(circle at 50% 10%, #faf6eb 0%, #f4edd8 85%);
       --text-color: #3b2d1d;
-      --text-muted: #78654c;
-      --header-bg: rgba(244, 237, 216, 0.94);
-      --card-bg: #e8dcc3;
-      --card-bg-hover: #decfae;
-      --border-color: rgba(60, 40, 20, 0.12);
-      --border-glow: rgba(133, 77, 14, 0.2);
-      --accent-primary: #8b0000;
-      --accent-glow: rgba(139, 0, 0, 0.2);
-      --gold-primary: #854d0e;
-      --gold-glow: rgba(133, 77, 14, 0.2);
+      --text-muted: #7d6a55;
+      --header-bg: rgba(244, 237, 216, 0.95);
+      --card-bg: #eae0c7;
+      --card-bg-hover: #e0d4b8;
+      --border-color: rgba(100, 75, 50, 0.14);
+      --border-glow: rgba(160, 80, 20, 0.2);
+      --accent-primary: #854d0e;
+      --accent-glow: rgba(133, 77, 14, 0.2);
+      --gold-primary: #b45309;
+      --gold-glow: rgba(180, 83, 9, 0.2);
       --cyan-subtle: #0f766e;
     }}
 
     /* ==========================================================================
-       2. RESET & BASE
+       2. BASE RESET & SCROLLBAR
        ========================================================================== */
-    * {{ box-sizing: border-box; -webkit-tap-highlight-color: transparent; }}
-    html, body {{
-      margin: 0; padding: 0;
-      background: var(--bg-color);
-      background-image: var(--bg-gradient);
-      background-attachment: fixed;
-      color: var(--text-color);
-      font-family: var(--font-family);
-      font-size: var(--font-size);
-      line-height: var(--line-height);
-      min-height: 100vh;
-      transition: background-color 0.25s ease, color 0.25s ease;
-      overflow-x: hidden;
-      text-rendering: optimizeLegibility;
-      -webkit-font-smoothing: antialiased;
+    * {{
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
     }}
 
-    a {{ color: inherit; text-decoration: none; }}
+    html {{
+      scroll-behavior: smooth;
+      background-color: var(--bg-color);
+    }}
+
+    body {{
+      font-family: var(--font-family);
+      background: var(--bg-gradient);
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      min-height: 100vh;
+      overflow-x: hidden;
+      line-height: var(--reader-line-height);
+      transition: background 0.3s ease, color 0.3s ease;
+    }}
+
+    ::-webkit-scrollbar {{
+      width: 7px;
+      height: 7px;
+    }}
+    ::-webkit-scrollbar-track {{
+      background: var(--bg-color);
+    }}
+    ::-webkit-scrollbar-thumb {{
+      background: var(--card-bg);
+      border-radius: 4px;
+      border: 1px solid var(--border-color);
+    }}
+    ::-webkit-scrollbar-thumb:hover {{
+      background: var(--accent-primary);
+    }}
 
     /* ==========================================================================
        3. TOP PROGRESS BAR
        ========================================================================== */
     #progressBarContainer {{
-      position: fixed; top: 0; left: 0; right: 0; height: 3px;
-      background: transparent; z-index: 1001; pointer-events: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: transparent;
+      z-index: 1050;
+      pointer-events: none;
     }}
     #progressBar {{
-      height: 100%; width: 0%;
-      background: linear-gradient(90deg, var(--accent-primary), var(--gold-primary));
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--gold-primary), var(--accent-primary));
       box-shadow: 0 0 10px var(--accent-glow);
-      transition: width 0.12s ease-out;
+      transition: width 0.1s ease-out;
     }}
 
     /* ==========================================================================
        4. HEADER NAVBAR
        ========================================================================== */
     header {{
-      position: fixed; top: 0; left: 0; right: 0; height: 58px;
+      position: sticky;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
       background: var(--header-bg);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
       border-bottom: 1px solid var(--border-color);
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 0 16px; z-index: 900;
-      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      z-index: 999;
+      transition: transform 0.25s ease, background-color 0.3s ease;
     }}
-    header.hidden {{ transform: translateY(-100%); }}
+    header.nav-hidden {{
+      transform: translateY(-100%);
+    }}
 
     .header-left, .header-right {{
-      display: flex; align-items: center; gap: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }}
 
-    /* Brand Button on Left */
     .btn-brand {{
-      display: flex; align-items: center; gap: 10px;
-      background: none; border: none; padding: 4px 8px;
-      border-radius: 10px; cursor: pointer; color: inherit;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 24px;
       transition: all 0.2s ease;
     }}
     .btn-brand:hover {{
       background: rgba(255, 255, 255, 0.06);
     }}
     .nav-logo {{
-      width: 34px; height: 34px; border-radius: 50%;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
       border: 1.5px solid var(--gold-primary);
       box-shadow: 0 0 12px rgba(245, 158, 11, 0.35);
       object-fit: cover;
     }}
     .nav-brand-text {{
       font-family: 'Lora', 'Georgia', serif;
-      font-size: 16px; font-weight: 800; letter-spacing: 1.5px;
+      font-size: 16px;
+      font-weight: 800;
+      letter-spacing: 1.5px;
       color: var(--gold-primary);
     }}
     .nav-live-badge {{
-      display: none; align-items: center; gap: 4px;
-      padding: 2px 7px; border-radius: 12px;
+      display: none;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 7px;
+      border-radius: 12px;
       background: rgba(16, 185, 129, 0.12);
       border: 1px solid rgba(16, 185, 129, 0.25);
-      font-size: 10px; font-weight: 700; color: #10b981;
+      font-size: 10px;
+      font-weight: 700;
+      color: #10b981;
     }}
     @media (min-width: 900px) {{
       .nav-live-badge {{ display: inline-flex; }}
     }}
 
     .header-center {{
-      flex: 1; min-width: 0; text-align: center; padding: 0 8px;
+      flex: 1;
+      min-width: 0;
+      text-align: center;
+      padding: 0 8px;
     }}
     .header-title {{
-      font-size: 14.5px; font-weight: 700; color: var(--gold-primary);
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-      margin: 0; letter-spacing: 0.3px;
+      font-size: 14.5px;
+      font-weight: 700;
+      color: var(--gold-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin: 0;
+      letter-spacing: 0.3px;
     }}
     .header-sub {{
-      font-size: 11px; color: var(--text-muted);
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-      margin: 0; opacity: 0.85;
+      font-size: 11px;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin: 0;
+      opacity: 0.85;
     }}
 
     .btn-icon {{
-      background: none; border: none; color: var(--text-color);
-      width: 38px; height: 38px; cursor: pointer;
-      display: inline-flex; align-items: center; justify-content: center;
-      border-radius: 10px; transition: all 0.2s ease;
+      background: none;
+      border: none;
+      color: var(--text-color);
+      width: 38px;
+      height: 38px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 10px;
+      transition: all 0.2s ease;
       position: relative;
     }}
     .btn-icon:hover {{
@@ -362,12 +433,18 @@ def generate_html(chapters_index, total_words):
     .btn-icon:active {{ transform: scale(0.94); }}
 
     .btn-nav-home-pill {{
-      display: inline-flex; align-items: center; gap: 6px;
-      padding: 6px 12px; border-radius: 8px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 8px;
       background: rgba(16, 185, 129, 0.12);
       border: 1px solid var(--accent-primary);
-      color: #34d399; font-size: 12px; font-weight: 700;
-      cursor: pointer; transition: all 0.2s ease;
+      color: #34d399;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
     }}
     .btn-nav-home-pill:hover {{
       background: var(--accent-primary);
@@ -375,7 +452,10 @@ def generate_html(chapters_index, total_words):
     }}
 
     .dot-live {{
-      width: 6px; height: 6px; border-radius: 50%; background: #10b981;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #10b981;
       box-shadow: 0 0 6px #10b981;
       animation: pulseDot 2s infinite ease-in-out;
     }}
@@ -388,13 +468,17 @@ def generate_html(chapters_index, total_words):
        5. HERO SECTION (WIDESCREEN DESKTOP & VERTICAL MOBILE)
        ========================================================================== */
     .hero-section {{
-      position: relative; width: 100%; overflow: hidden;
+      position: relative;
+      width: 100%;
+      overflow: hidden;
     }}
 
     /* DESKTOP HERO (Horizontal 16:9 Banner) */
     .hero-desktop {{
-      display: none; position: relative;
-      min-height: 520px; max-height: 640px;
+      display: none;
+      position: relative;
+      min-height: 520px;
+      max-height: 640px;
       align-items: center;
       border-bottom: 1px solid var(--border-color);
       background: #07090e;
@@ -409,125 +493,205 @@ def generate_html(chapters_index, total_words):
     }}
 
     .hero-bg-picture {{
-      position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1;
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
     }}
     .hero-bg-img {{
-      width: 100%; height: 100%;
+      width: 100%;
+      height: 100%;
       object-fit: cover;
-      object-position: center 20%; /* Preserves both Lam Tich & Minh An in frame */
+      object-position: center 20%; /* Preserves characters in widescreen */
     }}
     .hero-desktop-overlay {{
-      position: absolute; inset: 0;
+      position: absolute;
+      inset: 0;
       background: 
-        linear-gradient(90deg, rgba(7, 9, 14, 0.95) 0%, rgba(7, 9, 14, 0.85) 35%, rgba(7, 9, 14, 0.45) 65%, rgba(7, 9, 14, 0.15) 80%, rgba(7, 9, 14, 0.6) 100%),
+        linear-gradient(90deg, rgba(7, 9, 14, 0.96) 0%, rgba(7, 9, 14, 0.88) 36%, rgba(7, 9, 14, 0.48) 65%, rgba(7, 9, 14, 0.12) 80%, rgba(7, 9, 14, 0.55) 100%),
         linear-gradient(0deg, var(--bg-color) 0%, rgba(7, 9, 14, 0.4) 25%, transparent 60%);
-      z-index: 2; pointer-events: none;
+      z-index: 2;
+      pointer-events: none;
     }}
     .hero-desktop-content {{
-      position: relative; z-index: 3;
-      max-width: 620px; padding: 44px 36px;
+      position: relative;
+      z-index: 3;
+      max-width: 620px;
+      padding: 44px 36px;
       margin-left: max(24px, calc((100vw - 1200px) / 2));
     }}
 
     /* MOBILE HERO (Vertical Portrait Cover + Ambient Blur) */
     .hero-mobile {{
-      display: flex; flex-direction: column;
-      position: relative; padding: 24px 16px 28px 16px;
-      overflow: hidden; align-items: center; text-align: center;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      padding: 24px 16px 28px 16px;
+      overflow: hidden;
+      align-items: center;
+      text-align: center;
       border-bottom: 1px solid var(--border-color);
       background: #07090e;
     }}
     .hero-mobile-backdrop {{
-      position: absolute; inset: 0; width: 100%; height: 100%;
-      object-fit: cover; object-position: center top;
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center top;
       filter: blur(28px) brightness(0.24);
-      transform: scale(1.15); z-index: 1; pointer-events: none;
+      transform: scale(1.15);
+      z-index: 1;
+      pointer-events: none;
     }}
     .hero-mobile-overlay {{
-      position: absolute; inset: 0;
+      position: absolute;
+      inset: 0;
       background: linear-gradient(180deg, rgba(7, 9, 14, 0.45) 0%, rgba(7, 9, 14, 0.85) 60%, var(--bg-color) 100%);
-      z-index: 2; pointer-events: none;
+      z-index: 2;
+      pointer-events: none;
     }}
     .hero-mobile-content {{
-      position: relative; z-index: 3; width: 100%; max-width: 440px;
-      display: flex; flex-direction: column; align-items: center;
+      position: relative;
+      z-index: 3;
+      width: 100%;
+      max-width: 440px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }}
     .mobile-cover-wrap {{
-      width: 160px; height: 240px; border-radius: 14px;
+      width: 160px;
+      height: 240px;
+      border-radius: 14px;
       box-shadow: 0 16px 36px rgba(0, 0, 0, 0.75), 0 0 24px rgba(16, 185, 129, 0.22);
       border: 1.5px solid rgba(255, 255, 255, 0.16);
-      overflow: hidden; margin-bottom: 14px; position: relative;
+      overflow: hidden;
+      margin-bottom: 14px;
+      position: relative;
     }}
     .mobile-cover-img {{
-      width: 100%; height: 100%; object-fit: cover;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
     }}
 
-    /* Hero Typography & Badges */
+    /* Hero Typography */
     .hero-badge-pill {{
-      display: inline-flex; align-items: center; gap: 6px;
-      padding: 4px 12px; border-radius: 20px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 20px;
       background: rgba(16, 185, 129, 0.12);
-      border: 1px solid rgba(16, 185, 129, 0.28);
-      font-size: 11px; font-weight: 700; letter-spacing: 1.5px;
-      text-transform: uppercase; color: #34d399; margin-bottom: 12px;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: #34d399;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      margin-bottom: 12px;
     }}
     .hero-title-row {{
-      display: flex; align-items: center; gap: 14px; margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 8px;
     }}
     .hero-logo-crest {{
-      width: 54px; height: 54px; border-radius: 50%;
+      width: 58px;
+      height: 58px;
+      border-radius: 50%;
       border: 2px solid var(--gold-primary);
-      box-shadow: 0 0 20px rgba(245, 158, 11, 0.35);
-      object-fit: cover; flex-shrink: 0;
+      box-shadow: 0 0 20px rgba(245, 158, 11, 0.4);
+      object-fit: cover;
+      flex-shrink: 0;
     }}
     .hero-main-title {{
       font-family: 'Lora', 'Georgia', serif;
-      font-size: 46px; font-weight: 900; line-height: 1.15;
-      margin: 0; letter-spacing: 3px;
-      background: linear-gradient(135deg, #fef08a 0%, #f59e0b 55%, #b45309 100%);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-      filter: drop-shadow(0 2px 10px rgba(245, 158, 11, 0.25));
+      font-size: 42px;
+      font-weight: 900;
+      letter-spacing: 2px;
+      line-height: 1.1;
+      margin: 0;
+      background: linear-gradient(135deg, #fef08a 0%, #f59e0b 50%, #b45309 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: 0 0 30px rgba(245, 158, 11, 0.25);
     }}
     .mobile-title {{
-      font-size: 32px; letter-spacing: 2px;
+      font-size: 32px;
+      letter-spacing: 1.5px;
     }}
     .hero-subtitle {{
-      font-size: 14px; font-weight: 600; letter-spacing: 5px;
-      text-transform: uppercase; color: #94a3b8; margin-bottom: 14px;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 3px;
+      color: #94a3b8;
+      text-transform: uppercase;
+      margin-top: 2px;
     }}
     .mobile-sub {{
-      letter-spacing: 4px; font-size: 12px; margin-bottom: 10px;
+      font-size: 12px;
+      letter-spacing: 2px;
+      margin-bottom: 8px;
     }}
     .hero-description {{
-      font-size: 14px; line-height: 1.7; color: #cbd5e1;
-      margin: 0 0 16px 0; opacity: 0.92;
+      font-size: 14.5px;
+      line-height: 1.75;
+      color: #cbd5e1;
+      margin: 10px 0 16px 0;
+      opacity: 0.95;
     }}
     .mobile-desc {{
-      font-size: 13px; margin-bottom: 16px; line-height: 1.6;
+      font-size: 13px;
+      margin-bottom: 16px;
+      line-height: 1.6;
     }}
     .hero-stats-bar {{
-      display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px;
-      font-size: 12px; color: var(--text-muted); margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px 12px;
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 20px;
     }}
     .hero-stat-tag {{
-      display: inline-flex; align-items: center; gap: 5px;
-      padding: 3px 10px; border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 10px;
+      border-radius: 6px;
       background: rgba(255, 255, 255, 0.05);
       border: 1px solid var(--border-color);
-      color: #e2e8f0; font-weight: 500;
+      color: #e2e8f0;
+      font-weight: 500;
     }}
     .hero-stat-tag strong {{ color: var(--gold-primary); }}
 
     /* CTA Buttons */
     .hero-actions {{
-      display: flex; align-items: center; flex-wrap: wrap; gap: 12px;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
     }}
     .btn-hero-primary {{
-      padding: 13px 26px; border-radius: 12px;
+      padding: 13px 26px;
+      border-radius: 12px;
       background: linear-gradient(135deg, #10b981 0%, #059669 100%);
       border: 1px solid rgba(52, 211, 153, 0.5);
-      color: #ffffff; font-size: 15px; font-weight: 700;
-      cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+      color: #ffffff;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
       box-shadow: 0 8px 24px rgba(16, 185, 129, 0.35);
       transition: all 0.22s ease;
     }}
@@ -539,12 +703,19 @@ def generate_html(chapters_index, total_words):
     .btn-hero-primary:active {{ transform: translateY(0) scale(0.98); }}
 
     .btn-hero-secondary {{
-      padding: 13px 20px; border-radius: 12px;
+      padding: 13px 20px;
+      border-radius: 12px;
       background: rgba(255, 255, 255, 0.07);
       backdrop-filter: blur(8px);
       border: 1px solid var(--border-color);
-      color: var(--text-color); font-size: 14px; font-weight: 600;
-      cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      color: var(--text-color);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
       transition: all 0.2s ease;
     }}
     .btn-hero-secondary:hover {{
@@ -554,462 +725,889 @@ def generate_html(chapters_index, total_words):
       transform: translateY(-1px);
     }}
     .btn-hero-outline {{
-      padding: 13px 18px; border-radius: 12px;
+      padding: 13px 18px;
+      border-radius: 12px;
       background: transparent;
       border: 1px dashed var(--border-color);
-      color: var(--text-muted); font-size: 14px; font-weight: 500;
-      cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      color: var(--text-muted);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
       transition: all 0.2s ease;
     }}
     .btn-hero-outline:hover {{
-      color: #38bdf8; border-color: #38bdf8;
+      color: #38bdf8;
+      border-color: #38bdf8;
       background: rgba(56, 189, 248, 0.06);
     }}
     .mobile-cta-full {{
-      width: 100%; padding: 14px; font-size: 15px; margin-bottom: 10px;
+      width: 100%;
+      padding: 14px;
+      font-size: 15px;
+      margin-bottom: 10px;
     }}
     .mobile-sub-row {{
-      display: flex; width: 100%; gap: 8px;
+      display: flex;
+      width: 100%;
+      gap: 8px;
     }}
     .mobile-sub-row button {{
-      flex: 1; padding: 11px 8px; font-size: 13px;
+      flex: 1;
+      padding: 11px 8px;
+      font-size: 13px;
     }}
 
     /* ==========================================================================
        6. HOME SECTIONS (CONTINUE READING, TOC, ENCYCLOPEDIA)
        ========================================================================== */
     .home-container {{
-      max-width: 1100px; margin: 0 auto;
+      max-width: 1100px;
+      margin: 0 auto;
       padding: 24px 20px 80px 20px;
     }}
     .section-title-wrap {{
-      display: flex; align-items: center; justify-content: space-between;
-      flex-wrap: wrap; gap: 12px; margin: 34px 0 16px 0;
-      padding-bottom: 12px; border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin: 34px 0 16px 0;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border-color);
     }}
     .section-title {{
-      font-size: 18px; font-weight: 800; color: var(--gold-primary);
-      letter-spacing: 0.5px; margin: 0;
-      display: flex; align-items: center; gap: 10px;
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--gold-primary);
+      letter-spacing: 0.5px;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }}
     .section-title::before {{
-      content: ""; display: inline-block; width: 4px; height: 18px;
-      background: var(--accent-primary); border-radius: 2px;
+      content: "";
+      display: inline-block;
+      width: 4px;
+      height: 18px;
+      background: var(--accent-primary);
+      border-radius: 2px;
     }}
 
     /* CONTINUE READING CARD */
     .continue-card {{
-      background: var(--card-bg); border: 1px solid var(--border-color);
-      border-radius: 16px; padding: 18px 22px;
-      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 18px 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-      transition: all 0.2s ease; margin-top: 14px;
+      transition: all 0.2s ease;
+      margin-top: 14px;
     }}
     .continue-card:hover {{
       border-color: rgba(16, 185, 129, 0.35);
       transform: translateY(-1px);
     }}
+    .continue-card.welcome-mode {{
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(14, 18, 27, 0.9) 100%);
+      border-color: rgba(16, 185, 129, 0.25);
+    }}
     .continue-left {{
-      display: flex; align-items: center; gap: 16px; min-width: 0; flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      min-width: 0;
+      flex: 1;
     }}
     .continue-thumb {{
-      width: 46px; height: 46px; border-radius: 10px;
-      object-fit: cover; border: 1.5px solid var(--gold-primary);
+      width: 46px;
+      height: 46px;
+      border-radius: 10px;
+      object-fit: cover;
+      border: 1.5px solid var(--gold-primary);
       flex-shrink: 0;
     }}
     .continue-info {{ min-width: 0; flex: 1; }}
     .continue-pill {{
-      font-size: 11px; font-weight: 700; color: var(--accent-primary);
-      letter-spacing: 1px; text-transform: uppercase; margin-bottom: 2px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--accent-primary);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 2px;
     }}
     .continue-chapter-name {{
-      font-size: 15.5px; font-weight: 700; color: var(--text-color);
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      font-size: 15.5px;
+      font-weight: 700;
+      color: var(--text-color);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }}
     .continue-progress-meta {{
-      font-size: 12px; color: var(--text-muted); margin-top: 2px;
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 2px;
     }}
     .continue-btn {{
-      padding: 10px 18px; border-radius: 10px;
+      padding: 10px 18px;
+      border-radius: 10px;
       background: rgba(16, 185, 129, 0.14);
       border: 1px solid var(--accent-primary);
-      color: #34d399; font-size: 13px; font-weight: 700;
-      cursor: pointer; white-space: nowrap; transition: all 0.2s ease;
+      color: #34d399;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s ease;
     }}
     .continue-btn:hover {{
-      background: var(--accent-primary); color: #ffffff;
+      background: var(--accent-primary);
+      color: #ffffff;
     }}
 
     /* HOME TABLE OF CONTENTS */
     .home-toc-filter-row {{
-      display: flex; align-items: center; justify-content: space-between;
-      flex-wrap: wrap; gap: 12px; margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 16px;
     }}
     .home-tabs {{
-      display: flex; gap: 6px; background: rgba(0,0,0,0.2);
-      padding: 4px; border-radius: 10px; border: 1px solid var(--border-color);
+      display: flex;
+      gap: 6px;
+      background: rgba(0,0,0,0.2);
+      padding: 4px;
+      border-radius: 10px;
+      border: 1px solid var(--border-color);
     }}
     .home-tab-btn {{
-      padding: 6px 14px; border-radius: 8px; background: transparent;
-      border: none; color: var(--text-muted); font-size: 13px; font-weight: 600;
-      cursor: pointer; transition: all 0.2s;
+      padding: 6px 14px;
+      border-radius: 8px;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
     }}
     .home-tab-btn.active {{
-      background: var(--card-bg); color: var(--gold-primary);
+      background: var(--card-bg);
+      color: var(--gold-primary);
       box-shadow: 0 2px 8px rgba(0,0,0,0.2);
     }}
     .home-search-box {{
-      position: relative; min-width: 220px; flex: 1; max-width: 360px;
+      position: relative;
+      min-width: 220px;
+      flex: 1;
+      max-width: 360px;
     }}
     .home-search-input {{
-      width: 100%; padding: 8px 14px 8px 36px; border-radius: 8px;
-      background: var(--card-bg); border: 1px solid var(--border-color);
-      color: var(--text-color); font-size: 13px; outline: none;
+      width: 100%;
+      padding: 8px 14px 8px 36px;
+      border-radius: 8px;
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      color: var(--text-color);
+      font-size: 13px;
+      outline: none;
     }}
     .home-search-input:focus {{ border-color: var(--accent-primary); }}
     .home-search-icon {{
-      position: absolute; left: 11px; top: 50%; transform: translateY(-50%);
-      color: var(--text-muted); pointer-events: none;
+      position: absolute;
+      left: 11px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      pointer-events: none;
     }}
     .home-toc-grid {{
-      display: grid; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
       gap: 12px;
     }}
     .home-ch-card {{
-      background: var(--card-bg); border: 1px solid var(--border-color);
-      border-radius: 12px; padding: 14px 16px; cursor: pointer;
-      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 14px 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
       transition: all 0.2s ease;
     }}
     .home-ch-card:hover {{
-      background: var(--card-bg-hover); border-color: var(--gold-primary);
-      transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+      background: var(--card-bg-hover);
+      border-color: var(--gold-primary);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.25);
     }}
-    .home-ch-card.current {{
-      border-color: var(--accent-primary); background: rgba(16, 185, 129, 0.08);
+    .home-ch-card.is-current {{
+      border-color: var(--gold-primary);
+      background: rgba(245, 158, 11, 0.06);
+      box-shadow: 0 0 16px rgba(245, 158, 11, 0.15);
     }}
-    .home-ch-card.current .home-ch-title {{ color: var(--accent-primary); }}
+    .home-ch-card.is-current .home-ch-title {{
+      color: var(--gold-primary);
+      font-weight: 700;
+    }}
+    .home-ch-card.is-read {{
+      opacity: 0.88;
+    }}
     .home-ch-info {{ min-width: 0; flex: 1; }}
     .home-ch-meta-top {{
-      display: flex; align-items: center; gap: 8px;
-      font-size: 11px; color: var(--gold-primary); font-weight: 700; margin-bottom: 3px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      color: var(--gold-primary);
+      font-weight: 700;
+      margin-bottom: 3px;
     }}
     .home-ch-title {{
-      font-size: 14.5px; font-weight: 600; color: var(--text-color);
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 3px;
+      font-size: 14.5px;
+      font-weight: 600;
+      color: var(--text-color);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 3px;
     }}
     .home-ch-meta-bottom {{
-      font-size: 11px; color: var(--text-muted); display: flex; gap: 10px;
+      font-size: 11px;
+      color: var(--text-muted);
+      display: flex;
+      gap: 10px;
     }}
     .home-ch-arrow {{
-      color: var(--text-muted); transition: transform 0.2s, color 0.2s;
+      color: var(--text-muted);
+      transition: transform 0.2s, color 0.2s;
     }}
     .home-ch-card:hover .home-ch-arrow {{
-      color: var(--gold-primary); transform: translateX(3px);
+      color: var(--gold-primary);
+      transform: translateX(3px);
+    }}
+
+    /* Chapter status badges */
+    .ch-status-tag {{
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 4px;
+      margin-left: auto;
+    }}
+    .ch-status-tag.read {{
+      background: rgba(16, 185, 129, 0.12);
+      color: #10b981;
+      border: 1px solid rgba(16, 185, 129, 0.25);
+    }}
+    .ch-status-tag.current {{
+      background: rgba(245, 158, 11, 0.16);
+      color: #f59e0b;
+      border: 1px solid rgba(245, 158, 11, 0.4);
+    }}
+    .ch-status-tag.unread {{
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text-muted);
     }}
 
     /* HOME ENCYCLOPEDIA / CODEX CARDS */
     .home-codex-grid {{
-      display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-      gap: 14px; margin-bottom: 20px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 14px;
+      margin-bottom: 20px;
     }}
     .home-codex-card {{
-      background: var(--card-bg); border: 1px solid var(--border-color);
-      border-radius: 14px; padding: 16px; display: flex; flex-direction: column;
-      cursor: pointer; transition: all 0.22s ease;
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      cursor: pointer;
+      transition: all 0.22s ease;
     }}
     .home-codex-card:hover {{
-      border-color: rgba(16, 185, 129, 0.4); transform: translateY(-2px);
+      border-color: rgba(16, 185, 129, 0.4);
+      transform: translateY(-2px);
       box-shadow: 0 8px 20px rgba(0,0,0,0.3);
     }}
+    .home-codex-card.locked {{
+      border-style: dashed;
+      opacity: 0.76;
+    }}
     .home-codex-badge {{
-      align-self: flex-start; font-size: 10px; font-weight: 700; padding: 2px 8px;
-      border-radius: 4px; background: rgba(245, 158, 11, 0.12); color: var(--gold-primary);
+      align-self: flex-start;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: rgba(245, 158, 11, 0.12);
+      color: var(--gold-primary);
       margin-bottom: 8px;
     }}
+    .home-codex-badge.locked-badge {{
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-muted);
+    }}
     .home-codex-name {{
-      font-size: 16px; font-weight: 700; color: var(--text-color); margin: 0 0 6px 0;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-color);
+      margin: 0 0 6px 0;
     }}
     .home-codex-desc {{
-      font-size: 12.5px; color: var(--text-muted); line-height: 1.6; margin: 0; flex: 1;
+      font-size: 12.5px;
+      color: var(--text-muted);
+      line-height: 1.6;
+      margin: 0;
+      flex: 1;
+    }}
+    .codex-unlock-hint {{
+      margin-top: 8px;
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--accent-primary);
     }}
 
     /* ==========================================================================
        7. SITE FOOTER
        ========================================================================== */
     .site-footer {{
-      margin-top: 50px; padding: 40px 20px 80px 20px;
-      border-top: 1px solid var(--border-color); text-align: center;
+      margin-top: 50px;
+      padding: 40px 20px 80px 20px;
+      border-top: 1px solid var(--border-color);
+      text-align: center;
       background: rgba(0, 0, 0, 0.2);
     }}
     .footer-logo {{
-      width: 46px; height: 46px; border-radius: 50%;
-      border: 1.5px solid var(--gold-primary); margin-bottom: 12px;
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      border: 1.5px solid var(--gold-primary);
+      margin-bottom: 12px;
       object-fit: cover;
     }}
     .footer-title {{
       font-family: 'Lora', 'Georgia', serif;
-      font-size: 16px; font-weight: 700; color: var(--gold-primary);
-      letter-spacing: 1.5px; margin-bottom: 4px;
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--gold-primary);
+      letter-spacing: 1px;
+      margin-bottom: 4px;
     }}
     .footer-sub {{
-      font-size: 12px; color: var(--text-muted); margin-bottom: 14px;
+      font-size: 12.5px;
+      color: var(--text-muted);
+      margin-bottom: 12px;
     }}
     .footer-copy {{
-      font-size: 11.5px; color: var(--text-muted); opacity: 0.75;
+      font-size: 11px;
+      color: var(--text-muted);
+      opacity: 0.75;
     }}
 
     /* ==========================================================================
-       8. READER VIEW & READING LAYOUT
+       8. READER VIEW (FOCUS READING MODE)
        ========================================================================== */
     #readerView {{
       display: none;
+      min-height: 100vh;
     }}
     .app-layout {{
-      display: flex; justify-content: center; min-height: 100vh;
-      padding-top: 68px; padding-bottom: 84px;
+      display: flex;
+      max-width: 1400px;
+      margin: 0 auto;
+      position: relative;
     }}
+
+    /* Persistent Desktop Sidebar TOC */
+    .desktop-toc-sidebar {{
+      display: none;
+      width: 280px;
+      height: calc(100vh - 60px);
+      position: sticky;
+      top: 60px;
+      overflow-y: auto;
+      border-right: 1px solid var(--border-color);
+      padding: 18px 12px;
+      background: rgba(0,0,0,0.15);
+      flex-shrink: 0;
+    }}
+    @media (min-width: 1200px) {{
+      .desktop-toc-sidebar {{ display: block; }}
+    }}
+
+    /* Main Reader Area */
     .main-reader {{
-      width: 100%; max-width: var(--max-width);
-      padding: 16px 20px 60px 20px; margin: 0 auto;
+      flex: 1;
+      min-width: 0;
+      padding: 24px 20px 100px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }}
 
     .btn-back-home-wrap {{
-      margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between;
+      width: 100%;
+      max-width: var(--reader-max-width);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
     }}
     .btn-back-home {{
-      display: inline-flex; align-items: center; gap: 8px;
-      padding: 7px 14px; border-radius: 8px;
-      background: var(--card-bg); border: 1px solid var(--border-color);
-      color: var(--text-muted); font-size: 13px; font-weight: 600;
-      cursor: pointer; transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 8px;
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+      font-size: 12.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
     }}
     .btn-back-home:hover {{
-      color: var(--gold-primary); border-color: var(--gold-primary);
+      color: var(--gold-primary);
+      border-color: var(--gold-primary);
     }}
 
-    /* Desktop Sidebar (TOC) */
-    .desktop-toc-sidebar {{
-      display: none; width: 290px; height: calc(100vh - 68px);
-      position: sticky; top: 68px; overflow-y: auto; padding: 16px;
-      border-right: 1px solid var(--border-color); scrollbar-width: thin;
-    }}
-    @media (min-width: 1200px) {{
-      .app-layout.has-sidebar .desktop-toc-sidebar {{ display: block; }}
-      .app-layout.has-sidebar .main-reader {{ margin-left: 30px; }}
-    }}
-
-    /* Chapter Header in Reader */
     .chapter-hero {{
-      text-align: center; margin-bottom: 36px; padding-bottom: 24px;
-      border-bottom: 1px dashed var(--border-color);
+      width: 100%;
+      max-width: var(--reader-max-width);
+      text-align: center;
+      padding: 24px 0 28px 0;
+      border-bottom: 1px solid var(--border-color);
+      margin-bottom: 32px;
     }}
     .chapter-vol-arc {{
-      display: inline-block; font-size: 12px; font-weight: 700;
-      letter-spacing: 2px; text-transform: uppercase;
-      color: var(--accent-primary); margin-bottom: 10px;
-      padding: 4px 12px; border-radius: 6px;
-      background: rgba(16, 185, 129, 0.08); border: 1px solid var(--border-color);
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--accent-primary);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
     }}
     .chapter-main-title {{
-      font-size: 27px; font-weight: 800; line-height: 1.35;
-      margin: 12px 0 14px 0; color: var(--gold-primary);
-      letter-spacing: 0.5px;
+      font-family: 'Lora', 'Georgia', serif;
+      font-size: 28px;
+      font-weight: 800;
+      line-height: 1.35;
+      color: var(--gold-primary);
+      margin: 0 0 12px 0;
     }}
     .chapter-meta-line {{
-      display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 14px;
-      font-size: 13px; color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      font-size: 12.5px;
+      color: var(--text-muted);
     }}
 
-    /* Novel Content Body */
+    /* Reader Typography & Layout */
+    .novel-body {{
+      width: 100%;
+      max-width: var(--reader-max-width);
+      font-size: var(--font-size);
+      line-height: var(--reader-line-height);
+      color: var(--text-color);
+      letter-spacing: 0.2px;
+      transition: font-size 0.2s ease, max-width 0.2s ease, line-height 0.2s ease;
+    }}
     .novel-body p {{
-      margin: 0 0 1.35em 0; text-align: justify; hyphens: auto;
+      margin-bottom: 1.6em;
+      text-align: justify;
+      text-justify: inter-word;
+    }}
+    .novel-body blockquote {{
+      border-left: 3px solid var(--gold-primary);
+      padding: 8px 16px;
+      margin: 1.6em 0;
+      background: var(--card-bg);
+      border-radius: 0 8px 8px 0;
+      font-style: italic;
     }}
     .novel-body hr {{
-      border: none; text-align: center; margin: 2.2em 0;
-    }}
-    .novel-body hr::after {{
-      content: "✦  ✦  ✦"; color: var(--gold-primary);
-      opacity: 0.6; letter-spacing: 12px; font-size: 14px;
-    }}
-    .novel-body em {{
-      font-style: italic; color: var(--text-color); opacity: 0.95;
-    }}
-    .novel-body strong {{
-      color: var(--gold-primary); font-weight: 700;
+      border: none;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border-color), transparent);
+      margin: 2.5em 0;
     }}
 
-    /* Chapter Foot Navigation */
+    /* Reader Loading Skeleton */
+    .reader-skeleton {{
+      padding: 24px 0;
+    }}
+    .skeleton-bar {{
+      height: 16px;
+      margin-bottom: 16px;
+      border-radius: 4px;
+      background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.8s infinite;
+    }}
+    @keyframes shimmer {{
+      0% {{ background-position: 200% 0; }}
+      100% {{ background-position: -200% 0; }}
+    }}
+
+    /* End Chapter Navigation */
     .chapter-footer-nav {{
-      margin-top: 50px; padding-top: 24px;
+      width: 100%;
+      max-width: var(--reader-max-width);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 48px;
+      padding-top: 24px;
       border-top: 1px solid var(--border-color);
-      display: flex; justify-content: space-between; align-items: center; gap: 12px;
     }}
     .btn-nav-chapter {{
-      flex: 1; padding: 13px 16px; border-radius: 12px;
-      background: var(--card-bg); border: 1px solid var(--border-color);
-      color: var(--text-color); font-size: 15px; font-weight: 600;
-      cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+      flex: 1;
+      padding: 13px;
+      border-radius: 12px;
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      color: var(--text-color);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
       transition: all 0.2s ease;
     }}
     .btn-nav-chapter:hover:not(:disabled) {{
-      background: var(--card-bg-hover); border-color: var(--gold-primary);
-      color: var(--gold-primary); transform: translateY(-1px);
+      border-color: var(--accent-primary);
+      color: var(--accent-primary);
+      background: var(--card-bg-hover);
     }}
     .btn-nav-chapter:disabled {{
-      opacity: 0.35; cursor: not-allowed;
+      opacity: 0.35;
+      cursor: not-allowed;
     }}
 
-    /* ==========================================================================
-       9. MOBILE BOTTOM BAR
-       ========================================================================== */
+    /* Mobile Bottom Floating Nav */
     .bottom-bar {{
-      position: fixed; bottom: 0; left: 0; right: 0; height: 58px;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 58px;
       background: var(--header-bg);
-      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
       border-top: 1px solid var(--border-color);
-      display: flex; align-items: center; justify-content: space-around;
-      padding: 0 8px; z-index: 900;
-      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      z-index: 998;
+      transition: transform 0.25s ease;
     }}
-    .bottom-bar.hidden {{ transform: translateY(100%); }}
-
+    .bottom-bar.nav-hidden {{
+      transform: translateY(100%);
+    }}
+    @media (min-width: 769px) {{
+      .bottom-bar {{ display: none; }}
+    }}
     .btn-bottom-item {{
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      background: none; border: none; color: var(--text-muted);
-      font-size: 11px; font-weight: 500; cursor: pointer; padding: 4px 10px;
-      border-radius: 8px; transition: color 0.2s;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      font-size: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 6px 12px;
+      border-radius: 8px;
     }}
-    .btn-bottom-item svg {{ width: 20px; height: 20px; margin-bottom: 2px; }}
-    .btn-bottom-item.active, .btn-bottom-item:hover {{
+    .btn-bottom-item:active, .btn-bottom-item.active {{
       color: var(--gold-primary);
     }}
+    .btn-bottom-item svg {{
+      width: 20px;
+      height: 20px;
+    }}
 
     /* ==========================================================================
-       10. DRAWERS & MODALS (TOC, CODEX, SETTINGS)
+       9. MODALS & DRAWERS (TOC, CODEX, SETTINGS)
        ========================================================================== */
     .modal-overlay {{
-      position: fixed; inset: 0; background: rgba(0, 0, 0, 0.7);
-      backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
-      z-index: 999; opacity: 0; pointer-events: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.72);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
       transition: opacity 0.25s ease;
     }}
-    .modal-overlay.open {{ opacity: 1; pointer-events: auto; }}
+    .modal-overlay.open {{
+      opacity: 1;
+      pointer-events: auto;
+    }}
 
     .drawer {{
-      position: fixed; top: 0; bottom: 0; width: 88%; max-width: 420px;
-      background: var(--card-bg); z-index: 1000;
-      box-shadow: 0 0 35px rgba(0, 0, 0, 0.65);
-      display: flex; flex-direction: column;
-      transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      width: 86%;
+      max-width: 420px;
+      background: var(--card-bg);
+      border-left: 1px solid var(--border-color);
+      z-index: 1001;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: -8px 0 24px rgba(0, 0, 0, 0.4);
     }}
-    .drawer-left {{ left: 0; transform: translateX(-100%); border-right: 1px solid var(--border-color); }}
+    .drawer-left {{
+      left: 0;
+      border-left: none;
+      border-right: 1px solid var(--border-color);
+      transform: translateX(-100%);
+      box-shadow: 8px 0 24px rgba(0, 0, 0, 0.4);
+    }}
     .drawer-left.open {{ transform: translateX(0); }}
-    .drawer-right {{ right: 0; transform: translateX(100%); border-left: 1px solid var(--border-color); }}
+    .drawer-right {{
+      right: 0;
+      transform: translateX(100%);
+    }}
     .drawer-right.open {{ transform: translateX(0); }}
 
     .drawer-header {{
-      padding: 16px 20px; border-bottom: 1px solid var(--border-color);
-      display: flex; align-items: center; justify-content: space-between;
-      background: rgba(0,0,0,0.18);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border-color);
     }}
-    .drawer-title {{ font-size: 16px; font-weight: 700; color: var(--gold-primary); margin: 0; }}
-    
+    .drawer-title {{
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--gold-primary);
+      margin: 0;
+      letter-spacing: 0.5px;
+    }}
     .drawer-tabs {{
-      display: flex; border-bottom: 1px solid var(--border-color);
-      background: rgba(0,0,0,0.1);
+      display: flex;
+      padding: 10px 14px;
+      gap: 6px;
+      border-bottom: 1px solid var(--border-color);
+      background: rgba(0,0,0,0.15);
     }}
     .drawer-tab-btn {{
-      flex: 1; padding: 12px 6px; background: none; border: none;
-      color: var(--text-muted); font-size: 13px; font-weight: 600;
-      cursor: pointer; text-align: center; border-bottom: 2px solid transparent;
+      flex: 1;
+      padding: 7px 4px;
+      border-radius: 8px;
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-muted);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
       transition: all 0.2s;
+      text-align: center;
     }}
     .drawer-tab-btn.active {{
-      color: var(--accent-primary); border-bottom-color: var(--accent-primary);
-      background: rgba(16, 185, 129, 0.05);
+      background: var(--card-bg);
+      border-color: var(--border-color);
+      color: var(--gold-primary);
     }}
-
     .drawer-search {{
-      padding: 10px 16px; border-bottom: 1px solid var(--border-color);
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border-color);
     }}
     .search-input {{
-      width: 100%; padding: 9px 12px; border-radius: 8px;
-      background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color);
-      color: var(--text-color); font-size: 14px; outline: none;
+      width: 100%;
+      padding: 8px 12px;
+      border-radius: 8px;
+      background: rgba(0,0,0,0.2);
+      border: 1px solid var(--border-color);
+      color: var(--text-color);
+      font-size: 13px;
+      outline: none;
     }}
-    .search-input:focus {{ border-color: var(--accent-primary); }}
-
+    .search-input:focus {{
+      border-color: var(--accent-primary);
+    }}
     .drawer-body {{
-      flex: 1; overflow-y: auto; padding: 10px 16px; scrollbar-width: thin;
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px 14px;
     }}
 
-    /* TOC item in drawer */
+    /* TOC items in Drawer & Desktop Sidebar */
     .toc-item {{
-      padding: 12px 14px; border-radius: 10px; margin-bottom: 6px;
-      cursor: pointer; display: flex; align-items: center; justify-content: space-between;
-      border: 1px solid transparent; transition: all 0.18s ease;
+      padding: 10px 12px;
+      border-radius: 8px;
+      margin-bottom: 4px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border: 1px solid transparent;
+      transition: all 0.18s ease;
     }}
     .toc-item:hover {{
-      background: var(--card-bg-hover); border-color: var(--border-color);
+      background: var(--card-bg-hover);
+      border-color: var(--border-color);
     }}
     .toc-item.active {{
-      background: rgba(16, 185, 129, 0.12); border-color: var(--accent-primary);
+      background: rgba(16, 185, 129, 0.12);
+      border-color: var(--accent-primary);
     }}
     .toc-item.active .toc-name {{
-      color: var(--accent-primary); font-weight: 700;
+      color: var(--accent-primary);
+      font-weight: 700;
     }}
     .toc-info {{ min-width: 0; flex: 1; margin-right: 10px; }}
-    .toc-num {{ font-size: 11px; color: var(--gold-primary); font-weight: 700; text-transform: uppercase; margin-bottom: 2px; }}
-    .toc-name {{ font-size: 14px; color: var(--text-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }}
+    .toc-num {{
+      font-size: 11px;
+      color: var(--gold-primary);
+      font-weight: 700;
+      text-transform: uppercase;
+      margin-bottom: 2px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }}
+    .toc-name {{
+      font-size: 13.5px;
+      color: var(--text-color);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }}
     .toc-meta {{ font-size: 11px; color: var(--text-muted); }}
 
     /* Codex Drawer Styles */
     .codex-card {{
-      background: rgba(0,0,0,0.2); border: 1px solid var(--border-color);
-      border-radius: 12px; padding: 14px; margin-bottom: 14px;
+      background: rgba(0,0,0,0.2);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 14px;
+    }}
+    .codex-card.locked {{
+      border-style: dashed;
+      opacity: 0.8;
     }}
     .codex-badge {{
-      display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 8px;
-      border-radius: 4px; background: rgba(245, 158, 11, 0.15); color: var(--gold-primary);
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: rgba(245, 158, 11, 0.15);
+      color: var(--gold-primary);
       margin-bottom: 6px;
     }}
-    .codex-title {{ font-size: 15px; font-weight: 700; color: var(--gold-primary); margin: 0 0 6px 0; }}
-    .codex-desc {{ font-size: 13px; color: var(--text-color); opacity: 0.9; line-height: 1.6; margin: 0; }}
-    .codex-stat {{
-      display: flex; justify-content: space-between; font-size: 12px;
-      padding: 6px 0; border-top: 1px dashed var(--border-color); margin-top: 8px;
+    .codex-badge.locked-badge {{
+      background: rgba(255, 255, 255, 0.08);
       color: var(--text-muted);
     }}
-    .codex-stat-val {{ color: var(--accent-primary); font-weight: 600; }}
+    .codex-title {{
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--gold-primary);
+      margin: 0 0 6px 0;
+    }}
+    .codex-desc {{
+      font-size: 13px;
+      color: var(--text-color);
+      opacity: 0.9;
+      line-height: 1.6;
+      margin: 0;
+    }}
+    .codex-stat {{
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      padding: 6px 0;
+      border-top: 1px dashed var(--border-color);
+      margin-top: 8px;
+      color: var(--text-muted);
+    }}
+    .codex-stat-val {{
+      color: var(--accent-primary);
+      font-weight: 600;
+    }}
 
     /* Settings Bottom Sheet */
     .sheet-bottom {{
-      position: fixed; bottom: 0; left: 0; right: 0;
-      background: var(--card-bg); z-index: 1000;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--card-bg);
+      z-index: 1002;
       border-top: 1px solid var(--border-color);
       border-radius: 20px 20px 0 0;
-      max-width: 580px; margin: 0 auto;
+      max-width: 580px;
+      margin: 0 auto;
       padding: 20px 24px 36px 24px;
       transform: translateY(100%);
       transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      max-height: 85vh;
+      overflow-y: auto;
     }}
     .sheet-bottom.open {{ transform: translateY(0); }}
     .sheet-handle {{
-      width: 36px; height: 4px; border-radius: 2px;
-      background: var(--border-color); margin: 0 auto 16px auto;
+      width: 36px;
+      height: 4px;
+      border-radius: 2px;
+      background: var(--border-color);
+      margin: 0 auto 16px auto;
     }}
 
     .setting-group {{ margin-bottom: 18px; }}
     .setting-label {{
-      font-size: 12px; font-weight: 700; color: var(--text-muted);
-      text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 10px;
     }}
-    .theme-grid {{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }}
+    .theme-grid {{
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }}
     .theme-opt {{
-      padding: 10px 6px; border-radius: 10px; border: 2px solid var(--border-color);
-      background: rgba(0,0,0,0.1); cursor: pointer; text-align: center;
-      font-size: 12px; font-weight: 600; color: var(--text-color);
+      padding: 10px 6px;
+      border-radius: 10px;
+      border: 2px solid var(--border-color);
+      background: rgba(0,0,0,0.1);
+      cursor: pointer;
+      text-align: center;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-color);
       transition: all 0.2s;
     }}
     .theme-opt.active {{
@@ -1018,20 +1616,64 @@ def generate_html(chapters_index, total_words):
     }}
 
     .stepper-ctrl {{
-      display: flex; align-items: center; justify-content: space-between;
-      background: rgba(0,0,0,0.15); border-radius: 10px; padding: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(0,0,0,0.15);
+      border-radius: 10px;
+      padding: 4px;
       border: 1px solid var(--border-color);
     }}
     .btn-step {{
-      width: 44px; height: 38px; background: var(--card-bg);
-      border: 1px solid var(--border-color); color: var(--text-color);
-      border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer;
+      width: 44px;
+      height: 38px;
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      color: var(--text-color);
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
     }}
-    .stepper-val {{ font-size: 15px; font-weight: 700; color: var(--gold-primary); }}
+    .stepper-val {{
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--gold-primary);
+    }}
+
+    .btn-opt-group {{
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }}
+    .btn-opt-step {{
+      padding: 9px 4px;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      background: rgba(0,0,0,0.15);
+      color: var(--text-color);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+    }}
+    .btn-opt-step:hover {{
+      border-color: var(--accent-primary);
+      color: var(--accent-primary);
+    }}
+    .btn-opt-step.active {{
+      background: rgba(16, 185, 129, 0.15);
+      border-color: var(--accent-primary);
+      color: var(--accent-primary);
+    }}
 
     /* Floating Side Desktop Navigation */
     .desktop-nav-float {{
-      display: none; position: fixed; top: 50%; transform: translateY(-50%);
+      display: none;
+      position: fixed;
+      top: 50%;
+      transform: translateY(-50%);
       z-index: 800;
     }}
     .desktop-nav-left {{ left: 24px; }}
@@ -1040,34 +1682,67 @@ def generate_html(chapters_index, total_words):
       .desktop-nav-float {{ display: flex; flex-direction: column; align-items: center; }}
     }}
     .btn-float-nav {{
-      width: 48px; height: 48px; border-radius: 50%;
-      background: var(--card-bg); border: 1px solid var(--border-color);
-      color: var(--text-color); cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      color: var(--text-color);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       box-shadow: 0 6px 18px rgba(0,0,0,0.25);
       transition: all 0.2s;
     }}
     .btn-float-nav:hover:not(:disabled) {{
-      border-color: var(--gold-primary); color: var(--gold-primary); transform: scale(1.1);
+      border-color: var(--gold-primary);
+      color: var(--gold-primary);
+      transform: scale(1.1);
     }}
-    .btn-float-nav:disabled {{ opacity: 0.3; cursor: not-allowed; }}
+    .btn-float-nav:disabled {{
+      opacity: 0.3;
+      cursor: not-allowed;
+    }}
 
     /* Toast Notification */
     #liveToast {{
-      position: fixed; bottom: 74px; left: 50%; transform: translateX(-50%) translateY(30px);
-      background: var(--card-bg); border: 1px solid var(--accent-primary);
-      color: var(--text-color); font-size: 13px; font-weight: 600;
-      padding: 10px 18px; border-radius: 30px; box-shadow: 0 8px 24px rgba(0,0,0,0.4);
-      opacity: 0; pointer-events: none; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-      z-index: 2000; white-space: nowrap; display: flex; align-items: center; gap: 8px;
+      position: fixed;
+      bottom: 74px;
+      left: 50%;
+      transform: translateX(-50%) translateY(30px);
+      background: var(--card-bg);
+      border: 1px solid var(--accent-primary);
+      color: var(--text-color);
+      font-size: 13px;
+      font-weight: 600;
+      padding: 10px 18px;
+      border-radius: 30px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 2000;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }}
-    #liveToast.show {{ transform: translateX(-50%) translateY(0); opacity: 1; }}
+    #liveToast.show {{
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }}
 
     /* Audio Ambient Widget */
     .ambient-widget {{
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 10px 14px; border-radius: 10px; background: rgba(0,0,0,0.15);
-      border: 1px solid var(--border-color); margin-top: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      border-radius: 10px;
+      background: rgba(0,0,0,0.15);
+      border: 1px solid var(--border-color);
+      margin-top: 10px;
     }}
   </style>
 </head>
@@ -1081,7 +1756,7 @@ def generate_html(chapters_index, total_words):
   <!-- HEADER -->
   <header id="topHeader">
     <div class="header-left">
-      <button class="btn-brand" id="btnBrandHome" title="Về Trang Chủ Phá Trời">
+      <button class="btn-brand" id="btnBrandHome" title="Về Trang Chủ Phá Trời (H)">
         <picture>
           <source srcset="./assets/logo.webp" type="image/webp">
           <img src="./assets/logo.jpg" class="nav-logo" alt="Phá Trời">
@@ -1109,7 +1784,7 @@ def generate_html(chapters_index, total_words):
       </button>
       
       <!-- Codex button -->
-      <button class="btn-icon" id="btnCodex" title="Bách Khoa Cổ Vật & Hồ Sơ (C)">
+      <button class="btn-icon" id="btnCodex" title="Codex Phá Trời — Bách Khoa Thế Giới (C)">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
       </button>
 
@@ -1146,7 +1821,7 @@ def generate_html(chapters_index, total_words):
         </picture>
         <div class="hero-desktop-overlay"></div>
         <div class="hero-desktop-content">
-          <div class="hero-badge-pill"><span class="dot-live"></span> NOVEL OS • ĐÔ THỊ TU CHÂN • TP. HỒ CHÍ MINH 2026</div>
+          <div class="hero-badge-pill"><span class="dot-live"></span> ĐÔ THỊ TU CHÂN • TP. HỒ CHÍ MINH 2026</div>
           <div class="hero-title-row">
             <picture>
               <source srcset="./assets/logo.webp" type="image/webp">
@@ -1157,17 +1832,17 @@ def generate_html(chapters_index, total_words):
               <div class="hero-subtitle">PHÁ TOÁI THẦN HOANG</div>
             </div>
           </div>
-          <p class="hero-description">Lấy nhục thân phàm nhân vượt qua vạn trùng xiềng xích, đúc rèn ý chí kiên định giữa cõi nhân gian. Từ một nhân viên văn phòng bình thường từng bước đúc cốt, ngự kình, gánh vác sứ mệnh trấn thủ đại phong ấn sông ngầm Sài Gòn.</p>
+          <p class="hero-description">Một nhân viên văn phòng bình thường tại TP.HCM vô tình phát hiện phong ấn cổ xưa 2.5 triệu năm ẩn sâu dưới lòng sông Sài Gòn. Không thiên phú, không gia thế, không hệ thống hack game — Minh An dấn thân vào con đường Thể Đạo, lấy nhục thân phàm nhân phá vỡ vạn trùng xiềng xích.</p>
           <div class="hero-stats-bar">
             <span class="hero-stat-tag">📖 <strong>{total_ch}</strong> Chương</span>
             <span class="hero-stat-tag">⚡ <strong>{total_words:,}</strong> từ</span>
-            <span class="hero-stat-tag">🌊 Quyển 1 (Hồi 1 & Hồi 2)</span>
-            <span class="hero-stat-tag"><span class="dot-live"></span> PWA 24/7 Offline</span>
+            <span class="hero-stat-tag">🌊 Quyển 1 & 2</span>
+            <span class="hero-stat-tag"><span class="dot-live"></span> Đang ra tiếp</span>
           </div>
           <div class="hero-actions">
             <button class="btn-hero-primary" id="btnHeroReadPrimary">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-              <span id="heroPrimaryText">Đọc Tiếp Chương {total_ch}</span>
+              <span id="heroPrimaryText">▶ Bắt Đầu Đọc — Chương 1</span>
             </button>
             <button class="btn-hero-secondary" id="btnHeroTocScroll">
               <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
@@ -1175,8 +1850,11 @@ def generate_html(chapters_index, total_words):
             </button>
             <button class="btn-hero-outline" id="btnHeroCodexOpen">
               <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
-              <span>Bách Khoa Cổ Vật</span>
+              <span>Codex Phá Trời</span>
             </button>
+          </div>
+          <div id="heroResetLinkWrap" style="display:none; margin-top:8px; font-size:12.5px; color:var(--text-muted);">
+            <span>Đã đọc một phần? </span><a href="javascript:void(0)" id="linkHeroResetCh1" style="color:var(--accent-primary); font-weight:600; text-decoration:none;">Đọc lại từ Chương 1</a>
           </div>
         </div>
       </div>
@@ -1198,14 +1876,17 @@ def generate_html(chapters_index, total_words):
           <div class="hero-badge-pill"><span class="dot-live"></span> ĐÔ THỊ TU CHÂN • TP.HCM 2026</div>
           <h1 class="hero-main-title mobile-title">PHÁ TRỜI</h1>
           <div class="hero-subtitle mobile-sub">PHÁ TOÁI THẦN HOANG</div>
-          <p class="hero-description mobile-desc">Lấy nhục thân phàm nhân vượt qua vạn trùng xiềng xích, đúc rèn ý chí kiên định giữa cõi nhân gian.</p>
+          <p class="hero-description mobile-desc">Một nhân viên văn phòng bình thường tại TP.HCM phát hiện phong ấn sông ngầm Sài Gòn. Không thiên phú, không hệ thống — lấy Thể Đạo phàm nhân phá vỡ xiềng xích.</p>
           <button class="btn-hero-primary mobile-cta-full" id="btnMobileHeroReadPrimary">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-            <span id="mobileHeroPrimaryText">Đọc Tiếp Chương {total_ch}</span>
+            <span id="mobileHeroPrimaryText">▶ Bắt Đầu Đọc — Chương 1</span>
           </button>
           <div class="mobile-sub-row">
             <button class="btn-hero-secondary" id="btnMobileHeroTocScroll">Mục Lục ({total_ch})</button>
-            <button class="btn-hero-outline" id="btnMobileHeroCodexOpen">Bách Khoa</button>
+            <button class="btn-hero-outline" id="btnMobileHeroCodexOpen">Codex</button>
+          </div>
+          <div id="mobileHeroResetWrap" style="display:none; margin-top:8px; font-size:12px; color:var(--text-muted);">
+            <a href="javascript:void(0)" id="linkMobileHeroResetCh1" style="color:var(--accent-primary); text-decoration:none;">Đọc lại từ Chương 1</a>
           </div>
         </div>
       </div>
@@ -1213,21 +1894,21 @@ def generate_html(chapters_index, total_words):
 
     <!-- HOME BODY CONTENT -->
     <div class="home-container">
-      <!-- SECTION 2: CONTINUE READING -->
+      <!-- SECTION 2: WELCOME & CONTINUE READING -->
       <div id="sectionContinue">
-        <div class="continue-card" id="continueReadingCard">
+        <div class="continue-card welcome-mode" id="continueReadingCard">
           <div class="continue-left">
             <picture>
               <source srcset="./assets/logo.webp" type="image/webp">
-              <img src="./assets/logo.jpg" class="continue-thumb" alt="Tiến độ">
+              <img src="./assets/logo.jpg" class="continue-thumb" alt="Phá Trời">
             </picture>
             <div class="continue-info">
-              <div class="continue-pill">TIẾN ĐỘ ĐANG ĐỌC</div>
-              <div class="continue-chapter-name" id="contChName">Chương {total_ch}: Đang nạp...</div>
-              <div class="continue-progress-meta" id="contChMeta">Chương {total_ch} / {total_ch} • 100% trọn bộ</div>
+              <div class="continue-pill" id="contPill">HÀNH TRÌNH KHỞI ĐẦU</div>
+              <div class="continue-chapter-name" id="contChName">Bạn chưa từng đọc Phá Trời? Bắt đầu từ Chương 1</div>
+              <div class="continue-progress-meta" id="contChMeta">Dấn thân vào đại phong ấn sông ngầm Sài Gòn 2.5 triệu năm cùng Minh An</div>
             </div>
           </div>
-          <button class="continue-btn" id="btnContinueJump">Tiếp Tục Đọc →</button>
+          <button class="continue-btn" id="btnContinueJump">Bắt Đầu Đọc Chương 1 →</button>
         </div>
       </div>
 
@@ -1253,37 +1934,21 @@ def generate_html(chapters_index, total_words):
         </div>
 
         <div class="home-toc-grid" id="homeTocGrid">
-          <!-- Populated by JavaScript -->
+          <!-- Populated dynamically by JavaScript -->
         </div>
       </div>
 
-      <!-- SECTION 4: ENCYCLOPEDIA / CODEX PREVIEW -->
+      <!-- SECTION 4: ENCYCLOPEDIA / CODEX PREVIEW (PROGRESSIVE UNLOCK) -->
       <div id="sectionCodexPreview">
         <div class="section-title-wrap">
-          <h2 class="section-title">BÁCH KHOA TOÀN THƯ (CODEX)</h2>
-          <button class="btn-hero-outline" id="btnViewAllCodex" style="padding:6px 14px; font-size:12px;">Xem Toàn Bộ →</button>
+          <div>
+            <h2 class="section-title">CODEX PHÁ TRỜI — KHÁM PHÁ THẾ GIỚI</h2>
+            <div style="font-size:12.5px; color:var(--text-muted); margin-top:4px;">Hồ sơ nhân vật, cổ vật và thế giới quan đô thị tu chân. Mở khóa theo tiến độ đọc.</div>
+          </div>
+          <button class="btn-hero-outline" id="btnViewAllCodex" style="padding:6px 14px; font-size:12px;">Mở Bách Khoa Toàn Thư →</button>
         </div>
-        <div class="home-codex-grid">
-          <div class="home-codex-card" onclick="openCodexTab('char')">
-            <span class="home-codex-badge">NAM CHÍNH • THỂ ĐẠO</span>
-            <div class="home-codex-name">Nguyễn Minh An (25 tuổi)</div>
-            <p class="home-codex-desc">Giám đốc Kỹ thuật Dữ liệu Viện Địa Tầng. Xuất thân phàm nhân, đúc cốt ngự kình, Luyện Cốt Trung kỳ (Cốt Nhược Kim Thạch).</p>
-          </div>
-          <div class="home-codex-card" onclick="openCodexTab('lotus')">
-            <span class="home-codex-badge">NỮ CHÍNH • NGUYÊN THẦN</span>
-            <div class="home-codex-name">Lâm Tịch (Bạch Y Tiên Tử)</div>
-            <p class="home-codex-desc">Tàn phiến Nguyên Thần viễn cổ ngụ trong Thức Hải Thanh Liên của Minh An, đạo cơ vỡ nát, che chở tâm mạch phàm trần.</p>
-          </div>
-          <div class="home-codex-card" onclick="openCodexTab('item')">
-            <span class="home-codex-badge">VŨ KHÍ THỰC CHIẾN CHÍNH</span>
-            <div class="home-codex-name">Hắc Thiết Đoản Côn</div>
-            <p class="home-codex-desc">Thép nhíp Zil tôi dầu cám chu sa thạch anh do bác Sáu Kiên và Minh An rèn. Dài 52cm, nặng 3.2kg, dẫn truyền Kính Kình tối ưu.</p>
-          </div>
-          <div class="home-codex-card" onclick="openCodexTab('item')">
-            <span class="home-codex-badge">CỔ KHÍ TRẤN THỦY</span>
-            <div class="home-codex-name">Trấn Thủy Đoản Đao</div>
-            <p class="home-codex-desc">Di vật Thủy Môn Thập Nhị Tiêu niên đại > 2.5 triệu năm. Thuần phục dưới kình lực Thiết Lương Thập Phách, lộ chỉ hoàng kim.</p>
-          </div>
+        <div class="home-codex-grid" id="homeCodexGrid">
+          <!-- Populated dynamically based on reading progress -->
         </div>
       </div>
 
@@ -1295,7 +1960,7 @@ def generate_html(chapters_index, total_words):
         </picture>
         <div class="footer-title">PHÁ TRỜI — PHÁ TOÁI THẦN HOANG</div>
         <div class="footer-sub">Trường thiên tiểu thuyết đô thị tu chân Sài Gòn 2026 • Tác giả: An Bình</div>
-        <div class="footer-copy">Vận hành bởi Novel OS v2.0 • Tối ưu PWA đọc Online / Offline 24/7 • Toàn bộ bản quyền được bảo lưu.</div>
+        <div class="footer-copy">Vận hành bởi Novel OS • 100% Offline PWA • Tự động lưu tiến độ đọc vào thiết bị.</div>
       </footer>
     </div>
   </div>
@@ -1334,25 +1999,30 @@ def generate_html(chapters_index, total_words):
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
             <span>Về Trang Chủ Phá Trời</span>
           </button>
-          <div style="font-size:12px; color:var(--text-muted);" id="readerArcLabel">QUYỂN 1 • HỒI 2</div>
+          <div style="font-size:12px; color:var(--text-muted);" id="readerArcLabel">QUYỂN 1 • HỒI 1</div>
         </div>
 
         <!-- Chapter Hero Header -->
         <section class="chapter-hero">
-          <div class="chapter-vol-arc" id="heroVolArc">QUYỂN 1 • HỒI 2</div>
-          <h1 class="chapter-main-title" id="heroTitle">Đang nạp bản thảo...</h1>
+          <div class="chapter-vol-arc" id="heroVolArc">QUYỂN 1 • HỒI 1</div>
+          <h1 class="chapter-main-title" id="heroTitle">Đang tải chương...</h1>
           <div class="chapter-meta-line">
-            <span id="heroWordCount">0 từ</span>
+            <span id="heroWordCount">Bản thảo chính thức</span>
             <span>•</span>
-            <span id="heroDate">2026-10-18</span>
-            <span>•</span>
-            <span class="badge-live"><span class="dot-live"></span> PWA 24/7</span>
+            <span id="heroReadTime">~5 phút đọc</span>
           </div>
         </section>
 
         <!-- Novel Content -->
         <article class="novel-body" id="novelContent">
-          <p style="text-align:center; color:var(--text-muted); padding: 40px 0;">Đang kết nối kho bản thảo Novel OS...</p>
+          <div class="reader-skeleton">
+            <div class="skeleton-bar" style="width:75%; height:20px; margin: 0 auto 24px auto;"></div>
+            <div class="skeleton-bar" style="width:100%;"></div>
+            <div class="skeleton-bar" style="width:96%;"></div>
+            <div class="skeleton-bar" style="width:92%; margin-bottom: 24px;"></div>
+            <div class="skeleton-bar" style="width:100%;"></div>
+            <div class="skeleton-bar" style="width:88%;"></div>
+          </div>
         </article>
 
         <!-- Bottom Nav Inside Content -->
@@ -1387,13 +2057,13 @@ def generate_html(chapters_index, total_words):
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
       <span>Mục Lục</span>
     </button>
-    <button class="btn-bottom-item" id="btnMobileCodex">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
-      <span>Bảo Vật</span>
-    </button>
     <button class="btn-bottom-item" id="btnMobileNext">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
       <span>Sau</span>
+    </button>
+    <button class="btn-bottom-item" id="btnMobileSettings">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+      <span>Cài Đặt</span>
     </button>
   </nav>
 
@@ -1422,63 +2092,21 @@ def generate_html(chapters_index, total_words):
     </div>
   </aside>
 
-  <!-- CODEX DRAWER (BÁCH KHOA TOÀN THƯ PHÁ TRỜI) -->
+  <!-- CODEX DRAWER (CODEX PHÁ TRỜI — BÁCH KHOA THẾ GIỚI) -->
   <aside class="drawer drawer-right" id="drawerCodex">
     <div class="drawer-header">
-      <h2 class="drawer-title">BÁCH KHOA TOÀN THƯ</h2>
+      <h2 class="drawer-title">CODEX PHÁ TRỜI</h2>
       <button class="btn-icon" id="btnCloseCodex">✕</button>
     </div>
 
     <div class="drawer-tabs">
       <button class="drawer-tab-btn active" id="tabCodexChar" data-codex="char">Nhân Vật</button>
-      <button class="drawer-tab-btn" id="tabCodexItem" data-codex="item">Kho Bảo Vật</button>
+      <button class="drawer-tab-btn" id="tabCodexItem" data-codex="item">Kho Cổ Vật</button>
       <button class="drawer-tab-btn" id="tabCodexLotus" data-codex="lotus">Thức Hải</button>
     </div>
 
-    <div class="drawer-body" id="codexBody">
-      <!-- Tab 1: Nguyễn Minh An -->
-      <div id="codexPaneChar">
-        <div class="codex-card">
-          <span class="codex-badge">NAM CHÍNH • THỂ ĐẠO</span>
-          <h3 class="codex-title">Nguyễn Minh An (25 tuổi)</h3>
-          <p class="codex-desc">Người bình thường 100% tại TP.HCM năm 2026. Tự lực tôi luyện ý chí và nhục thân, dùng đôi bàn tay trần gánh vác trách nhiệm bảo vệ cõi phàm trần.</p>
-          <div class="codex-stat"><span>Chức Vụ</span><span class="codex-stat-val">Giám Đốc Kỹ Thuật Dữ Liệu</span></div>
-          <div class="codex-stat"><span>Cơ Quan</span><span class="codex-stat-val">Viện Nghiên Cứu Địa Tầng Đô Thị</span></div>
-          <div class="codex-stat"><span>Cảnh Giới</span><span class="codex-stat-val">Luyện Cốt Trung Kỳ (Cốt Nhược Kim Thạch)</span></div>
-          <div class="codex-stat"><span>Thương Tật</span><span class="codex-stat-val">4 Vết Sẹo Đạn Chì (Đã Lành Da)</span></div>
-          <div class="codex-stat"><span>Công Pháp</span><span class="codex-stat-val">Đoán Cốt Thập Nhị Thức (Thức 5)</span></div>
-          <div class="codex-stat"><span>Thể Thuật</span><span class="codex-stat-val">Kính Kình Phản Chấn Thuật</span></div>
-        </div>
-      </div>
-
-      <!-- Tab 2: Kho Bảo Vật -->
-      <div id="codexPaneItem" style="display:none;">
-        <div class="codex-card">
-          <span class="codex-badge">VŨ KHÍ CHÍNH HOÀN THIỆN</span>
-          <h3 class="codex-title">Hắc Thiết Đoản Côn</h3>
-          <p class="codex-desc">Thép nhíp Zil tôi dầu cám chu sa thạch anh do bác Sáu Kiên và Minh An rèn. Chịu lực đè nửa tấn, miễn nhiễm âm sát, dẫn truyền hoàn hảo Kính Kình.</p>
-          <div class="codex-stat"><span>Kích Thước</span><span class="codex-stat-val">Dài 52cm • Nặng 3.2kg</span></div>
-          <div class="codex-stat"><span>Độ Bền</span><span class="codex-stat-val">100 / 100 (Hoàn Hảo)</span></div>
-        </div>
-        <div class="codex-card">
-          <span class="codex-badge">CỔ KHÍ TRẤN THỦY</span>
-          <h3 class="codex-title">Trấn Thủy Đoản Đao</h3>
-          <p class="codex-desc">Thanh đoản đao đồng thau cổ niên đại địa chất > 2.5 triệu năm, cọc tiêu chốt chặn Thủy Môn Tiêu rạch Lò Gốm. Đã thuần phục dưới kình lực Thiết Lương Thập Phách.</p>
-          <div class="codex-stat"><span>Niên Đại</span><span class="codex-stat-val">> 2.5 Triệu Năm (Viễn Cổ)</span></div>
-          <div class="codex-stat"><span>Tần Số</span><span class="codex-stat-val">7.83 Hz (Tần Số Schumann)</span></div>
-        </div>
-      </div>
-
-      <!-- Tab 3: Thức Hải Thanh Liên -->
-      <div id="codexPaneLotus" style="display:none;">
-        <div class="codex-card">
-          <span class="codex-badge">NỮ CHÍNH • THỨC HẢI</span>
-          <h3 class="codex-title">Lâm Tịch (Bạch Y Tiên Tử)</h3>
-          <p class="codex-desc">Nguyên Thần Tàn Phiến thời Thần Ma viễn cổ. Nằm ngủ an tường trên Thanh Liên Đài ngọc bích bảo bọc tâm thức của Minh An.</p>
-          <div class="codex-stat"><span>Trạng Thái</span><span class="codex-stat-val">Ngủ Say (Tĩnh Dưỡng Tàn Hồn)</span></div>
-          <div class="codex-stat"><span>Bản Mệnh Khí</span><span class="codex-stat-val">Trâm Ngọc Cổ (Túi Áo Ngực Trái)</span></div>
-        </div>
-      </div>
+    <div class="drawer-body" id="codexDrawerBody">
+      <!-- Generated dynamically based on reading progress -->
     </div>
   </aside>
 
@@ -1514,8 +2142,28 @@ def generate_html(chapters_index, total_words):
       <div class="setting-label">Cỡ Chữ Đọc</div>
       <div class="stepper-ctrl">
         <button class="btn-step" id="btnFontDec">A-</button>
-        <span class="stepper-val" id="fontSizeVal">19</span>
+        <span class="stepper-val" id="fontSizeVal">19px</span>
         <button class="btn-step" id="btnFontInc">A+</button>
+      </div>
+    </div>
+
+    <!-- Reading Width -->
+    <div class="setting-group">
+      <div class="setting-label">Độ Rộng Khung Đọc</div>
+      <div class="btn-opt-group">
+        <button class="btn-opt-step" data-opt-width="640">Hẹp (640px)</button>
+        <button class="btn-opt-step active" data-opt-width="760">Chuẩn (760px)</button>
+        <button class="btn-opt-step" data-opt-width="900">Rộng (900px)</button>
+      </div>
+    </div>
+
+    <!-- Line Height -->
+    <div class="setting-group">
+      <div class="setting-label">Khoảng Cách Dòng</div>
+      <div class="btn-opt-group">
+        <button class="btn-opt-step" data-opt-lh="1.65">Gọn (1.65)</button>
+        <button class="btn-opt-step active" data-opt-lh="1.85">Chuẩn (1.85)</button>
+        <button class="btn-opt-step" data-opt-lh="2.1">Thoáng (2.1)</button>
       </div>
     </div>
 
@@ -1524,7 +2172,7 @@ def generate_html(chapters_index, total_words):
       <div class="setting-label">Phông Chữ</div>
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
         <button class="btn-step" id="btnFontSerif" style="width:100%; font-family:serif;">Có Chân (Lora)</button>
-        <button class="btn-step" id="btnFontSans" style="width:100%; font-family:sans-serif;">Không Chân (Inter)</button>
+        <button class="btn-step" id="btnFontSans" style="width:100%; font-family:sans-serif;">Không Chân (Be Vietnam)</button>
       </div>
     </div>
 
@@ -1532,7 +2180,7 @@ def generate_html(chapters_index, total_words):
     <div class="setting-group">
       <div class="setting-label">Âm Thanh Thư Giãn (Mưa Đêm Sài Gòn)</div>
       <div class="ambient-widget">
-        <button class="btn-icon" id="btnSheetAudioToggle" style="background:var(--card-bg);">
+        <button class="btn-icon" id="btnSheetAudioToggle" style="background:var(--card-bg);" title="Bật / Tắt âm thanh mưa">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
         </button>
         <input type="range" id="audioVolume" min="0" max="1" step="0.05" value="0.25" style="flex:1; margin:0 12px; accent-color:var(--accent-primary);">
@@ -1557,13 +2205,14 @@ def generate_html(chapters_index, total_words):
 
   <!-- SCRIPT LOGIC -->
   <script>
-    // State Variables
+    // 1. State Variables
     let chaptersData = [];
-    let currentChapter = parseInt(localStorage.getItem('pha_troi_cur_ch') || '{total_ch}');
+    const hasReadHistory = (localStorage.getItem('pha_troi_cur_ch') !== null);
+    let currentChapter = hasReadHistory ? parseInt(localStorage.getItem('pha_troi_cur_ch')) : 1;
     let totalChapters = {total_ch};
-    let uiVisible = true;
     let activeArcFilter = 'all';
     let homeArcFilter = 'all';
+    let activeCodexTab = 'char';
 
     // DOM Elements
     const topHeader = document.getElementById('topHeader');
@@ -1576,13 +2225,13 @@ def generate_html(chapters_index, total_words):
     const heroTitle = document.getElementById('heroTitle');
     const heroVolArc = document.getElementById('heroVolArc');
     const heroWordCount = document.getElementById('heroWordCount');
-    const heroDate = document.getElementById('heroDate');
+    const heroReadTime = document.getElementById('heroReadTime');
     const novelContent = document.getElementById('novelContent');
     const headerTitle = document.getElementById('headerTitle');
     const headerSub = document.getElementById('headerSub');
     const readerArcLabel = document.getElementById('readerArcLabel');
 
-    // Drawers
+    // Drawers & Modals
     const modalOverlay = document.getElementById('modalOverlay');
     const drawerToc = document.getElementById('drawerToc');
     const drawerCodex = document.getElementById('drawerCodex');
@@ -1590,10 +2239,12 @@ def generate_html(chapters_index, total_words):
     const tocDrawerList = document.getElementById('tocDrawerList');
     const desktopTocList = document.getElementById('desktopTocList');
     const homeTocGrid = document.getElementById('homeTocGrid');
+    const homeCodexGrid = document.getElementById('homeCodexGrid');
+    const codexDrawerBody = document.getElementById('codexDrawerBody');
     const liveToast = document.getElementById('liveToast');
     const toastMsg = document.getElementById('toastMsg');
 
-    // Web Audio Synthesizer (Pink Noise + Low-Pass Soft Rain)
+    // Web Audio Synthesizer (Pink Noise + Low-Pass Soft Rain) - Default OFF
     let audioCtx = null;
     let noiseNode = null;
     let gainNode = null;
@@ -1671,11 +2322,11 @@ def generate_html(chapters_index, total_words):
       const offIcon = document.getElementById('iconAudioOff');
       const onIcon = document.getElementById('iconAudioOn');
       if (isRainPlaying) {{
-        offIcon.style.display = 'none';
-        onIcon.style.display = 'inline-block';
+        if (offIcon) offIcon.style.display = 'none';
+        if (onIcon) onIcon.style.display = 'inline-block';
       }} else {{
-        offIcon.style.display = 'inline-block';
-        onIcon.style.display = 'none';
+        if (offIcon) offIcon.style.display = 'inline-block';
+        if (onIcon) onIcon.style.display = 'none';
       }}
     }}
 
@@ -1684,12 +2335,12 @@ def generate_html(chapters_index, total_words):
     document.getElementById('audioVolume').oninput = (e) => {{
       rainVolume = parseFloat(e.target.value);
       document.getElementById('audioVolVal').innerText = Math.round(rainVolume * 100) + '%';
-      if (gainNode) {{
+      if (gainNode && audioCtx) {{
         gainNode.gain.setValueAtTime(rainVolume, audioCtx.currentTime);
       }}
     }};
 
-    // 2. View Switching & Routing (Home View vs Reader View)
+    // 2. View Switching & Routing
     function showHomeView() {{
       homeView.style.display = 'block';
       readerView.style.display = 'none';
@@ -1704,6 +2355,7 @@ def generate_html(chapters_index, total_words):
     }}
 
     function showReaderView(chNum) {{
+      chNum = Math.max(1, Math.min(totalChapters, parseInt(chNum) || 1));
       homeView.style.display = 'none';
       readerView.style.display = 'block';
       btnNavHome.style.display = 'inline-flex';
@@ -1712,25 +2364,57 @@ def generate_html(chapters_index, total_words):
       loadChapter(chNum);
     }}
 
+    // Update Hero CTA & Continue Card (Funnel for New vs Returning Readers)
     function updateContinueReadingCard() {{
-      const savedCh = parseInt(localStorage.getItem('pha_troi_cur_ch') || '1');
-      const chInfo = chaptersData.find(c => c.chapter === savedCh) || chaptersData[0] || {{ title: 'Chương 1' }};
-      const cleanTitle = chInfo.title.replace(/^Chương \\d+:\\s*/i, '');
+      const savedRaw = localStorage.getItem('pha_troi_cur_ch');
+      const hasHistory = (savedRaw !== null);
+      const savedCh = hasHistory ? parseInt(savedRaw) : 1;
       
+      const contCard = document.getElementById('continueReadingCard');
+      const contPill = document.getElementById('contPill');
       const contEl = document.getElementById('contChName');
       const metaEl = document.getElementById('contChMeta');
+      const btnJump = document.getElementById('btnContinueJump');
       const heroReadText = document.getElementById('heroPrimaryText');
       const mobileHeroReadText = document.getElementById('mobileHeroPrimaryText');
+      const heroResetWrap = document.getElementById('heroResetLinkWrap');
+      const mobileResetWrap = document.getElementById('mobileHeroResetWrap');
 
-      if (contEl) contEl.innerText = `Chương ${{savedCh}}: ${{cleanTitle}}`;
-      if (metaEl) metaEl.innerText = `Chương ${{savedCh}} / ${{totalChapters}} • Đang đọc Hồi ${{chInfo.arc || 1}}`;
-      
-      const btnText = savedCh > 1 ? `Đọc Tiếp Chương ${{savedCh}}` : 'Bắt Đầu Đọc (Chương 1)';
-      if (heroReadText) heroReadText.innerText = btnText;
-      if (mobileHeroReadText) mobileHeroReadText.innerText = btnText;
+      if (!hasHistory || savedCh <= 1) {{
+        // New reader or reader starting at Chapter 1
+        if (contCard) contCard.classList.add('welcome-mode');
+        if (contPill) contPill.innerText = 'HÀNH TRÌNH KHỞI ĐẦU';
+        if (contEl) contEl.innerText = 'Bạn chưa từng đọc Phá Trời? Bắt đầu từ Chương 1';
+        if (metaEl) metaEl.innerText = 'Dấn thân vào đại phong ấn sông ngầm Sài Gòn 2.5 triệu năm cùng Minh An';
+        if (btnJump) btnJump.innerText = 'Bắt Đầu Đọc Chương 1 →';
+        if (heroReadText) heroReadText.innerText = '▶ Bắt Đầu Đọc — Chương 1';
+        if (mobileHeroReadText) mobileHeroReadText.innerText = '▶ Bắt Đầu Đọc — Chương 1';
+        if (heroResetWrap) heroResetWrap.style.display = 'none';
+        if (mobileResetWrap) mobileResetWrap.style.display = 'none';
+      }} else {{
+        // Returning reader with existing progress
+        const chInfo = chaptersData.find(c => c.chapter === savedCh) || {{ title: `Chương ${{savedCh}}`, arc: 1 }};
+        const cleanTitle = chInfo.title.replace(/^Chương \\d+:\\s*/i, '');
+        const pct = Math.round((savedCh / totalChapters) * 100);
+
+        if (contCard) contCard.classList.remove('welcome-mode');
+        if (contPill) contPill.innerText = 'TIẾN ĐỘ ĐANG ĐỌC';
+        if (contEl) contEl.innerText = `Chương ${{savedCh}}: ${{cleanTitle}}`;
+        if (metaEl) metaEl.innerText = `Tiến độ: Chương ${{savedCh}} / ${{totalChapters}} (${{pct}}%) • Hồi ${{chInfo.arc || 1}}`;
+        if (btnJump) btnJump.innerText = `Tiếp Tục Đọc Chương ${{savedCh}} →`;
+        if (heroReadText) heroReadText.innerText = `▶ Tiếp Tục — Chương ${{savedCh}}`;
+        if (mobileHeroReadText) mobileHeroReadText.innerText = `▶ Tiếp Tục — Chương ${{savedCh}}`;
+        if (heroResetWrap) heroResetWrap.style.display = 'block';
+        if (mobileResetWrap) mobileResetWrap.style.display = 'block';
+      }}
+
+      renderHomeToc();
+      renderTOC();
+      renderCodexPreview(savedCh);
+      renderCodexDrawer(savedCh);
     }}
 
-    // Brand / Home navigation triggers
+    // Navigation triggers
     document.getElementById('btnBrandHome').onclick = (e) => {{ e.preventDefault(); showHomeView(); }};
     document.getElementById('btnNavHome').onclick = () => showHomeView();
     document.getElementById('btnBackToHome').onclick = () => showHomeView();
@@ -1750,6 +2434,15 @@ def generate_html(chapters_index, total_words):
       const saved = parseInt(localStorage.getItem('pha_troi_cur_ch') || '1');
       showReaderView(saved);
     }};
+
+    const resetCh1 = () => {{
+      localStorage.setItem('pha_troi_cur_ch', '1');
+      showReaderView(1);
+    }};
+    const linkReset = document.getElementById('linkHeroResetCh1');
+    if (linkReset) linkReset.onclick = resetCh1;
+    const linkMobileReset = document.getElementById('linkMobileHeroResetCh1');
+    if (linkMobileReset) linkMobileReset.onclick = resetCh1;
 
     document.getElementById('btnHeroTocScroll').onclick = () => {{
       document.getElementById('sectionToc').scrollIntoView({{ behavior: 'smooth' }});
@@ -1771,14 +2464,10 @@ def generate_html(chapters_index, total_words):
         document.getElementById('tocTotalCount').innerText = totalChapters;
         document.getElementById('dtTocCount').innerText = `${{totalChapters}} chương`;
 
-        renderTOC();
-        renderHomeToc();
         updateContinueReadingCard();
-
-        // Handle initial hash routing
         handleHashRouting();
       }} catch (err) {{
-        console.warn('Đang đọc ở chế độ Offline:', err);
+        console.warn('Chế độ đọc ngoại tuyến:', err);
         handleHashRouting();
       }}
     }}
@@ -1812,6 +2501,9 @@ def generate_html(chapters_index, total_words):
     // Render Drawer TOC
     function renderTOC() {{
       const searchVal = document.getElementById('inputTocSearch').value.toLowerCase().trim();
+      const savedCh = parseInt(localStorage.getItem('pha_troi_cur_ch') || '0');
+      const hasHistory = (localStorage.getItem('pha_troi_cur_ch') !== null);
+
       const filtered = chaptersData.filter(ch => {{
         const matchSearch = !searchVal || ch.title.toLowerCase().includes(searchVal) || String(ch.chapter).includes(searchVal);
         const matchArc = (activeArcFilter === 'all') ||
@@ -1820,15 +2512,25 @@ def generate_html(chapters_index, total_words):
         return matchSearch && matchArc;
       }});
 
-      const renderHtml = filtered.map(ch => `
-        <div class="toc-item ${{ch.chapter === currentChapter ? 'active' : ''}}" onclick="selectChapter(${{ch.chapter}})">
-          <div class="toc-info">
-            <div class="toc-num">Hồi ${{ch.arc || 1}} • Chương ${{ch.chapter}}</div>
-            <div class="toc-name">${{ch.title.replace(/^Chương \\d+:\\s*/i, '')}}</div>
+      const renderHtml = filtered.map(ch => {{
+        let statusBadge = '';
+        if (hasHistory) {{
+          if (ch.chapter < savedCh) statusBadge = '<span class="ch-status-tag read">✓</span>';
+          else if (ch.chapter === savedCh) statusBadge = '<span class="ch-status-tag current">▶</span>';
+        }}
+        return `
+          <div class="toc-item ${{ch.chapter === currentChapter ? 'active' : ''}}" onclick="selectChapter(${{ch.chapter}})">
+            <div class="toc-info">
+              <div class="toc-num">
+                <span>Hồi ${{ch.arc || 1}} • Chương ${{ch.chapter}}</span>
+                ${{statusBadge}}
+              </div>
+              <div class="toc-name">${{ch.title.replace(/^Chương \\d+:\\s*/i, '')}}</div>
+            </div>
+            <span class="toc-meta">${{ch.word_count ? ch.word_count.toLocaleString() + ' từ' : ''}}</span>
           </div>
-          <span class="toc-meta">${{ch.word_count ? ch.word_count.toLocaleString() + ' từ' : ''}}</span>
-        </div>
-      `).join('');
+        `;
+      }}).join('');
 
       tocDrawerList.innerHTML = renderHtml || '<p style="text-align:center; color:var(--text-muted); padding:20px;">Không tìm thấy chương nào.</p>';
       if (desktopTocList) desktopTocList.innerHTML = renderHtml;
@@ -1846,9 +2548,12 @@ def generate_html(chapters_index, total_words):
       }};
     }});
 
-    // Render Home Table of Contents Grid
+    // Render Home Table of Contents Grid (with reading state)
     function renderHomeToc() {{
       const searchVal = (document.getElementById('inputHomeSearch')?.value || '').toLowerCase().trim();
+      const savedCh = parseInt(localStorage.getItem('pha_troi_cur_ch') || '0');
+      const hasHistory = (localStorage.getItem('pha_troi_cur_ch') !== null);
+
       const filtered = chaptersData.filter(ch => {{
         const matchSearch = !searchVal || ch.title.toLowerCase().includes(searchVal) || String(ch.chapter).includes(searchVal);
         const matchArc = (homeArcFilter === 'all') ||
@@ -1857,24 +2562,38 @@ def generate_html(chapters_index, total_words):
         return matchSearch && matchArc;
       }});
 
-      const gridHtml = filtered.map(ch => `
-        <div class="home-ch-card ${{ch.chapter === currentChapter ? 'current' : ''}}" onclick="selectChapter(${{ch.chapter}})">
-          <div class="home-ch-info">
-            <div class="home-ch-meta-top">
-              <span>HỒI ${{ch.arc || 1}}</span>
-              <span>•</span>
-              <span>CHƯƠNG ${{ch.chapter}}</span>
-              ${{ch.chapter === currentChapter ? '<span class="dot-live"></span>' : ''}}
+      const gridHtml = filtered.map(ch => {{
+        let statusBadge = '';
+        let cardClass = '';
+        if (hasHistory) {{
+          if (ch.chapter < savedCh) {{
+            statusBadge = '<span class="ch-status-tag read">✓ Đã đọc</span>';
+            cardClass = 'is-read';
+          }} else if (ch.chapter === savedCh) {{
+            statusBadge = '<span class="ch-status-tag current">▶ Đang đọc</span>';
+            cardClass = 'is-current';
+          }} else {{
+            statusBadge = '<span class="ch-status-tag unread">○</span>';
+          }}
+        }}
+
+        return `
+          <div class="home-ch-card ${{cardClass}}" onclick="selectChapter(${{ch.chapter}})">
+            <div class="home-ch-info">
+              <div class="home-ch-meta-top">
+                <span>HỒI ${{ch.arc || 1}} • CHƯƠNG ${{ch.chapter}}</span>
+                ${{statusBadge}}
+              </div>
+              <div class="home-ch-title">${{ch.title.replace(/^Chương \\d+:\\s*/i, '')}}</div>
+              <div class="home-ch-meta-bottom">
+                <span>${{ch.word_count ? ch.word_count.toLocaleString() + ' từ' : ''}}</span>
+                ${{ch.location ? '<span>• ' + ch.location.split(',')[0] + '</span>' : ''}}
+              </div>
             </div>
-            <div class="home-ch-title">${{ch.title.replace(/^Chương \\d+:\\s*/i, '')}}</div>
-            <div class="home-ch-meta-bottom">
-              <span>${{ch.word_count ? ch.word_count.toLocaleString() + ' từ' : ''}}</span>
-              ${{ch.location ? '<span>• ' + ch.location.split(',')[0] + '</span>' : ''}}
-            </div>
+            <div class="home-ch-arrow">→</div>
           </div>
-          <div class="home-ch-arrow">→</div>
-        </div>
-      `).join('');
+        `;
+      }}).join('');
 
       if (homeTocGrid) {{
         homeTocGrid.innerHTML = gridHtml || '<p style="text-align:center; color:var(--text-muted); grid-column: 1/-1; padding:30px;">Không tìm thấy chương phù hợp.</p>';
@@ -1893,7 +2612,209 @@ def generate_html(chapters_index, total_words):
       }};
     }});
 
-    // 4. Load Chapter Content
+    // 4. Progressive Codex Render (Unspoilered World Exploration)
+    function renderCodexPreview(savedCh) {{
+      if (!homeCodexGrid) return;
+      const s = parseInt(savedCh) || 1;
+
+      let html = '';
+
+      // Card 1: Minh An
+      if (s >= 20) {{
+        html += `
+          <div class="home-codex-card" onclick="openCodexTab('char')">
+            <span class="home-codex-badge">NAM CHÍNH • THỂ ĐẠO</span>
+            <div class="home-codex-name">Nguyễn Minh An (25 tuổi)</div>
+            <p class="home-codex-desc">Luyện Cốt Trung kỳ (Cốt Nhược Kim Thạch). Đúc cốt ngự kình, kình lực vạn cân, Thức Hải Thanh Liên bảo bọc tâm mạch.</p>
+          </div>
+        `;
+      }} else {{
+        html += `
+          <div class="home-codex-card" onclick="openCodexTab('char')">
+            <span class="home-codex-badge">NAM CHÍNH • THỂ ĐẠO</span>
+            <div class="home-codex-name">Nguyễn Minh An (24 tuổi)</div>
+            <p class="home-codex-desc">Nhân viên văn phòng bình thường tại TP.HCM. Bắt đầu con đường Thể Đạo từ số 0 sau biến cố trên cầu Sài Gòn.</p>
+            <div class="codex-unlock-hint">🔒 Đang rèn luyện Tẩy Tủy Hoán Cốt</div>
+          </div>
+        `;
+      }}
+
+      // Card 2: Lâm Tịch (Unlocks at Chapter 10)
+      if (s >= 10) {{
+        html += `
+          <div class="home-codex-card" onclick="openCodexTab('lotus')">
+            <span class="home-codex-badge">NỮ CHÍNH • NGUYÊN THẦN</span>
+            <div class="home-codex-name">Lâm Tịch (Bạch Y Tiên Tử)</div>
+            <p class="home-codex-desc">Tàn phiến Nguyên Thần viễn cổ 2.5 triệu năm ngụ trong Thức Hải Thanh Liên của Minh An, che chở tâm mạch phàm trần.</p>
+          </div>
+        `;
+      }} else {{
+        html += `
+          <div class="home-codex-card locked" onclick="openCodexTab('lotus')">
+            <span class="home-codex-badge locked-badge">🔒 HỒ SƠ ẨN</span>
+            <div class="home-codex-name" style="color:var(--text-muted);">Bóng Hình Bí Ẩn</div>
+            <p class="home-codex-desc">Tàn niệm cổ xưa ẩn hiện trong làn sương đêm sông Sài Gòn...</p>
+            <div class="codex-unlock-hint">🔒 Đọc đến Chương 10 để mở khóa</div>
+          </div>
+        `;
+      }}
+
+      // Card 3: Hắc Thiết Đoản Côn (Unlocks at Chapter 15)
+      if (s >= 15) {{
+        html += `
+          <div class="home-codex-card" onclick="openCodexTab('item')">
+            <span class="home-codex-badge">VŨ KHÍ THỰC CHIẾN</span>
+            <div class="home-codex-name">Hắc Thiết Đoản Côn</div>
+            <p class="home-codex-desc">Rèn từ thép nhíp Zil tôi dầu cám chu sa thạch anh. Dài 52cm, nặng 3.2kg, dẫn truyền Kính Kình hoàn hảo.</p>
+          </div>
+        `;
+      }} else {{
+        html += `
+          <div class="home-codex-card locked" onclick="openCodexTab('item')">
+            <span class="home-codex-badge locked-badge">🔒 KHÍ BINH ẨN</span>
+            <div class="home-codex-name" style="color:var(--text-muted);">Vũ Khí Thể Đạo</div>
+            <p class="home-codex-desc">Trọng khí thể đạo rèn trong lò lửa thầm lặng của phàm trần...</p>
+            <div class="codex-unlock-hint">🔒 Đọc đến Chương 15 để mở khóa</div>
+          </div>
+        `;
+      }}
+
+      // Card 4: Trấn Thủy Đoản Đao (Unlocks at Chapter 25)
+      if (s >= 25) {{
+        html += `
+          <div class="home-codex-card" onclick="openCodexTab('item')">
+            <span class="home-codex-badge">CỔ KHÍ PHONG ẤN</span>
+            <div class="home-codex-name">Trấn Thủy Đoản Đao</div>
+            <p class="home-codex-desc">Di vật Thủy Môn Thập Nhị Tiêu niên đại > 2.5 triệu năm. Thuần phục dưới kình lực Thiết Lương Thập Phách.</p>
+          </div>
+        `;
+      }} else {{
+        html += `
+          <div class="home-codex-card locked" onclick="openCodexTab('item')">
+            <span class="home-codex-badge locked-badge">🔒 THẦN BINH ẨN</span>
+            <div class="home-codex-name" style="color:var(--text-muted);">Cổ Vật Trấn Thủy</div>
+            <p class="home-codex-desc">Cổ đao trấn áp mắt trận phong ấn sâu dưới lòng sông ngầm Sài Gòn...</p>
+            <div class="codex-unlock-hint">🔒 Đọc đến Chương 25 để mở khóa</div>
+          </div>
+        `;
+      }}
+
+      homeCodexGrid.innerHTML = html;
+    }}
+
+    function renderCodexDrawer(savedCh) {{
+      if (!codexDrawerBody) return;
+      const s = parseInt(savedCh) || 1;
+
+      let html = '';
+
+      if (activeCodexTab === 'char') {{
+        if (s >= 20) {{
+          html = `
+            <div class="codex-card">
+              <span class="codex-badge">NAM CHÍNH • THỂ ĐẠO</span>
+              <h3 class="codex-title">Nguyễn Minh An (25 tuổi)</h3>
+              <p class="codex-desc">Người bình thường 100% tại TP.HCM năm 2026. Tự lực tôi luyện ý chí và nhục thân, dùng đôi bàn tay trần gánh vác trách nhiệm bảo vệ cõi phàm trần.</p>
+              <div class="codex-stat"><span>Cơ Quan</span><span class="codex-stat-val">Viện Địa Tầng Đô Thị</span></div>
+              <div class="codex-stat"><span>Cảnh Giới</span><span class="codex-stat-val">Luyện Cốt Trung Kỳ</span></div>
+              <div class="codex-stat"><span>Kình Lực</span><span class="codex-stat-val">Cốt Nhược Kim Thạch (Vạn Cân)</span></div>
+              <div class="codex-stat"><span>Thể Thuật</span><span class="codex-stat-val">Kính Kình Phản Chấn Thuật</span></div>
+            </div>
+          `;
+        }} else {{
+          html = `
+            <div class="codex-card">
+              <span class="codex-badge">NAM CHÍNH • THỂ ĐẠO</span>
+              <h3 class="codex-title">Nguyễn Minh An (24 tuổi)</h3>
+              <p class="codex-desc">Nhân viên văn phòng bình thường tại TP.HCM. Tăng ca về muộn trên cầu Sài Gòn thì tao ngộ dị biến sông ngầm. Không linh căn, không hệ thống, bắt đầu từ số 0.</p>
+              <div class="codex-stat"><span>Cơ Quan</span><span class="codex-stat-val">Viện Địa Tầng Đô Thị</span></div>
+              <div class="codex-stat"><span>Cảnh Giới</span><span class="codex-stat-val">Phàm Thể (Bắt đầu Tẩy Tủy)</span></div>
+              <div class="codex-stat"><span>Thể Thuật</span><span class="codex-stat-val">🔒 Mở khóa theo tiến độ đọc</span></div>
+            </div>
+          `;
+        }}
+      }} else if (activeCodexTab === 'item') {{
+        // Côn
+        if (s >= 15) {{
+          html += `
+            <div class="codex-card">
+              <span class="codex-badge">VŨ KHÍ CHÍNH</span>
+              <h3 class="codex-title">Hắc Thiết Đoản Côn</h3>
+              <p class="codex-desc">Thép nhíp Zil tôi dầu cám chu sa thạch anh do bác Sáu Kiên và Minh An rèn. Chịu lực đè nửa tấn, miễn nhiễm âm sát, dẫn truyền hoàn hảo Kính Kình.</p>
+              <div class="codex-stat"><span>Kích Thước</span><span class="codex-stat-val">Dài 52cm • Nặng 3.2kg</span></div>
+            </div>
+          `;
+        }} else {{
+          html += `
+            <div class="codex-card locked">
+              <span class="codex-badge locked-badge">🔒 KHÍ BINH ẨN</span>
+              <h3 class="codex-title" style="color:var(--text-muted);">Hắc Thiết Đoản Côn</h3>
+              <p class="codex-desc">Vũ khí thô ráp rèn từ phàm thiết tôi trong tâm huyết...</p>
+              <div class="codex-unlock-hint">🔒 Đọc đến Chương 15 để mở khóa chi tiết</div>
+            </div>
+          `;
+        }}
+
+        // Đao
+        if (s >= 25) {{
+          html += `
+            <div class="codex-card">
+              <span class="codex-badge">CỔ KHÍ TRẤN THỦY</span>
+              <h3 class="codex-title">Trấn Thủy Đoản Đao</h3>
+              <p class="codex-desc">Thanh đoản đao đồng thau cổ niên đại địa chất > 2.5 triệu năm, cọc tiêu chốt chặn Thủy Môn Tiêu rạch Lò Gốm.</p>
+              <div class="codex-stat"><span>Niên Đại</span><span class="codex-stat-val">> 2.5 Triệu Năm</span></div>
+            </div>
+          `;
+        }} else {{
+          html += `
+            <div class="codex-card locked">
+              <span class="codex-badge locked-badge">🔒 CỔ VẬT ẨN</span>
+              <h3 class="codex-title" style="color:var(--text-muted);">Trấn Thủy Đoản Đao</h3>
+              <p class="codex-desc">Cổ vật trấn áp phong ấn sông ngầm Sài Gòn...</p>
+              <div class="codex-unlock-hint">🔒 Đọc đến Chương 25 để mở khóa chi tiết</div>
+            </div>
+          `;
+        }}
+      }} else if (activeCodexTab === 'lotus') {{
+        if (s >= 10) {{
+          html = `
+            <div class="codex-card">
+              <span class="codex-badge">NỮ CHÍNH • THỨC HẢI</span>
+              <h3 class="codex-title">Lâm Tịch (Bạch Y Tiên Tử)</h3>
+              <p class="codex-desc">Nguyên Thần Tàn Phiến viễn cổ. Ngủ say trên Thanh Liên Đài ngọc bích bảo bọc tâm thức của Minh An.</p>
+              <div class="codex-stat"><span>Trạng Thái</span><span class="codex-stat-val">Ngủ Say (Tĩnh Dưỡng Tàn Hồn)</span></div>
+            </div>
+          `;
+        }} else {{
+          html = `
+            <div class="codex-card locked">
+              <span class="codex-badge locked-badge">🔒 BÍ ẨN THỨC HẢI</span>
+              <h3 class="codex-title" style="color:var(--text-muted);">Tàn Niệm Cổ Xưa</h3>
+              <p class="codex-desc">Bóng hình áo trắng ngủ say nơi vực sâu vô tận...</p>
+              <div class="codex-unlock-hint">🔒 Đọc đến Chương 10 để mở khóa danh tính</div>
+            </div>
+          `;
+        }}
+      }}
+
+      codexDrawerBody.innerHTML = html;
+    }}
+
+    function openCodexTab(tabName) {{
+      activeCodexTab = tabName;
+      ['tabCodexChar', 'tabCodexItem', 'tabCodexLotus'].forEach(id => {{
+        const btn = document.getElementById(id);
+        if (btn) btn.classList.toggle('active', btn.dataset.codex === tabName);
+      }});
+      openCodex();
+    }}
+
+    ['tabCodexChar', 'tabCodexItem', 'tabCodexLotus'].forEach(id => {{
+      const btn = document.getElementById(id);
+      if (btn) btn.onclick = () => openCodexTab(btn.dataset.codex);
+    }});
+
+    // 5. Load Chapter Content (Safe from Placeholders & Weird Dates)
     async function loadChapter(num) {{
       currentChapter = num;
       localStorage.setItem('pha_troi_cur_ch', num);
@@ -1910,29 +2831,39 @@ def generate_html(chapters_index, total_words):
         if (el) el.disabled = isLast;
       }});
 
-      heroTitle.innerText = 'Đang tải bản thảo...';
+      heroTitle.innerText = 'Đang tải chương...';
+      novelContent.innerHTML = `
+        <div class="reader-skeleton">
+          <div class="skeleton-bar" style="width:75%; height:20px; margin: 0 auto 24px auto;"></div>
+          <div class="skeleton-bar" style="width:100%;"></div>
+          <div class="skeleton-bar" style="width:96%;"></div>
+          <div class="skeleton-bar" style="width:92%; margin-bottom: 24px;"></div>
+        </div>
+      `;
       
       try {{
         const res = await fetch(`./data/chapter_${{num}}.json`);
         const data = await res.json();
 
-        headerTitle.innerText = `Chương ${{data.chapter}}: ${{data.title.replace(/^Chương \\d+:\\s*/i, '')}}`;
-        headerSub.innerText = `Quyển ${{data.volume || 1}} • Hồi ${{data.arc || 1}} • ${{data.word_count ? data.word_count.toLocaleString() + ' từ' : ''}}`;
+        const cleanTitle = data.title.replace(/^Chương \\d+:\\s*/i, '');
+        const words = data.word_count || 0;
+        const readMins = Math.max(1, Math.round(words / 300));
+
+        headerTitle.innerText = `Chương ${{data.chapter}}: ${{cleanTitle}}`;
+        headerSub.innerText = `Quyển ${{data.volume || 1}} • Hồi ${{data.arc || 1}} • ${{words.toLocaleString()}} từ`;
         
         heroVolArc.innerText = `QUYỂN ${{data.volume || 1}} • HỒI ${{data.arc || 1}}`;
         if (readerArcLabel) readerArcLabel.innerText = `QUYỂN ${{data.volume || 1}} • HỒI ${{data.arc || 1}}`;
         heroTitle.innerText = data.title;
-        heroWordCount.innerText = `${{data.word_count ? data.word_count.toLocaleString() : '0'}} từ`;
-        heroDate.innerText = data.date || '2026-10-18';
+        heroWordCount.innerText = `${{words.toLocaleString()}} từ`;
+        heroReadTime.innerText = `~${{readMins}} phút đọc`;
 
         novelContent.innerHTML = data.html;
 
-        // Re-render TOC active items
-        renderTOC();
-        renderHomeToc();
+        // Re-render TOC & Continue card
         updateContinueReadingCard();
       }} catch (err) {{
-        novelContent.innerHTML = `<p style="color:#ef4444; text-align:center; padding:40px 0;">Không thể tải chương ${{num}}. Vui lòng thử lại hoặc mở cài đặt tải offline.</p>`;
+        novelContent.innerHTML = `<p style="color:#ef4444; text-align:center; padding:40px 0;">Không thể tải chương ${{num}}. Vui lòng kiểm tra kết nối mạng hoặc thử lại.</p>`;
       }}
     }}
 
@@ -1952,7 +2883,7 @@ def generate_html(chapters_index, total_words):
     document.getElementById('btnMobilePrev').onclick = prevChapter;
     document.getElementById('btnMobileNext').onclick = nextChapter;
 
-    // 5. Drawers & Modals Controls
+    // 6. Drawers & Modals Controls
     function closeAllDrawers() {{
       modalOverlay.classList.remove('open');
       drawerToc.classList.remove('open');
@@ -1970,16 +2901,8 @@ def generate_html(chapters_index, total_words):
       closeAllDrawers();
       modalOverlay.classList.add('open');
       drawerCodex.classList.add('open');
-    }}
-
-    function openCodexTab(tabName) {{
-      openCodex();
-      document.querySelectorAll('.drawer-tab-btn[data-codex]').forEach(b => {{
-        b.classList.toggle('active', b.dataset.codex === tabName);
-      }});
-      document.getElementById('codexPaneChar').style.display = (tabName === 'char') ? 'block' : 'none';
-      document.getElementById('codexPaneItem').style.display = (tabName === 'item') ? 'block' : 'none';
-      document.getElementById('codexPaneLotus').style.display = (tabName === 'lotus') ? 'block' : 'none';
+      const savedCh = parseInt(localStorage.getItem('pha_troi_cur_ch') || '1');
+      renderCodexDrawer(savedCh);
     }}
 
     function openSettings() {{
@@ -1988,113 +2911,116 @@ def generate_html(chapters_index, total_words):
       settingsSheet.classList.add('open');
     }}
 
+    modalOverlay.onclick = closeAllDrawers;
     document.getElementById('btnMenu').onclick = openToc;
     document.getElementById('btnMobileToc').onclick = openToc;
     document.getElementById('btnCloseToc').onclick = closeAllDrawers;
 
     document.getElementById('btnCodex').onclick = openCodex;
-    document.getElementById('btnMobileCodex').onclick = openCodex;
     document.getElementById('btnCloseCodex').onclick = closeAllDrawers;
 
     document.getElementById('btnSettings').onclick = openSettings;
+    document.getElementById('btnMobileSettings').onclick = openSettings;
     document.getElementById('btnCloseSettings').onclick = closeAllDrawers;
-    modalOverlay.onclick = closeAllDrawers;
 
-    // Codex Tab Switching
-    document.querySelectorAll('.drawer-tab-btn[data-codex]').forEach(btn => {{
-      btn.onclick = () => {{
-        document.querySelectorAll('.drawer-tab-btn[data-codex]').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        const codex = btn.dataset.codex;
-        document.getElementById('codexPaneChar').style.display = (codex === 'char') ? 'block' : 'none';
-        document.getElementById('codexPaneItem').style.display = (codex === 'item') ? 'block' : 'none';
-        document.getElementById('codexPaneLotus').style.display = (codex === 'lotus') ? 'block' : 'none';
-      }};
-    }});
-
-    // 6. Reading Progress Bar (Active in Reader mode)
-    window.addEventListener('scroll', () => {{
-      if (readerView.style.display === 'block') {{
-        const winScroll = document.documentElement.scrollTop || document.body.scrollTop;
-        const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-        const scrolled = (height > 0) ? (winScroll / height) * 100 : 0;
-        progressBar.style.width = scrolled + '%';
-      }} else {{
-        progressBar.style.width = '0%';
-      }}
-    }});
-
-    // Zen Mode (Tap on prose to toggle Top/Bottom Bars)
-    novelContent.addEventListener('click', (e) => {{
-      if (e.target.tagName !== 'A' && e.target.tagName !== 'BUTTON') {{
-        uiVisible = !uiVisible;
-        topHeader.classList.toggle('hidden', !uiVisible);
-        bottomBar.classList.toggle('hidden', !uiVisible);
-      }}
-    }});
-
-    // 7. Theme Controls
+    // 7. Reading Settings (Theme, Font Size, Font Family, Width, Line Height)
+    const THEMES = ['theme-peaceful-dark', 'theme-gentle-light', 'theme-oled', 'theme-sepia'];
     function setTheme(theme) {{
-      document.documentElement.className = theme;
-      document.body.className = theme;
-      localStorage.setItem('pha_troi_theme', theme);
-      document.querySelectorAll('.theme-opt').forEach(el => {{
-        el.classList.toggle('active', el.dataset.theme === theme);
+      THEMES.forEach(t => {{
+        document.documentElement.classList.remove(t);
+        document.body.classList.remove(t);
       }});
-      const isDark = theme.includes('dark') || theme.includes('oled');
-      document.getElementById('iconMoon').style.display = isDark ? 'inline-block' : 'none';
-      document.getElementById('iconSun').style.display = isDark ? 'none' : 'inline-block';
+      document.documentElement.classList.add(theme);
+      document.body.classList.add(theme);
 
-      const themeColors = {{
-        'theme-peaceful-dark': '#07090e',
-        'theme-gentle-light': '#f7f5f0',
-        'theme-sepia': '#f4edd8',
-        'theme-oled': '#000000'
-      }};
-      const themeMeta = document.querySelector('meta[name="theme-color"]');
-      if (themeMeta && themeColors[theme]) {{
-        themeMeta.setAttribute('content', themeColors[theme]);
+      document.querySelectorAll('.theme-opt').forEach(opt => {{
+        opt.classList.toggle('active', opt.dataset.theme === theme);
+      }});
+
+      const sunIcon = document.getElementById('iconSun');
+      const moonIcon = document.getElementById('iconMoon');
+      if (theme === 'theme-gentle-light') {{
+        sunIcon.style.display = 'inline-block';
+        moonIcon.style.display = 'none';
+      }} else {{
+        sunIcon.style.display = 'none';
+        moonIcon.style.display = 'inline-block';
       }}
+
+      localStorage.setItem('pha_troi_theme', theme);
     }}
 
-    document.querySelectorAll('.theme-opt').forEach(btn => {{
-      btn.onclick = () => setTheme(btn.dataset.theme);
+    document.querySelectorAll('.theme-opt').forEach(opt => {{
+      opt.onclick = () => {{
+        setTheme(opt.dataset.theme);
+        showToast('🎨 Đã chuyển giao diện: ' + opt.innerText.trim());
+      }};
     }});
 
     document.getElementById('btnQuickTheme').onclick = () => {{
-      const cur = document.body.className;
-      if (cur === 'theme-gentle-light') {{
-        setTheme('theme-peaceful-dark');
-        showToast('🌙 Đã chuyển sang Chế độ Tối Bình Yên');
-      }} else {{
-        setTheme('theme-gentle-light');
-        showToast('☀️ Đã chuyển sang Chế độ Sáng Thanh Nhã');
-      }}
+      const isLight = document.body.classList.contains('theme-gentle-light');
+      const target = isLight ? 'theme-peaceful-dark' : 'theme-gentle-light';
+      setTheme(target);
+      showToast(target === 'theme-gentle-light' ? '☀️ Đã bật giao diện Sáng' : '🌙 Đã bật giao diện Tối');
     }};
 
     const savedTheme = localStorage.getItem('pha_troi_theme') || 'theme-peaceful-dark';
     setTheme(savedTheme);
 
-    // 8. Typography Controls
+    // Font Size
     let curFontSize = parseInt(localStorage.getItem('pha_troi_font_size') || '19');
-    function updateFontSize(sz) {{
-      curFontSize = Math.min(Math.max(sz, 15), 28);
+    function applyFontSize(size) {{
+      curFontSize = Math.max(15, Math.min(26, size));
       document.documentElement.style.setProperty('--font-size', curFontSize + 'px');
-      document.getElementById('fontSizeVal').innerText = curFontSize;
+      document.getElementById('fontSizeVal').innerText = curFontSize + 'px';
       localStorage.setItem('pha_troi_font_size', curFontSize);
     }}
-    document.getElementById('btnFontInc').onclick = () => updateFontSize(curFontSize + 1);
-    document.getElementById('btnFontDec').onclick = () => updateFontSize(curFontSize - 1);
-    updateFontSize(curFontSize);
+    document.getElementById('btnFontDec').onclick = () => applyFontSize(curFontSize - 1);
+    document.getElementById('btnFontInc').onclick = () => applyFontSize(curFontSize + 1);
+    applyFontSize(curFontSize);
 
-    const FONT_SERIF = "'Lora', 'Merriweather', 'Cambria', 'Georgia', 'Times New Roman', serif";
-    const FONT_SANS = "'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+    // Reading Width (640px / 760px / 900px)
+    function applyReaderWidth(w) {{
+      document.documentElement.style.setProperty('--reader-max-width', w + 'px');
+      localStorage.setItem('pha_troi_reader_width', w);
+      document.querySelectorAll('.btn-opt-step[data-opt-width]').forEach(btn => {{
+        btn.classList.toggle('active', btn.dataset.optWidth === String(w));
+      }});
+    }}
+    document.querySelectorAll('.btn-opt-step[data-opt-width]').forEach(btn => {{
+      btn.onclick = () => {{
+        applyReaderWidth(parseInt(btn.dataset.optWidth));
+        showToast('📏 Khung đọc: ' + btn.innerText.trim());
+      }};
+    }});
+    const savedWidth = parseInt(localStorage.getItem('pha_troi_reader_width') || '760');
+    applyReaderWidth(savedWidth);
 
+    // Line Height (1.65 / 1.85 / 2.1)
+    function applyLineHeight(lh) {{
+      document.documentElement.style.setProperty('--reader-line-height', lh);
+      localStorage.setItem('pha_troi_line_height', lh);
+      document.querySelectorAll('.btn-opt-step[data-opt-lh]').forEach(btn => {{
+        btn.classList.toggle('active', btn.dataset.optLh === String(lh));
+      }});
+    }}
+    document.querySelectorAll('.btn-opt-step[data-opt-lh]').forEach(btn => {{
+      btn.onclick = () => {{
+        applyLineHeight(parseFloat(btn.dataset.optLh));
+        showToast('📄 Giãn dòng: ' + btn.innerText.trim());
+      }};
+    }});
+    const savedLh = parseFloat(localStorage.getItem('pha_troi_line_height') || '1.85');
+    applyLineHeight(savedLh);
+
+    // Font Family
+    const FONT_SERIF = "'Lora', 'Georgia', serif";
+    const FONT_SANS = "'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, sans-serif";
     document.getElementById('btnFontSerif').onclick = () => {{
       document.documentElement.style.setProperty('--font-family', FONT_SERIF);
       document.body.style.setProperty('--font-family', FONT_SERIF);
       localStorage.setItem('pha_troi_font_family', 'serif');
-      showToast('📖 Phông chữ Có Chân (Lora Book)');
+      showToast('📖 Phông chữ Có Chân (Lora)');
     }};
     document.getElementById('btnFontSans').onclick = () => {{
       document.documentElement.style.setProperty('--font-family', FONT_SANS);
@@ -2109,7 +3035,7 @@ def generate_html(chapters_index, total_words):
       document.body.style.setProperty('--font-family', FONT_SERIF);
     }}
 
-    // 9. Keyboard Shortcuts
+    // 8. Keyboard Shortcuts
     window.addEventListener('keydown', (e) => {{
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
       if (e.key === 'ArrowLeft') prevChapter();
@@ -2121,14 +3047,14 @@ def generate_html(chapters_index, total_words):
       else if (e.key === 'Escape') closeAllDrawers();
     }});
 
-    // 10. Toast Helper
+    // 9. Toast Helper
     function showToast(msg) {{
       toastMsg.innerText = msg;
       liveToast.classList.add('show');
       setTimeout(() => liveToast.classList.remove('show'), 2400);
     }}
 
-    // 11. Cache All Chapters for Offline Reading
+    // 10. Cache All Chapters for Offline Reading
     document.getElementById('btnCacheAll').onclick = async () => {{
       const btn = document.getElementById('btnCacheAll');
       const text = document.getElementById('cacheAllText');
@@ -2149,7 +3075,7 @@ def generate_html(chapters_index, total_words):
         }}
 
         if ('caches' in window) {{
-          const cache = await caches.open('pha-troi-v3-complete');
+          const cache = await caches.open('pha-troi-v4-complete');
           let count = 0;
           for (const url of urlsToCache) {{
             try {{
@@ -2189,7 +3115,7 @@ def generate_html(chapters_index, total_words):
 
 def generate_sw():
     return """// Service Worker cho Web Reader Phá Trời
-const CACHE_NAME = 'pha-troi-reader-v4';
+const CACHE_NAME = 'pha-troi-reader-v5';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -2245,7 +3171,7 @@ self.addEventListener('fetch', (e) => {
 """
 
 def build():
-    print(f"[*] Bat dau bien dich Web App tinh Pha Troi v2.1 tai: {DIST_DIR}")
+    print(f"[*] Bat dau bien dich Web App tinh Pha Troi v2.2 tai: {DIST_DIR}")
     os.makedirs(DIST_DIR, exist_ok=True)
     data_dir = os.path.join(DIST_DIR, "data")
     os.makedirs(data_dir, exist_ok=True)
@@ -2289,7 +3215,7 @@ def build():
         "author": "An Bình",
         "total": len(chapters_index),
         "total_words": total_words,
-        "updated_at": "2026-10-18T20:00:00+07:00",
+        "updated_at": "2026-09-15T19:00:00+07:00",
         "chapters": chapters_index
     }
     with open(os.path.join(data_dir, "chapters.json"), "w", encoding="utf-8") as out:
@@ -2322,7 +3248,7 @@ def build():
     manifest_data = {
         "name": "Phá Trời — Tiểu Thuyết Đô Thị Tu Chân",
         "short_name": "Phá Trời",
-        "description": "Ứng dụng đọc truyện trọn bộ thời gian thực cho Phá Trời",
+        "description": "Ứng dụng đọc tiểu thuyết trọn bộ thời gian thực cho Phá Trời",
         "start_url": "./index.html",
         "display": "standalone",
         "orientation": "portrait",
