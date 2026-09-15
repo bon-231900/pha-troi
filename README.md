@@ -10,13 +10,20 @@
 ---
 
 ## 📖 Ứng Dụng Đọc Truyện Mobile 24/7 (PWA)
-- **Đọc Online / Offline mọi lúc mọi nơi (Tắt laptop vẫn đọc tốt)**: [https://bon-231900.github.io/pha-troi/](https://bon-231900.github.io/pha-troi/)
-- **Tiến độ**: Quyển 1 (46/46 chương — 118,637 từ) đã sẵn sàng.
+- **Đọc Online / Offline mọi lúc mọi nơi (Tắt máy vẫn đọc tốt)**: [https://bon-231900.github.io/pha-troi/](https://bon-231900.github.io/pha-troi/)
+- **Tiến độ phát hành**: Tác phẩm đang được sáng tác và đồng bộ chương mới trực tiếp lên Web Reader theo thời gian thực.
 - **Tính năng nổi bật**:
-  - Hỗ trợ **PWA** (Thêm vào Màn hình chính trên iOS/Android thành app riêng).
+  - Hỗ trợ **PWA** (Thêm vào Màn hình chính trên iOS/Android dùng như app riêng).
   - Chế độ **OLED Pure Black** chống mỏi mắt ban đêm, tiết kiệm pin.
   - Tùy chỉnh cỡ chữ, phông chữ (Bookerly / Sans), chế độ đọc chống phân tâm.
   - Nút **Tải toàn bộ offline** để đọc không cần kết nối mạng.
+
+---
+
+## 🌌 Về Tác Phẩm: "Phá Trời"
+* **Bối cảnh**: TP. Hồ Chí Minh năm 2026 — Đô thị hiện đại với những guồng quay mưu sinh cơm áo gạo tiền ngấm ngầm bị xáo trộn bởi những mạch ngầm dị biến của thiên địa.
+* **Nhân vật chính**: **Nguyễn Minh An** — Một người bình thường 100%, không chuyển sinh, không hệ thống, không bàn tay vàng vô lý. Bước chân vào con đường tu đạo từ con số không, từng bước tôi luyện bản lĩnh qua bi thương và biến cố đời thực.
+* **Tông giọng & Quy mô**: Trầm tĩnh, khắc kỷ, bi tráng, slow-burn chân thực, hướng tới cấu trúc thế giới trường thiên 3.000+ chương với trần quy mô được kiểm soát chặt chẽ.
 
 ---
 
@@ -32,9 +39,10 @@ Novel OS được thiết kế theo tư duy *Novels as Codebases*, giải quyế
 - Mất dấu bí mật của tác giả (Author Secret Isolation)
 
 ## 2. Cấu trúc cốt lõi
-- **Author Authority**: Quyền tuyệt đối thuộc về Tác giả. Mọi thay đổi canon lớn đều phải có sự phê duyệt qua Proposal Engine.
-- **Source of Truth**: Markdown cho bản thảo (Manuscript) & Story Bible; SQLite (`database/novel_os.db`) cho đồ thị, trạng thái, dòng thời gian, nhật ký kiểm tra.
-- **Quy trình Word / Markdown / EPUB**: Viết bản thảo bằng Markdown chuẩn, tự động xuất DOCX và EPUB tiêu chuẩn.
+- **Author Authority**: Quyền tuyệt đối thuộc về Tác giả. Mọi thay đổi canon lớn đều phải qua Proposal Engine (Xem chi tiết tại [NOVEL_LOCK.md](NOVEL_LOCK.md)).
+- **21 Core Engines**: Quản trị tự động từ nhận thức nhân vật, đồ thị vũ trụ, dòng thời gian đến phòng thủ bão hòa tự sự (Xem chi tiết tại [ARCHITECTURE.md](ARCHITECTURE.md)).
+- **Source of Truth**: Markdown cho bản thảo (`manuscript/`) & Story Bible (`canon/`); SQLite (`database/novel_os.db`) cho đồ thị quan hệ, sự kiện và nhật ký kiểm tra.
+- **Quy trình Xuất bản Tiêu chuẩn**: Viết bằng Markdown, tự động biên dịch sang DOCX, EPUB tiêu chuẩn cho Apple Books / Google Play Books.
 - **Đồng bộ tự động**: Biên dịch và đẩy bản thảo mới lên GitHub Pages chỉ với 1 câu lệnh.
 
 ## 3. Lệnh CLI chính
