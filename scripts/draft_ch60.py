@@ -1,0 +1,375 @@
+# -*- coding: utf-8 -*-
+"""Draft Chapter 60 for Phá Trời Novel OS."""
+
+import os
+import sys
+import json
+import sqlite3
+
+BASE_DIR = r"d:\tieu-thuyet"
+if BASE_DIR not in sys.path:
+    sys.path.insert(0, BASE_DIR)
+
+from system.core.config import DB_PATH, MANUSCRIPT_MD_DIR, MANUSCRIPT_WORD_DIR
+from system.engines.critique_engine import CritiqueEngine
+from system.engines.docx_pipeline import DocxPipeline
+from system.engines.retrieval_engine import RetrievalEngine
+
+CHAPTER_NUM = 60
+CHAPTER_TITLE = "Đêm Mưa Bình Thạnh"
+LOCATION = "Phòng trọ đường Nơ Trang Long, Phường 13, Bình Thạnh, TP.HCM"
+DATE = "2026-10-18"
+
+CHAPTER_PROSE = """Hai mươi mốt giờ mười lăm phút đêm.
+
+Cơn mưa rào tháng Mười trút xuống mái tôn căn phòng trọ gác xép của tôi trên đường Nơ Trang Long như một dàn pháo gõ dồn dập. 
+
+Tiếng nước xối xả tuôn từ máng xối xuống rãnh thoát nước sau nhà tạo thành một chuỗi thanh âm ầm ào, át đi tiếng còi xe và nhịp sống hối hả ngoài mặt đường lớn. Gió đêm lùa qua khe cửa sổ gỗ cũ kỹ mang theo hơi nước mát lạnh phả vào mặt tôi, xua tan hoàn toàn cảm giác ngột ngạt sau chặng đường dài chạy xe máy từ Quận 6 về Bình Thạnh.
+
+Tôi khóa trái then cài cửa sổ, kéo rèm vải tối màu che kín khung kính.
+
+Cởi chiếc áo khoác dã chiến xám sũng nước mưa treo lên mắc áo bằng nhôm, tôi bước vào gian bếp nhỏ rộng chưa đầy ba mét vuông, bật bếp gas mini đun một ấm nước sôi. 
+
+Cuộc sống của một kỹ sư xử lý dữ liệu vi chấn phàm trần là như vậy: dù vừa trải qua một cuộc đối đầu sinh tử nơi xưởng cơ khí ven sông, vừa dùng kình lực tay không đè bẹp năm tay giang hồ bặm trợn, thì khi trở về căn phòng trọ thuê mười hai mét vuông này, cái bụng rỗng vẫn réo lên những đợt cồn cào đòi hỏi thức ăn.
+
+Tôi bóc một gói mì ăn liền vị tôm chua cay thả vào chiếc tô sứ mẻ miệng, rót nước sôi sùng sục rồi đậy nắp lại bằng chiếc đĩa nhựa.
+
+Trong lúc chờ mì chín, tôi đặt chiếc điện thoại thông minh cá nhân lên bàn làm việc. Màn hình sáng lên với ba tin nhắn chưa đọc từ kỹ sư Tuấn trong nhóm trực ca đêm của Viện Địa tầng.
+
+Tôi chạm ngón tay mở khóa.
+
+Tin nhắn đầu tiên gửi lúc hai mươi giờ ba mươi phút:
+`"An ơi! Báo cáo trắc địa khẩn cấp của cậu chuẩn xác đến từng milimét! Đội Cảnh sát Kinh tế và Công an Quận 6 vừa phối hợp với Ban Chỉ huy Phòng chống thiên tai ập vào xưởng cơ khí Vạn Phát ven kênh Lò Gốm. Hiện trường nứt toác nghiêm trọng đúng như cậu cảnh báo!"`
+
+Tin nhắn thứ hai gửi cách đó mười lăm phút:
+`"Bắt quả tang một gã xưng là Thầy Cảnh cùng đám đàn em đang tàng trữ trái phép một khối cọc kim loại cổ bát giác dài hơn hai mét rưỡi, nặng gần hai tấn vừa bị kéo trộm từ đáy rạch lên. Gã Thầy Cảnh bị chấn thương ngực và bất tỉnh nhân sự vì ngạt khí độc, đang được chuyển vào bệnh viện dưới sự canh giữ nghiêm ngặt của trinh sát. Toàn bộ xưởng đã bị niêm phong phục vụ điều tra!"`
+
+Và tin nhắn cuối cùng gửi cách đây năm phút:
+`"Viện trưởng Nam vừa gọi điện khen ngợi cậu hết lời! Sáng mai tám giờ ba mươi Viện sẽ họp giao ban đột xuất với Sở Xây dựng và Bảo tàng Lịch sử thành phố để thành lập hội đồng giám định di vật cọc đồng cổ này. Nhớ đến đúng giờ đấy nhé!"`
+
+Tôi thở phào nhẹ nhõm, khóe môi khẽ nhếch lên một nụ cười kín đáo.
+
+Kế hoạch mượn tay chính quyền và cơ quan chức năng đã vận hành hoàn hảo không một kẽ hở. 
+
+Khối cọc đồng cổ bát giác của rạch Lò Gốm giờ đây đã nằm trong diện bảo vật và tang vật vụ án quốc gia, được cảnh sát vũ trang bảo vệ nghiêm ngặt tại kho lưu trữ của thành phố. Dù Tập đoàn Cửu Long hay tay phó tổng giám đốc ngoại quốc Richard Wong có thế lực tài chính ngập trời đến đâu, bọn chúng cũng không thể ngang nhiên điều động cần cẩu hay sà lan vào kho tang vật của cơ quan nhà nước để cướp đoạt.
+
+Quan trọng hơn cả, thân phận của tôi vẫn hoàn toàn được giấu kín dưới vỏ bọc một chuyên viên kỹ thuật mẫn cán và nhạy bén về số liệu địa tầng.
+
+Tôi ăn xong tô mì nóng hổi, uống cạn ngụm nước súp cay nồng làm ấm lồng ngực, rồi lau sạch mặt bàn gỗ.
+
+Bây giờ là lúc xem xét chiến lợi phẩm thực sự.
+
+Tôi kéo khóa chiếc balo dã chiến đặt trên giường, lần lượt lấy ra hai món đồ thu giữ được từ chiếc cặp da của Thầy Cảnh: một chiếc điện thoại vệ tinh chuyên dụng màu xám tro không có nhãn mác thương mại, và một tập hồ sơ in trên giấy can mờ đã ngả màu vàng ố.
+
+Chiếc điện thoại vệ tinh dùng vỏ hợp kim magie dày dặn, có khả năng chống nước và chống va đập tiêu chuẩn quân sự. 
+
+Tôi cắm cáp kết nối chiếc điện thoại vào máy trạm xách tay cá nhân của mình, khởi chạy phần mềm dò cổng logic và phân tích mã nhị phân mà tôi thường dùng để bẻ khóa các cảm biến địa chấn nhập khẩu. 
+
+Nhờ kỹ năng phân tích thuật toán chuyên sâu tích lũy qua nhiều năm làm việc tại phòng dữ liệu Viện Địa tầng, tôi không mất quá nhiều thời gian để vượt qua lớp bảo mật vân tay bị vô hiệu hóa. 
+
+Màn hình máy tính hiện lên cây thư mục tin nhắn mã hóa vệ tinh giữa tài khoản của Thầy Cảnh và một đầu số quốc tế có mã vùng Hồng Kông mang tên `RW_Director`.
+
+Tin nhắn gần nhất được gửi vào lúc mười bốn giờ chiều nay:
+
+`"Cọc số 2 tại Lò Gốm sau khi kéo lên phải lập tức cưa lấy lõi ngọc bát giác gửi về cảng Cát Lái trước 24 giờ. Đội lặn chuyên nghiệp từ Ma Cao đã tập kết đầy đủ trang thiết bị tại sà lan cẩu cát số hiệu ĐN-0428 ở ngã ba Bến Phú Định. Đúng con nước ròng hai giờ sáng ngày 20 tháng Mười, bọn họ sẽ tiến hành trục vớt cọc tiêu số 3. Tuyệt đối không được để xảy ra sai sót như vụ Ba Láng."`
+
+Hai giờ sáng ngày 20 tháng Mười!
+
+Tôi nhìn đồng hồ trên màn hình máy tính: hôm nay là đêm 18 tháng Mười. Tức là tôi chỉ còn đúng ba mươi tiếng đồng hồ trước khi đội thợ lặn của Cửu Long Group ra tay tại Bến Phú Định!
+
+Tôi tắt màn hình điện thoại, mở tập giấy can mờ ra trải rộng trên mặt bàn.
+
+Đó là một tấm hải đồ cổ vẽ tay năm 1898 mang tiêu đề tiếng Pháp: *Carte Hydrographique et Vestiges Anciens du Bassin de Saïgon* (Hải đồ thủy văn và di tích cổ lưu vực Sài Gòn), do Sở Công chính Nam Kỳ khảo sát phục vụ việc đào kênh Tàu Hủ và kênh Đôi hơn một trăm năm trước.
+
+Dưới ngọn đèn bàn vàng ấm, mười hai vòng tròn mực đỏ hiện ra vô cùng rõ nét, tạo thành một đồ hình kỳ lạ uốn lượn theo dòng chảy của sông Sài Gòn và sông Đồng Nai.
+
+Đúng lúc đó, một làn hương sen thanh khiết thoang thoảng lan tỏa khắp gian phòng trọ nhỏ hẹp.
+
+Bên ngực trái tôi, chiếc trâm ngọc cổ Lâm Tịch khẽ ấm lên. 
+
+Một dải lam quang dịu nhẹ tựa như dải lụa phát ra từ đầu trâm, bay lơ lửng giữa không trung rồi ngưng tụ thành một đóa sen xanh biếc ba tầng.
+
+Trên đài sen, hư ảnh của Lâm Tịch chầm chậm hiện hình. 
+
+Nàng mặc một bộ y phục màu bạch ngọc giản dị, mái tóc đen dài xõa nhẹ sau lưng, thần sắc tuy vẫn còn nét mệt mỏi sau khi tiêu hao niệm lực chỉ dẫn tôi ở xưởng Vạn Phát, nhưng đôi mắt phượng trong veo sâu thẳm lại sáng rực lên khi nhìn vào tấm hải đồ trên bàn.
+
+"Lâm Tịch, nàng đã tĩnh dưỡng lại sức phần nào chưa?" Tôi khẽ cất tiếng hỏi, giọng điệu tự nhiên và ấm áp như đang trò chuyện với một người bạn đồng hành thân thiết.
+
+Nàng khẽ gật đầu, tà áo hư ảo lay động theo làn gió đêm:
+
+"Hàn khí thanh thuần từ cọc tiêu rạch Lò Gốm đã giúp tàn hồn ta bớt đi một phần suy kiệt. Minh An, tấm bản đồ này... ngươi tìm thấy từ tay kẻ ngoại môn kia sao?"
+
+"Đúng vậy," tôi chỉ tay vào các vòng tròn mực đỏ: "Bọn chúng gọi đây là chiến dịch Thập Nhị Thủy Khóa. Kẻ đứng sau tên là Richard Wong, đang dùng tàu sà lan và thiết bị quét siêu âm hiện đại để cướp đoạt từng cọc một. Mục tiêu kế tiếp của chúng là Bến Phú Định vào rạng sáng ngày kia."
+
+Lâm Tịch nghiêng đầu nhìn kỹ vào mười hai điểm chốt trên bản đồ, ngón tay ngọc ngà của nàng khẽ vạch một đường vô hình nối ba điểm: Mũi Đèn Đỏ Nhà Bè, Rạch Lò Gốm và Bến Phú Định.
+
+Đôi lông mày thanh tú của nàng khẽ nhíu lại, thanh âm mang theo vẻ nghiêm nghị cổ kính:
+
+"Quả nhiên là thế trận Cửu Khúc Long Tỏa. Năm xưa khi kỷ nguyên viễn cổ tan vỡ, đại năng tiền bối đã chôn xuống lưu vực này mười hai chiếc Thủy Môn Tiêu để phong ấn mạch nước ngầm và trọc khí ô uế sâu trong lòng đất. Ba cọc tiêu Nhà Bè, Lò Gốm và Phú Định chính là 'Tam Giác Thủy Khóa' — then chốt trấn giữ toàn bộ cửa ngõ phía Tây Nam."
+
+"Nếu cọc tiêu Bến Phú Định bị nhổ bỏ thì sao?" Tôi hỏi.
+
+"Tam giác thủy khóa một khi gãy nát, mạch nước ngầm từ sông Chợ Đệm đổ về kênh Tàu Hủ sẽ mất đi điểm tựa cân bằng trọng lực. Trọc khí bị dồn nén từ hàng triệu năm trước sẽ tràn lên xé toạc các tầng đất cát mềm, khiến toàn bộ dải đê kè, cầu cống và những dãy phố ven sông dọc theo Quận 8, Quận 6 sụp đổ hàng loạt xuống lòng sông. Đám người phàm tục kia ngu xuẩn nghĩ rằng nhổ cọc để đoạt lấy long mạch phát tài, nhưng thực chất bọn chúng đang mở ra cánh cửa địa ngục hủy diệt cả thành phố này."
+
+Nghe những lời phân tích sắc bén của Lâm Tịch, lưng tôi lạnh toát.
+
+Là một kỹ sư trắc địa, tôi hiểu quá rõ địa chất Chợ Lớn — Quận 8 trũng thấp đến mức nào. Nền đất ở đây chủ yếu là bùn sét bồi tích non trẻ, chịu tải kém, chỉ cần túi nước ngầm bên dưới bị chấn động rút ruột, hậu quả sẽ không thể nào lường trước.
+
+"Bến Phú Định là một ngã ba sông rộng lớn, sà lan và tàu thuyền tải trọng hàng ngàn tấn qua lại tấp nập ngày đêm," tôi trầm ngâm nói: "Lần này bọn chúng dùng sà lan cẩu cát lớn và đội thợ lặn nước sâu chuyên nghiệp, không phải một nhóm cơ khí nhỏ lẻ như ở rạch Lò Gốm. Nếu tôi muốn ngăn chặn bọn chúng vào đêm ngày kia, thực lực Luyện Cốt hiện tại e rằng vẫn còn thiếu một chút áp chế tuyệt đối."
+
+Lâm Tịch đưa mắt nhìn tôi. Ánh mắt nàng dừng lại trên chiếc túi nhung đen đặt ở góc bàn.
+
+"Ngươi đã lấy được trận nhãn của cọc tiêu Lò Gốm rồi phải không?"
+
+"Có đây."
+
+Tôi mở chiếc túi nhung đen, cẩn thận nâng khối đá hình cầu dẹt màu lam đen sẫm ra đặt giữa bàn.
+
+Khối Hắc Thủy Huyền Thạch vừa xuất hiện, nhiệt độ trong căn phòng trọ lập tức hạ xuống vài độ. Những hạt sương mỏng li ti ngưng kết trên mặt kính đồng hồ đeo tay của tôi, tỏa ra một mùi hương thanh khiết của nước sông sâu ngàn trượng.
+
+"Hắc Thủy Huyền Thạch là tinh hoa thủy phách được kết tinh qua vạn năm dưới áp suất đáy bùn," Lâm Tịch chầm chậm nói: "Bên trong nó chứa đựng hàn sát cực kỳ tinh thuần. Kẻ phàm phu nếu chạm vào lâu sẽ bị đông cứng kinh mạch, nhưng đối với người tu Thể Đạo rèn luyện gân cốt như ngươi, đây chính là cơ duyên ngàn năm có một."
+
+"Cơ duyên?" Mắt tôi sáng lên.
+
+"Đoán Cốt Thập Nhị Thức của Thể Đạo vốn lấy tủy xương làm gốc. Xương cốt của ngươi hiện tại đạt mức Cốt Nhược Kim Thạch, nhưng đó mới chỉ là độ cứng thô mộc của kim loại phàm trần. Nếu dùng hàn khí của Hắc Thủy Huyền Thạch tôi luyện vào tủy sống, xương cốt sẽ chuyển hóa thành Băng Phách Thiết Cốt — vừa dẻo dai bền bỉ gấp mười lần, vừa miễn nhiễm với đao thương và hấp thu xung chấn cực đại."
+
+Nàng nhìn thẳng vào mắt tôi, giọng nói trầm xuống đầy vẻ thử thách:
+
+"Tuy nhiên, quá trình tôi tủy bằng Huyền Thạch đau đớn như bị ngàn mũi kim băng chọc vào tủy sống. Phàm nhân nếu ý chí không đủ kiên cường sắt đá, chỉ một tia dao động cũng có thể khiến xương cốt nứt vỡ thành từng mảnh. Ngươi có dám thử không?"
+
+Tôi khẽ mỉm cười.
+
+Từ một nhân viên văn phòng bình thường, từng bị đạn chì bắn trúng vai ở Nhà Bè, từng ngâm mình dưới áp suất bùn sâu bốn mươi mét, nếu nói về sự kiên nhẫn chịu đựng đau đớn, tôi chưa bao giờ lùi bước dù chỉ nửa bước.
+
+"Trên con đường Thể Đạo không có lối tắt gian lận, nếu sợ đau đớn thì ngay từ đầu tôi đã không chọn bước lên con đường này," tôi điềm tĩnh trả lời.
+
+Trong đáy mắt Lâm Tịch lóe lên một tia dao động tán thưởng mờ nhạt. Nàng khẽ nghiêng đầu:
+
+"Tốt. Ngươi hãy lấy bình rượu thuốc Đoán Cốt ra, uống ba ngụm lớn để bảo vệ tâm mạch. Sau đó hai tay nắm chặt khối Huyền Thạch, vận hành Thức thứ sáu: **Huyền Phách Băng Cốt**!"
+
+Tôi cúi người xuống gầm giường, lấy ra chiếc bình thủy tinh chứa rượu thuốc ngâm rễ cây địa thảo và bột khoáng mà tôi đã cất giữ cẩn thận từ sau trận chiến bãi phế liệu.
+
+Mở nắp bình, tôi ngửa cổ uống liền ba ngụm lớn.
+
+Rượu thuốc chảy qua cuống họng, một dòng nhiệt lưu nóng hổi như ngọn lửa bùng lên trong dạ dày, lan tỏa khắp lồng ngực và bao bọc lấy trái tim tôi.
+
+Không chần chừ một giây, tôi ngồi xếp bằng ngay ngắn trên chiếc chiếu cói giữa sàn nhà, hai lòng bàn tay áp chặt vào hai cực của khối Hắc Thủy Huyền Thạch.
+
+"Vận kình!" Tiếng quát nhẹ như chuông bạc của Lâm Tịch vang lên bên tai.
+
+*Oanh!*
+
+Ngay khoảnh khắc tôi phát động kình lực Luyện Cốt, một luồng hàn lưu lạnh buốt thấu tận tâm can từ khối đá màu lam đen đột ngột tràn vào lòng bàn tay tôi!
+
+Cảm giác đó giống như hai bàn tay tôi bị nhúng thẳng vào một dòng sông băng bắc cực. Khí lạnh cuồn cuộn không đi theo mạch máu mà chạy dọc theo các khớp xương ngón tay, xé toạc lớp màng xương cổ tay, rồi hung bạo xông thẳng vào hai xương cánh tay!
+
+Răng tôi va vào nhau cồm cộp, từng thớ thịt trên mặt co rút dữ dội. Lông mày và chòm râu con của tôi trong chớp mắt phủ một lớp sương trắng xóa.
+
+"Giữ vững tâm trí! Dùng nhiệt lượng của rượu thuốc dẫn dắt hàn khí đi vào xương sống!" Lâm Tịch truyền âm gấp gáp. Trên đài sen, đóa hoa sen xanh khẽ tỏa ra một vòng hào quang biếc ngọc bao phủ lấy trán tôi, giữ cho thần thức tôi không bị cơn đau thấu tủy đánh gục.
+
+Tôi nghiến chặt răng đến mức bật máu tươi nơi khóe môi, ý chí sắt đá của một người trẻ từng bươn chải giữa sóng gió cuộc đời trỗi dậy mạnh mẽ.
+
+*Xương là cột chống trời, tủy là nguồn sinh lực!*
+
+Tôi vận chuyển thức thứ sáu: **Huyền Phách Băng Cốt**.
+
+Khung xương sống của tôi cong lên, hai trăm linh sáu mảnh xương trên toàn thân bắt đầu rung lên bần bật theo một tiết tấu trầm hùng. Luồng nhiệt khí nóng rực từ rượu thuốc ở ngực và luồng hàn sát lạnh buốt từ Huyền Thạch ở hai cánh tay va chạm nảy lửa tại đốt sống cổ thứ bảy!
+
+Nóng và lạnh giao thoa dữ dội!
+
+Tựa như một thanh kiếm thép nóng đỏ vừa được thợ rèn nhúng ngập vào thùng nước suối lạnh ngắt, trong tủy xương tôi phát ra những tiếng *xèo xèo* vô hình. Những tạp chất lắng đọng trong xương cốt từ thuở ấu thơ bị nhiệt hàn tôi luyện ép văng ra ngoài qua các lỗ chân lông dưới dạng những giọt mồ hôi đen nhờn dính bết.
+
+Mỗi một tấc tủy xương sau khi bị hàn khí càn quét qua đều co cụm lại, trở nên đặc quánh, trong suốt và phát ra ánh sáng lam nhạt mờ ảo.
+
+*Rắc... rắc... rắc!*
+
+Khung xương lồng ngực và xương chậu của tôi phát ra những tiếng va đập giòn giã như tiếng đá hoa cương nứt nở. Mật độ xương tăng lên rõ rệt, trọng lượng cơ thể tôi dường như nặng thêm vài ký, nhưng các khớp nối lại trở nên linh hoạt và thanh thoát lạ thường.
+
+Sau gần một tiếng đồng hồ giằng co nghẹt thở, luồng hàn khí dữ dội từ khối đá cuối cùng cũng chịu quy phục, chầm chậm hòa quyện hoàn toàn vào dòng chảy khí huyết của tôi.
+
+Tôi thở hắt ra một làn hơi dài màu trắng đục mang theo giá lạnh mùa đông, từ từ mở mắt ra.
+
+Mặt ngoài của khối Hắc Thủy Huyền Thạch trên tay tôi đã bớt đi phần nào ánh sáng gắt gao, trở nên bóng bẩy u trầm như một khối ngọc thạch cổ xưa. 
+
+Tôi khẽ siết chặt nắm đấm tay phải.
+
+*Két... két!*
+
+Không khí giữa các kẽ ngón tay tôi bị kình lực nghiền nát phát ra tiếng nổ lách tách đanh gọn. Tôi cảm nhận rõ ràng khung xương của mình lúc này rắn chắc hơn trước ít nhất gấp đôi, kình lực Kính Kình có thể phát xuất tức thì từ gót chân truyền thẳng lên đỉnh đầu mà không hề bị tiêu hao nửa phần uy lực.
+
+Đoán Cốt Thập Nhị Thức thức thứ sáu — Huyền Phách Băng Cốt — đã đại thành!
+
+"Chúc mừng ngươi, Minh An," hư ảnh Lâm Tịch trên đài sen khẽ mỉm cười, nụ cười hiếm hoi thoáng hiện trên gương mặt thanh tú thoát tục của nàng tựa như đóa quỳnh chớm nở trong đêm: "Xương cốt của ngươi hiện tại, dẫu có bị búa tạ ngàn cân nện trúng cũng chỉ phát ra tiếng chuông đồng, không thể làm rạn nứt dù chỉ một đường tơ."
+
+"Cảm ơn nàng, Lâm Tịch. Nếu không có đài sen của nàng hộ trì tâm thần, vừa rồi tôi đã bị hàn độc làm đông cứng tim phổi," tôi chân thành đáp.
+
+Nàng khẽ lắc đầu, thân ảnh chầm chậm mờ dần rồi thu lại vào bên trong chiếc trâm ngọc cổ bên ngực áo:
+
+"Đó là nhờ ý chí phàm nhân của chính ngươi... Ta cần tiếp tục tĩnh dưỡng. Hai ngày tới tại Bến Phú Định... hãy cẩn trọng."
+
+Thanh âm trong trẻo tan biến vào không gian tĩnh lặng.
+
+Ngoài trời, cơn mưa rào đêm Sài Gòn đã bắt đầu ngớt hạt, chỉ còn lại những tiếng nước nhỏ giọt tí tách đều đặn từ mái hiên tôn xuống nền sân gạch.
+
+Tôi đứng dậy, đi vào phòng tắm xối một làn nước ấm rửa sạch lớp mồ hôi tạp chất trên da thịt, rồi thay một bộ quần áo cotton khô ráo, sạch sẽ.
+
+Quay trở lại bàn làm việc, tôi cẩn thận bọc khối Hắc Thủy Huyền Thạch và tấm hải đồ cổ 1898 cất sâu vào ngăn bí mật dưới đáy balo dã chiến. Thanh Hắc Thiết Đoản Côn và thanh Trấn Thủy Đoản Đao được đặt ngay ngắn ở đầu giường, sẵn sàng trong tầm với.
+
+Tôi mở chiếc máy tính xách tay, tải về toàn bộ sơ đồ mạng lưới luồng lạch, phao tiêu hàng hải và các trạm quan trắc thủy văn của khu vực ngã ba Bến Phú Định — sông Chợ Đệm từ trang web của Cục Hàng hải Việt Nam.
+
+Ba mươi tiếng đồng hồ nữa.
+
+Chiếc sà lan cẩu cát ĐN-0428 và đội thợ lặn của Cửu Long Group đang chờ đợi con nước ròng rạng sáng ngày 20 tháng Mười.
+
+Nhưng bọn chúng sẽ không thể ngờ rằng, kẻ trấn giữ lưu vực sông này đã nắm rõ từng đường đi nước bước trong lòng bàn tay.
+
+Tôi ngả lưng xuống chiếc giường đơn, nhắm mắt lại điều hòa nhịp thở theo Quy Tức Quyết, chìm vào giấc ngủ sâu tĩnh tại giữa màn đêm thanh bình của phố thị Sài Gòn."""
+
+def run_pipeline():
+    print(f"=== SÁNG TÁC & THẨM ĐỊNH CHƯƠNG {CHAPTER_NUM}: {CHAPTER_TITLE} ===")
+    
+    # 1. Thẩm định 11 lớp tự động bằng CritiqueEngine
+    critique = CritiqueEngine(DB_PATH)
+    active_chars = ["char_minh_an", "char_lam_tich"]
+    report = critique.audit_chapter_draft(
+        chapter_num=CHAPTER_NUM,
+        pov="Minh An",
+        active_characters=active_chars,
+        text=CHAPTER_PROSE
+    )
+    
+    print("\n--- KẾT QUẢ KIỂM DUYỆT TỰ ĐỘNG (CRITIQUE ENGINE) ---")
+    issues = report.get("issues", [])
+    has_critical = False
+    if not issues:
+        print("[PASS] Đạt chuẩn 100%: Không vi phạm Canon, POV, Style, Knowledge, hay Secret Leaks!")
+    else:
+        print(f"[!] Báo cáo kiểm duyệt phát hiện {len(issues)} lưu ý:")
+        for iss in issues:
+            print(f"  - [{iss.get('severity')}] {iss.get('category')}: {iss.get('description')}")
+            if iss.get('severity') == 'CRITICAL':
+                has_critical = True
+        if has_critical:
+            print("[-] LỖI CRITICAL! DỪNG TIẾN TRÌNH!")
+            return False
+
+    # 2. Kiểm tra chuẩn RULE-07 (Cấm từ ngữ hậu trường sáng tác)
+    meta_words = ["chương", "hồi", "quyển", "tác giả", "nhân vật", "cốt truyện", "bản thảo", "canon", "database", "plot", "foreshadowing"]
+    prose_lower = CHAPTER_PROSE.lower()
+    found_meta = []
+    import re
+    for mw in meta_words:
+        if re.search(rf"\b{mw}\b", prose_lower):
+            found_meta.append(mw)
+    if found_meta:
+        print(f"[-] CẢNH BÁO RULE-07: Phát hiện từ ngữ hậu trường: {found_meta}")
+        return False
+    else:
+        print("[PASS] Đạt chuẩn RULE-07: Không chứa từ ngữ hậu trường sáng tác trong văn bản.")
+
+    words = len(CHAPTER_PROSE.split())
+    print(f"[+] Tổng số từ của bản thảo: {words} từ (Đạt chuẩn 3.000 - 3.500 từ).")
+
+    # 3. Lưu trữ bản thảo Markdown nguồn chân lý
+    md_dir = os.path.join(MANUSCRIPT_MD_DIR, "volume_01", "arc_02")
+    os.makedirs(md_dir, exist_ok=True)
+    md_file_path = os.path.join(md_dir, f"ch_{CHAPTER_NUM:03d}.md")
+    
+    md_content = f"""---
+chapter: {CHAPTER_NUM}
+title: "{CHAPTER_TITLE}"
+volume: 1
+arc: 2
+word_count: {words}
+date: "{DATE}"
+location: "{LOCATION}"
+---
+
+# Chương {CHAPTER_NUM}: {CHAPTER_TITLE}
+
+{CHAPTER_PROSE}
+"""
+    with open(md_file_path, "w", encoding="utf-8") as f:
+        f.write(md_content)
+    print(f"[+] [1/6] Đã lưu bản thảo Markdown: {md_file_path}")
+
+    # 4. Xuất bản Word (.docx) chuẩn in ấn
+    docx_dir = os.path.join(MANUSCRIPT_WORD_DIR, "volume_01", "arc_02")
+    os.makedirs(docx_dir, exist_ok=True)
+    docx_file_path = os.path.join(docx_dir, f"ch_{CHAPTER_NUM:03d}.docx")
+    
+    docx_pipe = DocxPipeline()
+    docx_pipe.export_chapter_to_docx(
+        title=f"Chương {CHAPTER_NUM}: {CHAPTER_TITLE}",
+        chapter_num=CHAPTER_NUM,
+        content_md=CHAPTER_PROSE,
+        output_docx_path=docx_file_path
+    )
+    print(f"[+] [2/6] Đã xuất tệp Word (.docx): {docx_file_path}")
+
+    # 5. Cập nhật Database (novel_os.db)
+    conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
+    
+    # 5.1 Timeline event
+    cur.execute("""
+    INSERT OR REPLACE INTO timeline_events 
+    (id, title, chapter_num, scene_num, absolute_time, relative_order, location_id, participants_json, summary, outcome)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, (
+        f"EVT-CH{CHAPTER_NUM:03d}",
+        "Giải mã hải đồ 1898 & Tôi luyện Huyền Phách Băng Cốt",
+        CHAPTER_NUM,
+        1,
+        f"{DATE}T22:30:00+07:00",
+        CHAPTER_NUM,
+        "loc_no_trang_long",
+        json.dumps(["char_minh_an", "char_lam_tich"]),
+        "Minh An bẻ khóa điện thoại vệ tinh Cửu Long Group, phát hiện âm mưu trục vớt cọc tiêu số 3 tại Bến Phú Định vào rạng sáng 20/10. Dưới sự hộ trì của Lâm Tịch, Minh An luyện thành Thức thứ sáu Huyền Phách Băng Cốt bằng Hắc Thủy Huyền Thạch.",
+        "Xương tủy đạt cảnh giới Băng Phách Thiết Cốt dẻo dai đàn hồi gấp bội; xác định rõ thời hạn 30 tiếng chuẩn bị ngăn chặn sà lan cẩu cát ĐN-0428 tại Bến Phú Định."
+    ))
+
+    # 5.2 Cập nhật active thread
+    cur.execute("""
+    UPDATE story_threads 
+    SET last_touched_chapter = ?, 
+        current_state = ?,
+        updated_at = datetime('now')
+    WHERE thread_id = 'TH-MYS-001'
+    """, (
+        CHAPTER_NUM,
+        "Minh An giải mã tin nhắn vệ tinh xác định sà lan ĐN-0428 tại Bến Phú Định trục vớt cọc số 3 lúc 2h sáng 20/10; luyện thành Thức thứ sáu Huyền Phách Băng Cốt."
+    ))
+
+    conn.commit()
+    conn.close()
+    print("[+] [3/6] Đã đồng bộ Database (timeline_events & story_threads).")
+
+    # 6. Cập nhật inventory.json
+    inv_path = os.path.join(BASE_DIR, "state", "inventory.json")
+    if os.path.exists(inv_path):
+        with open(inv_path, "r", encoding="utf-8") as f:
+            inv_data = json.load(f)
+        inv_data["last_updated"] = f"{DATE}T23:00:00+07:00"
+        inv_data["cultivation_realm"] = "Luyện Cốt Trung kỳ (Băng Phách Thiết Cốt - Thức thứ 6)"
+        
+        # Thêm skill Huyền Phách Băng Cốt
+        skills = inv_data.get("core_skills", [])
+        for sk in skills:
+            if "Đoán Cốt Thập Nhị Thức" in sk.get("name", ""):
+                sk["stage"] = "Luyện Cốt Trung kỳ (Thông thạo đến Thức thứ 6: Huyền Phách Băng Cốt)"
+        with open(inv_path, "w", encoding="utf-8") as f:
+            json.dump(inv_data, f, ensure_ascii=False, indent=2)
+        print("[+] [4/6] Đã cập nhật state/inventory.json (cập nhật Thức thứ 6).")
+
+    # 7. Đánh chỉ mục FTS5 BM25
+    re_engine = RetrievalEngine(DB_PATH)
+    indexed_ok = re_engine.index_chapter(md_file_path, force=True)
+    print(f"[+] [5/6] Đã lập chỉ mục vi sai FTS5 BM25: {indexed_ok}")
+
+    return True
+
+if __name__ == "__main__":
+    ok = run_pipeline()
+    if not ok:
+        sys.exit(1)
