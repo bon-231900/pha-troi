@@ -4,6 +4,8 @@
 
 [![Deploy Reader to GitHub Pages](https://github.com/bon-231900/pha-troi/actions/workflows/deploy.yml/badge.svg)](https://github.com/bon-231900/pha-troi/actions/workflows/deploy.yml)
 [![Live Reader](https://img.shields.io/badge/Live_Reader-24%2F7-brightgreen)](https://bon-231900.github.io/pha-troi/)
+[![Novel License: All Rights Reserved](https://img.shields.io/badge/Novel_Content-All_Rights_Reserved-red.svg)](LICENSE.md)
+[![Code License: MIT](https://img.shields.io/badge/Novel_OS_Code-MIT-blue.svg)](LICENSE-CODE.md)
 
 ---
 
@@ -49,3 +51,22 @@ python -m system.cli studio
 # Kiểm tra tính toàn vẹn (Continuity & Canon):
 python -m system.cli kiem-tra
 ```
+
+---
+
+## 4. ⚖️ Bản Quyền & Giấy Phép (License & Copyright)
+
+Dự án áp dụng cơ chế phân định bản quyền kép (**Dual-Licensing**) rõ ràng giữa nội dung sáng tác văn học và phần mềm quản trị:
+
+> [!IMPORTANT]
+> **Repository được mở Công khai (Public) để độc giả đọc truyện và tham khảo kiến trúc Novel OS. Trạng thái Public TUYỆT ĐỐI KHÔNG đồng nghĩa với việc mở mã nguồn (Open Source) nội dung tiểu thuyết.**
+
+* **Nội dung Tiểu thuyết ("Phá Trời") — [ALL RIGHTS RESERVED](LICENSE.md)**:
+  * Thuộc bản quyền sở hữu trí tuệ duy nhất của **bon-231900 / An Bình**.
+  * Bao gồm: Toàn bộ bản thảo (`manuscript/`), hồ sơ thế giới & nhân vật (`canon/`), cơ sở dữ liệu cốt truyện (`database/novel_os.db`), cốt truyện, tên gọi và lore.
+  * **Nghiêm cấm mọi hành vi**: Sao chép, đăng tải lại (reup), phân phối lại, sửa đổi, dịch thuật, phóng tác phái sinh, thương mại hóa, hoặc thu thập làm dữ liệu huấn luyện/tinh chỉnh AI (LLM dataset training/fine-tuning) khi chưa có sự đồng ý bằng văn bản từ tác giả.
+
+* **Phần mềm & Tiện ích (Novel OS Engine) — [MIT LICENSE](LICENSE-CODE.md)**:
+  * Áp dụng riêng cho mã nguồn phần mềm, CLI, engine quản trị, reader app và scripts (`system/`, `scripts/`, `tests/`).
+  * Mã nguồn này hoàn toàn tách biệt và không bao gồm nội dung truyện.
+
