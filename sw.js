@@ -1,5 +1,5 @@
-// Service Worker pha-troi-v62-1789494666 cho Web Reader Phá Trời
-const CACHE_NAME = 'pha-troi-v62-1789494666';
+// Service Worker pha-troi-v62-1789494734 cho Web Reader Phá Trời
+const CACHE_NAME = 'pha-troi-v62-1789494734';
 const ASSETS_TO_CACHE = [
   './manifest.json',
   './icon.svg',
