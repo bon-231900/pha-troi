@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-10-18T20:00:00+07:00",
+  "last_updated": "2026-10-18T21:00:00+07:00",
   "holder": "Nguyễn Minh An",
   "cultivation_realm": "Luyện Cốt Trung kỳ (Cốt Nhược Kim Thạch)",
   "core_weapons_and_artifacts": [
@@ -42,6 +42,14 @@
       "condition": "Còn khoảng 0.65 lít sau khi tẩy độc 4 vết đạn chì (Chương 54)",
       "durability": "20%",
       "function": "Uống và xoa bóp hồi phục sau khi luyện Đoán Cốt hoặc va đập mạnh"
+    },
+    {
+      "name": "Hắc Thủy Huyền Thạch (Trận Nhãn Thủy Môn Tiêu số 2)",
+      "type": "Cổ thạch trận nhãn / Thủy linh khoáng thạch",
+      "location": "Bọc túi nhung đen dưới đáy balo dã chiến",
+      "condition": "Nguyên vẹn 100%, lam quang u trầm, tỏa hàn khí thanh thuần",
+      "durability": "100/100",
+      "function": "Trận nhãn cọc tiêu Lò Gốm; có khả năng nhiếp thủy trấn sát, tinh lọc khí huyết và phụ trợ tôi luyện tủy xương"
     }
   ],
   "core_skills": [
