@@ -177,23 +177,27 @@ def get_shared_css():
     }
 
     header {
-      position: sticky; top: 0; left: 0; right: 0; height: 60px; background: var(--header-bg);
+      position: sticky; top: 0; left: 0; right: 0; width: 100%; max-width: 100vw; box-sizing: border-box;
+      height: calc(56px + env(safe-area-inset-top, 0px));
+      padding: env(safe-area-inset-top, 0px) 16px 0 16px;
+      background: var(--header-bg);
       backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-bottom: 1px solid var(--border-color);
-      display: flex; align-items: center; justify-content: space-between; padding: 0 16px; z-index: 999;
+      display: flex; align-items: center; justify-content: space-between; z-index: 999;
       transition: transform 0.25s ease;
+      overflow: hidden;
     }
-    .header-left, .header-right { display: flex; align-items: center; gap: 8px; }
+    .header-left, .header-right { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
     .btn-brand {
-      display: inline-flex; align-items: center; gap: 10px; background: none; border: none;
-      cursor: pointer; padding: 4px 8px; border-radius: 24px; transition: all 0.2s ease;
+      display: inline-flex; align-items: center; gap: 8px; background: none; border: none;
+      cursor: pointer; padding: 4px 6px; border-radius: 24px; transition: all 0.2s ease;
     }
     .btn-brand:hover { background: rgba(255, 255, 255, 0.06); }
     .nav-logo {
-      width: 34px; height: 34px; border-radius: 50%; border: 1.5px solid var(--gold-primary);
-      box-shadow: 0 0 12px rgba(245, 158, 11, 0.35); object-fit: cover;
+      width: 32px; height: 32px; border-radius: 50%; border: 1.5px solid var(--gold-primary);
+      box-shadow: 0 0 10px rgba(245, 158, 11, 0.35); object-fit: cover;
     }
     .nav-brand-text {
-      font-family: 'Lora', 'Georgia', serif; font-size: 16px; font-weight: 800; letter-spacing: 1.5px; color: var(--gold-primary);
+      font-family: 'Lora', 'Georgia', serif; font-size: 15px; font-weight: 800; letter-spacing: 1.2px; color: var(--gold-primary);
     }
     .nav-live-badge {
       display: none; align-items: center; gap: 4px; padding: 2px 7px; border-radius: 12px;
@@ -202,19 +206,19 @@ def get_shared_css():
     }
     @media (min-width: 900px) { .nav-live-badge { display: inline-flex; } }
 
-    .header-center { flex: 1; min-width: 0; text-align: center; padding: 0 8px; }
+    .header-center { flex: 1; min-width: 0; text-align: center; padding: 0 6px; }
     .header-title {
-      font-size: 14.5px; font-weight: 700; color: var(--gold-primary); white-space: nowrap;
-      overflow: hidden; text-overflow: ellipsis; margin: 0; letter-spacing: 0.3px;
+      font-size: 14px; font-weight: 700; color: var(--gold-primary); white-space: nowrap;
+      overflow: hidden; text-overflow: ellipsis; margin: 0; letter-spacing: 0.2px;
     }
     .header-sub {
-      font-size: 11px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin: 0; opacity: 0.85;
+      font-size: 10.5px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin: 0; opacity: 0.85;
     }
 
     .btn-icon {
-      background: none; border: none; color: var(--text-color); width: 38px; height: 38px;
+      background: none; border: none; color: var(--text-color); width: 36px; height: 36px;
       cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
-      border-radius: 10px; transition: all 0.2s ease; position: relative;
+      border-radius: 9px; transition: all 0.2s ease; position: relative; flex-shrink: 0;
     }
     .btn-icon:hover { background: var(--card-bg); color: var(--gold-primary); }
     .btn-icon:active { transform: scale(0.94); }
@@ -223,14 +227,35 @@ def get_shared_css():
       display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 8px;
       background: rgba(16, 185, 129, 0.12); border: 1px solid var(--accent-primary);
       color: #34d399; font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.2s ease;
+      white-space: nowrap;
     }
     .btn-nav-home-pill:hover { background: var(--accent-primary); color: #ffffff; }
+
+    @media (max-width: 768px) {
+      .btn-nav-home-pill { display: none !important; }
+      .header-desktop-only { display: none !important; }
+      header { padding: env(safe-area-inset-top, 0px) 10px 0 10px; }
+      .header-left, .header-right { gap: 4px; }
+      .btn-icon { width: 35px; height: 35px; }
+      .nav-brand-text { font-size: 14px; letter-spacing: 0.8px; }
+      .nav-logo { width: 30px; height: 30px; }
+    }
 
     .dot-live {
       width: 6px; height: 6px; border-radius: 50%; background: #10b981;
       box-shadow: 0 0 6px #10b981; animation: pulseDot 2s infinite ease-in-out;
     }
     @keyframes pulseDot { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.85); } }
+
+    /* Chapter Meta Badges */
+    .chapter-meta-pills {
+      display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 8px; font-size: 12px;
+    }
+    .meta-pill {
+      display: inline-flex; align-items: center; gap: 5px; padding: 4px 11px; border-radius: 20px;
+      background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-color); color: var(--text-muted);
+      font-size: 11.5px; font-weight: 500;
+    }
 
     /* Modals, Drawers & Bottom Sheet */
     .modal-overlay {
@@ -240,9 +265,10 @@ def get_shared_css():
     .modal-overlay.open { opacity: 1; pointer-events: auto; }
 
     .drawer {
-      position: fixed; top: 0; bottom: 0; width: 86%; max-width: 420px; background: var(--card-bg);
+      position: fixed; top: 0; bottom: 0; width: 88%; max-width: 400px; background: var(--card-bg);
       border-left: 1px solid var(--border-color); z-index: 1001; display: flex; flex-direction: column;
       transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); box-shadow: -8px 0 24px rgba(0, 0, 0, 0.4);
+      box-sizing: border-box;
     }
     .drawer-left { left: 0; border-left: none; border-right: 1px solid var(--border-color); transform: translateX(-100%); box-shadow: 8px 0 24px rgba(0, 0, 0, 0.4); }
     .drawer-left.open { transform: translateX(0); }
@@ -269,18 +295,18 @@ def get_shared_css():
     .toc-item {
       padding: 10px 12px; border-radius: 8px; margin-bottom: 4px; cursor: pointer;
       display: flex; align-items: center; justify-content: space-between; border: 1px solid transparent;
-      transition: all 0.18s ease; text-decoration: none; color: inherit;
+      transition: all 0.18s ease; text-decoration: none; color: inherit; box-sizing: border-box;
     }
     .toc-item:hover { background: var(--card-bg-hover); border-color: var(--border-color); }
     .toc-item.active { background: rgba(16, 185, 129, 0.12); border-color: var(--accent-primary); }
     .toc-item.active .toc-name { color: var(--accent-primary); font-weight: 700; }
-    .toc-info { min-width: 0; flex: 1; margin-right: 10px; }
+    .toc-info { min-width: 0; flex: 1; margin-right: 10px; overflow: hidden; }
     .toc-num {
       font-size: 11px; color: var(--gold-primary); font-weight: 700; text-transform: uppercase;
       margin-bottom: 2px; display: flex; align-items: center; gap: 6px;
     }
-    .toc-name { font-size: 13.5px; color: var(--text-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .toc-meta { font-size: 11px; color: var(--text-muted); }
+    .toc-name { font-size: 13px; color: var(--text-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .toc-meta { font-size: 11px; color: var(--text-muted); flex-shrink: 0; }
 
     /* Codex Drawer Styles */
     .codex-card {
@@ -304,8 +330,9 @@ def get_shared_css():
     /* Settings Bottom Sheet */
     .sheet-bottom {
       position: fixed; bottom: 0; left: 0; right: 0; background: var(--card-bg); z-index: 1002;
-      border-top: 1px solid var(--border-color); border-radius: 20px 20px 0 0; max-width: 580px;
-      margin: 0 auto; padding: 20px 24px 36px 24px; transform: translateY(100%);
+      border-top: 1px solid var(--border-color); border-radius: 20px 20px 0 0; max-width: 580px; width: 100%;
+      box-sizing: border-box; margin: 0 auto;
+      padding: 20px 20px calc(36px + env(safe-area-inset-bottom, 0px)) 20px; transform: translateY(100%);
       transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); max-height: 85vh; overflow-y: auto;
     }
     .sheet-bottom.open { transform: translateY(0); }
@@ -496,12 +523,13 @@ def generate_home_html(chapters_index, total_words):
 
     .hero-mobile {{
       display: flex; flex-direction: column; position: relative; padding: 24px 16px 28px 16px;
-      overflow: hidden; align-items: center; text-align: center; border-bottom: 1px solid var(--border-color);
+      overflow: hidden; contain: paint; max-width: 100vw; width: 100%; box-sizing: border-box;
+      align-items: center; text-align: center; border-bottom: 1px solid var(--border-color);
       background: #07090e;
     }}
     .hero-mobile-backdrop {{
       position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center top;
-      filter: blur(28px) brightness(0.24); transform: scale(1.15); z-index: 1; pointer-events: none;
+      filter: blur(28px) brightness(0.24); z-index: 1; pointer-events: none;
     }}
     .hero-mobile-overlay {{
       position: absolute; inset: 0;
@@ -576,7 +604,16 @@ def generate_home_html(chapters_index, total_words):
     .mobile-sub-row button, .mobile-sub-row a {{ flex: 1; padding: 11px 8px; font-size: 13px; text-align: center; }}
 
     /* Home Content Container */
-    .home-container {{ max-width: 1100px; margin: 0 auto; padding: 24px 20px 80px 20px; }}
+    .home-container {{ max-width: 1100px; margin: 0 auto; padding: 24px 20px 80px 20px; box-sizing: border-box; width: 100%; }}
+    @media (max-width: 768px) {{
+      .home-container {{ padding: 18px 14px 80px 14px; }}
+      .home-toc-grid {{ grid-template-columns: 1fr; }}
+      .continue-card {{ padding: 16px; gap: 14px; flex-direction: column; align-items: stretch; }}
+      .continue-left {{ gap: 12px; width: 100%; }}
+      .continue-thumb {{ width: 44px; height: 44px; }}
+      .continue-btn {{ text-align: center; width: 100%; box-sizing: border-box; display: block; }}
+      .continue-pill {{ white-space: nowrap; }}
+    }}
     .section-title-wrap {{
       display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
       margin: 34px 0 16px 0; padding-bottom: 12px; border-bottom: 1px solid var(--border-color);
@@ -590,7 +627,7 @@ def generate_home_html(chapters_index, total_words):
     .continue-card {{
       background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 18px 22px;
       display: flex; align-items: center; justify-content: space-between; gap: 16px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-      transition: all 0.2s ease; margin-top: 14px;
+      transition: all 0.2s ease; margin-top: 14px; box-sizing: border-box; width: 100%;
     }}
     .continue-card:hover {{ border-color: rgba(16, 185, 129, 0.35); transform: translateY(-1px); }}
     .continue-card.welcome-mode {{
@@ -711,11 +748,11 @@ def generate_home_html(chapters_index, total_words):
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
       </button>
       
-      <button class="btn-icon" id="btnCodex" title="Codex Phá Trời — Bách Khoa Thế Giới (C)">
+      <button class="btn-icon header-desktop-only" id="btnCodex" title="Codex Phá Trời — Bách Khoa Thế Giới (C)">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
       </button>
 
-      <button class="btn-icon" id="btnAmbient" title="Âm thanh Mưa Đêm Sài Gòn (Thư giãn)">
+      <button class="btn-icon header-desktop-only" id="btnAmbient" title="Âm thanh Mưa Đêm Sài Gòn (Thư giãn)">
         <svg id="iconAudioOff" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"></path><path d="M16 14v6"></path><path d="M8 14v6"></path><path d="M12 16v6"></path></svg>
         <svg id="iconAudioOn" style="display:none; color:var(--accent-primary);" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 5L6 9H2v6h4l5 4V5z"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
       </button>
@@ -1813,13 +1850,21 @@ def generate_chapter_html(ch_info, chapters_index, total_words):
     @media (min-width: 1200px) {{ .desktop-toc-sidebar {{ display: block; }} }}
 
     .main-reader {{
-      flex: 1; min-width: 0; padding: 24px 20px 100px 20px;
+      flex: 1; min-width: 0; width: 100%; box-sizing: border-box;
+      padding: 18px 16px calc(90px + env(safe-area-inset-bottom, 0px)) 16px;
       display: flex; flex-direction: column; align-items: center;
+    }}
+    @media (min-width: 769px) {{
+      .main-reader {{ padding: 24px 20px 100px 20px; }}
     }}
 
     .btn-back-home-wrap {{
       width: 100%; max-width: var(--reader-max-width); display: flex; align-items: center;
-      justify-content: space-between; margin-bottom: 18px;
+      justify-content: space-between; margin-bottom: 14px; box-sizing: border-box;
+    }}
+    @media (max-width: 768px) {{
+      .btn-back-home-wrap {{ margin-bottom: 10px; }}
+      .header-vol-arc-hide-mobile {{ display: none; }}
     }}
     .btn-back-home {{
       display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 8px;
@@ -1830,28 +1875,36 @@ def generate_chapter_html(ch_info, chapters_index, total_words):
 
     .chapter-hero {{
       width: 100%; max-width: var(--reader-max-width); text-align: center;
-      padding: 24px 0 28px 0; border-bottom: 1px solid var(--border-color); margin-bottom: 32px;
+      padding: 16px 0 20px 0; border-bottom: 1px solid var(--border-color); margin-bottom: 24px;
+      box-sizing: border-box;
+    }}
+    @media (min-width: 769px) {{
+      .chapter-hero {{ padding: 24px 0 28px 0; margin-bottom: 32px; }}
     }}
     .chapter-vol-arc {{
-      font-size: 12px; font-weight: 800; color: var(--accent-primary); letter-spacing: 2px;
-      text-transform: uppercase; margin-bottom: 8px;
+      font-size: 11.5px; font-weight: 800; color: var(--accent-primary); letter-spacing: 2px;
+      text-transform: uppercase; margin-bottom: 6px;
     }}
     .chapter-main-title {{
-      font-family: 'Lora', 'Georgia', serif; font-size: 28px; font-weight: 800; line-height: 1.35;
-      color: var(--gold-primary); margin: 0 0 12px 0;
+      font-family: 'Lora', 'Georgia', serif; font-size: 23px; font-weight: 800; line-height: 1.35;
+      color: var(--gold-primary); margin: 0 0 14px 0;
     }}
-    .chapter-meta-line {{
-      display: flex; align-items: center; justify-content: center; gap: 12px; font-size: 12.5px; color: var(--text-muted);
+    @media (min-width: 769px) {{
+      .chapter-main-title {{ font-size: 28px; }}
     }}
 
     .novel-body {{
       width: 100%; max-width: var(--reader-max-width); font-size: var(--font-size);
-      line-height: var(--reader-line-height); color: var(--text-color); letter-spacing: 0.2px;
+      line-height: var(--reader-line-height); color: var(--text-color); letter-spacing: 0.15px;
+      box-sizing: border-box;
       transition: font-size 0.2s ease, max-width 0.2s ease, line-height 0.2s ease;
     }}
-    .novel-body p {{ margin-bottom: 1.6em; text-align: justify; text-justify: inter-word; }}
+    .novel-body p {{
+      margin-bottom: 1.5em; text-align: justify; text-justify: inter-word;
+      word-break: break-word; hyphens: auto;
+    }}
     .novel-body blockquote {{
-      border-left: 3px solid var(--gold-primary); padding: 8px 16px; margin: 1.6em 0;
+      border-left: 3px solid var(--gold-primary); padding: 8px 16px; margin: 1.5em 0;
       background: var(--card-bg); border-radius: 0 8px 8px 0; font-style: italic;
     }}
     .novel-body hr {{
@@ -1860,17 +1913,24 @@ def generate_chapter_html(ch_info, chapters_index, total_words):
 
     .chapter-footer-nav {{
       width: 100%; max-width: var(--reader-max-width); display: flex; align-items: center;
-      justify-content: space-between; gap: 12px; margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--border-color);
+      justify-content: space-between; gap: 8px; margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color);
+      box-sizing: border-box;
     }}
     .btn-nav-chapter {{
-      flex: 1; padding: 13px; border-radius: 12px; background: var(--card-bg); border: 1px solid var(--border-color);
-      color: var(--text-color); font-size: 14px; font-weight: 600; cursor: pointer; display: inline-flex;
-      align-items: center; justify-content: center; gap: 8px; transition: all 0.2s ease; text-decoration: none;
+      flex: 1; min-width: 0; padding: 12px 8px; border-radius: 12px; background: var(--card-bg); border: 1px solid var(--border-color);
+      color: var(--text-color); font-size: 13.5px; font-weight: 600; cursor: pointer; display: inline-flex;
+      align-items: center; justify-content: center; gap: 6px; transition: all 0.2s ease; text-decoration: none;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; box-sizing: border-box;
     }}
     .btn-nav-chapter:hover:not(.disabled) {{
       border-color: var(--accent-primary); color: var(--accent-primary); background: var(--card-bg-hover);
     }}
     .btn-nav-chapter.disabled {{ opacity: 0.35; cursor: not-allowed; pointer-events: none; }}
+    .btn-nav-footer-home {{ flex: 0.7; }}
+    @media (max-width: 480px) {{
+      .btn-nav-chapter {{ font-size: 12.5px; padding: 11px 4px; gap: 4px; }}
+      .btn-nav-footer-home {{ flex: 0.5; }}
+    }}
 
     /* Next Chapter Prominent Card */
     .next-chapter-card {{
@@ -1932,15 +1992,19 @@ def generate_chapter_html(ch_info, chapters_index, total_words):
     .btn-float-nav.disabled {{ opacity: 0.3; cursor: not-allowed; pointer-events: none; }}
 
     .bottom-bar {{
-      position: fixed; bottom: 0; left: 0; right: 0; height: 58px; background: var(--header-bg);
+      position: fixed; bottom: 0; left: 0; right: 0;
+      height: calc(56px + env(safe-area-inset-bottom, 0px));
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+      background: var(--header-bg);
       backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-top: 1px solid var(--border-color);
-      display: flex; align-items: center; justify-content: space-around; z-index: 998; transition: transform 0.25s ease;
+      display: flex; align-items: center; justify-content: space-around; z-index: 998;
+      transition: transform 0.25s ease; box-sizing: border-box; max-width: 100vw;
     }}
     @media (min-width: 769px) {{ .bottom-bar {{ display: none; }} }}
     .btn-bottom-item {{
       background: none; border: none; color: var(--text-muted); display: flex; flex-direction: column;
-      align-items: center; gap: 3px; font-size: 10px; font-weight: 600; cursor: pointer; padding: 6px 12px;
-      border-radius: 8px; text-decoration: none;
+      align-items: center; gap: 3px; font-size: 10px; font-weight: 600; cursor: pointer; padding: 6px 10px;
+      border-radius: 8px; text-decoration: none; -webkit-tap-highlight-color: transparent;
     }}
     .btn-bottom-item:active {{ color: var(--gold-primary); }}
     .btn-bottom-item.disabled {{ opacity: 0.3; pointer-events: none; }}
@@ -1979,11 +2043,11 @@ def generate_chapter_html(ch_info, chapters_index, total_words):
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
       </button>
       
-      <button class="btn-icon" id="btnCodex" title="Codex Phá Trời — Bách Khoa Thế Giới (C)">
+      <button class="btn-icon header-desktop-only" id="btnCodex" title="Codex Phá Trời — Bách Khoa Thế Giới (C)">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
       </button>
 
-      <button class="btn-icon" id="btnAmbient" title="Âm thanh Mưa Đêm Sài Gòn (Thư giãn)">
+      <button class="btn-icon header-desktop-only" id="btnAmbient" title="Âm thanh Mưa Đêm Sài Gòn (Thư giãn)">
         <svg id="iconAudioOff" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"></path><path d="M16 14v6"></path><path d="M8 14v6"></path><path d="M12 16v6"></path></svg>
         <svg id="iconAudioOn" style="display:none; color:var(--accent-primary);" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 5L6 9H2v6h4l5 4V5z"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
       </button>
@@ -2029,17 +2093,16 @@ def generate_chapter_html(ch_info, chapters_index, total_words):
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
           <span>Về Trang Chủ Phá Trời</span>
         </a>
-        <div style="font-size:12px; color:var(--text-muted);">QUYỂN {vol} • HỒI {arc}</div>
+        <div class="header-vol-arc-hide-mobile" style="font-size:12px; color:var(--text-muted);">QUYỂN {vol} • HỒI {arc}</div>
       </div>
 
       <section class="chapter-hero">
         <div class="chapter-vol-arc">QUYỂN {vol} • HỒI {arc}</div>
         <h1 class="chapter-main-title">Chương {ch_num}: {clean_title}</h1>
-        <div class="chapter-meta-line">
-          <span>📖 {words:,} từ</span>
-          <span>•</span>
-          <span>⏱️ ~{read_mins} phút đọc</span>
-          {f"<span>•</span><span>📍 {ch_info['location']}</span>" if ch_info.get('location') else ""}
+        <div class="chapter-meta-pills">
+          <span class="meta-pill">📖 {words:,} từ</span>
+          <span class="meta-pill">⏱️ ~{read_mins} phút đọc</span>
+          {f'<span class="meta-pill">📍 {ch_info["location"]}</span>' if ch_info.get("location") else ""}
         </div>
       </section>
 
@@ -2052,9 +2115,9 @@ def generate_chapter_html(ch_info, chapters_index, total_words):
       <div class="chapter-footer-nav">
         <a href="{prev_url}" class="btn-nav-chapter {prev_dis}" id="footerPrevBtn">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
-          Chương Trước
+          <span>Chương Trước</span>
         </a>
-        <a href="../" class="btn-nav-chapter" style="flex:0.6;">Trang Chủ</a>
+        <a href="../" class="btn-nav-chapter btn-nav-footer-home">Trang Chủ</a>
         <a href="{next_url}" class="btn-nav-chapter {next_dis}" id="footerNextBtn">
           <span>{footer_next_text}</span>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
@@ -2182,12 +2245,57 @@ def generate_chapter_html(ch_info, chapters_index, total_words):
     // 1. Lưu tiến độ đọc tức thì vào localStorage
     localStorage.setItem('pha_troi_cur_ch', '{ch_num}');
 
-    // 2. Scroll Progress Bar
+    // 2. Scroll Progress Bar & Smart Auto-hide Header/Bottom-bar
+    let lastScrollY = window.scrollY;
+    let isBarsHidden = false;
+    const topHeader = document.getElementById('topHeader');
+    const bottomBar = document.querySelector('.bottom-bar');
+    const progressBar = document.getElementById('progressBar');
+
+    function showBars() {{
+      if (topHeader) topHeader.style.transform = 'translateY(0)';
+      if (bottomBar) bottomBar.style.transform = 'translateY(0)';
+      isBarsHidden = false;
+    }}
+
+    function hideBars() {{
+      if (topHeader) topHeader.style.transform = 'translateY(-100%)';
+      if (bottomBar) bottomBar.style.transform = 'translateY(100%)';
+      isBarsHidden = true;
+    }}
+
     window.addEventListener('scroll', () => {{
+      const curY = window.scrollY;
       const totalH = document.documentElement.scrollHeight - window.innerHeight;
-      const pct = totalH > 0 ? (window.scrollY / totalH) * 100 : 0;
-      document.getElementById('progressBar').style.width = pct + '%';
-    }});
+      const pct = totalH > 0 ? (curY / totalH) * 100 : 0;
+      if (progressBar) progressBar.style.width = pct + '%';
+
+      // Smart auto-hide on mobile reader
+      if (curY > 80) {{
+        const diff = curY - lastScrollY;
+        if (diff > 12 && !isBarsHidden) {{
+          hideBars();
+        }} else if (diff < -10 && isBarsHidden) {{
+          showBars();
+        }}
+      }} else if (isBarsHidden) {{
+        showBars();
+      }}
+      lastScrollY = curY;
+    }}, {{ passive: true }});
+
+    // Tap reading text to toggle immersion mode (show/hide bars)
+    const novelContent = document.getElementById('novelContent');
+    if (novelContent) {{
+      novelContent.addEventListener('click', (e) => {{
+        if (e.target.tagName === 'A' || window.getSelection().toString().length > 0) return;
+        if (isBarsHidden) {{
+          showBars();
+        }} else {{
+          hideBars();
+        }}
+      }});
+    }}
 
     // 3. Web Audio Synthesizer (Pink Noise Rain)
     let audioCtx = null, noiseNode = null, gainNode = null, filterNode = null;
@@ -2284,12 +2392,14 @@ def generate_chapter_html(ch_info, chapters_index, total_words):
 
     function openToc() {{
       closeAllDrawers();
+      showBars();
       modalOverlay.classList.add('open');
       drawerToc.classList.add('open');
     }}
 
     function openCodex() {{
       closeAllDrawers();
+      showBars();
       modalOverlay.classList.add('open');
       drawerCodex.classList.add('open');
       renderCodexDrawer({ch_num});
@@ -2297,6 +2407,7 @@ def generate_chapter_html(ch_info, chapters_index, total_words):
 
     function openSettings() {{
       closeAllDrawers();
+      showBars();
       modalOverlay.classList.add('open');
       settingsSheet.classList.add('open');
     }}
