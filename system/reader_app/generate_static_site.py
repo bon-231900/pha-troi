@@ -1684,7 +1684,7 @@ def generate_home_html(chapters_index, total_words):
 
     if ('serviceWorker' in navigator) {{
       window.addEventListener('load', () => {{
-        navigator.serviceWorker.register('./sw.js').catch(() => {{}});
+        navigator.serviceWorker.register('./sw.js').then(reg => reg.update()).catch(() => {{}});
       }});
     }}
   </script>
@@ -1706,6 +1706,47 @@ def generate_chapter_html(ch_info, chapters_index, total_words):
     prev_dis = "disabled" if ch_num <= 1 else ""
     next_url = f"../chuong-{ch_num + 1}/" if ch_num < total_ch else "javascript:void(0)"
     next_dis = "disabled" if ch_num >= total_ch else ""
+
+    next_ch_info = chapters_index[ch_num] if ch_num < total_ch else None
+    if next_ch_info:
+        next_ch_title = next_ch_info["title"].replace(f"Chương {ch_num + 1}:", "").strip()
+        next_ch_title = re.sub(r"^Chương\s+\d+:\s*", "", next_ch_title, flags=re.IGNORECASE)
+        next_vol = next_ch_info.get("volume", 1)
+        next_arc = next_ch_info.get("arc", 1)
+        next_words = next_ch_info.get("word_count", 2500)
+        next_read_mins = max(1, round(next_words / 300))
+        next_card_html = f"""
+      <div class="next-chapter-card" id="nextChapterCard">
+        <div class="next-card-badge">TIẾP NỐI HÀNH TRÌNH</div>
+        <div class="next-card-label">CHƯƠNG TIẾP THEO:</div>
+        <h3 class="next-card-title">Chương {ch_num + 1}: {next_ch_title}</h3>
+        <div class="next-card-meta">
+          <span>Quyển {next_vol} • Hồi {next_arc}</span>
+          <span>•</span>
+          <span>{next_words:,} từ</span>
+          <span>•</span>
+          <span>~{next_read_mins} phút đọc</span>
+        </div>
+        <a href="../chuong-{ch_num + 1}/" class="btn-read-next-pulse" id="btnReadNextMain">
+          <span>Đọc Chương {ch_num + 1} Ngay</span>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        </a>
+      </div>
+        """
+        footer_next_text = f"Chương Sau ({ch_num + 1})"
+    else:
+        next_card_html = f"""
+      <div class="next-chapter-card last-chapter-card" id="nextChapterCard">
+        <div class="next-card-badge gold">✨ BẠN ĐÃ ĐỌC ĐẾN CHƯƠNG MỚI NHẤT ({ch_num}/{total_ch})</div>
+        <h3 class="next-card-title">Chương {ch_num}: {clean_title}</h3>
+        <p class="next-card-desc">Tác giả đang tiếp tục sáng tác chương mới. Bản thảo sẽ được tự động cập nhật ngay khi hoàn thành.</p>
+        <div class="next-card-actions">
+          <a href="../" class="btn-card-action">Về Trang Chủ</a>
+          <button class="btn-card-action gold" id="btnCardCodex">Khám Phá Codex Bách Khoa</button>
+        </div>
+      </div>
+        """
+        footer_next_text = "Hết chương mới nhất"
 
     toc_items_html = []
     for c in chapters_index:
@@ -1830,6 +1871,51 @@ def generate_chapter_html(ch_info, chapters_index, total_words):
       border-color: var(--accent-primary); color: var(--accent-primary); background: var(--card-bg-hover);
     }}
     .btn-nav-chapter.disabled {{ opacity: 0.35; cursor: not-allowed; pointer-events: none; }}
+
+    /* Next Chapter Prominent Card */
+    .next-chapter-card {{
+      width: 100%; max-width: var(--reader-max-width); margin: 40px auto 20px auto;
+      padding: 30px 24px; border-radius: 18px;
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(245, 158, 11, 0.09) 100%), var(--card-bg);
+      border: 1.5px solid rgba(245, 158, 11, 0.35);
+      box-shadow: 0 10px 36px rgba(0, 0, 0, 0.35), 0 0 24px rgba(245, 158, 11, 0.1);
+      text-align: center; display: flex; flex-direction: column; align-items: center; gap: 10px;
+    }}
+    .next-card-badge {{
+      display: inline-block; padding: 4px 14px; border-radius: 20px;
+      background: rgba(16, 185, 129, 0.18); border: 1px solid var(--accent-primary);
+      color: #34d399; font-size: 11px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase;
+    }}
+    .next-card-badge.gold {{
+      background: rgba(245, 158, 11, 0.18); border-color: var(--gold-primary); color: #fbbf24;
+    }}
+    .next-card-label {{ font-size: 12px; color: var(--text-muted); letter-spacing: 1px; margin-top: 2px; }}
+    .next-card-title {{
+      font-family: 'Lora', 'Georgia', serif; font-size: 22px; font-weight: 800;
+      color: var(--gold-primary); margin: 0; line-height: 1.35;
+    }}
+    .next-card-meta {{ display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 8px; font-size: 12.5px; color: var(--text-muted); }}
+    .next-card-desc {{ font-size: 13.5px; color: var(--text-muted); max-width: 480px; margin: 4px 0 12px 0; line-height: 1.6; }}
+    .next-card-actions {{ display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }}
+    .btn-card-action {{
+      padding: 10px 20px; border-radius: 10px; font-size: 13px; font-weight: 700;
+      background: var(--card-bg-hover); border: 1px solid var(--border-color); color: var(--text-color);
+      cursor: pointer; text-decoration: none; transition: all 0.2s;
+    }}
+    .btn-card-action:hover {{ border-color: var(--gold-primary); color: var(--gold-primary); }}
+    .btn-card-action.gold {{ background: rgba(245, 158, 11, 0.15); border-color: var(--gold-primary); color: #fbbf24; }}
+    .btn-card-action.gold:hover {{ background: var(--gold-primary); color: #000; }}
+    .btn-read-next-pulse {{
+      margin-top: 10px; display: inline-flex; align-items: center; gap: 10px;
+      padding: 14px 32px; border-radius: 12px;
+      background: linear-gradient(135deg, var(--gold-primary), #d97706);
+      color: #000000; font-size: 15px; font-weight: 800; text-decoration: none;
+      box-shadow: 0 4px 20px rgba(245, 158, 11, 0.4); transition: all 0.25s ease;
+    }}
+    .btn-read-next-pulse:hover {{
+      transform: translateY(-2px) scale(1.02); box-shadow: 0 6px 28px rgba(245, 158, 11, 0.6);
+      background: linear-gradient(135deg, #fbbf24, #d97706);
+    }}
 
     .desktop-nav-float {{
       display: none; position: fixed; top: 50%; transform: translateY(-50%); z-index: 800;
@@ -1961,14 +2047,16 @@ def generate_chapter_html(ch_info, chapters_index, total_words):
         {ch_info["html"]}
       </article>
 
+      {next_card_html}
+
       <div class="chapter-footer-nav">
-        <a href="{prev_url}" class="btn-nav-chapter {prev_dis}">
+        <a href="{prev_url}" class="btn-nav-chapter {prev_dis}" id="footerPrevBtn">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
           Chương Trước
         </a>
         <a href="../" class="btn-nav-chapter" style="flex:0.6;">Trang Chủ</a>
-        <a href="{next_url}" class="btn-nav-chapter {next_dis}">
-          Chương Sau
+        <a href="{next_url}" class="btn-nav-chapter {next_dis}" id="footerNextBtn">
+          <span>{footer_next_text}</span>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
         </a>
       </div>
@@ -2462,66 +2550,150 @@ def generate_chapter_html(ch_info, chapters_index, total_words):
       liveToast.classList.add('show');
       setTimeout(() => liveToast.classList.remove('show'), 2400);
     }}
+
+    const btnCardCodex = document.getElementById('btnCardCodex');
+    if (btnCardCodex) {{
+      btnCardCodex.onclick = () => openCodex();
+    }}
+
+    // Dynamic Next Chapter Resolver (Bảo đảm 100% hiển thị chương mới kể cả khi dính browser cache cũ)
+    (function() {{
+      const curCh = parseInt('{ch_num}', 10);
+      fetch('../data/chapters.json?t=' + Date.now())
+        .then(r => r.json())
+        .then(data => {{
+          if (!data || !data.chapters) return;
+          const total = data.total || data.chapters.length;
+
+          // Cập nhật badge tổng số chương
+          document.querySelectorAll('.nav-live-badge').forEach(el => {{
+            el.innerHTML = '<span class="dot-live"></span> ' + total + ' CHƯƠNG';
+          }});
+
+          // Nếu có chương tiếp theo
+          if (curCh < total) {{
+            const nextNum = curCh + 1;
+            const nextUrl = '../chuong-' + nextNum + '/';
+            const nextCh = data.chapters.find(c => c.chapter === nextNum);
+
+            // Mở khóa phím điều hướng nổi & mobile bar
+            document.querySelectorAll('.desktop-nav-right a, a.btn-bottom-item:nth-child(4)').forEach(a => {{
+              a.classList.remove('disabled');
+              a.setAttribute('href', nextUrl);
+            }});
+
+            // Mở khóa nút footer
+            const fNext = document.getElementById('footerNextBtn');
+            if (fNext) {{
+              fNext.classList.remove('disabled');
+              fNext.setAttribute('href', nextUrl);
+              const span = fNext.querySelector('span');
+              if (span) span.textContent = 'Chương Sau (' + nextNum + ')';
+            }}
+
+            // Cập nhật thẻ Next Chapter nếu đang hiển thị là chương cuối
+            const card = document.getElementById('nextChapterCard');
+            if (card && card.classList.contains('last-chapter-card') && nextCh) {{
+              const nextTitle = (nextCh.title || '').replace(/^Chương\\s+\\d+:\\s*/i, '');
+              const nextWords = (nextCh.word_count || 0).toLocaleString();
+              card.className = 'next-chapter-card';
+              card.innerHTML = '<div class="next-card-badge">TIẾP NỐI HÀNH TRÌNH</div>' +
+                '<div class="next-card-label">CHƯƠNG TIẾP THEO:</div>' +
+                '<h3 class="next-card-title">Chương ' + nextNum + ': ' + nextTitle + '</h3>' +
+                '<div class="next-card-meta">' +
+                  '<span>Quyển ' + (nextCh.volume || 1) + ' • Hồi ' + (nextCh.arc || 1) + '</span>' +
+                  '<span>•</span><span>' + nextWords + ' từ</span>' +
+                '</div>' +
+                '<a href="' + nextUrl + '" class="btn-read-next-pulse">' +
+                  '<span>Đọc Chương ' + nextNum + ' Ngay</span>' +
+                  '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>' +
+                '</a>';
+            }}
+          }}
+        }})
+        .catch(() => {{}});
+    }})();
+
+    if ('serviceWorker' in navigator) {{
+      window.addEventListener('load', () => {{
+        navigator.serviceWorker.register('../sw.js').then(reg => reg.update()).catch(() => {{}});
+      }});
+    }}
   </script>
 </body>
 </html>"""
 
-def generate_sw():
-    return """// Service Worker v6 cho Web Reader Phá Trời
-const CACHE_NAME = 'pha-troi-reader-v6';
+def generate_sw(total_ch=59):
+    import time
+    sw_ver = f"pha-troi-v{total_ch}-{int(time.time())}"
+    return f"""// Service Worker {sw_ver} cho Web Reader Phá Trời
+const CACHE_NAME = '{sw_ver}';
 const ASSETS_TO_CACHE = [
-  './',
-  './index.html',
-  './404.html',
   './manifest.json',
   './icon.svg',
   './cover.svg',
   './assets/logo.webp',
   './assets/cover_vertical.webp',
-  './assets/hero_horizontal.webp',
-  './data/chapters.json'
+  './assets/hero_horizontal.webp'
 ];
 
-self.addEventListener('install', (e) => {
+self.addEventListener('install', (e) => {{
   e.waitUntil(
     caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS_TO_CACHE))
   );
   self.skipWaiting();
-});
+}});
 
-self.addEventListener('activate', (e) => {
+self.addEventListener('activate', (e) => {{
   e.waitUntil(
-    caches.keys().then((keys) => {
+    caches.keys().then((keys) => {{
       return Promise.all(
-        keys.map((key) => {
+        keys.map((key) => {{
           if (key !== CACHE_NAME) return caches.delete(key);
-        })
+        }})
       );
-    })
+    }})
   );
   self.clients.claim();
-});
+}});
 
-self.addEventListener('fetch', (e) => {
+self.addEventListener('fetch', (e) => {{
+  const url = new URL(e.request.url);
+
+  // 1. Đối với HTML pages (Navigate / Document) và data/chapters.json:
+  // CHIẾN LƯỢC: NETWORK-FIRST (Luôn lấy mới nhất trên mạng, chỉ dùng cache khi offline)
+  if (e.request.mode === 'navigate' || e.request.destination === 'document' || url.pathname.includes('/data/')) {{
+    e.respondWith(
+      fetch(e.request)
+        .then((networkResponse) => {{
+          if (networkResponse && networkResponse.status === 200) {{
+            const resClone = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(e.request, resClone));
+          }}
+          return networkResponse;
+        }})
+        .catch(() => {{
+          return caches.match(e.request).then((cached) => cached || caches.match('./index.html'));
+        }})
+    );
+    return;
+  }}
+
+  // 2. Đối với hình ảnh và static assets: Stale-While-Revalidate
   e.respondWith(
-    caches.match(e.request).then((cachedResponse) => {
-      if (cachedResponse) {
-        return cachedResponse;
-      }
-      return fetch(e.request).then((networkResponse) => {
-        if (networkResponse && networkResponse.status === 200) {
+    caches.match(e.request).then((cachedResponse) => {{
+      const fetchPromise = fetch(e.request).then((networkResponse) => {{
+        if (networkResponse && networkResponse.status === 200) {{
           const resClone = networkResponse.clone();
           caches.open(CACHE_NAME).then((cache) => cache.put(e.request, resClone));
-        }
+        }}
         return networkResponse;
-      }).catch(() => {
-        if (e.request.destination === 'document') {
-          return caches.match('./index.html');
-        }
-      });
-    })
+      }}).catch(() => null);
+
+      return cachedResponse || fetchPromise;
+    }})
   );
-});
+}});
 """
 
 def build():
@@ -2609,7 +2781,7 @@ def build():
 
     # 6. Generate sw.js
     with open(os.path.join(DIST_DIR, "sw.js"), "w", encoding="utf-8") as out:
-        out.write(generate_sw())
+        out.write(generate_sw(len(chapters_index)))
 
     # 7. Generate cover.svg
     cover_svg_content = generate_cover_svg()
