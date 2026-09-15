@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Đang chuyển hướng — Phá Trời</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script>
+    (function() {
+      var path = window.location.pathname;
+      var match = path.match(/(?:chuong|chapter)[-_/]?(\d+)/i);
+      if (match) {
+        window.location.replace('/pha-troi/chuong-' + match[1] + '/');
+      } else {
+        window.location.replace('/pha-troi/');
+      }
+    })();
+  </script>
+</head>
+<body style="background:#07090e; color:#d6dce7; font-family:'Be Vietnam Pro', sans-serif; display:flex; align-items:center; justify-content:center; height:100vh; margin:0; text-align:center;">
+  <div>
+    <div style="font-size:32px; font-weight:800; color:#f59e0b; margin-bottom:12px;">PHÁ TRỜI</div>
+    <p style="color:#828d9f; font-size:15px;">Đang kết nối và chuyển hướng đến chương truyện...</p>
+  </div>
+</body>
+</html>
