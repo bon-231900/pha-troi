@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-10-19T17:30:00+07:00",
+  "last_updated": "2026-10-20T03:00:00+07:00",
   "holder": "Nguyễn Minh An",
   "cultivation_realm": "Luyện Cốt Trung kỳ (Băng Phách Thiết Cốt - Thức thứ 6)",
   "core_weapons_and_artifacts": [
@@ -50,6 +50,14 @@
       "condition": "Nguyên vẹn 100%, lam quang u trầm, tỏa hàn khí thanh thuần",
       "durability": "100/100",
       "function": "Trận nhãn cọc tiêu Lò Gốm; có khả năng nhiếp thủy trấn sát, tinh lọc khí huyết và phụ trợ tôi luyện tủy xương"
+    },
+    {
+      "name": "Định Hải Huyền Châu (Trận Nhãn Thủy Môn Tiêu số 3)",
+      "type": "Cổ ngọc trận nhãn / Thủy sát linh châu",
+      "location": "Bọc túi nhung cách âm trong balo dã chiến",
+      "condition": "Nguyên vẹn 100%, lam quang u trầm chuyển sắc hắc ám, hàn khí cực thịnh",
+      "durability": "100/100",
+      "function": "Trận nhãn cọc tiêu Định Hải Tả Tiêu (Bến Phú Định); trấn định thủy lưu, hội tụ âm thủy sát, trợ lực thấu cốt kình lực Thể Đạo"
     }
   ],
   "core_skills": [
