@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-09-15T01:30:00+07:00",
+  "last_updated": "2026-10-18T20:00:00+07:00",
   "holder": "Nguyễn Minh An",
   "cultivation_realm": "Luyện Cốt Trung kỳ (Cốt Nhược Kim Thạch)",
   "core_weapons_and_artifacts": [
@@ -23,9 +23,9 @@
       "name": "Thanh Đoản Đao Đồng Rỉ Xanh (Trấn Thủy Đoản Đao)",
       "type": "Cổ khí trấn thủy / Cọc định hải",
       "location": "Bọc ba lớp vải bố dày cất sâu trong balo dã chiến",
-      "condition": "Đồng thau cổ phủ rỉ xanh dày, âm sát thủy khí cực mạnh",
+      "condition": "Lộ đường chỉ hoàng kim đồng thau sau khi được kình lực Luyện Cốt thuần phục",
       "durability": "90/100",
-      "function": "Cổ khí thu từ Chợ Lớn, đang bị phong tỏa cách ly"
+      "function": "Bảo vật trấn thủy, có thể phong tỏa và điều khiển âm sát thủy khí của Thủy Môn Thập Nhị Tiêu"
     },
     {
       "name": "Mẩu Vụn Chu Sa Thạch Anh (Huyết Ngọc Tiềm Thạch)",
