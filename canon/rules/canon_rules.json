@@ -35,6 +35,12 @@
       "name": "Cách ly tuyệt đối bí mật tác giả",
       "description": "Bí mật trong author_secret/ không bao giờ được xuất hiện trực tiếp trong nhận thức của nhân vật khi chưa mở khóa.",
       "level": "LOCKED"
+    },
+    {
+      "id": "RULE-07",
+      "name": "Cấm tuyệt đối phá vỡ bức tường thứ tư và từ ngữ hậu trường",
+      "description": "Nghiêm cấm dùng bất kỳ từ ngữ hậu trường sáng tác (như 'Chương X', 'Hồi Y', 'Quyển Z', 'tác giả', 'nhân vật', 'cốt truyện', 'bản thảo', 'canon', 'database', 'plot', 'foreshadowing', v.v.) bên trong lời dẫn truyện, độc thoại nội tâm hoặc đối thoại của nhân vật. Mọi sự kiện quá khứ phải được tham chiếu bằng thời gian và sự kiện nội tại thế giới truyện (ví dụ: 'ba tuần trước ở cửa sông Nhà Bè' thay vì 'ở Chương 44').",
+      "level": "LOCKED"
     }
   ],
   "forbidden_assumptions": [
@@ -43,6 +49,8 @@
     "Minh An có huyết mạch thần",
     "Trái Đất vĩnh viễn là nơi yếu nhất",
     "Lâm Tịch đã chết hoàn toàn",
-    "Đột phá cảnh giới sau 3 ngày"
+    "Đột phá cảnh giới sau 3 ngày",
+    "Nhân vật biết mình ở trong tiểu thuyết hoặc nhắc đến số chương, số hồi",
+    "Sử dụng từ ngữ hậu trường sáng tác trong văn bản tác phẩm"
   ]
 }

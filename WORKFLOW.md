@@ -8,8 +8,8 @@ Hệ thống kích hoạt pipeline khép kín gồm 10 bước:
 3. **Đóng Gói Ngữ Cảnh**: Context Builder tạo `Context Pack` tinh gọn, cách ly tuyệt đối `author_secret`.
 4. **Quyết Định Hướng Đi Tự Sự**: Xác định bước chuyển biến tiếp theo (tiến triển xung đột, khám phá bí ẩn, hay khoảnh khắc đời thường).
 5. **Soạn Thảo (Co-Author)**: Viết bản thảo theo đúng POV, phong cách Cinematic + Literary + Dark Fantasy.
-6. **Tự Phản Biện Đa Chiều**: Self-Critique Engine quét 11 chiều kích tìm mâu thuẫn narrative.
-7. **Tự Động Chuẩn Hóa**: Sửa chữa các hạt sạn nhỏ, cảnh báo nếu có lỗi lớn.
+6. **Tự Phản Biện Đa Chiều**: Self-Critique Engine quét 11 chiều kích tìm mâu thuẫn narrative, đặc biệt kiểm tra nghiêm ngặt cấm phá vỡ bức tường thứ tư (không bao giờ để nhân vật nhắc đến số chương, số hồi, tác giả, bản thảo hay thuật ngữ hậu trường).
+7. **Tự Động Chuẩn Hóa**: Sửa chữa các hạt sạn nhỏ, loại bỏ triệt để từ ngữ meta, cảnh báo nếu có lỗi lớn.
 8. **Cập Nhật Trạng Thái & Bộ Nhớ**: Cập nhật vị trí, thương tích, ma trận nhận thức, quan hệ, timeline.
 9. **Lưu Trữ Bền Vững**: Lưu Markdown vào `manuscript/markdown/`, biên dịch sang `manuscript/word/`.
 10. **Quản Lý Git**: Tự động tạo git commit cho các thay đổi nhỏ.
