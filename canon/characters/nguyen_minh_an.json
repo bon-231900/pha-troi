@@ -8,15 +8,24 @@
   "age": 25,
   "birth_year": 2001,
   "start_year": 2026,
-  "role": "Nam Chính (Protagonist)",
+  "role": "Nam Chính (Protagonist) — Giám đốc Kỹ thuật Dữ liệu Viện Nghiên cứu Địa tầng",
   "pov_type": "Ngôi thứ nhất (Chính)",
   "origin": "TP. Hồ Chí Minh, Việt Nam",
   "cultivation": {
-    "system": "Khí Huyết Đạo (sau này)",
-    "current_realm": "Người thường (Chưa tu luyện)",
-    "realm_rank": 0,
-    "techniques": [],
-    "artifacts": []
+    "system": "Thể Đạo / Khí Huyết Đạo",
+    "current_realm": "Luyện Cốt Trung kỳ (Cốt Nhược Kim Thạch)",
+    "realm_rank": 2,
+    "techniques": [
+      "Đoán Cốt Thập Nhị Thức (Thức thứ 5)",
+      "Kính Kình Thể Thuật",
+      "Quy Tức Quyết",
+      "Nhập Định Quan Tưởng"
+    ],
+    "artifacts": [
+      "Trâm Ngọc Cổ Lâm Tịch",
+      "Hắc Thiết Đoản Côn",
+      "Trấn Thủy Đoản Đao"
+    ]
   },
   "forbidden_attributes": [
     "chuyển sinh",

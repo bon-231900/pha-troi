@@ -20,10 +20,10 @@
 - **Độ bền**: 100/100 (Trạng thái hoàn hảo).
 
 ### 3. Thanh Đoản Đao Đồng Rỉ Xanh (Trấn Thủy Đoản Đao)
-- **Bản chất**: Cổ khí trấn thủy thu hồi từ tiệm đồ cổ Cổ Mộc Đường (đường Phùng Hưng, Chợ Lớn). Vốn là một trong các cọc định hải phụ trợ cho Thủy Môn trôi dạt đáy kênh Tàu Hủ.
-- **Vị trí**: Quấn ba lớp vải bố dày cất sâu trong balo dã chiến để cách ly âm sát.
-- **Thông số**: Dài 33cm, đúc bằng đồng thau cổ rỉ xanh bám dày, khắc bốn chữ Hán chìm *Trấn Thủy Hạ Du*.
-- **Hiện trạng**: Tỏa ra luồng âm sát thủy khí cực mạnh làm mê loạn tâm trí người thường, đang bị Minh An phong tỏa tạm thời.
+- **Bản chất**: Cổ khí trấn thủy thu hồi từ tiệm đồ cổ Cổ Mộc Đường (Chợ Lớn). Là một trong mười hai cọc tiêu phong ấn ngầm cổ xưa (*Thủy Môn Thập Nhị Tiêu*) bảo vệ lưu vực sông ngòi Sài Gòn - Gia Định.
+- **Vị trí**: Quấn vải bố dã chiến, cất trong ngăn chống sốc chuyên dụng balo của Minh An hoặc phòng thí nghiệm ngầm B2.
+- **Thông số**: Dài 33cm, đúc bằng hợp kim đồng - thiếc thời tiền sử (>2.5 triệu năm tuổi), khắc bốn chữ Hán chìm *Trấn Thủy Hạ Du*. Tần số dao động tự nhiên 7.83 Hz (tương thích tần số Schumann Trái Đất).
+- **Hiện trạng**: Đã được giải mã quang phổ XRF/XRD và thuần hóa hoàn toàn bằng kình lực Luyện Cốt (*Dĩ cốt định huyết*) tại Chương 57; lớp rỉ xanh nứt ra lộ ánh hoàng đồng, âm sát được quy phục biến thành uy lực trấn phong thủy đạo.
 
 ### 4. Mẩu Vụn Chu Sa Thạch Anh (Huyết Ngọc Tiềm Thạch)
 - **Bản chất**: Mảnh vỡ còn sót lại sau khi chốt chặn kè đá cổ Thủy Môn Nhà Bè giải tỏa áp suất.
