@@ -128,6 +128,18 @@ class CritiqueEngine:
                 "description": alert["details"]
             })
 
+        # 9.6. Kiểm toán Mật Độ Phục Bút Tầm Xa (Macro Foreshadowing Density Audit)
+        from system.engines.foreshadowing_engine import ForeshadowingEngine
+        fe_fsh = ForeshadowingEngine(self.db_path)
+        dormant_alerts = fe_fsh.audit_dormant_seeds(chapter_num)
+        for da in dormant_alerts:
+            severity = "MEDIUM" if "OVERDUE" in da else "LOW"
+            issues.append({
+                "category": "FORESHADOWING",
+                "severity": severity,
+                "description": da
+            })
+
         # 10. Ghi nhận Telemetry (Viễn trắc kiểm tra tất định)
         from system.engines.telemetry_engine import TelemetryEngine
         te = TelemetryEngine(self.db_path)

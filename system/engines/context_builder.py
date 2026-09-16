@@ -13,12 +13,13 @@ class WriterForeshadowingView:
     """Sanitized view of foreshadowing clues for the AI / writer context.
     Strictly excludes author secrets: actual_meaning, payoff_chapter, and internal notes."""
     @staticmethod
-    def create(seed_id: str, seed_description: str, planted_chapter: int, status: str) -> dict:
+    def create(seed_id: str, seed_description: str, planted_chapter: int, status: str, range_tier: str = "LONG_RANGE") -> dict:
         return {
             "id": seed_id,
             "observable_clue": seed_description,
             "planted_chapter": planted_chapter,
-            "status": status
+            "status": status,
+            "range_tier": range_tier
         }
 
 class ContextBuilder:
@@ -129,14 +130,20 @@ class ContextBuilder:
             knows = cur.fetchall()
             pack["epistemic_knowledge"][cid] = {k[0]: k[1] for k in knows}
 
-        # 4. SỔ CÁI PHỤC BÚT CẬN KỀ — SANITIZED WRITER VIEW (WriterForeshadowingView)
+        # 4. SỔ CÁI PHỤC BÚT ĐA TẦNG (CẬN KỀ & TẦM XA) — SANITIZED WRITER VIEW
         # Tuyệt đối KHÔNG query actual_meaning, payoff_chapter, hay ghi chú riêng của tác giả
-        cur.execute("""SELECT id, seed_description, planted_chapter, status FROM foreshadowing_ledger 
-                       WHERE status IN ('PLANTED', 'ACTIVE') AND planted_chapter <= ?
-                       ORDER BY planted_chapter DESC LIMIT ?""", (chapter_num, self.budgets["max_foreshadowing_items"]))
-        for r in cur.fetchall():
+        from system.engines.foreshadowing_engine import ForeshadowingEngine
+        fe = ForeshadowingEngine(self.db_path)
+        multitier_clues = fe.get_writer_view_multitier(chapter_num)
+        for c in multitier_clues:
             pack["active_foreshadowing"].append(
-                WriterForeshadowingView.create(seed_id=r[0], seed_description=r[1], planted_chapter=r[2], status=r[3])
+                WriterForeshadowingView.create(
+                    seed_id=c["id"],
+                    seed_description=c["observable_clue"],
+                    planted_chapter=c["planted_chapter"],
+                    status=c["status"],
+                    range_tier=c.get("range_tier", "LONG_RANGE")
+                )
             )
 
         # 5. DÒNG THỜI GIAN NGAY TRƯỚC ĐÓ (Recent Events)

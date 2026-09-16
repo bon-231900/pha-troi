@@ -50,12 +50,32 @@ class ForeshadowingEngine:
             "payoff_chapter": r[6], "status": r[7]
         } for r in rows]
 
+    @staticmethod
+    def classify_range_tier(planted_chapter: int, payoff_chapter: int = None) -> str:
+        """Phân loại cự ly phục bút:
+        - SHORT_RANGE: <= 30 chương (tầm chục chương)
+        - MEDIUM_RANGE: 31 - 100 chương (tầm vài chục đến trăm chương)
+        - LONG_RANGE: 101 - 500 chương (tầm vài trăm chương)
+        - EPOCH_RANGE: > 500 chương (tầm ngàn chương)
+        """
+        if not payoff_chapter:
+            return "LONG_RANGE"
+        gap = payoff_chapter - planted_chapter
+        if gap <= 30:
+            return "SHORT_RANGE"
+        elif gap <= 100:
+            return "MEDIUM_RANGE"
+        elif gap <= 500:
+            return "LONG_RANGE"
+        else:
+            return "EPOCH_RANGE"
+
     def get_writer_view(self, chapter_num: int, limit: int = 5) -> list:
         """Cung cấp danh sách phục bút đã được khử độc (Sanitized) cho AI và người viết.
         Tuyệt đối không xuất actual_meaning hoặc author notes."""
         conn = sqlite3.connect(self.db_path, timeout=30.0)
         cur = conn.cursor()
-        cur.execute("""SELECT id, seed_description, planted_chapter, status
+        cur.execute("""SELECT id, seed_description, planted_chapter, status, payoff_chapter
                        FROM foreshadowing_ledger
                        WHERE status IN ('PLANTED', 'ACTIVE') AND planted_chapter <= ?
                        ORDER BY planted_chapter DESC LIMIT ?""", (chapter_num, limit))
@@ -65,8 +85,53 @@ class ForeshadowingEngine:
             "id": r[0],
             "observable_clue": r[1],
             "planted_chapter": r[2],
-            "status": r[3]
+            "status": r[3],
+            "range_tier": self.classify_range_tier(r[2], r[4])
         } for r in rows]
+
+    def get_writer_view_multitier(self, chapter_num: int) -> list:
+        """Cung cấp danh sách phục bút đa tầng đã được khử độc (Sanitized) cho AI và người viết.
+        Cân đối giữa phục bút cận kề (SHORT_RANGE), trung hạn (MEDIUM/LONG_RANGE) và viễn cảnh đại cục (EPOCH_RANGE).
+        Tuyệt đối không xuất actual_meaning hoặc author notes."""
+        conn = sqlite3.connect(self.db_path, timeout=30.0)
+        cur = conn.cursor()
+        cur.execute("""SELECT id, seed_description, planted_chapter, payoff_chapter, status
+                       FROM foreshadowing_ledger
+                       WHERE status IN ('PLANTED', 'ACTIVE') AND planted_chapter <= ?
+                       ORDER BY planted_chapter DESC""", (chapter_num,))
+        rows = cur.fetchall()
+        conn.close()
+
+        tiered = {"SHORT_RANGE": [], "MEDIUM_RANGE": [], "LONG_RANGE": [], "EPOCH_RANGE": []}
+        for r in rows:
+            tier = self.classify_range_tier(r[2], r[3])
+            tiered[tier].append({
+                "id": r[0],
+                "observable_clue": r[1],
+                "planted_chapter": r[2],
+                "status": r[4],
+                "range_tier": tier
+            })
+
+        result = []
+        for tier_name in ["SHORT_RANGE", "MEDIUM_RANGE", "LONG_RANGE", "EPOCH_RANGE"]:
+            if tiered[tier_name]:
+                result.append(tiered[tier_name][0])
+
+        if len(result) < 3:
+            for r in rows:
+                if not any(item["id"] == r[0] for item in result):
+                    tier = self.classify_range_tier(r[2], r[3])
+                    result.append({
+                        "id": r[0],
+                        "observable_clue": r[1],
+                        "planted_chapter": r[2],
+                        "status": r[4],
+                        "range_tier": tier
+                    })
+                    if len(result) >= 4:
+                        break
+        return result
 
     def update_status(self, seed_id: str, new_status: str, payoff_chapter: int = None):
         if new_status not in self.STATUSES:
@@ -83,7 +148,7 @@ class ForeshadowingEngine:
     def audit_dormant_seeds(self, current_chapter: int, threshold_chapters: int = 50) -> list:
         """Kiểm toán các phục bút gieo đã lâu:
         Phân biệt giữa:
-        1. Phục bút trường thiên có kế hoạch (Planned Long Arc) -> Gợi ý nhắc nhở nhẹ (SUGGESTION).
+        1. Phục bút trường thiên có kế hoạch (Planned Long/Epoch Arc) -> Gợi ý nhắc nhở nhẹ (SUGGESTION).
         2. Phục bút đã quá hạn payoff (Overdue Payoff) -> Cảnh báo (WARNING).
         3. Phục bút không có mốc payoff bị bỏ quên quá threshold -> Cảnh báo ngủ quên (DORMANT_FORESHADOWING).
         """
@@ -95,23 +160,23 @@ class ForeshadowingEngine:
             planted = s["planted_chapter"]
             payoff = s.get("payoff_chapter")
             gap = current_chapter - planted
+            tier = self.classify_range_tier(planted, payoff)
 
             if gap > threshold_chapters:
                 if payoff and current_chapter < payoff:
-                    # Tuyến trường thiên có đích đến cụ thể (Ví dụ: gieo ch 1, payoff ch 200, hiện tại ch 80)
                     dormant.append(
-                        f"DORMANT_FORESHADOWING: Phục bút trường thiên '{s['seed_description']}' (Mã: {s['id']}) "
+                        f"DORMANT_FORESHADOWING: Phục bút trường thiên [{tier}] '{s['seed_description']}' (Mã: {s['id']}) "
                         f"gieo từ chương {planted} đã qua {gap} chương (kế hoạch payoff: Ch {payoff}). "
                         f"Gợi ý: Cân nhắc gieo manh mối trung gian để duy trì ký ức độc giả."
                     )
                 elif payoff and current_chapter >= payoff:
                     dormant.append(
-                        f"OVERDUE_FORESHADOWING: Phục bút '{s['seed_description']}' (Mã: {s['id']}) "
+                        f"OVERDUE_FORESHADOWING: Phục bút [{tier}] '{s['seed_description']}' (Mã: {s['id']}) "
                         f"đã đến hoặc vượt quá chương kỳ vọng thu hồi (Ch {payoff})!"
                     )
                 else:
                     dormant.append(
-                        f"DORMANT_FORESHADOWING: Phục bút '{s['seed_description']}' (Mã: {s['id']}) "
+                        f"DORMANT_FORESHADOWING: Phục bút [{tier}] '{s['seed_description']}' (Mã: {s['id']}) "
                         f"gieo từ chương {planted} đã qua {gap} chương chưa có động thái thu hồi!"
                     )
         return dormant
