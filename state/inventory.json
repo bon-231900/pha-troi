@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-10-21T22:30:00+07:00",
+  "last_updated": "2026-10-22T02:30:00+07:00",
   "holder": "Nguyễn Minh An",
   "cultivation_realm": "Luyện Cốt Trung kỳ (Ngọc Tủy Quy Nhất - Thức thứ 7)",
   "core_weapons_and_artifacts": [
@@ -66,6 +66,22 @@
       "condition": "Nguyên vẹn 100%, sắc hổ phách quyện lam ngọc, chạm khắc Thần Quy đạp sóng ngậm kiếm ngọc",
       "durability": "100/100",
       "function": "Trận nhãn cọc tiêu Trấn Giang Hữu Tiêu (Mũi Đèn Đỏ); trấn giữ cửa ngõ thủy lộ Cần Giờ, hội tụ thủy triều tam giang, hợp thể cùng Hắc Thủy Huyền Thạch và Định Hải Huyền Châu mở ra la bàn Cực Tù"
+    },
+    {
+      "name": "Thanh Long Lân Kiếm (Trận Nhãn Thủy Môn Tiêu số 5)",
+      "type": "Cổ kiếm trận nhãn / Cổ khí trấn thủy",
+      "location": "Dung nạp trong khí hải tủy ngọc dọc cột sống",
+      "condition": "Nguyên vẹn 100%, ngọc phỉ thúy vảy rồng xanh biếc, kiếm khí hàn băng",
+      "durability": "100/100",
+      "function": "Trận nhãn cọc tiêu Thanh Long Tả Tiêu (Cầu Mống); trấn áp thủy sát lưu vực Bến Nghé, phụ trợ kình lực Thể Đạo tôi luyện tủy ngọc và phát xuất hàn băng kiếm khí"
+    },
+    {
+      "name": "Hộp Đồng Cổ Vân Mai Rùa (Chứa Hải Đồ Ba Son)",
+      "type": "Vật phẩm cốt truyện / Di vật Đông Sơn",
+      "location": "Túi bảo hộ ngực áo dã chiến",
+      "condition": "Nguyên vẹn",
+      "durability": "100/100",
+      "function": "Chứa hải đồ da rùa chỉ dẫn vị trí cọc tiêu số 6 Thủy Môn Chấn Tiêu tại xưởng Ba Son"
     }
   ],
   "core_skills": [
