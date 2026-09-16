@@ -41,6 +41,12 @@
       "name": "Cấm tuyệt đối phá vỡ bức tường thứ tư và từ ngữ hậu trường",
       "description": "Nghiêm cấm dùng bất kỳ từ ngữ hậu trường sáng tác (như 'Chương X', 'Hồi Y', 'Quyển Z', 'tác giả', 'nhân vật', 'cốt truyện', 'bản thảo', 'canon', 'database', 'plot', 'foreshadowing', v.v.) bên trong lời dẫn truyện, độc thoại nội tâm hoặc đối thoại của nhân vật. Mọi sự kiện quá khứ phải được tham chiếu bằng thời gian và sự kiện nội tại thế giới truyện (ví dụ: 'ba tuần trước ở cửa sông Nhà Bè' thay vì 'ở Chương 44').",
       "level": "LOCKED"
+    },
+    {
+      "id": "RULE-08",
+      "name": "Chủ động gieo mầm phục bút đa tầng tầm xa",
+      "description": "Trong từng chương viết, khi có cơ hội tự nhiên (quan sát cổ vật, di tích lịch sử, dị thường địa tầng, biến đổi tủy xương - khí huyết, phản ứng của Lâm Tịch, tư liệu cổ), BẮT BUỘC phải chủ động cài cắm các chi tiết mầm mống cho các cự ly tầm xa (chục chương, trăm chương, ngàn chương). Nghiêm cấm viết chương thuần giải quyết sự vụ cục bộ mà không để lại bất kỳ dư âm hay manh mối vĩ mô nào cho tương lai.",
+      "level": "LOCKED"
     }
   ],
   "forbidden_assumptions": [
