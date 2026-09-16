@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-10-20T15:30:00+07:00",
+  "last_updated": "2026-10-20T16:30:00+07:00",
   "holder": "Nguyễn Minh An",
   "cultivation_realm": "Luyện Cốt Trung kỳ (Ngọc Tủy Quy Nhất - Thức thứ 7)",
   "core_weapons_and_artifacts": [
@@ -58,6 +58,14 @@
       "condition": "Nguyên vẹn 100%, lam quang u trầm chuyển sắc hắc ám, hàn khí cực thịnh",
       "durability": "100/100",
       "function": "Trận nhãn cọc tiêu Định Hải Tả Tiêu (Bến Phú Định); trấn định thủy lưu, hội tụ âm thủy sát, trợ lực thấu cốt kình lực Thể Đạo"
+    },
+    {
+      "name": "Trấn Giang Huyền Tỷ (Trận Nhãn Thủy Môn Tiêu số 4)",
+      "type": "Cổ thạch ngọc tỷ / Thủy sát trấn ấn",
+      "location": "Bọc túi nhung cách âm trong balo dã chiến",
+      "condition": "Nguyên vẹn 100%, sắc hổ phách quyện lam ngọc, chạm khắc Thần Quy đạp sóng ngậm kiếm ngọc",
+      "durability": "100/100",
+      "function": "Trận nhãn cọc tiêu Trấn Giang Hữu Tiêu (Mũi Đèn Đỏ); trấn giữ cửa ngõ thủy lộ Cần Giờ, hội tụ thủy triều tam giang, hợp thể cùng Hắc Thủy Huyền Thạch và Định Hải Huyền Châu mở ra la bàn Cực Tù"
     }
   ],
   "core_skills": [
@@ -82,5 +90,5 @@
       "stage": "Quan tưởng đài sen, ngắm Lâm Tịch trầm miên"
     }
   ],
-  "current_location": "Mũi Đèn Đỏ (Bến Đèn Đỏ, Quận 7 / Nhà Bè, TP.HCM)"
+  "current_location": "Mũi Đèn Đỏ (Bến Đèn Đỏ, Quận 7, TP.HCM)"
 }
