@@ -72,9 +72,9 @@
 ## 2. CÔNG PHÁP & THỂ THUẬT CỐT LÕI
 
 ### 1. Đoán Cốt Thập Nhị Thức (Thể Đạo — Luyện Cốt)
-- **Cảnh giới hiện tại**: Luyện Cốt Trung kỳ (Cốt Nhược Kim Thạch).
-- **Tiến độ**: Đã đột phá và thông thạo đến **Thức thứ 7: Ngọc Tủy Quy Nhất** (Chương 63).
-- **Hiệu quả**: Biến tủy xương phàm nhân thành ngọc tủy thanh khiết, chịu lực va đập vạn cân, kình lực tuần hoàn liên miên không dứt.
+- **Cảnh giới hiện tại**: Luyện Cốt Hậu kỳ (Cốt Nhược Kim Thạch, Cương Huyết Đúc Thể).
+- **Tiến độ**: Đã đột phá và thông thạo đến **Thức thứ 8: Hoán Huyết Hóa Cương** (Chương 72).
+- **Hiệu quả**: Biến tủy xương phàm nhân thành ngọc tủy thanh khiết, tôi luyện dòng máu thành Cương Huyết đặc quánh, chịu lực va đập vạn cân và áp suất biển sâu ngàn mét.
 
 ### 2. Kính Kình Thể Thuật (Kính Phách Phản Chấn Quyết)
 - **Nguồn gốc**: Nhận từ tàn niệm đài sen Lâm Tịch khi vượt qua thức thứ 5 Đoán Cốt.
@@ -90,4 +90,9 @@
 
 ### 5. Nhập Định Quan Tưởng (Thanh Liên Thức Hải)
 - **Hiệu quả**: Tâm pháp tĩnh tâm chìm vào thức hải để tĩnh dưỡng thần thức và trông nom đài sen nơi Lâm Tịch đang say ngủ.
+
+### 6. Hoán Huyết Hóa Cương (Thức Thứ Tám Đoán Cốt Thập Nhị Thức)
+- **Nguồn gốc**: Khẩu quyết cổ truyền do Lâm Tịch truyền thụ tại phòng ngầm B2 sau khi giải phóng đủ 6 cọc tiêu tiền tuyến (Chương 72).
+- **Nguyên lý**: Mượn ngọc tủy làm lò luyện, mượn kiếm khí hàn băng Thanh Long làm búa nện, tôi luyện phàm huyết thành Cương Huyết cô đọng tựa đồng thau lỏng.
+- **Hiệu quả**: Tăng dung lượng dưỡng khí lên gấp 10 lần, tạo áp lực thủy tĩnh nội sinh đối kháng áp suất biển sâu >120 atm (>1,200m nước), giúp tự do hô hấp và tác chiến dưới đáy đại dương.
 

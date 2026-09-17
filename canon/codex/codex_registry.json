@@ -278,5 +278,25 @@
       "en": "Cinematic freeze-frame action shot of a steel octagonal baton engulfed in swirling dragon-shaped emerald frost qi smashing directly into an enemy's dark armor. Ice shards explosion, emerald and azure shockwaves shattering the armor plates, dramatic lighting in a dark industrial basement, motion blur, 8k masterpiece.",
       "vi": "Cảnh quay điện ảnh đóng băng khoảnh khắc đoản côn bát giác bọc kiếm khí hàn băng hình rồng xanh ngọc bích đánh vỡ đôi đoản kích và áo giáp lân phiến của đối thủ trong tầng hầm kỹ thuật tối. Vụn băng và sóng xung kích lam ngọc bùng nổ dữ dội, chất lượng 8K tuyệt đỉnh."
     }
+  },
+  {
+    "id": "skill_hoan_huyet_hoa_cuong",
+    "name": "Hoán Huyết Hóa Cương (Thức Thứ Tám)",
+    "category": "skill",
+    "badge": "TUYỆT KỸ HOÁN HUYẾT",
+    "unlock_chapter": 72,
+    "hidden_name": "Bí Pháp Thay Máu",
+    "hidden_desc": "Thức thứ tám của Đoán Cốt Thập Nhị Thức mở khóa khi đủ 6 cọc tiêu...",
+    "unlocked_desc": "Thức thứ tám của Đoán Cốt Thập Nhị Thức: Mượn ngọc tủy làm lò luyện, mượn kiếm khí hàn băng Thanh Long làm búa nện, nung nấu phàm huyết thành Cương Huyết đặc quánh tựa đồng thau lỏng. Tăng dung lượng dưỡng khí gấp mười lần, tạo áp lực thủy tĩnh nội sinh đối kháng áp suất biển sâu ngàn mét.",
+    "stats": {
+      "Cảnh Giới": "Luyện Cốt Hậu kỳ",
+      "Thức": "Thức 8 / 12 Đoán Cốt Thập Nhị Thức",
+      "Đặc Tính": "Cương Huyết (Đồng thau lỏng, dung tích oxy x10)",
+      "Khả Năng": "Kháng áp suất biển sâu >120 atm (>1,200m nước)"
+    },
+    "image_prompt": {
+      "en": "Artistic medical and martial cultivation concept of a human heart and arterial vascular system glowing with molten golden-bronze adamantine blood (Cương Huyết). Blood vessels pulsing with intense liquid brass luminance through an athletic body silhouette. Deep oceanic underwater background, biophotonic glow, 8k cinematic render.",
+      "vi": "Khái niệm nghệ thuật tu chân kết hợp y học thể hiện trái tim và mạng lưới động mạch con người phát sáng dòng máu Cương Huyết màu đồng thau và vàng kim óng ánh. Các mạch máu dẻo dai bọc thép phát quang sinh học rực rỡ trên nền bóng tối biển sâu thẳm, kết xuất điện ảnh 8K sắc nét."
+    }
   }
 ]
