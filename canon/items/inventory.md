@@ -54,7 +54,8 @@
 ### 10. Thủy Môn Chấn Tiêu (Cọc Phong Ấn số 6 Ba Son — TRẤN GIANG THẦN KHÍ)
 - **Bản chất**: Trụ đồng cổ nguyên khối nặng hơn sáu vạn cân cắm sâu 42m tại khúc uốn nanh rồng ụ tàu Ba Son.
 - **Vị trí**: Đáy giếng kỹ thuật 42m Ba Son (quanh chân tháp thủy đài).
-- **Công năng**: Hoàng kim long khí khống chế toàn bộ huyết mạch đường thủy phương Nam. Đang được Minh An giải trừ các khóa xích Hắc Thiết Âm Cương.
+- **Công năng**: Hoàng kim long khí khống chế toàn bộ huyết mạch đường thủy phương Nam.
+- **Hiện trạng**: Đã được Minh An dùng Long Lân Phá Kình chém đứt toàn bộ 6 chốt neo Hắc Thiết Âm Cương giải phóng hoàn toàn tại Chương 71; long khí hoàng kim bùng nổ gột rửa tủy sống đưa Minh An chạm ngưỡng Luyện Cốt Hậu kỳ; hiện trường được Viện Địa tầng và Cảnh sát Giao thông Đường thủy lập hàng rào bảo vệ cấp một nghiêm ngặt 24/24.
 
 ### 11. Hộp Đồng Cổ Vân Mai Rùa & Bản Đồ Cửu U Thôn Thiên Trận
 - **Bản chất**: Cổ vật Đông Sơn chứa hải đồ Ba Son 1898 và bản đồ da cừu thu được từ Hắc Lân Thiết Vệ (Chương 70).
