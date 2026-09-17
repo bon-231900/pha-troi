@@ -8,16 +8,19 @@
 
 ## 1. TỔNG QUAN HỆ SINH THÁI SUB-AGENTS
 
-Để vận hành xưởng sáng tác tiểu thuyết **"Phá Trời"** theo triết lý *Zero-Rework*, bảo đảm chất lượng văn chương đỉnh cao, kiểm soát chặt chẽ tính nhất quán thế giới quan và tự động hóa chuỗi xuất bản, hệ thống phân định 5 Sub-Agents chuyên môn hóa cao độ:
+Để vận hành xưởng sáng tác tiểu thuyết **"Phá Trời"** theo triết lý *Zero-Rework*, bảo đảm chất lượng văn chương đỉnh cao, kiểm soát chặt chẽ tính nhất quán thế giới quan, quản trị bách khoa toàn thư thế giới và tự động hóa chuỗi xuất bản, hệ thống phân định 6 Sub-Agents chuyên môn hóa cao độ:
 
 ```mermaid
 flowchart TD
     Author([Tác Giả / Người Dẫn Dắt]) --> Strategist["1. pha_troi_strategist\n(Tổng Đạo Diễn Cốt Truyện)"]
+    Author -. Yêu cầu ảnh / Codex .-> Codex["6. pha_troi_codex\n(Tổng Quản Bách Khoa & Visual Prompt)"]
     Strategist --> Archivist["2. pha_troi_archivist\n(Thủ Thư Văn Khố & Canon)"]
     Archivist --> Writer["3. pha_troi_writer\n(Chuyên Viên Chấp Bút)"]
     Writer --> Critic["4. pha_troi_critic\n(Tổng Biên Tập Phản Biện)"]
     Critic -- Có sạn / Vi phạm RULE-07 --> Writer
     Critic -- Duyệt 100% PASS --> Publisher["5. pha_troi_publisher\n(Kỹ Sư Xuất Bản & DevOps)"]
+    Critic -- Thực thể mới / Cập nhật Lore --> Codex
+    Codex -- Đồng bộ Web Codex & Prompt Ảnh --> Publisher
     Publisher --> Deploy([Phát Hành Trực Tuyến & Lưu Trữ In Ấn])
 ```
 
@@ -70,6 +73,22 @@ flowchart TD
   - Chạy trọn vẹn bộ kiểm thử tự động `python -m unittest discover tests/`.
   - Quản trị phiên bản Git: Tạo commit ngữ nghĩa, đẩy lên `master` và triển khai tự động lên `gh-pages`.
 
+### 6. `pha_troi_codex` — Tổng Quản Codex, Bách Khoa Toàn Thư & Visual Prompt Master
+- **Mục tiêu**: Hệ thống hóa toàn bộ tri thức, công pháp, vũ khí/pháp bảo, cổ khí và thế lực; kiểm duyệt chống spoiler trên web; và thiết kế prompt tạo ảnh chất lượng cao.
+- **Nhiệm vụ trọng tâm**:
+  - **Thu thập & Phân loại Lore**:
+    - *Vũ khí & Pháp bảo*: Hắc Thiết Đoản Côn, Trấn Thủy Đoản Đao, Thanh Long Lân Kiếm, Thủy Môn Chấn Tiêu...
+    - *Công pháp & Thể thuật*: Nam Phương Quyền Kinh, Kính Phách Phản Chấn Thuật, Ngọc Tủy Quy Nhất, Long Lân Phá Kình, Thức Hải Thanh Liên...
+    - *Cổ vật & Trận nhãn*: Hắc Thủy Huyền Thạch, Trâm Ngọc Cổ Lâm Tịch, Hộp Đồng Vân Mai Rùa, Lệnh Bài Huyền Thiết Thiết Vệ Tam...
+    - *Thế lực đô thị*: Viện Địa Tầng Đô Thị, Cửu Long Thiên Hải, Hắc Giao Đường Ma Cao...
+  - **Kiểm Duyệt Mở Khóa Chống Spoiler (Progressive Unlock)**:
+    - Thiết lập mốc mở khóa theo tiến độ đọc (`savedCh >= unlockChapter`). Độc giả chưa đọc tới sẽ hiển thị thẻ khóa `🔒 HỒ SƠ ẨN` nhằm kích thích khám phá, không lộ trước thiên cơ.
+  - **Cập Nhật Trực Tiếp Web Reader Codex**:
+    - Quản trị cấu trúc dữ liệu Codex hiển thị trên Drawer và Home Codex Grid của website đọc truyện.
+  - **Thiết Kế Prompt Tạo Ảnh Nghệ Thuật (AI Visual Prompts)**:
+    - Soạn thảo prompt chi tiết chuẩn điện ảnh Cinematic Dark Fantasy cho Midjourney v6, Imagen 3, FLUX, Stable Diffusion XL.
+    - Miêu tả chi tiết chất liệu, hoa văn cổ, phản xạ ánh sáng ban đêm TP.HCM và hiệu ứng kình lực đặc trưng của từng pháp bảo/công pháp.
+
 ---
 
 ## 3. QUY TRÌNH PHỐI HỢP LIÊN TỤC TRONG STUDIO
@@ -79,4 +98,6 @@ Khi nhận lệnh sáng tác chương mới (ví dụ: Chương 71):
 2. **Bước 2 (Tra cứu & Đóng gói)**: `pha_troi_archivist` trích xuất trạng thái nhân vật (Minh An tại hầm Ba Son, vết thương, túi đồ, tình trạng các cọc phong ấn) tạo `Context Pack`.
 3. **Bước 3 (Chấp bút)**: `pha_troi_writer` sáng tác bản thảo 3.300 – 3.650 từ, bảo đảm Cinematic Dark Fantasy, tuân thủ RULE-07 (0 chữ "hồi") và RULE-08.
 4. **Bước 4 (Phản biện & Soát sạn)**: `pha_troi_critic` rà soát 11 chiều kích, quét từ cấm, đối chiếu canon, phản hồi để hoàn thiện bản thảo.
-5. **Bước 5 (Xuất bản & Triển khai)**: `pha_troi_publisher` chuyển đổi docx, build web reader, kiểm toán dist, chạy unit test và đẩy bản cập nhật lên GitHub Pages.
+5. **Bước 5 (Cập nhật Codex & Visual Prompt)**: `pha_troi_codex` trích xuất vật phẩm/công pháp/pháp bảo mới từ chương vừa viết, cập nhật hồ sơ Codex, thiết lập điều kiện mở khóa chống spoiler, tạo prompt hình ảnh nếu Tác giả yêu cầu, và đưa vào giao diện Web Reader.
+6. **Bước 6 (Xuất bản & Triển khai)**: `pha_troi_publisher` chuyển đổi docx, build web reader (đồng bộ cả chương mới lẫn Codex mới), kiểm toán dist, chạy unit test và đẩy bản cập nhật lên GitHub Pages.
+

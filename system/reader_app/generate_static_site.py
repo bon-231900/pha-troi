@@ -27,6 +27,16 @@ BASE_DIR = os.getenv("NOVEL_OS_ROOT", str(Path(__file__).resolve().parent.parent
 DIST_DIR = os.path.join(BASE_DIR, "system", "reader_app", "dist")
 STATIC_SRC_DIR = os.path.join(BASE_DIR, "system", "reader_app", "static")
 
+def get_codex_items():
+    reg_path = os.path.join(BASE_DIR, "canon", "codex", "codex_registry.json")
+    if os.path.exists(reg_path):
+        try:
+            with open(reg_path, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception as e:
+            print(f"[WARN] Khong the doc codex_registry.json: {e}")
+    return []
+
 def parse_chapter_file(file_path):
     filename = os.path.basename(file_path)
     fn_match = re.search(r'ch_(\d+)', filename)
@@ -449,9 +459,11 @@ def generate_404_html():
 </body>
 </html>"""
 
-def generate_home_html(chapters_index, total_words):
+def generate_home_html(chapters_index, total_words, codex_items=None):
     total_ch = len(chapters_index)
     shared_css = get_shared_css()
+    codex_items = codex_items or get_codex_items()
+    codex_json = json.dumps(codex_items, ensure_ascii=False)
 
     return f"""<!DOCTYPE html>
 <html lang="vi">
@@ -952,7 +964,9 @@ def generate_home_html(chapters_index, total_words):
     </div>
     <div class="drawer-tabs">
       <button class="drawer-tab-btn active" id="tabCodexChar" data-codex="char">Nhân Vật</button>
-      <button class="drawer-tab-btn" id="tabCodexItem" data-codex="item">Kho Cổ Vật</button>
+      <button class="drawer-tab-btn" id="tabCodexItem" data-codex="item">Vũ Khí</button>
+      <button class="drawer-tab-btn" id="tabCodexArtifact" data-codex="artifact">Cổ Vật</button>
+      <button class="drawer-tab-btn" id="tabCodexSkill" data-codex="skill">Công Pháp</button>
       <button class="drawer-tab-btn" id="tabCodexLotus" data-codex="lotus">Thức Hải</button>
     </div>
     <div class="drawer-body" id="codexDrawerBody"></div>
@@ -1321,87 +1335,34 @@ def generate_home_html(chapters_index, total_words):
       }};
     }});
 
+    const CODEX_DATA = {codex_json};
+
     function renderCodexPreview(savedCh) {{
       if (!homeCodexGrid) return;
       const s = parseInt(savedCh) || 1;
       let html = '';
-
-      if (s >= 20) {{
-        html += `
-          <div class="home-codex-card" onclick="openCodexTab('char')">
-            <span class="home-codex-badge">NAM CHÍNH • THỂ ĐẠO</span>
-            <div class="home-codex-name">Nguyễn Minh An (25 tuổi)</div>
-            <p class="home-codex-desc">Luyện Cốt Trung kỳ (Cốt Nhược Kim Thạch). Đúc cốt ngự kình, kình lực vạn cân, Thức Hải Thanh Liên bảo bọc tâm mạch.</p>
-          </div>
-        `;
-      }} else {{
-        html += `
-          <div class="home-codex-card" onclick="openCodexTab('char')">
-            <span class="home-codex-badge">NAM CHÍNH • THỂ ĐẠO</span>
-            <div class="home-codex-name">Nguyễn Minh An (24 tuổi)</div>
-            <p class="home-codex-desc">Nhân viên văn phòng bình thường tại TP.HCM. Bắt đầu con đường Thể Đạo từ số 0 sau biến cố trên cầu Sài Gòn.</p>
-            <div class="codex-unlock-hint">🔒 Đang rèn luyện Tẩy Tủy Hoán Cốt</div>
-          </div>
-        `;
-      }}
-
-      if (s >= 10) {{
-        html += `
-          <div class="home-codex-card" onclick="openCodexTab('lotus')">
-            <span class="home-codex-badge">NỮ CHÍNH • NGUYÊN THẦN</span>
-            <div class="home-codex-name">Lâm Tịch (Bạch Y Tiên Tử)</div>
-            <p class="home-codex-desc">Tàn phiến Nguyên Thần viễn cổ 2.5 triệu năm ngụ trong Thức Hải Thanh Liên của Minh An, che chở tâm mạch phàm trần.</p>
-          </div>
-        `;
-      }} else {{
-        html += `
-          <div class="home-codex-card locked" onclick="openCodexTab('lotus')">
-            <span class="home-codex-badge locked-badge">🔒 HỒ SƠ ẨN</span>
-            <div class="home-codex-name" style="color:var(--text-muted);">Bóng Hình Bí Ẩn</div>
-            <p class="home-codex-desc">Tàn niệm cổ xưa ẩn hiện trong làn sương đêm sông Sài Gòn...</p>
-            <div class="codex-unlock-hint">🔒 Đọc đến Chương 10 để mở khóa</div>
-          </div>
-        `;
-      }}
-
-      if (s >= 15) {{
-        html += `
-          <div class="home-codex-card" onclick="openCodexTab('item')">
-            <span class="home-codex-badge">VŨ KHÍ THỰC CHIẾN</span>
-            <div class="home-codex-name">Hắc Thiết Đoản Côn</div>
-            <p class="home-codex-desc">Rèn từ thép nhíp Zil tôi dầu cám chu sa thạch anh. Dài 52cm, nặng 3.2kg, dẫn truyền Kính Kình hoàn hảo.</p>
-          </div>
-        `;
-      }} else {{
-        html += `
-          <div class="home-codex-card locked" onclick="openCodexTab('item')">
-            <span class="home-codex-badge locked-badge">🔒 KHÍ BINH ẨN</span>
-            <div class="home-codex-name" style="color:var(--text-muted);">Vũ Khí Thể Đạo</div>
-            <p class="home-codex-desc">Trọng khí thể đạo rèn trong lò lửa thầm lặng của phàm trần...</p>
-            <div class="codex-unlock-hint">🔒 Đọc đến Chương 15 để mở khóa</div>
-          </div>
-        `;
-      }}
-
-      if (s >= 25) {{
-        html += `
-          <div class="home-codex-card" onclick="openCodexTab('item')">
-            <span class="home-codex-badge">CỔ KHÍ PHONG ẤN</span>
-            <div class="home-codex-name">Trấn Thủy Đoản Đao</div>
-            <p class="home-codex-desc">Di vật Thủy Môn Thập Nhị Tiêu niên đại > 2.5 triệu năm. Thuần phục dưới kình lực Thiết Lương Thập Phách.</p>
-          </div>
-        `;
-      }} else {{
-        html += `
-          <div class="home-codex-card locked" onclick="openCodexTab('item')">
-            <span class="home-codex-badge locked-badge">🔒 THẦN BINH ẨN</span>
-            <div class="home-codex-name" style="color:var(--text-muted);">Cổ Vật Trấn Thủy</div>
-            <p class="home-codex-desc">Cổ đao trấn áp mắt trận phong ấn sâu dưới lòng sông ngầm Sài Gòn...</p>
-            <div class="codex-unlock-hint">🔒 Đọc đến Chương 25 để mở khóa</div>
-          </div>
-        `;
-      }}
-
+      const previewItems = CODEX_DATA.slice(0, 6);
+      previewItems.forEach(it => {{
+        const isUnlocked = s >= it.unlock_chapter;
+        if (isUnlocked) {{
+          html += `
+            <div class="home-codex-card" onclick="openCodexTab('${{it.category}}')">
+              <span class="home-codex-badge">${{it.badge}}</span>
+              <div class="home-codex-name">${{it.name}}</div>
+              <p class="home-codex-desc">${{it.unlocked_desc}}</p>
+            </div>
+          `;
+        }} else {{
+          html += `
+            <div class="home-codex-card locked" onclick="openCodexTab('${{it.category}}')">
+              <span class="home-codex-badge locked-badge">🔒 HỒ SƠ ẨN</span>
+              <div class="home-codex-name" style="color:var(--text-muted);">${{it.hidden_name}}</div>
+              <p class="home-codex-desc">${{it.hidden_desc}}</p>
+              <div class="codex-unlock-hint">🔒 Đọc đến Chương ${{it.unlock_chapter}} để mở khóa</div>
+            </div>
+          `;
+        }}
+      }});
       homeCodexGrid.innerHTML = html;
     }}
 
@@ -1409,107 +1370,53 @@ def generate_home_html(chapters_index, total_words):
       if (!codexDrawerBody) return;
       const s = parseInt(savedCh) || 1;
       let html = '';
-
-      if (activeCodexTab === 'char') {{
-        if (s >= 20) {{
-          html = `
-            <div class="codex-card">
-              <span class="codex-badge">NAM CHÍNH • THỂ ĐẠO</span>
-              <h3 class="codex-title">Nguyễn Minh An (25 tuổi)</h3>
-              <p class="codex-desc">Người bình thường 100% tại TP.HCM năm 2026. Tự lực tôi luyện ý chí và nhục thân, dùng đôi bàn tay trần gánh vác trách nhiệm bảo vệ cõi phàm trần.</p>
-              <div class="codex-stat"><span>Cơ Quan</span><span class="codex-stat-val">Viện Địa Tầng Đô Thị</span></div>
-              <div class="codex-stat"><span>Cảnh Giới</span><span class="codex-stat-val">Luyện Cốt Trung Kỳ</span></div>
-              <div class="codex-stat"><span>Kình Lực</span><span class="codex-stat-val">Cốt Nhược Kim Thạch (Vạn Cân)</span></div>
-              <div class="codex-stat"><span>Thể Thuật</span><span class="codex-stat-val">Kính Kình Phản Chấn Thuật</span></div>
-            </div>
-          `;
-        }} else {{
-          html = `
-            <div class="codex-card">
-              <span class="codex-badge">NAM CHÍNH • THỂ ĐẠO</span>
-              <h3 class="codex-title">Nguyễn Minh An (24 tuổi)</h3>
-              <p class="codex-desc">Nhân viên văn phòng bình thường tại TP.HCM. Tăng ca về muộn trên cầu Sài Gòn thì tao ngộ dị biến sông ngầm. Không linh căn, không hệ thống, bắt đầu từ số 0.</p>
-              <div class="codex-stat"><span>Cơ Quan</span><span class="codex-stat-val">Viện Địa Tầng Đô Thị</span></div>
-              <div class="codex-stat"><span>Cảnh Giới</span><span class="codex-stat-val">Phàm Thể (Bắt đầu Tẩy Tủy)</span></div>
-              <div class="codex-stat"><span>Thể Thuật</span><span class="codex-stat-val">🔒 Mở khóa theo tiến độ đọc</span></div>
-            </div>
-          `;
-        }}
-      }} else if (activeCodexTab === 'item') {{
-        if (s >= 15) {{
-          html += `
-            <div class="codex-card">
-              <span class="codex-badge">VŨ KHÍ CHÍNH</span>
-              <h3 class="codex-title">Hắc Thiết Đoản Côn</h3>
-              <p class="codex-desc">Thép nhíp Zil tôi dầu cám chu sa thạch anh do bác Sáu Kiên và Minh An rèn. Chịu lực đè nửa tấn, miễn nhiễm âm sát, dẫn truyền hoàn hảo Kính Kình.</p>
-              <div class="codex-stat"><span>Kích Thước</span><span class="codex-stat-val">Dài 52cm • Nặng 3.2kg</span></div>
-            </div>
-          `;
-        }} else {{
-          html += `
-            <div class="codex-card locked">
-              <span class="codex-badge locked-badge">🔒 KHÍ BINH ẨN</span>
-              <h3 class="codex-title" style="color:var(--text-muted);">Hắc Thiết Đoản Côn</h3>
-              <p class="codex-desc">Vũ khí thô ráp rèn từ phàm thiết tôi trong tâm huyết...</p>
-              <div class="codex-unlock-hint">🔒 Đọc đến Chương 15 để mở khóa chi tiết</div>
-            </div>
-          `;
-        }}
-
-        if (s >= 25) {{
-          html += `
-            <div class="codex-card">
-              <span class="codex-badge">CỔ KHÍ TRẤN THỦY</span>
-              <h3 class="codex-title">Trấn Thủy Đoản Đao</h3>
-              <p class="codex-desc">Thanh đoản đao đồng thau cổ niên đại địa chất > 2.5 triệu năm, cọc tiêu chốt chặn Thủy Môn Tiêu rạch Lò Gốm.</p>
-              <div class="codex-stat"><span>Niên Đại</span><span class="codex-stat-val">> 2.5 Triệu Năm</span></div>
-            </div>
-          `;
-        }} else {{
-          html += `
-            <div class="codex-card locked">
-              <span class="codex-badge locked-badge">🔒 CỔ VẬT ẨN</span>
-              <h3 class="codex-title" style="color:var(--text-muted);">Trấn Thủy Đoản Đao</h3>
-              <p class="codex-desc">Cổ vật trấn áp phong ấn sông ngầm Sài Gòn...</p>
-              <div class="codex-unlock-hint">🔒 Đọc đến Chương 25 để mở khóa chi tiết</div>
-            </div>
-          `;
-        }}
-      }} else if (activeCodexTab === 'lotus') {{
-        if (s >= 10) {{
-          html = `
-            <div class="codex-card">
-              <span class="codex-badge">NỮ CHÍNH • THỨC HẢI</span>
-              <h3 class="codex-title">Lâm Tịch (Bạch Y Tiên Tử)</h3>
-              <p class="codex-desc">Nguyên Thần Tàn Phiến viễn cổ. Ngủ say trên Thanh Liên Đài ngọc bích bảo bọc tâm thức của Minh An.</p>
-              <div class="codex-stat"><span>Trạng Thái</span><span class="codex-stat-val">Ngủ Say (Tĩnh Dưỡng Tàn Hồn)</span></div>
-            </div>
-          `;
-        }} else {{
-          html = `
-            <div class="codex-card locked">
-              <span class="codex-badge locked-badge">🔒 BÍ ẨN THỨC HẢI</span>
-              <h3 class="codex-title" style="color:var(--text-muted);">Tàn Niệm Cổ Xưa</h3>
-              <p class="codex-desc">Bóng hình áo trắng ngủ say nơi vực sâu vô tận...</p>
-              <div class="codex-unlock-hint">🔒 Đọc đến Chương 10 để mở khóa danh tính</div>
-            </div>
-          `;
-        }}
+      const filtered = CODEX_DATA.filter(it => it.category === activeCodexTab);
+      if (filtered.length === 0) {{
+        html = '<p style="color:var(--text-muted); font-size:13px; text-align:center; padding:24px 0;">Đang cập nhật thêm mục mới...</p>';
+      }} else {{
+        filtered.forEach(it => {{
+          const isUnlocked = s >= it.unlock_chapter;
+          if (isUnlocked) {{
+            let statsHtml = '';
+            if (it.stats) {{
+              for (const [k, v] of Object.entries(it.stats)) {{
+                statsHtml += `<div class="codex-stat"><span>${{k}}</span><span class="codex-stat-val">${{v}}</span></div>`;
+              }}
+            }}
+            html += `
+              <div class="codex-card">
+                <span class="codex-badge">${{it.badge}}</span>
+                <h3 class="codex-title">${{it.name}}</h3>
+                <p class="codex-desc">${{it.unlocked_desc}}</p>
+                ${{statsHtml}}
+              </div>
+            `;
+          }} else {{
+            html += `
+              <div class="codex-card locked">
+                <span class="codex-badge locked-badge">🔒 HỒ SƠ ẨN</span>
+                <h3 class="codex-title" style="color:var(--text-muted);">${{it.hidden_name}}</h3>
+                <p class="codex-desc">${{it.hidden_desc}}</p>
+                <div class="codex-unlock-hint">🔒 Đọc đến Chương ${{it.unlock_chapter}} để mở khóa chi tiết</div>
+              </div>
+            `;
+          }}
+        }});
       }}
-
       codexDrawerBody.innerHTML = html;
     }}
 
+    const CODEX_TAB_LIST = ['tabCodexChar', 'tabCodexItem', 'tabCodexArtifact', 'tabCodexSkill', 'tabCodexLotus'];
     function openCodexTab(tabName) {{
       activeCodexTab = tabName;
-      ['tabCodexChar', 'tabCodexItem', 'tabCodexLotus'].forEach(id => {{
+      CODEX_TAB_LIST.forEach(id => {{
         const btn = document.getElementById(id);
         if (btn) btn.classList.toggle('active', btn.dataset.codex === tabName);
       }});
       openCodex();
     }}
 
-    ['tabCodexChar', 'tabCodexItem', 'tabCodexLotus'].forEach(id => {{
+    CODEX_TAB_LIST.forEach(id => {{
       const btn = document.getElementById(id);
       if (btn) btn.onclick = () => openCodexTab(btn.dataset.codex);
     }});
@@ -1728,8 +1635,10 @@ def generate_home_html(chapters_index, total_words):
 </body>
 </html>"""
 
-def generate_chapter_html(ch_info, chapters_index, total_words):
+def generate_chapter_html(ch_info, chapters_index, total_words, codex_items=None):
     ch_num = ch_info["chapter"]
+    codex_items = codex_items or get_codex_items()
+    codex_json = json.dumps(codex_items, ensure_ascii=False)
     clean_title = ch_info["title"].replace(f"Chương {ch_num}:", "").strip()
     clean_title = re.sub(r"^Chương\s+\d+:\s*", "", clean_title, flags=re.IGNORECASE)
     vol = ch_info.get("volume", 1)
@@ -2174,7 +2083,9 @@ def generate_chapter_html(ch_info, chapters_index, total_words):
     </div>
     <div class="drawer-tabs">
       <button class="drawer-tab-btn active" id="tabCodexChar" data-codex="char">Nhân Vật</button>
-      <button class="drawer-tab-btn" id="tabCodexItem" data-codex="item">Kho Cổ Vật</button>
+      <button class="drawer-tab-btn" id="tabCodexItem" data-codex="item">Vũ Khí</button>
+      <button class="drawer-tab-btn" id="tabCodexArtifact" data-codex="artifact">Cổ Vật</button>
+      <button class="drawer-tab-btn" id="tabCodexSkill" data-codex="skill">Công Pháp</button>
       <button class="drawer-tab-btn" id="tabCodexLotus" data-codex="lotus">Thức Hải</button>
     </div>
     <div class="drawer-body" id="codexDrawerBody"></div>
@@ -2435,92 +2346,53 @@ def generate_chapter_html(ch_info, chapters_index, total_words):
       }});
     }};
 
+    const CODEX_DATA = {codex_json};
+
     // Progressive Codex Drawer
     function renderCodexDrawer(s) {{
+      if (!codexDrawerBody) return;
       let html = '';
-      if (activeCodexTab === 'char') {{
-        if (s >= 20) {{
-          html = `
-            <div class="codex-card">
-              <span class="codex-badge">NAM CHÍNH • THỂ ĐẠO</span>
-              <h3 class="codex-title">Nguyễn Minh An (25 tuổi)</h3>
-              <p class="codex-desc">Luyện Cốt Trung kỳ (Cốt Nhược Kim Thạch). Đúc cốt ngự kình, kình lực vạn cân, Thức Hải Thanh Liên bảo bọc tâm mạch.</p>
-              <div class="codex-stat"><span>Cơ Quan</span><span class="codex-stat-val">Viện Địa Tầng Đô Thị</span></div>
-              <div class="codex-stat"><span>Cảnh Giới</span><span class="codex-stat-val">Luyện Cốt Trung Kỳ</span></div>
-            </div>
-          `;
-        }} else {{
-          html = `
-            <div class="codex-card">
-              <span class="codex-badge">NAM CHÍNH • THỂ ĐẠO</span>
-              <h3 class="codex-title">Nguyễn Minh An (24 tuổi)</h3>
-              <p class="codex-desc">Nhân viên văn phòng bình thường tại TP.HCM. Bắt đầu con đường Thể Đạo từ số 0 sau biến cố trên cầu Sài Gòn.</p>
-              <div class="codex-stat"><span>Cảnh Giới</span><span class="codex-stat-val">Phàm Thể (Tẩy Tủy Hoán Cốt)</span></div>
-            </div>
-          `;
-        }}
-      }} else if (activeCodexTab === 'item') {{
-        if (s >= 15) {{
-          html += `
-            <div class="codex-card">
-              <span class="codex-badge">VŨ KHÍ CHÍNH</span>
-              <h3 class="codex-title">Hắc Thiết Đoản Côn</h3>
-              <p class="codex-desc">Thép nhíp Zil tôi dầu cám chu sa thạch anh do bác Sáu Kiên và Minh An rèn. Dài 52cm, nặng 3.2kg, dẫn truyền Kính Kình.</p>
-            </div>
-          `;
-        }} else {{
-          html += `
-            <div class="codex-card locked">
-              <span class="codex-badge locked-badge">🔒 KHÍ BINH ẨN</span>
-              <h3 class="codex-title" style="color:var(--text-muted);">Hắc Thiết Đoản Côn</h3>
-              <div class="codex-unlock-hint">🔒 Đọc đến Chương 15 để mở khóa chi tiết</div>
-            </div>
-          `;
-        }}
-
-        if (s >= 25) {{
-          html += `
-            <div class="codex-card">
-              <span class="codex-badge">CỔ KHÍ TRẤN THỦY</span>
-              <h3 class="codex-title">Trấn Thủy Đoản Đao</h3>
-              <p class="codex-desc">Thanh đoản đao đồng thau cổ niên đại địa chất > 2.5 triệu năm, cọc tiêu chốt chặn Thủy Môn Tiêu rạch Lò Gốm.</p>
-            </div>
-          `;
-        }} else {{
-          html += `
-            <div class="codex-card locked">
-              <span class="codex-badge locked-badge">🔒 CỔ VẬT ẨN</span>
-              <h3 class="codex-title" style="color:var(--text-muted);">Trấn Thủy Đoản Đao</h3>
-              <div class="codex-unlock-hint">🔒 Đọc đến Chương 25 để mở khóa chi tiết</div>
-            </div>
-          `;
-        }}
-      }} else if (activeCodexTab === 'lotus') {{
-        if (s >= 10) {{
-          html = `
-            <div class="codex-card">
-              <span class="codex-badge">NỮ CHÍNH • THỨC HẢI</span>
-              <h3 class="codex-title">Lâm Tịch (Bạch Y Tiên Tử)</h3>
-              <p class="codex-desc">Nguyên Thần Tàn Phiến viễn cổ 2.5 triệu năm. Ngủ say trên Thanh Liên Đài ngọc bích bảo bọc tâm thức của Minh An.</p>
-            </div>
-          `;
-        }} else {{
-          html = `
-            <div class="codex-card locked">
-              <span class="codex-badge locked-badge">🔒 BÍ ẨN THỨC HẢI</span>
-              <h3 class="codex-title" style="color:var(--text-muted);">Tàn Niệm Cổ Xưa</h3>
-              <div class="codex-unlock-hint">🔒 Đọc đến Chương 10 để mở khóa danh tính</div>
-            </div>
-          `;
-        }}
+      const filtered = CODEX_DATA.filter(it => it.category === activeCodexTab);
+      if (filtered.length === 0) {{
+        html = '<p style="color:var(--text-muted); font-size:13px; text-align:center; padding:24px 0;">Đang cập nhật thêm mục mới...</p>';
+      }} else {{
+        filtered.forEach(it => {{
+          const isUnlocked = s >= it.unlock_chapter;
+          if (isUnlocked) {{
+            let statsHtml = '';
+            if (it.stats) {{
+              for (const [k, v] of Object.entries(it.stats)) {{
+                statsHtml += `<div class="codex-stat"><span>${{k}}</span><span class="codex-stat-val">${{v}}</span></div>`;
+              }}
+            }}
+            html += `
+              <div class="codex-card">
+                <span class="codex-badge">${{it.badge}}</span>
+                <h3 class="codex-title">${{it.name}}</h3>
+                <p class="codex-desc">${{it.unlocked_desc}}</p>
+                ${{statsHtml}}
+              </div>
+            `;
+          }} else {{
+            html += `
+              <div class="codex-card locked">
+                <span class="codex-badge locked-badge">🔒 HỒ SƠ ẨN</span>
+                <h3 class="codex-title" style="color:var(--text-muted);">${{it.hidden_name}}</h3>
+                <p class="codex-desc">${{it.hidden_desc}}</p>
+                <div class="codex-unlock-hint">🔒 Đọc đến Chương ${{it.unlock_chapter}} để mở khóa chi tiết</div>
+              </div>
+            `;
+          }}
+        }});
       }}
       codexDrawerBody.innerHTML = html;
     }}
 
-    ['tabCodexChar', 'tabCodexItem', 'tabCodexLotus'].forEach(id => {{
+    const CODEX_TAB_LIST = ['tabCodexChar', 'tabCodexItem', 'tabCodexArtifact', 'tabCodexSkill', 'tabCodexLotus'];
+    CODEX_TAB_LIST.forEach(id => {{
       const btn = document.getElementById(id);
       if (btn) btn.onclick = () => {{
-        ['tabCodexChar', 'tabCodexItem', 'tabCodexLotus'].forEach(b => document.getElementById(b)?.classList.remove('active'));
+        CODEX_TAB_LIST.forEach(b => document.getElementById(b)?.classList.remove('active'));
         btn.classList.add('active');
         activeCodexTab = btn.dataset.codex;
         renderCodexDrawer({ch_num});
@@ -2861,6 +2733,12 @@ def build():
     with open(os.path.join(data_dir, "chapters.json"), "w", encoding="utf-8") as out:
         json.dump(index_data, out, ensure_ascii=False, indent=1)
 
+    # 1b. Export Codex JSON for client/offline access
+    codex_items = get_codex_items()
+    with open(os.path.join(data_dir, "codex.json"), "w", encoding="utf-8") as out:
+        json.dump(codex_items, out, ensure_ascii=False, indent=1)
+    print(f"  [+] Exported {len(codex_items)} codex items to dist/data/codex.json")
+
     # 2. Copy static assets to dist/assets
     src_assets = os.path.join(STATIC_SRC_DIR, "assets")
     dst_assets = os.path.join(DIST_DIR, "assets")
@@ -2871,7 +2749,7 @@ def build():
         print(f"  [+] Copied assets to {dst_assets}")
 
     # 3. Generate root index.html (Homepage)
-    home_html = generate_home_html(chapters_index, total_words)
+    home_html = generate_home_html(chapters_index, total_words, codex_items)
     with open(os.path.join(DIST_DIR, "index.html"), "w", encoding="utf-8") as out:
         out.write(home_html)
     print("  [+] Generated dist/index.html")
@@ -2880,7 +2758,7 @@ def build():
     for ch_info in parsed_chapters:
         ch_slug_dir = os.path.join(DIST_DIR, f"chuong-{ch_info['chapter']}")
         os.makedirs(ch_slug_dir, exist_ok=True)
-        ch_html = generate_chapter_html(ch_info, chapters_index, total_words)
+        ch_html = generate_chapter_html(ch_info, chapters_index, total_words, codex_items)
         with open(os.path.join(ch_slug_dir, "index.html"), "w", encoding="utf-8") as out:
             out.write(ch_html)
     print(f"  [+] Generated {len(parsed_chapters)} Clean Slug chapter pages: dist/chuong-X/index.html")
