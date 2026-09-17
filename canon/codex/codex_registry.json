@@ -298,5 +298,25 @@
       "en": "Artistic medical and martial cultivation concept of a human heart and arterial vascular system glowing with molten golden-bronze adamantine blood (Cương Huyết). Blood vessels pulsing with intense liquid brass luminance through an athletic body silhouette. Deep oceanic underwater background, biophotonic glow, 8k cinematic render.",
       "vi": "Khái niệm nghệ thuật tu chân kết hợp y học thể hiện trái tim và mạng lưới động mạch con người phát sáng dòng máu Cương Huyết màu đồng thau và vàng kim óng ánh. Các mạch máu dẻo dai bọc thép phát quang sinh học rực rỡ trên nền bóng tối biển sâu thẳm, kết xuất điện ảnh 8K sắc nét."
     }
+  },
+  {
+    "id": "artifact_toa_long_huyen_ty",
+    "name": "Tỏa Long Huyền Tỷ",
+    "category": "artifact",
+    "badge": "CỔ NGỌC TRẬN NHÃN",
+    "unlock_chapter": 75,
+    "hidden_name": "Cổ Ngọc Trấn Hải",
+    "hidden_desc": "Ngọc tỷ viễn cổ phong tỏa rãnh nứt ngàn mét đáy biển...",
+    "unlocked_desc": "Khối ngọc tỷ cổ chạm khắc chín rồng hoàng kim ngậm minh châu lam thẫm, thu được dưới chân Hải Uyên Tỏa Long Trụ ở độ sâu 1.200m vịnh Gành Rái. Là Trận Nhãn thứ bảy của Thủy Môn Thập Nhị Tiêu, có khả năng trấn áp âm trọc khí Cực Tù và xoa dịu thương tổn xương tủy sau kịch chiến.",
+    "stats": {
+      "Vị Trí Thu Được": "Cực Tù Hải Uyên (-1.200m)",
+      "Chất Liệu": "Ngọc bích viễn cổ & Hoàng kim thần long",
+      "Công Năng": "Trấn áp âm trọc • Dưỡng cốt an thần",
+      "Liên Kết": "Trận Nhãn thứ 7 Thủy Môn Thập Nhị Tiêu"
+    },
+    "image_prompt": {
+      "en": "Cinematic product shot of an ancient square imperial seal carved from deep ocean green jade, surrounded by nine exquisitely coiled golden dragons holding a glowing azure sapphire pearl. Archaic seal script glowing golden on the polished jade base. Resting on dark wet basalt stone with faint ocean water ripples, cinematic moody lighting, 8k masterpiece.",
+      "vi": "Ảnh chụp điện ảnh cận cảnh khối ngọc tỷ vuông đúc bằng ngọc bích màu xanh đáy biển, xung quanh chạm khắc chín con rồng vàng uốn lượn ngậm ngọc bích lam thẫm phát quang. Chữ triện cổ phát sáng hoàng kim dưới đáy bệ ngọc. Đặt trên phiến đá bazan ướt nước biển đêm, ánh sáng điện ảnh kỳ ảo 8K."
+    }
   }
 ]
