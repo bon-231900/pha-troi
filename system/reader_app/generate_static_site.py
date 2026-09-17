@@ -1,24 +1,17 @@
 # -*- coding: utf-8 -*-
 """
-NovelOS — Trình biên dịch Web Reader PWA cao cấp cho tiểu thuyết 'Phá Trời' (v2.3)
-Phiên bản Clean Slugs Chuẩn SEO & Trải Nghiệm Đọc Chuyên Sâu:
-- Hoàn toàn loại bỏ dấu '#' trong URL các chương
-- Mỗi chương có một đường dẫn tĩnh chuẩn: /chuong-1/, /chuong-2/, ..., /chuong-58/
-- Bấm F5 tải lại trang không bao giờ bị lỗi 404 trên GitHub Pages
-- Nội dung chương được Render sẵn 100% (SSG) giúp tải tức thì, không bị giật trang (0 FOUC)
-- Tương thích ngược tuyệt đối: tự động chuyển hướng các liên kết cũ có '#' hoặc '?chuong='
-- Tích hợp 404.html chuyển hướng thông minh
-- Tự động lưu tiến độ vào localStorage khi độc giả truy cập bất kỳ chương nào
-- Tùy chỉnh giao diện: 4 Themes, 3 mức Chiều rộng (640 / 760 / 900px), 3 mức Giãn dòng (1.65 / 1.85 / 2.1)
-- Âm thanh mưa đêm Sài Gòn Web Audio API (Mặc định Tắt)
+NovelOS — Trình tạo ứng dụng Web Đọc Tĩnh Phá Trời (Clean Slugs SSG)
+Phiên bản 2.5: Đầy đủ 12 Phase trải nghiệm đọc truyện hoàn chỉnh
+Bảo tồn visual identity, tối ưu mobile, PWA offline, SEO, Reader UX.
 """
 import os
-import re
 import sys
 import json
+import re
 import shutil
-import markdown
+import time
 from pathlib import Path
+import markdown
 
 if sys.stdout and hasattr(sys.stdout, 'reconfigure'):
     sys.stdout.reconfigure(encoding='utf-8', errors='replace')
@@ -173,6 +166,17 @@ def get_shared_css():
     }
     a { color: inherit; text-decoration: none; }
 
+    /* Accessibility focus and motion */
+    :focus-visible { outline: 2px solid var(--accent-primary); outline-offset: 2px; }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+
     ::-webkit-scrollbar { width: 7px; height: 7px; }
     ::-webkit-scrollbar-track { background: var(--bg-color); }
     ::-webkit-scrollbar-thumb { background: var(--card-bg); border-radius: 4px; border: 1px solid var(--border-color); }
@@ -223,6 +227,12 @@ def get_shared_css():
     }
     .header-sub {
       font-size: 10.5px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin: 0; opacity: 0.85;
+    }
+    .reader-progress-badge {
+      font-size: 10px; font-weight: 700; color: var(--accent-primary);
+      background: rgba(16, 185, 129, 0.14); border: 1px solid rgba(16, 185, 129, 0.28);
+      padding: 1px 7px; border-radius: 10px; display: inline-flex; align-items: center; gap: 3px;
+      margin-left: 6px; vertical-align: middle;
     }
 
     .btn-icon {
@@ -301,6 +311,23 @@ def get_shared_css():
     .search-input:focus { border-color: var(--accent-primary); }
     .drawer-body { flex: 1; overflow-y: auto; padding: 10px 14px; }
 
+    /* TOC Progress Summary */
+    .toc-progress-summary {
+      padding: 12px 16px; border-bottom: 1px solid var(--border-color); background: rgba(0, 0, 0, 0.12);
+    }
+    .toc-progress-text {
+      display: flex; justify-content: space-between; font-size: 12px; font-weight: 600;
+      color: var(--text-muted); margin-bottom: 6px;
+    }
+    .toc-progress-text strong { color: var(--gold-primary); }
+    .toc-progress-track {
+      width: 100%; height: 5px; border-radius: 3px; background: rgba(255, 255, 255, 0.08); overflow: hidden;
+    }
+    .toc-progress-fill {
+      height: 100%; background: linear-gradient(90deg, var(--gold-primary), var(--accent-primary));
+      border-radius: 3px; transition: width 0.3s ease;
+    }
+
     /* TOC items */
     .toc-item {
       padding: 10px 12px; border-radius: 8px; margin-bottom: 4px; cursor: pointer;
@@ -318,7 +345,27 @@ def get_shared_css():
     .toc-name { font-size: 13px; color: var(--text-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .toc-meta { font-size: 11px; color: var(--text-muted); flex-shrink: 0; }
 
+    /* Chapter Status Tags */
+    .ch-status-tag {
+      font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 4px;
+      display: inline-flex; align-items: center; gap: 3px;
+    }
+    .ch-status-tag.read {
+      background: rgba(16, 185, 129, 0.14); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.28);
+    }
+    .ch-status-tag.current {
+      background: rgba(245, 158, 11, 0.18); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.45);
+    }
+    .ch-status-tag.unread {
+      background: rgba(255, 255, 255, 0.05); color: var(--text-muted); border: 1px solid transparent;
+    }
+
     /* Codex Drawer Styles */
+    .codex-progress-pill {
+      font-size: 11.5px; font-weight: 700; color: var(--gold-primary);
+      background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.25);
+      padding: 3px 10px; border-radius: 12px; display: inline-flex; align-items: center; gap: 5px;
+    }
     .codex-card {
       background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 12px; padding: 14px; margin-bottom: 14px;
     }
@@ -465,6 +512,15 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
     codex_items = codex_items or get_codex_items()
     codex_json = json.dumps(codex_items, ensure_ascii=False)
 
+    # Latest chapter info (Phase 4)
+    latest_ch = chapters_index[-1] if chapters_index else None
+    latest_num = latest_ch["chapter"] if latest_ch else total_ch
+    latest_title = latest_ch["title"].replace(f"Chương {latest_num}:", "").strip() if latest_ch else ""
+    latest_title = re.sub(r"^Chương\s+\d+:\s*", "", latest_title, flags=re.IGNORECASE)
+    latest_words = latest_ch.get("word_count", 0) if latest_ch else 0
+    latest_read_mins = max(1, round(latest_words / 300))
+    latest_date = latest_ch.get("date", "2026-09-17") if latest_ch else ""
+
     return f"""<!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -477,6 +533,7 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
   <meta name="keywords" content="Phá Trời, Phá Toái Thần Hoang, Novel OS, tiểu thuyết đô thị, tu chân, thể đạo, Nguyễn Minh An, Lâm Tịch, An Bình">
   <meta name="author" content="An Bình">
   
+  <link rel="canonical" href="https://bon-231900.github.io/pha-troi/">
   <meta property="og:type" content="book">
   <meta property="og:url" content="https://bon-231900.github.io/pha-troi/">
   <meta property="og:title" content="Phá Trời — Tiểu Thuyết Đô Thị Tu Chân Sài Gòn 2026">
@@ -498,6 +555,57 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Phá Trời">
   <meta name="theme-color" content="#07090e">
+
+  <!-- Anti-FOUC Early Theme Execution (Phase 1) -->
+  <script>
+    (function() {{
+      try {{
+        var t = localStorage.getItem('pha_troi_theme') || 'theme-peaceful-dark';
+        document.documentElement.className = t;
+        var s = localStorage.getItem('pha_troi_font_size');
+        if (s) document.documentElement.style.setProperty('--font-size', s + 'px');
+        var w = localStorage.getItem('pha_troi_reader_width');
+        if (w) document.documentElement.style.setProperty('--reader-max-width', w + 'px');
+        var lh = localStorage.getItem('pha_troi_line_height');
+        if (lh) document.documentElement.style.setProperty('--reader-line-height', lh);
+        var f = localStorage.getItem('pha_troi_font_family');
+        if (f === 'serif') {{
+          document.documentElement.style.setProperty('--font-family', "'Lora', 'Georgia', serif");
+        }}
+      }} catch(e) {{}}
+    }})();
+  </script>
+
+  <!-- Structured Data JSON-LD (WebSite & Book) (Phase 8) -->
+  <script type="application/ld+json">
+  {{
+    "@context": "https://schema.org",
+    "@graph": [
+      {{
+        "@type": "WebSite",
+        "@id": "https://bon-231900.github.io/pha-troi/#website",
+        "url": "https://bon-231900.github.io/pha-troi/",
+        "name": "Phá Trời (Phá Toái Thần Hoang)",
+        "description": "Trường thiên tiểu thuyết đô thị tu chân Sài Gòn 2026.",
+        "inLanguage": "vi"
+      }},
+      {{
+        "@type": "Book",
+        "@id": "https://bon-231900.github.io/pha-troi/#book",
+        "name": "Phá Trời (Phá Toái Thần Hoang)",
+        "author": {{
+          "@type": "Person",
+          "name": "An Bình"
+        }},
+        "url": "https://bon-231900.github.io/pha-troi/",
+        "genre": ["Đô thị tu chân", "Huyền huyễn", "Khoa huyễn"],
+        "inLanguage": "vi",
+        "numberOfPages": {total_ch},
+        "description": "Một nhân viên văn phòng tại TP.HCM phát hiện phong ấn sông ngầm 2.5 triệu năm. Không hệ thống, lấy Thể Đạo phàm nhân phá vỡ xiềng xích."
+      }}
+    ]
+  }}
+  </script>
 
   <link rel="preload" as="image" href="./assets/hero_horizontal.webp" type="image/webp" media="(min-width: 769px)">
   <link rel="preload" as="image" href="./assets/cover_vertical.webp" type="image/webp" media="(max-width: 768px)">
@@ -636,6 +744,7 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
     }}
     .section-title::before {{ content: ""; display: inline-block; width: 4px; height: 18px; background: var(--accent-primary); border-radius: 2px; }}
 
+    /* Resume Reading Card */
     .continue-card {{
       background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 18px 22px;
       display: flex; align-items: center; justify-content: space-between; gap: 16px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
@@ -663,6 +772,20 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
       color: #34d399; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; transition: all 0.2s ease;
     }}
     .continue-btn:hover {{ background: var(--accent-primary); color: #ffffff; }}
+
+    /* Latest Chapter Highlight Banner */
+    .latest-chapter-banner {{
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(14, 18, 27, 0.88) 100%);
+      border: 1.5px solid rgba(245, 158, 11, 0.32); border-radius: 16px; padding: 16px 20px;
+      margin-top: 14px; display: flex; align-items: center; justify-content: space-between; gap: 16px;
+      transition: all 0.2s ease; box-sizing: border-box; width: 100%;
+    }}
+    .latest-chapter-banner:hover {{
+      border-color: var(--gold-primary); transform: translateY(-1px); box-shadow: 0 4px 20px rgba(245, 158, 11, 0.15);
+    }}
+    @media (max-width: 768px) {{
+      .latest-chapter-banner {{ flex-direction: column; align-items: stretch; padding: 16px; gap: 12px; }}
+    }}
 
     /* TOC Grid */
     .home-toc-filter-row {{ display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 16px; }}
@@ -700,11 +823,6 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
     .home-ch-meta-bottom {{ font-size: 11px; color: var(--text-muted); display: flex; gap: 10px; }}
     .home-ch-arrow {{ color: var(--text-muted); transition: transform 0.2s, color 0.2s; }}
     .home-ch-card:hover .home-ch-arrow {{ color: var(--gold-primary); transform: translateX(3px); }}
-
-    .ch-status-tag {{ font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 4px; margin-left: auto; }}
-    .ch-status-tag.read {{ background: rgba(16, 185, 129, 0.12); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.25); }}
-    .ch-status-tag.current {{ background: rgba(245, 158, 11, 0.16); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.4); }}
-    .ch-status-tag.unread {{ background: rgba(255, 255, 255, 0.04); color: var(--text-muted); }}
 
     /* Codex Preview Cards */
     .home-codex-grid {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 14px; margin-bottom: 20px; }}
@@ -756,25 +874,25 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
     </div>
 
     <div class="header-right">
-      <button class="btn-icon" id="btnMenu" title="Mục Lục Chương (M)">
+      <button class="btn-icon" id="btnMenu" title="Mục Lục Chương (M)" aria-label="Mục lục chương">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
       </button>
       
-      <button class="btn-icon header-desktop-only" id="btnCodex" title="Codex Phá Trời — Bách Khoa Thế Giới (C)">
+      <button class="btn-icon header-desktop-only" id="btnCodex" title="Codex Phá Trời — Bách Khoa Thế Giới (C)" aria-label="Codex Bách khoa thế giới">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
       </button>
 
-      <button class="btn-icon header-desktop-only" id="btnAmbient" title="Âm thanh Mưa Đêm Sài Gòn (Thư giãn)">
+      <button class="btn-icon header-desktop-only" id="btnAmbient" title="Âm thanh Mưa Đêm Sài Gòn (Thư giãn)" aria-label="Bật tắt âm thanh mưa đêm">
         <svg id="iconAudioOff" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"></path><path d="M16 14v6"></path><path d="M8 14v6"></path><path d="M12 16v6"></path></svg>
         <svg id="iconAudioOn" style="display:none; color:var(--accent-primary);" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 5L6 9H2v6h4l5 4V5z"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
       </button>
 
-      <button class="btn-icon" id="btnQuickTheme" title="Chuyển Nhanh Sáng / Tối (T)">
+      <button class="btn-icon" id="btnQuickTheme" title="Chuyển Nhanh Sáng / Tối (T)" aria-label="Chuyển giao diện sáng tối">
         <svg id="iconMoon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
         <svg id="iconSun" style="display:none;" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
       </button>
 
-      <button class="btn-icon" id="btnSettings" title="Cài Đặt Đọc Truyện">
+      <button class="btn-icon" id="btnSettings" title="Cài Đặt Đọc Truyện" aria-label="Cài đặt giao diện đọc truyện">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path><circle cx="12" cy="12" r="3"></circle></svg>
       </button>
     </div>
@@ -824,9 +942,6 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
               <span>Codex Phá Trời</span>
             </button>
           </div>
-          <div id="heroResetLinkWrap" style="display:none; margin-top:8px; font-size:12.5px; color:var(--text-muted);">
-            <span>Đã đọc một phần? </span><a href="./chuong-1/" style="color:var(--accent-primary); font-weight:600;">Đọc lại từ Chương 1</a>
-          </div>
         </div>
       </div>
 
@@ -856,16 +971,13 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
             <button class="btn-hero-secondary" id="btnMobileHeroTocScroll">Mục Lục ({total_ch})</button>
             <button class="btn-hero-outline" id="btnMobileHeroCodexOpen">Codex</button>
           </div>
-          <div id="mobileHeroResetWrap" style="display:none; margin-top:8px; font-size:12px; color:var(--text-muted);">
-            <a href="./chuong-1/" style="color:var(--accent-primary);">Đọc lại từ Chương 1</a>
-          </div>
         </div>
       </div>
     </section>
 
     <!-- HOME BODY CONTENT -->
     <div class="home-container">
-      <!-- SECTION 2: WELCOME & CONTINUE READING -->
+      <!-- SECTION 2: WELCOME & RESUME READING -->
       <div id="sectionContinue">
         <div class="continue-card welcome-mode" id="continueReadingCard">
           <div class="continue-left">
@@ -881,15 +993,39 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
           </div>
           <a href="./chuong-1/" class="continue-btn" id="btnContinueJump">Bắt Đầu Đọc Chương 1 →</a>
         </div>
+
+        <!-- SECTION 2B: LATEST CHAPTER HIGHLIGHT (PHASE 4) -->
+        <div class="latest-chapter-banner" id="latestChapterBanner">
+          <div style="display:flex; align-items:center; gap:14px; min-width:0; flex:1;">
+            <span class="next-card-badge gold" style="flex-shrink:0;">MỚI NHẤT</span>
+            <div style="min-width:0; flex:1;">
+              <div style="font-size:11px; font-weight:700; color:var(--gold-primary); text-transform:uppercase; letter-spacing:1px;">Chương {latest_num} Vừa Cập Nhật</div>
+              <div style="font-size:15px; font-weight:700; color:var(--text-color); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Chương {latest_num}: {latest_title}</div>
+              <div style="font-size:11.5px; color:var(--text-muted); margin-top:2px;">{latest_words:,} từ • ~{latest_read_mins} phút đọc • Cập nhật {latest_date}</div>
+            </div>
+          </div>
+          <a href="./chuong-{latest_num}/" class="continue-btn" style="flex-shrink:0; border-color:var(--gold-primary); color:var(--gold-primary); background:rgba(245,158,11,0.12);">Đọc Ngay →</a>
+        </div>
       </div>
 
-      <!-- SECTION 3: TABLE OF CONTENTS -->
+      <!-- SECTION 3: TABLE OF CONTENTS (PHASE 3) -->
       <div id="sectionToc">
         <div class="section-title-wrap">
           <h2 class="section-title">MỤC LỤC TRỌN BỘ ({total_ch} CHƯƠNG)</h2>
           <div class="home-search-box">
             <svg class="home-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-            <input type="text" class="home-search-input" id="inputHomeSearch" placeholder="Tìm số chương hoặc tiêu đề...">
+            <input type="text" class="home-search-input" id="inputHomeSearch" placeholder="Tìm số chương, tiêu đề hoặc địa danh...">
+          </div>
+        </div>
+
+        <!-- TOC Progress Summary (Phase 3) -->
+        <div class="toc-progress-summary" id="homeTocProgressSummary" style="border-radius:12px; margin-bottom:14px; border:1px solid var(--border-color);">
+          <div class="toc-progress-text">
+            <span>Tiến độ đọc toàn bộ:</span>
+            <strong id="homeTocProgressText">Đã đọc 0 / {total_ch} chương (0%)</strong>
+          </div>
+          <div class="toc-progress-track">
+            <div class="toc-progress-fill" id="homeTocProgressFill" style="width: 0%;"></div>
           </div>
         </div>
 
@@ -905,18 +1041,23 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
         </div>
 
         <div class="home-toc-grid" id="homeTocGrid">
-          <!-- Populated dynamically by JavaScript -->
+          <!-- Populated dynamically by JavaScript with status tags -->
         </div>
       </div>
 
-      <!-- SECTION 4: ENCYCLOPEDIA / CODEX PREVIEW -->
+      <!-- SECTION 4: ENCYCLOPEDIA / CODEX PREVIEW (PHASE 6) -->
       <div id="sectionCodexPreview">
         <div class="section-title-wrap">
           <div>
             <h2 class="section-title">CODEX PHÁ TRỜI — KHÁM PHÁ THẾ GIỚI</h2>
-            <div style="font-size:12.5px; color:var(--text-muted); margin-top:4px;">Hồ sơ nhân vật, cổ vật và thế giới quan đô thị tu chân. Mở khóa theo tiến độ đọc.</div>
+            <div style="font-size:12.5px; color:var(--text-muted); margin-top:4px;">
+              Hồ sơ nhân vật, cổ vật và thế giới quan đô thị tu chân. Mở khóa theo tiến độ đọc.
+            </div>
           </div>
-          <button class="btn-hero-outline" id="btnViewAllCodex" style="padding:6px 14px; font-size:12px;">Mở Bách Khoa Toàn Thư →</button>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span class="codex-progress-pill" id="homeCodexProgressPill">Đã khám phá 0 / {len(codex_items)} mục</span>
+            <button class="btn-hero-outline" id="btnViewAllCodex" style="padding:6px 14px; font-size:12px;">Mở Bách Khoa →</button>
+          </div>
         </div>
         <div class="home-codex-grid" id="homeCodexGrid">
           <!-- Populated dynamically based on reading progress -->
@@ -939,11 +1080,20 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
   <!-- MODAL OVERLAY -->
   <div class="modal-overlay" id="modalOverlay"></div>
 
-  <!-- TOC DRAWER -->
-  <aside class="drawer drawer-left" id="drawerToc">
+  <!-- TOC DRAWER (PHASE 3) -->
+  <aside class="drawer drawer-left" id="drawerToc" aria-label="Mục lục chương">
     <div class="drawer-header">
       <h2 class="drawer-title">MỤC LỤC TIỂU THUYẾT</h2>
-      <button class="btn-icon" id="btnCloseToc">✕</button>
+      <button class="btn-icon" id="btnCloseToc" aria-label="Đóng mục lục">✕</button>
+    </div>
+    <div class="toc-progress-summary">
+      <div class="toc-progress-text">
+        <span>Tiến độ đọc:</span>
+        <strong id="drawerTocProgressText">Đã đọc 0 / {total_ch} chương</strong>
+      </div>
+      <div class="toc-progress-track">
+        <div class="toc-progress-fill" id="drawerTocProgressFill" style="width: 0%;"></div>
+      </div>
     </div>
     <div class="drawer-tabs">
       <button class="drawer-tab-btn active" data-filter="all">Tất Cả (<span id="tocTotalCount">{total_ch}</span>)</button>
@@ -951,16 +1101,19 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
       <button class="drawer-tab-btn" data-filter="arc2">Hồi 2 (47–{total_ch}+)</button>
     </div>
     <div class="drawer-search">
-      <input type="text" id="inputTocSearch" class="search-input" placeholder="Tìm chương hoặc từ khóa...">
+      <input type="text" id="inputTocSearch" class="search-input" placeholder="Tìm số chương, tiêu đề hoặc địa danh...">
     </div>
     <div class="drawer-body" id="tocDrawerList"></div>
   </aside>
 
-  <!-- CODEX DRAWER -->
-  <aside class="drawer drawer-right" id="drawerCodex">
+  <!-- CODEX DRAWER (PHASE 6) -->
+  <aside class="drawer drawer-right" id="drawerCodex" aria-label="Codex Bách khoa thế giới">
     <div class="drawer-header">
-      <h2 class="drawer-title">CODEX PHÁ TRỜI</h2>
-      <button class="btn-icon" id="btnCloseCodex">✕</button>
+      <div>
+        <h2 class="drawer-title">CODEX PHÁ TRỜI</h2>
+        <div style="font-size:11px; color:var(--text-muted); margin-top:2px;" id="drawerCodexProgressLabel">Đã khám phá 0 / {len(codex_items)} mục</div>
+      </div>
+      <button class="btn-icon" id="btnCloseCodex" aria-label="Đóng Codex">✕</button>
     </div>
     <div class="drawer-tabs">
       <button class="drawer-tab-btn active" id="tabCodexChar" data-codex="char">Nhân Vật</button>
@@ -972,12 +1125,12 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
     <div class="drawer-body" id="codexDrawerBody"></div>
   </aside>
 
-  <!-- SETTINGS BOTTOM SHEET -->
-  <aside class="sheet-bottom" id="settingsSheet">
+  <!-- SETTINGS BOTTOM SHEET (PHASE 1 & PHASE 7) -->
+  <aside class="sheet-bottom" id="settingsSheet" aria-label="Cài đặt đọc truyện">
     <div class="sheet-handle"></div>
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
       <h3 style="font-size:16px; font-weight:700; color:var(--gold-primary); margin:0;">TÙY CHỈNH ĐỌC TRUYỆN</h3>
-      <button class="btn-icon" id="btnCloseSettings" style="width:32px; height:32px;">✕</button>
+      <button class="btn-icon" id="btnCloseSettings" style="width:32px; height:32px;" aria-label="Đóng cài đặt">✕</button>
     </div>
     <div class="setting-group">
       <div class="setting-label">Chủ Đề Giao Diện</div>
@@ -991,9 +1144,9 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
     <div class="setting-group">
       <div class="setting-label">Cỡ Chữ Đọc</div>
       <div class="stepper-ctrl">
-        <button class="btn-step" id="btnFontDec">A-</button>
+        <button class="btn-step" id="btnFontDec" aria-label="Giảm kích thước chữ">A-</button>
         <span class="stepper-val" id="fontSizeVal">19px</span>
-        <button class="btn-step" id="btnFontInc">A+</button>
+        <button class="btn-step" id="btnFontInc" aria-label="Tăng kích thước chữ">A+</button>
       </div>
     </div>
     <div class="setting-group">
@@ -1022,17 +1175,20 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
     <div class="setting-group">
       <div class="setting-label">Âm Thanh Thư Giãn (Mưa Đêm Sài Gòn)</div>
       <div class="ambient-widget">
-        <button class="btn-icon" id="btnSheetAudioToggle" style="background:var(--card-bg);">
+        <button class="btn-icon" id="btnSheetAudioToggle" style="background:var(--card-bg);" aria-label="Bật tắt âm thanh mưa">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
         </button>
-        <input type="range" id="audioVolume" min="0" max="1" step="0.05" value="0.25" style="flex:1; margin:0 12px; accent-color:var(--accent-primary);">
+        <input type="range" id="audioVolume" min="0" max="1" step="0.05" value="0.25" style="flex:1; margin:0 12px; accent-color:var(--accent-primary);" aria-label="Âm lượng mưa">
         <span id="audioVolVal" style="font-size:12px; color:var(--text-muted); width:32px;">25%</span>
       </div>
     </div>
     <div style="margin-top:16px;">
-      <button id="btnCacheAll" style="width:100%; padding:13px; border-radius:12px; background:var(--accent-primary); color:#ffffff; font-weight:700; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-        <span id="cacheAllText">Tải Toàn Bộ {total_ch} Chương Để Đọc Offline</span>
+      <button id="btnCacheAll" style="width:100%; padding:13px; border-radius:12px; background:var(--accent-primary); color:#ffffff; font-weight:700; border:none; cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px;">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+          <span id="cacheAllText">Tải Toàn Bộ {total_ch} Chương Để Đọc Offline</span>
+        </div>
+        <span id="cacheSubText" style="font-size:11px; font-weight:400; opacity:0.85;">{total_ch} chương · {total_words:,} từ • Có thể đọc khi không có mạng</span>
       </button>
     </div>
   </aside>
@@ -1040,6 +1196,17 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
   <div id="liveToast"><span class="dot-live"></span><span id="toastMsg">Thông báo</span></div>
 
   <script>
+    // Accent-Insensitive Vietnamese normalizer (Phase 3)
+    function normalizeVi(str) {{
+      return (str || '')
+        .normalize('NFD')
+        .replace(/[\\u0300-\\u036f]/g, '')
+        .replace(/đ/g, 'd')
+        .replace(/Đ/g, 'D')
+        .toLowerCase()
+        .trim();
+    }}
+
     // Check old hash links or query params and redirect to clean slug
     (function checkLegacyRedirect() {{
       const hash = window.location.hash;
@@ -1055,6 +1222,34 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
         return;
       }}
     }})();
+
+    // Unified Reading State Helper (Phase 2)
+    function getReadingState() {{
+      try {{
+        const raw = localStorage.getItem('pha_troi_reading_state');
+        if (raw) return JSON.parse(raw);
+      }} catch(e) {{}}
+      const oldCh = parseInt(localStorage.getItem('pha_troi_cur_ch') || '0', 10);
+      const completed = [];
+      if (oldCh > 1) {{
+        for (let i = 1; i < oldCh; i++) completed.push(i);
+      }}
+      return {{
+        cur_ch: oldCh || 1,
+        has_started: (oldCh > 0),
+        completed: completed,
+        scroll_pct: 0,
+        scroll_y: 0,
+        updated_at: Date.now()
+      }};
+    }}
+
+    function saveReadingState(state) {{
+      try {{
+        localStorage.setItem('pha_troi_reading_state', JSON.stringify(state));
+        if (state.cur_ch) localStorage.setItem('pha_troi_cur_ch', String(state.cur_ch));
+      }} catch(e) {{}}
+    }}
 
     let chaptersData = [];
     let totalChapters = {total_ch};
@@ -1149,10 +1344,11 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
       if (gainNode && audioCtx) gainNode.gain.setValueAtTime(rainVolume, audioCtx.currentTime);
     }};
 
+    // Resume Reading & Hero CTA Update (Phase 2 & Phase 4)
     function updateContinueReadingCard() {{
-      const savedRaw = localStorage.getItem('pha_troi_cur_ch');
-      const hasHistory = (savedRaw !== null);
-      const savedCh = hasHistory ? parseInt(savedRaw) : 1;
+      const state = getReadingState();
+      const hasHistory = state.has_started;
+      const savedCh = state.cur_ch || 1;
       
       const contCard = document.getElementById('continueReadingCard');
       const contPill = document.getElementById('contPill');
@@ -1163,44 +1359,52 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
       const heroReadText = document.getElementById('heroPrimaryText');
       const mobileHeroPrimary = document.getElementById('btnMobileHeroReadPrimary');
       const mobileHeroReadText = document.getElementById('mobileHeroPrimaryText');
-      const heroResetWrap = document.getElementById('heroResetLinkWrap');
-      const mobileResetWrap = document.getElementById('mobileHeroResetWrap');
 
-      if (!hasHistory || savedCh <= 1) {{
+      if (!hasHistory) {{
         if (contCard) contCard.classList.add('welcome-mode');
         if (contPill) contPill.innerText = 'HÀNH TRÌNH KHỞI ĐẦU';
         if (contEl) contEl.innerText = 'Bạn chưa từng đọc Phá Trời? Bắt đầu từ Chương 1';
         if (metaEl) metaEl.innerText = 'Dấn thân vào đại phong ấn sông ngầm Sài Gòn 2.5 triệu năm cùng Minh An';
-        if (btnJump) {{ btnJump.innerText = 'Bắt Đầu Đọc Chương 1 →'; btnJump.href = './chuong-1/'; }}
+        if (btnJump) {{ btnJump.innerText = 'Bắt Đầu Hành Trình →'; btnJump.href = './chuong-1/'; }}
         if (heroPrimary) heroPrimary.href = './chuong-1/';
-        if (heroReadText) heroReadText.innerText = '▶ Bắt Đầu Đọc — Chương 1';
+        if (heroReadText) heroReadText.innerText = '▶ Bắt Đầu Hành Trình — Chương 1';
         if (mobileHeroPrimary) mobileHeroPrimary.href = './chuong-1/';
-        if (mobileHeroReadText) mobileHeroReadText.innerText = '▶ Bắt Đầu Đọc — Chương 1';
-        if (heroResetWrap) heroResetWrap.style.display = 'none';
-        if (mobileResetWrap) mobileResetWrap.style.display = 'none';
+        if (mobileHeroReadText) mobileHeroReadText.innerText = '▶ Bắt Đầu Hành Trình — Chương 1';
       }} else {{
         const chInfo = chaptersData.find(c => c.chapter === savedCh) || {{ title: `Chương ${{savedCh}}`, arc: 1 }};
-        const cleanTitle = chInfo.title.replace(/^Chương \\d+:\\s*/i, '');
+        const cleanTitle = chInfo.title.replace(/^Chương\\s+\\d+:\\s*/i, '');
         const pct = Math.round((savedCh / totalChapters) * 100);
         const targetUrl = `./chuong-${{savedCh}}/`;
 
         if (contCard) contCard.classList.remove('welcome-mode');
-        if (contPill) contPill.innerText = 'TIẾN ĐỘ ĐANG ĐỌC';
+        if (contPill) contPill.innerText = 'BẠN ĐANG ĐỌC';
         if (contEl) contEl.innerText = `Chương ${{savedCh}}: ${{cleanTitle}}`;
         if (metaEl) metaEl.innerText = `Tiến độ: Chương ${{savedCh}} / ${{totalChapters}} (${{pct}}%) • Hồi ${{chInfo.arc || 1}}`;
         if (btnJump) {{ btnJump.innerText = `Tiếp Tục Đọc Chương ${{savedCh}} →`; btnJump.href = targetUrl; }}
         if (heroPrimary) heroPrimary.href = targetUrl;
-        if (heroReadText) heroReadText.innerText = `▶ Tiếp Tục — Chương ${{savedCh}}`;
+        if (heroReadText) heroReadText.innerText = `▶ Tiếp Tục Đọc — Chương ${{savedCh}}`;
         if (mobileHeroPrimary) mobileHeroPrimary.href = targetUrl;
-        if (mobileHeroReadText) mobileHeroReadText.innerText = `▶ Tiếp Tục — Chương ${{savedCh}}`;
-        if (heroResetWrap) heroResetWrap.style.display = 'block';
-        if (mobileResetWrap) mobileResetWrap.style.display = 'block';
+        if (mobileHeroReadText) mobileHeroReadText.innerText = `▶ Tiếp Tục Đọc — Chương ${{savedCh}}`;
       }}
+
+      // Calculate read count
+      const readCount = state.completed ? state.completed.length : (hasHistory ? (savedCh > 1 ? savedCh - 1 : 0) : 0);
+      const overallPct = Math.round((readCount / totalChapters) * 100);
+      
+      const hProgText = document.getElementById('homeTocProgressText');
+      const hProgFill = document.getElementById('homeTocProgressFill');
+      if (hProgText) hProgText.innerText = `Đã đọc ${{readCount}} / ${{totalChapters}} chương (${{overallPct}}%)`;
+      if (hProgFill) hProgFill.style.width = overallPct + '%';
+
+      const dProgText = document.getElementById('drawerTocProgressText');
+      const dProgFill = document.getElementById('drawerTocProgressFill');
+      if (dProgText) dProgText.innerText = `Đã đọc ${{readCount}} / ${{totalChapters}} chương (${{overallPct}}%)`;
+      if (dProgFill) dProgFill.style.width = overallPct + '%';
 
       renderHomeToc();
       renderTOC();
-      renderCodexPreview(savedCh);
-      renderCodexDrawer(savedCh);
+      renderCodexPreview();
+      renderCodexDrawer();
     }}
 
     document.getElementById('btnHeroTocScroll').onclick = () => {{
@@ -1226,13 +1430,18 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
       }}
     }}
 
+    // TOC Drawer Render (Phase 3)
     function renderTOC() {{
-      const searchVal = document.getElementById('inputTocSearch').value.toLowerCase().trim();
-      const savedCh = parseInt(localStorage.getItem('pha_troi_cur_ch') || '0');
-      const hasHistory = (localStorage.getItem('pha_troi_cur_ch') !== null);
+      const rawVal = document.getElementById('inputTocSearch').value;
+      const searchNorm = normalizeVi(rawVal);
+      const state = getReadingState();
+      const savedCh = state.cur_ch || 0;
+      const completedSet = new Set(state.completed || []);
 
       const filtered = chaptersData.filter(ch => {{
-        const matchSearch = !searchVal || ch.title.toLowerCase().includes(searchVal) || String(ch.chapter).includes(searchVal);
+        const titleNorm = normalizeVi(ch.title);
+        const locNorm = normalizeVi(ch.location || '');
+        const matchSearch = !searchNorm || titleNorm.includes(searchNorm) || locNorm.includes(searchNorm) || String(ch.chapter).includes(searchNorm);
         const matchArc = (activeArcFilter === 'all') ||
                          (activeArcFilter === 'arc1' && ch.arc === 1) ||
                          (activeArcFilter === 'arc2' && ch.arc === 2);
@@ -1241,10 +1450,16 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
 
       const renderHtml = filtered.map(ch => {{
         let statusBadge = '';
-        if (hasHistory) {{
-          if (ch.chapter < savedCh) statusBadge = '<span class="ch-status-tag read">✓</span>';
-          else if (ch.chapter === savedCh) statusBadge = '<span class="ch-status-tag current">▶</span>';
+        if (state.has_started) {{
+          if (ch.chapter === savedCh) {{
+            statusBadge = '<span class="ch-status-tag current">● Đang đọc</span>';
+          }} else if (completedSet.has(ch.chapter) || ch.chapter < savedCh) {{
+            statusBadge = '<span class="ch-status-tag read">✓ Đã đọc</span>';
+          }} else {{
+            statusBadge = '<span class="ch-status-tag unread">Chưa đọc</span>';
+          }}
         }}
+
         return `
           <a href="./chuong-${{ch.chapter}}/" class="toc-item">
             <div class="toc-info">
@@ -1252,7 +1467,7 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
                 <span>Hồi ${{ch.arc || 1}} • Chương ${{ch.chapter}}</span>
                 ${{statusBadge}}
               </div>
-              <div class="toc-name">${{ch.title.replace(/^Chương \\d+:\\s*/i, '')}}</div>
+              <div class="toc-name">${{ch.title.replace(/^Chương\\s+\\d+:\\s*/i, '')}}</div>
             </div>
             <span class="toc-meta">${{ch.word_count ? ch.word_count.toLocaleString() + ' từ' : ''}}</span>
           </a>
@@ -1273,13 +1488,18 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
       }};
     }});
 
+    // Homepage TOC Grid Render (Phase 3)
     function renderHomeToc() {{
-      const searchVal = (document.getElementById('inputHomeSearch')?.value || '').toLowerCase().trim();
-      const savedCh = parseInt(localStorage.getItem('pha_troi_cur_ch') || '0');
-      const hasHistory = (localStorage.getItem('pha_troi_cur_ch') !== null);
+      const rawVal = document.getElementById('inputHomeSearch')?.value || '';
+      const searchNorm = normalizeVi(rawVal);
+      const state = getReadingState();
+      const savedCh = state.cur_ch || 0;
+      const completedSet = new Set(state.completed || []);
 
       const filtered = chaptersData.filter(ch => {{
-        const matchSearch = !searchVal || ch.title.toLowerCase().includes(searchVal) || String(ch.chapter).includes(searchVal);
+        const titleNorm = normalizeVi(ch.title);
+        const locNorm = normalizeVi(ch.location || '');
+        const matchSearch = !searchNorm || titleNorm.includes(searchNorm) || locNorm.includes(searchNorm) || String(ch.chapter).includes(searchNorm);
         const matchArc = (homeArcFilter === 'all') ||
                          (homeArcFilter === 'arc1' && ch.arc === 1) ||
                          (homeArcFilter === 'arc2' && ch.arc === 2);
@@ -1289,15 +1509,15 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
       const gridHtml = filtered.map(ch => {{
         let statusBadge = '';
         let cardClass = '';
-        if (hasHistory) {{
-          if (ch.chapter < savedCh) {{
+        if (state.has_started) {{
+          if (ch.chapter === savedCh) {{
+            statusBadge = '<span class="ch-status-tag current">● Đang đọc</span>';
+            cardClass = 'is-current';
+          }} else if (completedSet.has(ch.chapter) || ch.chapter < savedCh) {{
             statusBadge = '<span class="ch-status-tag read">✓ Đã đọc</span>';
             cardClass = 'is-read';
-          }} else if (ch.chapter === savedCh) {{
-            statusBadge = '<span class="ch-status-tag current">▶ Đang đọc</span>';
-            cardClass = 'is-current';
           }} else {{
-            statusBadge = '<span class="ch-status-tag unread">○</span>';
+            statusBadge = '<span class="ch-status-tag unread">Chưa đọc</span>';
           }}
         }}
 
@@ -1308,7 +1528,7 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
                 <span>HỒI ${{ch.arc || 1}} • CHƯƠNG ${{ch.chapter}}</span>
                 ${{statusBadge}}
               </div>
-              <div class="home-ch-title">${{ch.title.replace(/^Chương \\d+:\\s*/i, '')}}</div>
+              <div class="home-ch-title">${{ch.title.replace(/^Chương\\s+\\d+:\\s*/i, '')}}</div>
               <div class="home-ch-meta-bottom">
                 <span>${{ch.word_count ? ch.word_count.toLocaleString() + ' từ' : ''}}</span>
                 ${{ch.location ? '<span>• ' + ch.location.split(',')[0] + '</span>' : ''}}
@@ -1335,15 +1555,33 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
       }};
     }});
 
+    // Codex Data & Anti-Spoiler Logic (Phase 6)
     const CODEX_DATA = {codex_json};
 
-    function renderCodexPreview(savedCh) {{
+    function getHighestUnlockedChapter() {{
+      const state = getReadingState();
+      let maxCh = state.cur_ch || 1;
+      if (state.completed && state.completed.length > 0) {{
+        maxCh = Math.max(maxCh, Math.max(...state.completed));
+      }}
+      return maxCh;
+    }}
+
+    function renderCodexPreview() {{
       if (!homeCodexGrid) return;
-      const s = parseInt(savedCh) || 1;
+      const maxCh = getHighestUnlockedChapter();
+      let unlockedCount = 0;
+      CODEX_DATA.forEach(it => {{
+        if (maxCh >= it.unlock_chapter) unlockedCount++;
+      }});
+
+      const pillEl = document.getElementById('homeCodexProgressPill');
+      if (pillEl) pillEl.innerText = `Đã khám phá ${{unlockedCount}} / ${{CODEX_DATA.length}} mục`;
+
       let html = '';
       const previewItems = CODEX_DATA.slice(0, 6);
       previewItems.forEach(it => {{
-        const isUnlocked = s >= it.unlock_chapter;
+        const isUnlocked = maxCh >= it.unlock_chapter;
         if (isUnlocked) {{
           html += `
             <div class="home-codex-card" onclick="openCodexTab('${{it.category}}')">
@@ -1356,8 +1594,8 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
           html += `
             <div class="home-codex-card locked" onclick="openCodexTab('${{it.category}}')">
               <span class="home-codex-badge locked-badge">🔒 HỒ SƠ ẨN</span>
-              <div class="home-codex-name" style="color:var(--text-muted);">${{it.hidden_name}}</div>
-              <p class="home-codex-desc">${{it.hidden_desc}}</p>
+              <div class="home-codex-name" style="color:var(--text-muted);">${{it.hidden_name || '???'}}</div>
+              <p class="home-codex-desc">${{it.hidden_desc || 'Mục này chứa thông tin bảo mật. Đọc tiếp để khám phá.'}}</p>
               <div class="codex-unlock-hint">🔒 Đọc đến Chương ${{it.unlock_chapter}} để mở khóa</div>
             </div>
           `;
@@ -1366,16 +1604,24 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
       homeCodexGrid.innerHTML = html;
     }}
 
-    function renderCodexDrawer(savedCh) {{
+    function renderCodexDrawer() {{
       if (!codexDrawerBody) return;
-      const s = parseInt(savedCh) || 1;
+      const maxCh = getHighestUnlockedChapter();
+      let unlockedCount = 0;
+      CODEX_DATA.forEach(it => {{
+        if (maxCh >= it.unlock_chapter) unlockedCount++;
+      }});
+
+      const drawerLabel = document.getElementById('drawerCodexProgressLabel');
+      if (drawerLabel) drawerLabel.innerText = `Đã khám phá ${{unlockedCount}} / ${{CODEX_DATA.length}} mục`;
+
       let html = '';
       const filtered = CODEX_DATA.filter(it => it.category === activeCodexTab);
       if (filtered.length === 0) {{
         html = '<p style="color:var(--text-muted); font-size:13px; text-align:center; padding:24px 0;">Đang cập nhật thêm mục mới...</p>';
       }} else {{
         filtered.forEach(it => {{
-          const isUnlocked = s >= it.unlock_chapter;
+          const isUnlocked = maxCh >= it.unlock_chapter;
           if (isUnlocked) {{
             let statsHtml = '';
             if (it.stats) {{
@@ -1395,8 +1641,8 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
             html += `
               <div class="codex-card locked">
                 <span class="codex-badge locked-badge">🔒 HỒ SƠ ẨN</span>
-                <h3 class="codex-title" style="color:var(--text-muted);">${{it.hidden_name}}</h3>
-                <p class="codex-desc">${{it.hidden_desc}}</p>
+                <h3 class="codex-title" style="color:var(--text-muted);">${{it.hidden_name || '???'}}</h3>
+                <p class="codex-desc">${{it.hidden_desc || 'Hồ sơ chưa thể truy cập.'}}</p>
                 <div class="codex-unlock-hint">🔒 Đọc đến Chương ${{it.unlock_chapter}} để mở khóa chi tiết</div>
               </div>
             `;
@@ -1432,14 +1678,14 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
       closeAllDrawers();
       modalOverlay.classList.add('open');
       drawerToc.classList.add('open');
+      renderTOC();
     }}
 
     function openCodex() {{
       closeAllDrawers();
       modalOverlay.classList.add('open');
       drawerCodex.classList.add('open');
-      const savedCh = parseInt(localStorage.getItem('pha_troi_cur_ch') || '1');
-      renderCodexDrawer(savedCh);
+      renderCodexDrawer();
     }}
 
     function openSettings() {{
@@ -1456,7 +1702,7 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
     document.getElementById('btnSettings').onclick = openSettings;
     document.getElementById('btnCloseSettings').onclick = closeAllDrawers;
 
-    // Reading Settings Handlers
+    // Reading Settings Handlers (Phase 1)
     const THEMES = ['theme-peaceful-dark', 'theme-gentle-light', 'theme-oled', 'theme-sepia'];
     function setTheme(theme) {{
       THEMES.forEach(t => {{
@@ -1485,7 +1731,7 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
     document.querySelectorAll('.theme-opt').forEach(opt => {{
       opt.onclick = () => {{
         setTheme(opt.dataset.theme);
-        showToast('🎨 Đã chuyển giao diện: ' + opt.innerText.trim());
+        showToast('🎨 Giao diện: ' + opt.innerText.trim());
       }};
     }});
 
@@ -1548,13 +1794,13 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
       document.documentElement.style.setProperty('--font-family', FONT_SERIF);
       document.body.style.setProperty('--font-family', FONT_SERIF);
       localStorage.setItem('pha_troi_font_family', 'serif');
-      showToast('📖 Phông chữ Có Chân (Lora)');
+      showToast('📖 Phông Có Chân (Lora)');
     }};
     document.getElementById('btnFontSans').onclick = () => {{
       document.documentElement.style.setProperty('--font-family', FONT_SANS);
       document.body.style.setProperty('--font-family', FONT_SANS);
       localStorage.setItem('pha_troi_font_family', 'sans');
-      showToast('📱 Phông chữ Không Chân (Be Vietnam Pro)');
+      showToast('📱 Phông Không Chân (Be Vietnam Pro)');
     }};
 
     const savedFont = localStorage.getItem('pha_troi_font_family');
@@ -1577,18 +1823,22 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
       setTimeout(() => liveToast.classList.remove('show'), 2400);
     }}
 
+    // Offline Batched Download UX (Phase 7)
     document.getElementById('btnCacheAll').onclick = async () => {{
       const btn = document.getElementById('btnCacheAll');
       const text = document.getElementById('cacheAllText');
+      const sub = document.getElementById('cacheSubText');
       btn.disabled = true;
-      text.innerText = "Đang tải dữ liệu {total_ch} chương...";
+      text.innerText = "Đang kết nối lưu trữ...";
 
       try {{
         const urlsToCache = [
           './',
           './index.html',
           './data/chapters.json',
+          './data/codex.json',
           './icon.svg',
+          './cover.svg',
           './manifest.json',
           './assets/logo.webp',
           './assets/cover_vertical.webp',
@@ -1599,17 +1849,23 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
         }}
 
         if ('caches' in window) {{
-          const cache = await caches.open('pha-troi-v5-complete');
+          const cache = await caches.open('pha-troi-v{total_ch}-offline');
           let count = 0;
-          for (const url of urlsToCache) {{
-            try {{
-              const res = await fetch(url);
-              if (res.ok) await cache.put(url, res);
-              count++;
-              text.innerText = `Đang lưu offline: ${{count}}/${{urlsToCache.length}}...`;
-            }} catch (e) {{}}
+          const chunkSize = 5; // Chunked processing to prevent thread lock
+          for (let i = 0; i < urlsToCache.length; i += chunkSize) {{
+            const chunk = urlsToCache.slice(i, i + chunkSize);
+            await Promise.all(chunk.map(async (url) => {{
+              try {{
+                const res = await fetch(url);
+                if (res.ok) await cache.put(url, res);
+                count++;
+              }} catch (e) {{}}
+            }}));
+            const pct = Math.round((count / urlsToCache.length) * 100);
+            text.innerText = `Đang tải: ${{count}}/${{urlsToCache.length}} (${{pct}}%)...`;
           }}
-          text.innerText = `Đã lưu xong ${{count}} tập tin offline!`;
+          text.innerText = `✓ Đã tải để đọc offline!`;
+          if (sub) sub.innerText = `Trọn bộ ${{totalChapters}} chương đã sẵn sàng khi mất mạng.`;
           showToast(`✨ Đã tải trọn bộ offline thành công!`);
         }} else {{
           text.innerText = "Trình duyệt không hỗ trợ Cache Storage";
@@ -1620,7 +1876,8 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
         setTimeout(() => {{
           btn.disabled = false;
           text.innerText = "Tải Toàn Bộ {total_ch} Chương Để Đọc Offline";
-        }}, 3500);
+          if (sub) sub.innerText = "{total_ch} chương · {total_words:,} từ • Có thể đọc khi không có mạng";
+        }}, 4000);
       }}
     }};
 
@@ -1674,8 +1931,7 @@ def generate_chapter_html(ch_info, chapters_index, total_words, codex_items=None
           <span>~{next_read_mins} phút đọc</span>
         </div>
         <a href="../chuong-{ch_num + 1}/" class="btn-read-next-pulse" id="btnReadNextMain">
-          <span>Đọc Chương {ch_num + 1} Ngay</span>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          <span>Tiếp Tục Đọc Chương {ch_num + 1} →</span>
         </a>
       </div>
         """
@@ -1721,6 +1977,7 @@ def generate_chapter_html(ch_info, chapters_index, total_words, codex_items=None
   <meta name="description" content="Đọc Chương {ch_num}: {clean_title} — Quyển {vol}, Hồi {arc} ({words:,} từ). {ch_info.get('excerpt', '')}">
   <meta name="author" content="An Bình">
   
+  <link rel="canonical" href="https://bon-231900.github.io/pha-troi/chuong-{ch_num}/">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://bon-231900.github.io/pha-troi/chuong-{ch_num}/">
   <meta property="og:title" content="Phá Trời — Chương {ch_num}: {clean_title}">
@@ -1740,6 +1997,57 @@ def generate_chapter_html(ch_info, chapters_index, total_words, codex_items=None
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Phá Trời">
   <meta name="theme-color" content="#07090e">
+
+  <!-- Anti-FOUC Early Theme Execution (Phase 1) -->
+  <script>
+    (function() {{
+      try {{
+        var t = localStorage.getItem('pha_troi_theme') || 'theme-peaceful-dark';
+        document.documentElement.className = t;
+        var s = localStorage.getItem('pha_troi_font_size');
+        if (s) document.documentElement.style.setProperty('--font-size', s + 'px');
+        var w = localStorage.getItem('pha_troi_reader_width');
+        if (w) document.documentElement.style.setProperty('--reader-max-width', w + 'px');
+        var lh = localStorage.getItem('pha_troi_line_height');
+        if (lh) document.documentElement.style.setProperty('--reader-line-height', lh);
+        var f = localStorage.getItem('pha_troi_font_family');
+        if (f === 'serif') {{
+          document.documentElement.style.setProperty('--font-family', "'Lora', 'Georgia', serif");
+        }}
+      }} catch(e) {{}}
+    }})();
+  </script>
+
+  <!-- Structured Data JSON-LD (Article & Chapter) (Phase 8) -->
+  <script type="application/ld+json">
+  {{
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "Phá Trời — Chương {ch_num}: {clean_title}",
+    "name": "Phá Trời — Chương {ch_num}: {clean_title}",
+    "description": "{ch_info.get('excerpt', '')}",
+    "url": "https://bon-231900.github.io/pha-troi/chuong-{ch_num}/",
+    "inLanguage": "vi",
+    "author": {{
+      "@type": "Person",
+      "name": "An Bình"
+    }},
+    "isPartOf": {{
+      "@type": "Book",
+      "name": "Phá Trời (Phá Toái Thần Hoang)",
+      "url": "https://bon-231900.github.io/pha-troi/",
+      "author": {{
+        "@type": "Person",
+        "name": "An Bình"
+      }}
+    }},
+    "wordCount": {words},
+    "publisher": {{
+      "@type": "Organization",
+      "name": "Novel OS"
+    }}
+  }}
+  </script>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1820,9 +2128,10 @@ def generate_chapter_html(ch_info, chapters_index, total_words, codex_items=None
       border: none; height: 1px; background: linear-gradient(90deg, transparent, var(--border-color), transparent); margin: 2.5em 0;
     }}
 
+    /* Chapter Footer 3-Button Navigation (Phase 1) */
     .chapter-footer-nav {{
       width: 100%; max-width: var(--reader-max-width); display: flex; align-items: center;
-      justify-content: space-between; gap: 8px; margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color);
+      justify-content: space-between; gap: 8px; margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--border-color);
       box-sizing: border-box;
     }}
     .btn-nav-chapter {{
@@ -1835,16 +2144,16 @@ def generate_chapter_html(ch_info, chapters_index, total_words, codex_items=None
       border-color: var(--accent-primary); color: var(--accent-primary); background: var(--card-bg-hover);
     }}
     .btn-nav-chapter.disabled {{ opacity: 0.35; cursor: not-allowed; pointer-events: none; }}
-    .btn-nav-footer-home {{ flex: 0.7; }}
+    .btn-nav-chapter.footer-toc-btn {{ flex: 0.9; }}
     @media (max-width: 480px) {{
       .btn-nav-chapter {{ font-size: 12.5px; padding: 11px 4px; gap: 4px; }}
-      .btn-nav-footer-home {{ flex: 0.5; }}
+      .btn-nav-chapter.footer-toc-btn {{ flex: 0.8; }}
     }}
 
-    /* Next Chapter Prominent Card */
+    /* Next Chapter Prominent Card (Phase 1) */
     .next-chapter-card {{
       width: 100%; max-width: var(--reader-max-width); margin: 40px auto 20px auto;
-      padding: 30px 24px; border-radius: 18px;
+      padding: 26px 22px; border-radius: 18px;
       background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(245, 158, 11, 0.09) 100%), var(--card-bg);
       border: 1.5px solid rgba(245, 158, 11, 0.35);
       box-shadow: 0 10px 36px rgba(0, 0, 0, 0.35), 0 0 24px rgba(245, 158, 11, 0.1);
@@ -1860,11 +2169,11 @@ def generate_chapter_html(ch_info, chapters_index, total_words, codex_items=None
     }}
     .next-card-label {{ font-size: 12px; color: var(--text-muted); letter-spacing: 1px; margin-top: 2px; }}
     .next-card-title {{
-      font-family: 'Lora', 'Georgia', serif; font-size: 22px; font-weight: 800;
+      font-family: 'Lora', 'Georgia', serif; font-size: 21px; font-weight: 800;
       color: var(--gold-primary); margin: 0; line-height: 1.35;
     }}
-    .next-card-meta {{ display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 8px; font-size: 12.5px; color: var(--text-muted); }}
-    .next-card-desc {{ font-size: 13.5px; color: var(--text-muted); max-width: 480px; margin: 4px 0 12px 0; line-height: 1.6; }}
+    .next-card-meta {{ display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 8px; font-size: 12px; color: var(--text-muted); }}
+    .next-card-desc {{ font-size: 13px; color: var(--text-muted); max-width: 480px; margin: 4px 0 12px 0; line-height: 1.6; }}
     .next-card-actions {{ display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }}
     .btn-card-action {{
       padding: 10px 20px; border-radius: 10px; font-size: 13px; font-weight: 700;
@@ -1876,7 +2185,7 @@ def generate_chapter_html(ch_info, chapters_index, total_words, codex_items=None
     .btn-card-action.gold:hover {{ background: var(--gold-primary); color: #000; }}
     .btn-read-next-pulse {{
       margin-top: 10px; display: inline-flex; align-items: center; gap: 10px;
-      padding: 14px 32px; border-radius: 12px;
+      padding: 13px 30px; border-radius: 12px;
       background: linear-gradient(135deg, var(--gold-primary), #d97706);
       color: #000000; font-size: 15px; font-weight: 800; text-decoration: none;
       box-shadow: 0 4px 20px rgba(245, 158, 11, 0.4); transition: all 0.25s ease;
@@ -1900,6 +2209,7 @@ def generate_chapter_html(ch_info, chapters_index, total_words, codex_items=None
     .btn-float-nav:hover:not(.disabled) {{ border-color: var(--gold-primary); color: var(--gold-primary); transform: scale(1.1); }}
     .btn-float-nav.disabled {{ opacity: 0.3; cursor: not-allowed; pointer-events: none; }}
 
+    /* Mobile Bottom Navigation Bar (Phase 1, 5, 9) */
     .bottom-bar {{
       position: fixed; bottom: 0; left: 0; right: 0;
       height: calc(56px + env(safe-area-inset-bottom, 0px));
@@ -1924,7 +2234,7 @@ def generate_chapter_html(ch_info, chapters_index, total_words, codex_items=None
 
   <div id="progressBarContainer"><div id="progressBar"></div></div>
 
-  <!-- HEADER -->
+  <!-- HEADER (PHASE 1 & PHASE 5) -->
   <header id="topHeader">
     <div class="header-left">
       <a href="../" class="btn-brand" title="Về Trang Chủ Phá Trời (H)">
@@ -1939,34 +2249,38 @@ def generate_chapter_html(ch_info, chapters_index, total_words, codex_items=None
 
     <div class="header-center">
       <h1 class="header-title">Chương {ch_num}: {clean_title}</h1>
-      <p class="header-sub">Quyển {vol} • Hồi {arc} • {words:,} từ</p>
+      <p class="header-sub">Quyển {vol} • Hồi {arc} • {words:,} từ <span class="reader-progress-badge" id="readProgressPct">0%</span></p>
     </div>
 
     <div class="header-right">
+      <button class="btn-icon" id="btnShare" title="Chia Sẻ Chương Này (S)" aria-label="Chia sẻ chương này">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+      </button>
+
       <a href="../" class="btn-nav-home-pill" title="Trở về Trang Chủ">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
         <span>Trang Chủ</span>
       </a>
 
-      <button class="btn-icon" id="btnMenu" title="Mục Lục Chương (M)">
+      <button class="btn-icon" id="btnMenu" title="Mục Lục Chương (M)" aria-label="Mục lục chương">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
       </button>
       
-      <button class="btn-icon header-desktop-only" id="btnCodex" title="Codex Phá Trời — Bách Khoa Thế Giới (C)">
+      <button class="btn-icon header-desktop-only" id="btnCodex" title="Codex Phá Trời — Bách Khoa Thế Giới (C)" aria-label="Codex Bách khoa">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
       </button>
 
-      <button class="btn-icon header-desktop-only" id="btnAmbient" title="Âm thanh Mưa Đêm Sài Gòn (Thư giãn)">
+      <button class="btn-icon header-desktop-only" id="btnAmbient" title="Âm thanh Mưa Đêm Sài Gòn (Thư giãn)" aria-label="Bật tắt âm thanh mưa">
         <svg id="iconAudioOff" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"></path><path d="M16 14v6"></path><path d="M8 14v6"></path><path d="M12 16v6"></path></svg>
         <svg id="iconAudioOn" style="display:none; color:var(--accent-primary);" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 5L6 9H2v6h4l5 4V5z"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
       </button>
 
-      <button class="btn-icon" id="btnQuickTheme" title="Chuyển Nhanh Sáng / Tối (T)">
+      <button class="btn-icon" id="btnQuickTheme" title="Chuyển Nhanh Sáng / Tối (T)" aria-label="Chuyển giao diện sáng tối">
         <svg id="iconMoon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
         <svg id="iconSun" style="display:none;" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
       </button>
 
-      <button class="btn-icon" id="btnSettings" title="Cài Đặt Đọc Truyện">
+      <button class="btn-icon" id="btnSettings" title="Cài Đặt Đọc Truyện" aria-label="Cài đặt giao diện đọc">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path><circle cx="12" cy="12" r="3"></circle></svg>
       </button>
     </div>
@@ -1975,7 +2289,7 @@ def generate_chapter_html(ch_info, chapters_index, total_words, codex_items=None
   <!-- CHAPTER READER CONTENT -->
   <div class="app-layout">
     <!-- Desktop Persistent Sidebar -->
-    <aside class="desktop-toc-sidebar">
+    <aside class="desktop-toc-sidebar" aria-label="Danh mục chương máy tính">
       <div style="font-size:13px; font-weight:700; color:var(--gold-primary); margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
         <span>DANH MỤC CHƯƠNG</span>
         <span>{total_ch} chương</span>
@@ -1983,14 +2297,14 @@ def generate_chapter_html(ch_info, chapters_index, total_words, codex_items=None
       <div>{toc_list_rendered}</div>
     </aside>
 
-    <!-- Floating Nav Arrows -->
+    <!-- Floating Nav Arrows (Desktop) -->
     <div class="desktop-nav-float desktop-nav-left">
-      <a href="{prev_url}" class="btn-float-nav {prev_dis}" title="Chương trước (Phím ←)">
+      <a href="{prev_url}" class="btn-float-nav {prev_dis}" title="Chương trước (Phím ←)" aria-label="Chương trước">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
       </a>
     </div>
     <div class="desktop-nav-float desktop-nav-right">
-      <a href="{next_url}" class="btn-float-nav {next_dis}" title="Chương sau (Phím →)">
+      <a href="{next_url}" class="btn-float-nav {next_dis}" title="Chương sau (Phím →)" aria-label="Chương sau">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
       </a>
     </div>
@@ -2019,15 +2333,19 @@ def generate_chapter_html(ch_info, chapters_index, total_words, codex_items=None
         {ch_info["html"]}
       </article>
 
+      <!-- Next Chapter Card (Phase 1) -->
       {next_card_html}
 
+      <!-- Chapter Footer 3-Button Navigation (Phase 1) -->
       <div class="chapter-footer-nav">
-        <a href="{prev_url}" class="btn-nav-chapter {prev_dis}" id="footerPrevBtn">
+        <a href="{prev_url}" class="btn-nav-chapter {prev_dis}" id="footerPrevBtn" aria-label="Chương trước">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
           <span>Chương Trước</span>
         </a>
-        <a href="../" class="btn-nav-chapter btn-nav-footer-home">Trang Chủ</a>
-        <a href="{next_url}" class="btn-nav-chapter {next_dis}" id="footerNextBtn">
+        <button type="button" class="btn-nav-chapter footer-toc-btn" id="btnFooterToc" aria-label="Về mục lục">
+          <span>📑 Về Mục Lục</span>
+        </button>
+        <a href="{next_url}" class="btn-nav-chapter {next_dis}" id="footerNextBtn" aria-label="Chương tiếp theo">
           <span>{footer_next_text}</span>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
         </a>
@@ -2035,8 +2353,8 @@ def generate_chapter_html(ch_info, chapters_index, total_words, codex_items=None
     </main>
   </div>
 
-  <!-- Mobile Bottom Floating Nav -->
-  <nav class="bottom-bar">
+  <!-- Mobile Bottom Floating Nav (Phase 1, 5, 9) -->
+  <nav class="bottom-bar" aria-label="Thanh điều hướng dưới mobile">
     <a href="../" class="btn-bottom-item">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
       <span>Trang Chủ</span>
@@ -2061,25 +2379,25 @@ def generate_chapter_html(ch_info, chapters_index, total_words, codex_items=None
 
   <div class="modal-overlay" id="modalOverlay"></div>
 
-  <!-- TOC DRAWER -->
-  <aside class="drawer drawer-left" id="drawerToc">
+  <!-- TOC DRAWER (PHASE 3) -->
+  <aside class="drawer drawer-left" id="drawerToc" aria-label="Mục lục chương">
     <div class="drawer-header">
       <h2 class="drawer-title">MỤC LỤC TIỂU THUYẾT</h2>
-      <button class="btn-icon" id="btnCloseToc">✕</button>
+      <button class="btn-icon" id="btnCloseToc" aria-label="Đóng mục lục">✕</button>
     </div>
     <div class="drawer-search">
-      <input type="text" id="inputTocSearch" class="search-input" placeholder="Tìm chương hoặc từ khóa...">
+      <input type="text" id="inputTocSearch" class="search-input" placeholder="Tìm số chương hoặc từ khóa...">
     </div>
     <div class="drawer-body" id="tocDrawerList">
       {toc_list_rendered}
     </div>
   </aside>
 
-  <!-- CODEX DRAWER -->
-  <aside class="drawer drawer-right" id="drawerCodex">
+  <!-- CODEX DRAWER (PHASE 6) -->
+  <aside class="drawer drawer-right" id="drawerCodex" aria-label="Codex Bách khoa thế giới">
     <div class="drawer-header">
       <h2 class="drawer-title">CODEX PHÁ TRỜI</h2>
-      <button class="btn-icon" id="btnCloseCodex">✕</button>
+      <button class="btn-icon" id="btnCloseCodex" aria-label="Đóng Codex">✕</button>
     </div>
     <div class="drawer-tabs">
       <button class="drawer-tab-btn active" id="tabCodexChar" data-codex="char">Nhân Vật</button>
@@ -2092,11 +2410,11 @@ def generate_chapter_html(ch_info, chapters_index, total_words, codex_items=None
   </aside>
 
   <!-- SETTINGS BOTTOM SHEET -->
-  <aside class="sheet-bottom" id="settingsSheet">
+  <aside class="sheet-bottom" id="settingsSheet" aria-label="Cài đặt đọc truyện">
     <div class="sheet-handle"></div>
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
       <h3 style="font-size:16px; font-weight:700; color:var(--gold-primary); margin:0;">TÙY CHỈNH ĐỌC TRUYỆN</h3>
-      <button class="btn-icon" id="btnCloseSettings" style="width:32px; height:32px;">✕</button>
+      <button class="btn-icon" id="btnCloseSettings" style="width:32px; height:32px;" aria-label="Đóng cài đặt">✕</button>
     </div>
     <div class="setting-group">
       <div class="setting-label">Chủ Đề Giao Diện</div>
@@ -2110,9 +2428,9 @@ def generate_chapter_html(ch_info, chapters_index, total_words, codex_items=None
     <div class="setting-group">
       <div class="setting-label">Cỡ Chữ Đọc</div>
       <div class="stepper-ctrl">
-        <button class="btn-step" id="btnFontDec">A-</button>
+        <button class="btn-step" id="btnFontDec" aria-label="Giảm kích thước chữ">A-</button>
         <span class="stepper-val" id="fontSizeVal">19px</span>
-        <button class="btn-step" id="btnFontInc">A+</button>
+        <button class="btn-step" id="btnFontInc" aria-label="Tăng kích thước chữ">A+</button>
       </div>
     </div>
     <div class="setting-group">
@@ -2141,10 +2459,10 @@ def generate_chapter_html(ch_info, chapters_index, total_words, codex_items=None
     <div class="setting-group">
       <div class="setting-label">Âm Thanh Thư Giãn (Mưa Đêm Sài Gòn)</div>
       <div class="ambient-widget">
-        <button class="btn-icon" id="btnSheetAudioToggle" style="background:var(--card-bg);">
+        <button class="btn-icon" id="btnSheetAudioToggle" style="background:var(--card-bg);" aria-label="Bật tắt âm thanh mưa">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
         </button>
-        <input type="range" id="audioVolume" min="0" max="1" step="0.05" value="0.25" style="flex:1; margin:0 12px; accent-color:var(--accent-primary);">
+        <input type="range" id="audioVolume" min="0" max="1" step="0.05" value="0.25" style="flex:1; margin:0 12px; accent-color:var(--accent-primary);" aria-label="Âm lượng mưa">
         <span id="audioVolVal" style="font-size:12px; color:var(--text-muted); width:32px;">25%</span>
       </div>
     </div>
@@ -2153,15 +2471,62 @@ def generate_chapter_html(ch_info, chapters_index, total_words, codex_items=None
   <div id="liveToast"><span class="dot-live"></span><span id="toastMsg">Thông báo</span></div>
 
   <script>
-    // 1. Lưu tiến độ đọc tức thì vào localStorage
-    localStorage.setItem('pha_troi_cur_ch', '{ch_num}');
+    // Accent-Insensitive Vietnamese normalizer (Phase 3)
+    function normalizeVi(str) {{
+      return (str || '')
+        .normalize('NFD')
+        .replace(/[\\u0300-\\u036f]/g, '')
+        .replace(/đ/g, 'd')
+        .replace(/Đ/g, 'D')
+        .toLowerCase()
+        .trim();
+    }}
 
-    // 2. Scroll Progress Bar & Smart Auto-hide Header/Bottom-bar
+    // Unified Reading State (Phase 2)
+    function getReadingState() {{
+      try {{
+        const raw = localStorage.getItem('pha_troi_reading_state');
+        if (raw) return JSON.parse(raw);
+      }} catch(e) {{}}
+      const oldCh = parseInt(localStorage.getItem('pha_troi_cur_ch') || '0', 10);
+      const completed = [];
+      if (oldCh > 1) {{
+        for (let i = 1; i < oldCh; i++) completed.push(i);
+      }}
+      return {{
+        cur_ch: oldCh || {ch_num},
+        has_started: true,
+        completed: completed,
+        scroll_pct: 0,
+        scroll_y: 0,
+        updated_at: Date.now()
+      }};
+    }}
+
+    function saveReadingState(state) {{
+      try {{
+        localStorage.setItem('pha_troi_reading_state', JSON.stringify(state));
+        if (state.cur_ch) localStorage.setItem('pha_troi_cur_ch', String(state.cur_ch));
+      }} catch(e) {{}}
+    }}
+
+    // Update current reading state immediately
+    (function initChapterState() {{
+      const state = getReadingState();
+      state.cur_ch = {ch_num};
+      state.has_started = true;
+      state.updated_at = Date.now();
+      saveReadingState(state);
+    }})();
+
+    // Scroll Progress Bar, Reading % Indicator & Debounced Scroll Persistence (Phase 1)
     let lastScrollY = window.scrollY;
     let isBarsHidden = false;
+    let scrollSaveTimer = null;
     const topHeader = document.getElementById('topHeader');
     const bottomBar = document.querySelector('.bottom-bar');
     const progressBar = document.getElementById('progressBar');
+    const readProgressPct = document.getElementById('readProgressPct');
 
     function showBars() {{
       if (topHeader) topHeader.style.transform = 'translateY(0)';
@@ -2178,8 +2543,10 @@ def generate_chapter_html(ch_info, chapters_index, total_words, codex_items=None
     window.addEventListener('scroll', () => {{
       const curY = window.scrollY;
       const totalH = document.documentElement.scrollHeight - window.innerHeight;
-      const pct = totalH > 0 ? (curY / totalH) * 100 : 0;
+      const pct = totalH > 0 ? Math.min(100, Math.max(0, Math.round((curY / totalH) * 100))) : 0;
+      
       if (progressBar) progressBar.style.width = pct + '%';
+      if (readProgressPct) readProgressPct.innerText = pct + '%';
 
       // Smart auto-hide on mobile reader
       if (curY > 80) {{
@@ -2193,7 +2560,38 @@ def generate_chapter_html(ch_info, chapters_index, total_words, codex_items=None
         showBars();
       }}
       lastScrollY = curY;
+
+      // Debounce save scroll position (150ms) (Phase 1 & 2)
+      clearTimeout(scrollSaveTimer);
+      scrollSaveTimer = setTimeout(() => {{
+        try {{
+          localStorage.setItem('pha_troi_scroll_{ch_num}', curY);
+          const state = getReadingState();
+          state.cur_ch = {ch_num};
+          state.scroll_y = curY;
+          state.scroll_pct = pct;
+          state.updated_at = Date.now();
+          if (!state.completed) state.completed = [];
+          if (pct >= 85 && !state.completed.includes({ch_num})) {{
+            state.completed.push({ch_num});
+          }}
+          saveReadingState(state);
+        }} catch(e) {{}}
+      }}, 150);
     }}, {{ passive: true }});
+
+    // Scroll Position Restoration on Revisit (Phase 1)
+    window.addEventListener('DOMContentLoaded', () => {{
+      if (!window.location.hash) {{
+        const savedScroll = parseInt(localStorage.getItem('pha_troi_scroll_{ch_num}') || '0', 10);
+        if (savedScroll > 150) {{
+          setTimeout(() => {{
+            window.scrollTo({{ top: savedScroll, behavior: 'instant' }});
+            showToast('📖 Đã khôi phục vị trí đọc gần nhất');
+          }}, 80);
+        }}
+      }}
+    }});
 
     // Tap reading text to toggle immersion mode (show/hide bars)
     const novelContent = document.getElementById('novelContent');
@@ -2208,7 +2606,31 @@ def generate_chapter_html(ch_info, chapters_index, total_words, codex_items=None
       }});
     }}
 
-    // 3. Web Audio Synthesizer (Pink Noise Rain)
+    // Share Chapter Feature (Phase 5)
+    function shareChapter() {{
+      const canonicalUrl = 'https://bon-231900.github.io/pha-troi/chuong-{ch_num}/';
+      const shareData = {{
+        title: 'Phá Trời — Chương {ch_num}: ' + {json.dumps(clean_title)},
+        text: 'Đọc Chương {ch_num}: ' + {json.dumps(clean_title)} + ' — Tiểu thuyết đô thị tu chân Sài Gòn 2026',
+        url: canonicalUrl
+      }};
+      if (navigator.share) {{
+        navigator.share(shareData).catch(() => {{}});
+      }} else if (navigator.clipboard) {{
+        navigator.clipboard.writeText(canonicalUrl).then(() => {{
+          showToast('✓ Đã sao chép liên kết Chương {ch_num}');
+        }}).catch(() => {{
+          showToast('Liên kết: ' + canonicalUrl);
+        }});
+      }} else {{
+        showToast('Liên kết: ' + canonicalUrl);
+      }}
+    }}
+
+    const btnShare = document.getElementById('btnShare');
+    if (btnShare) btnShare.onclick = shareChapter;
+
+    // Web Audio Synthesizer (Pink Noise Rain)
     let audioCtx = null, noiseNode = null, gainNode = null, filterNode = null;
     let isRainPlaying = false, rainVolume = 0.25;
 
@@ -2284,7 +2706,7 @@ def generate_chapter_html(ch_info, chapters_index, total_words, codex_items=None
       if (gainNode && audioCtx) gainNode.gain.setValueAtTime(rainVolume, audioCtx.currentTime);
     }};
 
-    // 4. Modals & Drawers
+    // Modals & Drawers
     const modalOverlay = document.getElementById('modalOverlay');
     const drawerToc = document.getElementById('drawerToc');
     const drawerCodex = document.getElementById('drawerCodex');
@@ -2329,6 +2751,10 @@ def generate_chapter_html(ch_info, chapters_index, total_words, codex_items=None
     if (btnMobToc) btnMobToc.onclick = openToc;
     document.getElementById('btnCloseToc').onclick = closeAllDrawers;
 
+    // End-of-chapter "Về Mục Lục" button (Phase 1)
+    const btnFooterToc = document.getElementById('btnFooterToc');
+    if (btnFooterToc) btnFooterToc.onclick = openToc;
+
     document.getElementById('btnCodex').onclick = openCodex;
     document.getElementById('btnCloseCodex').onclick = closeAllDrawers;
 
@@ -2337,27 +2763,33 @@ def generate_chapter_html(ch_info, chapters_index, total_words, codex_items=None
     if (btnMobSet) btnMobSet.onclick = openSettings;
     document.getElementById('btnCloseSettings').onclick = closeAllDrawers;
 
-    // Filter in Chapter TOC drawer
+    // Accent-Insensitive Filter in Chapter TOC drawer (Phase 3)
     document.getElementById('inputTocSearch').oninput = (e) => {{
-      const val = e.target.value.toLowerCase().trim();
+      const queryNorm = normalizeVi(e.target.value);
       document.querySelectorAll('#tocDrawerList .toc-item').forEach(item => {{
-        const text = item.innerText.toLowerCase();
-        item.style.display = (!val || text.includes(val)) ? 'flex' : 'none';
+        const textNorm = normalizeVi(item.innerText);
+        item.style.display = (!queryNorm || textNorm.includes(queryNorm)) ? 'flex' : 'none';
       }});
     }};
 
     const CODEX_DATA = {codex_json};
 
-    // Progressive Codex Drawer
+    // Progressive Codex Drawer & Anti-Spoiler (Phase 6)
     function renderCodexDrawer(s) {{
       if (!codexDrawerBody) return;
+      const state = getReadingState();
+      let maxCh = Math.max(s, state.cur_ch || 1);
+      if (state.completed && state.completed.length > 0) {{
+        maxCh = Math.max(maxCh, Math.max(...state.completed));
+      }}
+
       let html = '';
       const filtered = CODEX_DATA.filter(it => it.category === activeCodexTab);
       if (filtered.length === 0) {{
         html = '<p style="color:var(--text-muted); font-size:13px; text-align:center; padding:24px 0;">Đang cập nhật thêm mục mới...</p>';
       }} else {{
         filtered.forEach(it => {{
-          const isUnlocked = s >= it.unlock_chapter;
+          const isUnlocked = maxCh >= it.unlock_chapter;
           if (isUnlocked) {{
             let statsHtml = '';
             if (it.stats) {{
@@ -2377,8 +2809,8 @@ def generate_chapter_html(ch_info, chapters_index, total_words, codex_items=None
             html += `
               <div class="codex-card locked">
                 <span class="codex-badge locked-badge">🔒 HỒ SƠ ẨN</span>
-                <h3 class="codex-title" style="color:var(--text-muted);">${{it.hidden_name}}</h3>
-                <p class="codex-desc">${{it.hidden_desc}}</p>
+                <h3 class="codex-title" style="color:var(--text-muted);">${{it.hidden_name || '???'}}</h3>
+                <p class="codex-desc">${{it.hidden_desc || 'Hồ sơ chưa thể truy cập.'}}</p>
                 <div class="codex-unlock-hint">🔒 Đọc đến Chương ${{it.unlock_chapter}} để mở khóa chi tiết</div>
               </div>
             `;
@@ -2399,7 +2831,7 @@ def generate_chapter_html(ch_info, chapters_index, total_words, codex_items=None
       }};
     }});
 
-    // 5. Settings Handlers
+    // Settings Handlers
     const THEMES = ['theme-peaceful-dark', 'theme-gentle-light', 'theme-oled', 'theme-sepia'];
     function setTheme(theme) {{
       THEMES.forEach(t => {{
@@ -2428,7 +2860,7 @@ def generate_chapter_html(ch_info, chapters_index, total_words, codex_items=None
     document.querySelectorAll('.theme-opt').forEach(opt => {{
       opt.onclick = () => {{
         setTheme(opt.dataset.theme);
-        showToast('🎨 Đã chuyển giao diện: ' + opt.innerText.trim());
+        showToast('🎨 Giao diện: ' + opt.innerText.trim());
       }};
     }});
 
@@ -2491,13 +2923,13 @@ def generate_chapter_html(ch_info, chapters_index, total_words, codex_items=None
       document.documentElement.style.setProperty('--font-family', FONT_SERIF);
       document.body.style.setProperty('--font-family', FONT_SERIF);
       localStorage.setItem('pha_troi_font_family', 'serif');
-      showToast('📖 Phông chữ Có Chân (Lora)');
+      showToast('📖 Phông Có Chân (Lora)');
     }};
     document.getElementById('btnFontSans').onclick = () => {{
       document.documentElement.style.setProperty('--font-family', FONT_SANS);
       document.body.style.setProperty('--font-family', FONT_SANS);
       localStorage.setItem('pha_troi_font_family', 'sans');
-      showToast('📱 Phông chữ Không Chân (Be Vietnam Pro)');
+      showToast('📱 Phông Không Chân (Be Vietnam Pro)');
     }};
 
     const savedFont = localStorage.getItem('pha_troi_font_family');
@@ -2506,7 +2938,7 @@ def generate_chapter_html(ch_info, chapters_index, total_words, codex_items=None
       document.body.style.setProperty('--font-family', FONT_SERIF);
     }}
 
-    // Keyboard navigation
+    // Keyboard navigation (Phase 1 & 5)
     window.addEventListener('keydown', (e) => {{
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
       if (e.key === 'ArrowLeft') {{
@@ -2517,6 +2949,8 @@ def generate_chapter_html(ch_info, chapters_index, total_words, codex_items=None
         if (nextBtn && !nextBtn.classList.contains('disabled')) window.location.href = nextBtn.href;
       }} else if (e.key.toLowerCase() === 'h') {{
         window.location.href = '../';
+      }} else if (e.key.toLowerCase() === 's') {{
+        shareChapter();
       }} else if (e.key.toLowerCase() === 't') {{
         document.getElementById('btnQuickTheme').click();
       }} else if (e.key.toLowerCase() === 'm') {{
@@ -2539,7 +2973,7 @@ def generate_chapter_html(ch_info, chapters_index, total_words, codex_items=None
       btnCardCodex.onclick = () => openCodex();
     }}
 
-    // Dynamic Next Chapter Resolver (Bảo đảm 100% hiển thị chương mới kể cả khi dính browser cache cũ)
+    // Dynamic Next Chapter Resolver (Bảo đảm hiển thị chương mới kể cả khi dính browser cache cũ)
     (function() {{
       const curCh = parseInt('{ch_num}', 10);
       fetch('../data/chapters.json?t=' + Date.now())
@@ -2548,24 +2982,20 @@ def generate_chapter_html(ch_info, chapters_index, total_words, codex_items=None
           if (!data || !data.chapters) return;
           const total = data.total || data.chapters.length;
 
-          // Cập nhật badge tổng số chương
           document.querySelectorAll('.nav-live-badge').forEach(el => {{
             el.innerHTML = '<span class="dot-live"></span> ' + total + ' CHƯƠNG';
           }});
 
-          // Nếu có chương tiếp theo
           if (curCh < total) {{
             const nextNum = curCh + 1;
             const nextUrl = '../chuong-' + nextNum + '/';
             const nextCh = data.chapters.find(c => c.chapter === nextNum);
 
-            // Mở khóa phím điều hướng nổi & mobile bar
             document.querySelectorAll('.desktop-nav-right a, a.btn-bottom-item:nth-child(4)').forEach(a => {{
               a.classList.remove('disabled');
               a.setAttribute('href', nextUrl);
             }});
 
-            // Mở khóa nút footer
             const fNext = document.getElementById('footerNextBtn');
             if (fNext) {{
               fNext.classList.remove('disabled');
@@ -2574,7 +3004,6 @@ def generate_chapter_html(ch_info, chapters_index, total_words, codex_items=None
               if (span) span.textContent = 'Chương Sau (' + nextNum + ')';
             }}
 
-            // Cập nhật thẻ Next Chapter nếu đang hiển thị là chương cuối
             const card = document.getElementById('nextChapterCard');
             if (card && card.classList.contains('last-chapter-card') && nextCh) {{
               const nextTitle = (nextCh.title || '').replace(/^Chương\\s+\\d+:\\s*/i, '');
@@ -2588,8 +3017,7 @@ def generate_chapter_html(ch_info, chapters_index, total_words, codex_items=None
                   '<span>•</span><span>' + nextWords + ' từ</span>' +
                 '</div>' +
                 '<a href="' + nextUrl + '" class="btn-read-next-pulse">' +
-                  '<span>Đọc Chương ' + nextNum + ' Ngay</span>' +
-                  '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>' +
+                  '<span>Tiếp Tục Đọc Chương ' + nextNum + ' →</span>' +
                 '</a>';
             }}
           }}
@@ -2606,8 +3034,7 @@ def generate_chapter_html(ch_info, chapters_index, total_words, codex_items=None
 </body>
 </html>"""
 
-def generate_sw(total_ch=59):
-    import time
+def generate_sw(total_ch):
     sw_ver = f"pha-troi-v{total_ch}-{int(time.time())}"
     return f"""// Service Worker {sw_ver} cho Web Reader Phá Trời
 const CACHE_NAME = '{sw_ver}';
@@ -2615,6 +3042,8 @@ const ASSETS_TO_CACHE = [
   './manifest.json',
   './icon.svg',
   './cover.svg',
+  './data/chapters.json',
+  './data/codex.json',
   './assets/logo.webp',
   './assets/cover_vertical.webp',
   './assets/hero_horizontal.webp'
@@ -2680,7 +3109,7 @@ self.addEventListener('fetch', (e) => {{
 """
 
 def build():
-    print(f"[*] Bat dau bien dich Web App tinh Pha Troi v2.3 (Clean Slugs) tai: {DIST_DIR}")
+    print(f"[*] Bat dau bien dich Web App tinh Pha Troi v2.5 (12 Phase Upgrade) tai: {DIST_DIR}")
     os.makedirs(DIST_DIR, exist_ok=True)
     data_dir = os.path.join(DIST_DIR, "data")
     os.makedirs(data_dir, exist_ok=True)
@@ -2727,7 +3156,7 @@ def build():
         "author": "An Bình",
         "total": len(chapters_index),
         "total_words": total_words,
-        "updated_at": "2026-09-15T19:25:00+07:00",
+        "updated_at": "2026-09-17T23:00:00+07:00",
         "chapters": chapters_index
     }
     with open(os.path.join(data_dir, "chapters.json"), "w", encoding="utf-8") as out:
