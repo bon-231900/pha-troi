@@ -1,0 +1,996 @@
+{
+  "total_chapters": 70,
+  "total_words": 187350,
+  "chapters": [
+    {
+      "chapter": 1,
+      "filename": "ch_001.md",
+      "path": "D:\\tieu-thuyet\\manuscript\\markdown\\volume_01\\arc_01\\ch_001.md",
+      "word_count": 948,
+      "meta_found": {
+        "chương": 1,
+        "hồi": 1
+      },
+      "typos_found": {},
+      "canon_violations": [],
+      "cliffhangers": [],
+      "sensitive_found": []
+    },
+    {
+      "chapter": 2,
+      "filename": "ch_002.md",
+      "path": "D:\\tieu-thuyet\\manuscript\\markdown\\volume_01\\arc_01\\ch_002.md",
+      "word_count": 2103,
+      "meta_found": {
+        "chương": 1,
+        "hồi": 1
+      },
+      "typos_found": {},
+      "canon_violations": [],
+      "cliffhangers": [],
+      "sensitive_found": []
+    },
+    {
+      "chapter": 3,
+      "filename": "ch_003.md",
+      "path": "D:\\tieu-thuyet\\manuscript\\markdown\\volume_01\\arc_01\\ch_003.md",
+      "word_count": 1681,
+      "meta_found": {
+        "chương": 1
+      },
+      "typos_found": {},
+      "canon_violations": [],
+      "cliffhangers": [],
+      "sensitive_found": []
+    },
+    {
+      "chapter": 4,
+      "filename": "ch_004.md",
+      "path": "D:\\tieu-thuyet\\manuscript\\markdown\\volume_01\\arc_01\\ch_004.md",
+      "word_count": 2075,
+      "meta_found": {
+        "chương": 1
+      },
+      "typos_found": {},
+      "canon_violations": [],
+      "cliffhangers": [],
+      "sensitive_found": []
+    },
+    {
+      "chapter": 5,
+      "filename": "ch_005.md",
+      "path": "D:\\tieu-thuyet\\manuscript\\markdown\\volume_01\\arc_01\\ch_005.md",
+      "word_count": 2366,
+      "meta_found": {
+        "chương": 1
+      },
+      "typos_found": {},
+      "canon_violations": [],
+      "cliffhangers": [],
+      "sensitive_found": []
+    },
+    {
+      "chapter": 6,
+      "filename": "ch_006.md",
+      "path": "D:\\tieu-thuyet\\manuscript\\markdown\\volume_01\\arc_01\\ch_006.md",
+      "word_count": 2000,
+      "meta_found": {
+        "chương": 1
+      },
+      "typos_found": {},
+      "canon_violations": [],
+      "cliffhangers": [],
+      "sensitive_found": []
+    },
+    {
+      "chapter": 7,
+      "filename": "ch_007.md",
+      "path": "D:\\tieu-thuyet\\manuscript\\markdown\\volume_01\\arc_01\\ch_007.md",
+      "word_count": 2853,
+      "meta_found": {
+        "chương": 1,
+        "hồi": 3
+      },
+      "typos_found": {},
+      "canon_violations": [],
+      "cliffhangers": [],
+      "sensitive_found": []
+    },
+    {
+      "chapter": 8,
+      "filename": "ch_008.md",
+      "path": "D:\\tieu-thuyet\\manuscript\\markdown\\volume_01\\arc_01\\ch_008.md",
+      "word_count": 2558,
+      "meta_found": {
+        "chương": 1,
+        "hồi": 1
+      },
+      "typos_found": {},
+      "canon_violations": [],
+      "cliffhangers": [],
+      "sensitive_found": []
+    },
+    {
+      "chapter": 9,
+      "filename": "ch_009.md",
+      "path": "D:\\tieu-thuyet\\manuscript\\markdown\\volume_01\\arc_01\\ch_009.md",
+      "word_count": 1784,
+      "meta_found": {
+        "chương": 1,
+        "hồi": 1
+      },
+      "typos_found": {},
+      "canon_violations": [],
+      "cliffhangers": [],
+      "sensitive_found": []
+    },
+    {
+      "chapter": 10,
+      "filename": "ch_010.md",
+      "path": "D:\\tieu-thuyet\\manuscript\\markdown\\volume_01\\arc_01\\ch_010.md",
+      "word_count": 1996,
+      "meta_found": {
+        "chương": 1
+      },
+      "typos_found": {},
+      "canon_violations": [],
+      "cliffhangers": [],
+      "sensitive_found": []
+    },
+    {
+      "chapter": 11,
+      "filename": "ch_011.md",
+      "path": "D:\\tieu-thuyet\\manuscript\\markdown\\volume_01\\arc_01\\ch_011.md",
+      "word_count": 1867,
+      "meta_found": {
+        "chương": 1
+      },
+      "typos_found": {},
+      "canon_violations": [],
+      "cliffhangers": [],
+      "sensitive_found": []
+    },
+    {
+      "chapter": 12,
+      "filename": "ch_012.md",
+      "path": "D:\\tieu-thuyet\\manuscript\\markdown\\volume_01\\arc_01\\ch_012.md",
+      "word_count": 1611,
+      "meta_found": {
+        "chương": 1
+      },
+      "typos_found": {},
+      "canon_violations": [],
+      "cliffhangers": [],
+      "sensitive_found": []
+    },
+    {
+      "chapter": 13,
+      "filename": "ch_013.md",
+      "path": "D:\\tieu-thuyet\\manuscript\\markdown\\volume_01\\arc_01\\ch_013.md",
+      "word_count": 1660,
+      "meta_found": {
+        "chương": 1,
+        "hồi": 1
+      },
+      "typos_found": {},
+      "canon_violations": [],
+      "cliffhangers": [],
+      "sensitive_found": []
+    },
+    {
+      "chapter": 14,
+      "filename": "ch_014.md",
+      "path": "D:\\tieu-thuyet\\manuscript\\markdown\\volume_01\\arc_01\\ch_014.md",
+      "word_count": 2245,
+      "meta_found": {
+        "chương": 1
+      },
+      "typos_found": {},
+      "canon_violations": [],
+      "cliffhangers": [],
+      "sensitive_found": []
+    },
+    {
+      "chapter": 15,
+      "filename": "ch_015.md",
+      "path": "D:\\tieu-thuyet\\manuscript\\markdown\\volume_01\\arc_01\\ch_015.md",
+      "word_count": 2606,
+      "meta_found": {
+        "chương": 1
+      },
+      "typos_found": {},
+      "canon_violations": [],
+      "cliffhangers": [],
+      "sensitive_found": []
+    },
+    {
+      "chapter": 16,
+      "filename": "ch_016.md",
+      "path": "D:\\tieu-thuyet\\manuscript\\markdown\\volume_01\\arc_01\\ch_016.md",
+      "word_count": 3083,
+      "meta_found": {
+        "chương": 1,
+        "hồi": 1,
+        "quyển": 1
+      },
+      "typos_found": {},
+      "canon_violations": [],
+      "cliffhangers": [],
+      "sensitive_found": []
+    },
+    {
+      "chapter": 17,
+      "filename": "ch_017.md",
+      "path": "D:\\tieu-thuyet\\manuscript\\markdown\\volume_01\\arc_01\\ch_017.md",
+      "word_count": 1968,
+      "meta_found": {
+        "chương": 1,
+        "hồi": 1
+      },
+      "typos_found": {},
+      "canon_violations": [],
+      "cliffhangers": [],
+      "sensitive_found": []
+    },
+    {
+      "chapter": 18,
+      "filename": "ch_018.md",
+      "path": "D:\\tieu-thuyet\\manuscript\\markdown\\volume_01\\arc_01\\ch_018.md",
+      "word_count": 2102,
+      "meta_found": {
+        "chương": 1
+      },
+      "typos_found": {},
+      "canon_violations": [],
+      "cliffhangers": [],
+      "sensitive_found": []
+    },
+    {
+      "chapter": 19,
+      "filename": "ch_019.md",
+      "path": "D:\\tieu-thuyet\\manuscript\\markdown\\volume_01\\arc_01\\ch_019.md",
+      "word_count": 1829,
+      "meta_found": {
+        "chương": 1,
+        "hồi": 1
+      },
+      "typos_found": {},
+      "canon_violations": [],
+      "cliffhangers": [],
+      "sensitive_found": []
+    },
+    {
+      "chapter": 20,
+      "filename": "ch_020.md",
+      "path": "D:\\tieu-thuyet\\manuscript\\markdown\\volume_01\\arc_01\\ch_020.md",
+      "word_count": 3804,
+      "meta_found": {
+        "chương": 1,
+        "hồi": 2
+      },
+      "typos_found": {},
+      "canon_violations": [],
+      "cliffhangers": [],
+      "sensitive_found": []
+    },
+    {
+      "chapter": 21,
+      "filename": "ch_021.md",
+      "path": "D:\\tieu-thuyet\\manuscript\\markdown\\volume_01\\arc_01\\ch_021.md",
+      "word_count": 2925,
+      "meta_found": {
+        "chương": 1
+      },
+      "typos_found": {},
+      "canon_violations": [],
+      "cliffhangers": [],
+      "sensitive_found": []
+    },
+    {
+      "chapter": 22,
+      "filename": "ch_022.md",
+      "path": "D:\\tieu-thuyet\\manuscript\\markdown\\volume_01\\arc_01\\ch_022.md",
+      "word_count": 2602,
+      "meta_found": {
+        "chương": 1
+      },
+      "typos_found": {},
+      "canon_violations": [],
+      "cliffhangers": [],
+      "sensitive_found": []
+    },
+    {
+      "chapter": 23,
+      "filename": "ch_023.md",
+      "path": "D:\\tieu-thuyet\\manuscript\\markdown\\volume_01\\arc_01\\ch_023.md",
+      "word_count": 3795,
+      "meta_found": {
+        "chương": 1,
+        "hệ thống": 1
+      },
+      "typos_found": {},
+      "canon_violations": [
+        "Phát hiện suy diễn cấm kỵ (FORBIDDEN_ASSUMPTION): 'hệ thống'"
+      ],
+      "cliffhangers": [],
+      "sensitive_found": []
+    },
+    {
+      "chapter": 24,
+      "filename": "ch_024.md",
+      "path": "D:\\tieu-thuyet\\manuscript\\markdown\\volume_01\\arc_01\\ch_024.md",
+      "word_count": 3493,
+      "meta_found": {
+        "chương": 1,
+        "hồi": 1,
+        "hệ thống": 2
+      },
+      "typos_found": {},
+      "canon_violations": [
+        "Phát hiện suy diễn cấm kỵ (FORBIDDEN_ASSUMPTION): 'hệ thống'"
+      ],
+      "cliffhangers": [],
+      "sensitive_found": []
+    },
+    {
+      "chapter": 25,
+      "filename": "ch_025.md",
+      "path": "D:\\tieu-thuyet\\manuscript\\markdown\\volume_01\\arc_01\\ch_025.md",
+      "word_count": 2825,
+      "meta_found": {
+        "chương": 1,
+        "quyển": 1,
+        "hệ thống": 2
+      },
+      "typos_found": {},
+      "canon_violations": [
+        "Phát hiện suy diễn cấm kỵ (FORBIDDEN_ASSUMPTION): 'hệ thống'"
+      ],
+      "cliffhangers": [],
+      "sensitive_found": []
+    },
+    {
+      "chapter": 26,
+      "filename": "ch_026.md",
+      "path": "D:\\tieu-thuyet\\manuscript\\markdown\\volume_01\\arc_01\\ch_026.md",
+      "word_count": 2822,
+      "meta_found": {
+        "chương": 1,
+        "hồi": 1,
+        "quyển": 2
+      },
+      "typos_found": {},
+      "canon_violations": [],
+      "cliffhangers": [],
+      "sensitive_found": []
+    },
+    {
+      "chapter": 27,
+      "filename": "ch_027.md",
+      "path": "D:\\tieu-thuyet\\manuscript\\markdown\\volume_01\\arc_01\\ch_027.md",
+      "word_count": 2998,
+      "meta_found": {
+        "chương": 1,
+        "hệ thống": 1
+      },
+      "typos_found": {},
+      "canon_violations": [
+        "Phát hiện suy diễn cấm kỵ (FORBIDDEN_ASSUMPTION): 'hệ thống'"
+      ],
+      "cliffhangers": [],
+      "sensitive_found": []
+    },
+    {
+      "chapter": 28,
+      "filename": "ch_028.md",
+      "path": "D:\\tieu-thuyet\\manuscript\\markdown\\volume_01\\arc_01\\ch_028.md",
+      "word_count": 2783,
+      "meta_found": {
+        "chương": 2,
+        "hệ thống": 4
+      },
+      "typos_found": {},
+      "canon_violations": [
+        "Phát hiện suy diễn cấm kỵ (FORBIDDEN_ASSUMPTION): 'hệ thống'"
+      ],
+      "cliffhangers": [],
+      "sensitive_found": []
+    },
+    {
+      "chapter": 29,
+      "filename": "ch_029.md",
+      "path": "D:\\tieu-thuyet\\manuscript\\markdown\\volume_01\\arc_01\\ch_029.md",
+      "word_count": 2569,
+      "meta_found": {
+        "chương": 1,
+        "hồi": 2,
+        "hệ thống": 2
+      },
+      "typos_found": {},
+      "canon_violations": [
+        "Phát hiện suy diễn cấm kỵ (FORBIDDEN_ASSUMPTION): 'hệ thống'"
+      ],
+      "cliffhangers": [],
+      "sensitive_found": []
+    },
+    {
+      "chapter": 30,
+      "filename": "ch_030.md",
+      "path": "D:\\tieu-thuyet\\manuscript\\markdown\\volume_01\\arc_01\\ch_030.md",
+      "word_count": 2676,
+      "meta_found": {
+        "chương": 1,
+        "hồi": 3,
+        "quyển": 1,
+        "hệ thống": 6
+      },
+      "typos_found": {},
+      "canon_violations": [
+        "Phát hiện suy diễn cấm kỵ (FORBIDDEN_ASSUMPTION): 'hệ thống'"
+      ],
+      "cliffhangers": [],
+      "sensitive_found": []
+    },
+    {
+      "chapter": 31,
+      "filename": "ch_031.md",
+      "path": "D:\\tieu-thuyet\\manuscript\\markdown\\volume_01\\arc_01\\ch_031.md",
+      "word_count": 2690,
+      "meta_found": {
+        "chương": 2
+      },
+      "typos_found": {},
+      "canon_violations": [],
+      "cliffhangers": [],
+      "sensitive_found": []
+    },
+    {
+      "chapter": 32,
+      "filename": "ch_032.md",
+      "path": "D:\\tieu-thuyet\\manuscript\\markdown\\volume_01\\arc_01\\ch_032.md",
+      "word_count": 4178,
+      "meta_found": {
+        "chương": 1,
+        "hồi": 2
+      },
+      "typos_found": {},
+      "canon_violations": [],
+      "cliffhangers": [],
+      "sensitive_found": []
+    },
+    {
+      "chapter": 33,
+      "filename": "ch_033.md",
+      "path": "D:\\tieu-thuyet\\manuscript\\markdown\\volume_01\\arc_01\\ch_033.md",
+      "word_count": 3097,
+      "meta_found": {
+        "chương": 1,
+        "hồi": 1
+      },
+      "typos_found": {},
+      "canon_violations": [],
+      "cliffhangers": [],
+      "sensitive_found": []
+    },
+    {
+      "chapter": 34,
+      "filename": "ch_034.md",
+      "path": "D:\\tieu-thuyet\\manuscript\\markdown\\volume_01\\arc_01\\ch_034.md",
+      "word_count": 2705,
+      "meta_found": {
+        "chương": 1
+      },
+      "typos_found": {},
+      "canon_violations": [],
+      "cliffhangers": [],
+      "sensitive_found": []
+    },
+    {
+      "chapter": 35,
+      "filename": "ch_035.md",
+      "path": "D:\\tieu-thuyet\\manuscript\\markdown\\volume_01\\arc_01\\ch_035.md",
+      "word_count": 3126,
+      "meta_found": {
+        "chương": 1,
+        "hồi": 2,
+        "quyển": 1
+      },
+      "typos_found": {},
+      "canon_violations": [],
+      "cliffhangers": [],
+      "sensitive_found": []
+    },
+    {
+      "chapter": 36,
+      "filename": "ch_036.md",
+      "path": "D:\\tieu-thuyet\\manuscript\\markdown\\volume_01\\arc_01\\ch_036.md",
+      "word_count": 2555,
+      "meta_found": {
+        "chương": 1,
+        "hồi": 2
+      },
+      "typos_found": {},
+      "canon_violations": [],
+      "cliffhangers": [],
+      "sensitive_found": []
+    },
+    {
+      "chapter": 37,
+      "filename": "ch_037.md",
+      "path": "D:\\tieu-thuyet\\manuscript\\markdown\\volume_01\\arc_01\\ch_037.md",
+      "word_count": 2630,
+      "meta_found": {
+        "chương": 1,
+        "hồi": 3
+      },
+      "typos_found": {},
+      "canon_violations": [],
+      "cliffhangers": [],
+      "sensitive_found": []
+    },
+    {
+      "chapter": 38,
+      "filename": "ch_038.md",
+      "path": "D:\\tieu-thuyet\\manuscript\\markdown\\volume_01\\arc_01\\ch_038.md",
+      "word_count": 4042,
+      "meta_found": {
+        "chương": 1,
+        "hồi": 2
+      },
+      "typos_found": {},
+      "canon_violations": [],
+      "cliffhangers": [],
+      "sensitive_found": []
+    },
+    {
+      "chapter": 39,
+      "filename": "ch_039.md",
+      "path": "D:\\tieu-thuyet\\manuscript\\markdown\\volume_01\\arc_01\\ch_039.md",
+      "word_count": 3231,
+      "meta_found": {
+        "chương": 1,
+        "hồi": 2
+      },
+      "typos_found": {},
+      "canon_violations": [],
+      "cliffhangers": [],
+      "sensitive_found": [
+        "thuốc nổ"
+      ]
+    },
+    {
+      "chapter": 40,
+      "filename": "ch_040.md",
+      "path": "D:\\tieu-thuyet\\manuscript\\markdown\\volume_01\\arc_01\\ch_040.md",
+      "word_count": 2887,
+      "meta_found": {
+        "chương": 1
+      },
+      "typos_found": {},
+      "canon_violations": [],
+      "cliffhangers": [],
+      "sensitive_found": []
+    },
+    {
+      "chapter": 41,
+      "filename": "ch_041.md",
+      "path": "D:\\tieu-thuyet\\manuscript\\markdown\\volume_01\\arc_01\\ch_041.md",
+      "word_count": 2544,
+      "meta_found": {
+        "chương": 1,
+        "hồi": 2
+      },
+      "typos_found": {},
+      "canon_violations": [],
+      "cliffhangers": [],
+      "sensitive_found": []
+    },
+    {
+      "chapter": 42,
+      "filename": "ch_042.md",
+      "path": "D:\\tieu-thuyet\\manuscript\\markdown\\volume_01\\arc_01\\ch_042.md",
+      "word_count": 2176,
+      "meta_found": {
+        "chương": 1,
+        "hồi": 3
+      },
+      "typos_found": {},
+      "canon_violations": [],
+      "cliffhangers": [],
+      "sensitive_found": []
+    },
+    {
+      "chapter": 43,
+      "filename": "ch_043.md",
+      "path": "D:\\tieu-thuyet\\manuscript\\markdown\\volume_01\\arc_01\\ch_043.md",
+      "word_count": 2914,
+      "meta_found": {
+        "chương": 1,
+        "hồi": 3
+      },
+      "typos_found": {},
+      "canon_violations": [],
+      "cliffhangers": [],
+      "sensitive_found": [
+        "bom"
+      ]
+    },
+    {
+      "chapter": 44,
+      "filename": "ch_044.md",
+      "path": "D:\\tieu-thuyet\\manuscript\\markdown\\volume_01\\arc_01\\ch_044.md",
+      "word_count": 2406,
+      "meta_found": {
+        "chương": 1,
+        "hồi": 2
+      },
+      "typos_found": {},
+      "canon_violations": [],
+      "cliffhangers": [],
+      "sensitive_found": []
+    },
+    {
+      "chapter": 45,
+      "filename": "ch_045.md",
+      "path": "D:\\tieu-thuyet\\manuscript\\markdown\\volume_01\\arc_01\\ch_045.md",
+      "word_count": 3331,
+      "meta_found": {
+        "chương": 1,
+        "hồi": 2
+      },
+      "typos_found": {},
+      "canon_violations": [],
+      "cliffhangers": [],
+      "sensitive_found": []
+    },
+    {
+      "chapter": 46,
+      "filename": "ch_046.md",
+      "path": "D:\\tieu-thuyet\\manuscript\\markdown\\volume_01\\arc_01\\ch_046.md",
+      "word_count": 1967,
+      "meta_found": {
+        "chương": 1,
+        "hồi": 2
+      },
+      "typos_found": {},
+      "canon_violations": [],
+      "cliffhangers": [],
+      "sensitive_found": []
+    },
+    {
+      "chapter": 47,
+      "filename": "ch_047.md",
+      "path": "D:\\tieu-thuyet\\manuscript\\markdown\\volume_01\\arc_02\\ch_047.md",
+      "word_count": 2062,
+      "meta_found": {
+        "chương": 1,
+        "hồi": 1,
+        "hệ thống": 1
+      },
+      "typos_found": {},
+      "canon_violations": [
+        "Phát hiện suy diễn cấm kỵ (FORBIDDEN_ASSUMPTION): 'hệ thống'"
+      ],
+      "cliffhangers": [],
+      "sensitive_found": []
+    },
+    {
+      "chapter": 48,
+      "filename": "ch_048.md",
+      "path": "D:\\tieu-thuyet\\manuscript\\markdown\\volume_01\\arc_02\\ch_048.md",
+      "word_count": 2292,
+      "meta_found": {
+        "chương": 1,
+        "hồi": 2,
+        "hệ thống": 1
+      },
+      "typos_found": {},
+      "canon_violations": [
+        "Phát hiện suy diễn cấm kỵ (FORBIDDEN_ASSUMPTION): 'hệ thống'"
+      ],
+      "cliffhangers": [],
+      "sensitive_found": []
+    },
+    {
+      "chapter": 49,
+      "filename": "ch_049.md",
+      "path": "D:\\tieu-thuyet\\manuscript\\markdown\\volume_01\\arc_02\\ch_049.md",
+      "word_count": 1676,
+      "meta_found": {
+        "chương": 1,
+        "hồi": 3,
+        "hệ thống": 1
+      },
+      "typos_found": {},
+      "canon_violations": [
+        "Phát hiện suy diễn cấm kỵ (FORBIDDEN_ASSUMPTION): 'hệ thống'"
+      ],
+      "cliffhangers": [],
+      "sensitive_found": []
+    },
+    {
+      "chapter": 50,
+      "filename": "ch_050.md",
+      "path": "D:\\tieu-thuyet\\manuscript\\markdown\\volume_01\\arc_02\\ch_050.md",
+      "word_count": 1494,
+      "meta_found": {
+        "chương": 1,
+        "hồi": 2
+      },
+      "typos_found": {},
+      "canon_violations": [
+        "Phát hiện suy diễn cấm kỵ (FORBIDDEN_ASSUMPTION): 'hồi sinh'"
+      ],
+      "cliffhangers": [],
+      "sensitive_found": []
+    },
+    {
+      "chapter": 51,
+      "filename": "ch_051.md",
+      "path": "D:\\tieu-thuyet\\manuscript\\markdown\\volume_01\\arc_02\\ch_051.md",
+      "word_count": 1643,
+      "meta_found": {
+        "chương": 1,
+        "hồi": 3
+      },
+      "typos_found": {},
+      "canon_violations": [],
+      "cliffhangers": [],
+      "sensitive_found": []
+    },
+    {
+      "chapter": 52,
+      "filename": "ch_052.md",
+      "path": "D:\\tieu-thuyet\\manuscript\\markdown\\volume_01\\arc_02\\ch_052.md",
+      "word_count": 2074,
+      "meta_found": {
+        "chương": 1
+      },
+      "typos_found": {},
+      "canon_violations": [],
+      "cliffhangers": [],
+      "sensitive_found": []
+    },
+    {
+      "chapter": 53,
+      "filename": "ch_053.md",
+      "path": "D:\\tieu-thuyet\\manuscript\\markdown\\volume_01\\arc_02\\ch_053.md",
+      "word_count": 1719,
+      "meta_found": {
+        "chương": 1
+      },
+      "typos_found": {},
+      "canon_violations": [],
+      "cliffhangers": [],
+      "sensitive_found": []
+    },
+    {
+      "chapter": 54,
+      "filename": "ch_054.md",
+      "path": "D:\\tieu-thuyet\\manuscript\\markdown\\volume_01\\arc_02\\ch_054.md",
+      "word_count": 1857,
+      "meta_found": {
+        "chương": 1
+      },
+      "typos_found": {},
+      "canon_violations": [],
+      "cliffhangers": [],
+      "sensitive_found": []
+    },
+    {
+      "chapter": 55,
+      "filename": "ch_055.md",
+      "path": "D:\\tieu-thuyet\\manuscript\\markdown\\volume_01\\arc_02\\ch_055.md",
+      "word_count": 1418,
+      "meta_found": {
+        "chương": 1,
+        "hồi": 2
+      },
+      "typos_found": {},
+      "canon_violations": [],
+      "cliffhangers": [],
+      "sensitive_found": []
+    },
+    {
+      "chapter": 56,
+      "filename": "ch_056.md",
+      "path": "D:\\tieu-thuyet\\manuscript\\markdown\\volume_01\\arc_02\\ch_056.md",
+      "word_count": 1414,
+      "meta_found": {
+        "chương": 1,
+        "hồi": 1
+      },
+      "typos_found": {},
+      "canon_violations": [],
+      "cliffhangers": [],
+      "sensitive_found": []
+    },
+    {
+      "chapter": 57,
+      "filename": "ch_057.md",
+      "path": "D:\\tieu-thuyet\\manuscript\\markdown\\volume_01\\arc_02\\ch_057.md",
+      "word_count": 3426,
+      "meta_found": {
+        "chương": 1,
+        "hồi": 2,
+        "database": 1,
+        "hệ thống": 4
+      },
+      "typos_found": {},
+      "canon_violations": [
+        "Phát hiện suy diễn cấm kỵ (FORBIDDEN_ASSUMPTION): 'hệ thống'",
+        "Phát hiện suy diễn cấm kỵ (FORBIDDEN_ASSUMPTION): 'huyết mạch'"
+      ],
+      "cliffhangers": [],
+      "sensitive_found": []
+    },
+    {
+      "chapter": 58,
+      "filename": "ch_058.md",
+      "path": "D:\\tieu-thuyet\\manuscript\\markdown\\volume_01\\arc_02\\ch_058.md",
+      "word_count": 4050,
+      "meta_found": {
+        "chương": 1,
+        "hồi": 6
+      },
+      "typos_found": {},
+      "canon_violations": [],
+      "cliffhangers": [],
+      "sensitive_found": []
+    },
+    {
+      "chapter": 59,
+      "filename": "ch_059.md",
+      "path": "D:\\tieu-thuyet\\manuscript\\markdown\\volume_01\\arc_02\\ch_059.md",
+      "word_count": 3474,
+      "meta_found": {
+        "chương": 1
+      },
+      "typos_found": {},
+      "canon_violations": [],
+      "cliffhangers": [],
+      "sensitive_found": [
+        "đánh sập"
+      ]
+    },
+    {
+      "chapter": 60,
+      "filename": "ch_060.md",
+      "path": "D:\\tieu-thuyet\\manuscript\\markdown\\volume_01\\arc_02\\ch_060.md",
+      "word_count": 3637,
+      "meta_found": {
+        "chương": 1
+      },
+      "typos_found": {},
+      "canon_violations": [],
+      "cliffhangers": [],
+      "sensitive_found": []
+    },
+    {
+      "chapter": 61,
+      "filename": "ch_061.md",
+      "path": "D:\\tieu-thuyet\\manuscript\\markdown\\volume_01\\arc_02\\ch_061.md",
+      "word_count": 3617,
+      "meta_found": {
+        "chương": 1
+      },
+      "typos_found": {},
+      "canon_violations": [],
+      "cliffhangers": [],
+      "sensitive_found": []
+    },
+    {
+      "chapter": 62,
+      "filename": "ch_062.md",
+      "path": "D:\\tieu-thuyet\\manuscript\\markdown\\volume_01\\arc_02\\ch_062.md",
+      "word_count": 3422,
+      "meta_found": {
+        "chương": 1
+      },
+      "typos_found": {},
+      "canon_violations": [],
+      "cliffhangers": [],
+      "sensitive_found": []
+    },
+    {
+      "chapter": 63,
+      "filename": "ch_063.md",
+      "path": "D:\\tieu-thuyet\\manuscript\\markdown\\volume_01\\arc_02\\ch_063.md",
+      "word_count": 4369,
+      "meta_found": {
+        "chương": 1
+      },
+      "typos_found": {},
+      "canon_violations": [],
+      "cliffhangers": [],
+      "sensitive_found": []
+    },
+    {
+      "chapter": 64,
+      "filename": "ch_064.md",
+      "path": "D:\\tieu-thuyet\\manuscript\\markdown\\volume_01\\arc_02\\ch_064.md",
+      "word_count": 3660,
+      "meta_found": {
+        "chương": 1
+      },
+      "typos_found": {},
+      "canon_violations": [],
+      "cliffhangers": [],
+      "sensitive_found": []
+    },
+    {
+      "chapter": 65,
+      "filename": "ch_065.md",
+      "path": "D:\\tieu-thuyet\\manuscript\\markdown\\volume_01\\arc_02\\ch_065.md",
+      "word_count": 3515,
+      "meta_found": {
+        "chương": 1
+      },
+      "typos_found": {},
+      "canon_violations": [],
+      "cliffhangers": [],
+      "sensitive_found": []
+    },
+    {
+      "chapter": 66,
+      "filename": "ch_066.md",
+      "path": "D:\\tieu-thuyet\\manuscript\\markdown\\volume_01\\arc_02\\ch_066.md",
+      "word_count": 3564,
+      "meta_found": {
+        "chương": 1
+      },
+      "typos_found": {},
+      "canon_violations": [],
+      "cliffhangers": [],
+      "sensitive_found": []
+    },
+    {
+      "chapter": 67,
+      "filename": "ch_067.md",
+      "path": "D:\\tieu-thuyet\\manuscript\\markdown\\volume_01\\arc_02\\ch_067.md",
+      "word_count": 3394,
+      "meta_found": {
+        "chương": 1
+      },
+      "typos_found": {},
+      "canon_violations": [],
+      "cliffhangers": [],
+      "sensitive_found": [
+        "bom"
+      ]
+    },
+    {
+      "chapter": 68,
+      "filename": "ch_068.md",
+      "path": "D:\\tieu-thuyet\\manuscript\\markdown\\volume_01\\arc_02\\ch_068.md",
+      "word_count": 3464,
+      "meta_found": {},
+      "typos_found": {},
+      "canon_violations": [],
+      "cliffhangers": [],
+      "sensitive_found": []
+    },
+    {
+      "chapter": 69,
+      "filename": "ch_069.md",
+      "path": "D:\\tieu-thuyet\\manuscript\\markdown\\volume_01\\arc_02\\ch_069.md",
+      "word_count": 3521,
+      "meta_found": {},
+      "typos_found": {},
+      "canon_violations": [],
+      "cliffhangers": [],
+      "sensitive_found": []
+    },
+    {
+      "chapter": 70,
+      "filename": "ch_070.md",
+      "path": "D:\\tieu-thuyet\\manuscript\\markdown\\volume_01\\arc_02\\ch_070.md",
+      "word_count": 3482,
+      "meta_found": {},
+      "typos_found": {},
+      "canon_violations": [],
+      "cliffhangers": [],
+      "sensitive_found": []
+    }
+  ]
+}
