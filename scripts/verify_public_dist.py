@@ -57,7 +57,7 @@ def verify():
     errors = []
 
     # 1. Kiểm tra các tệp bắt buộc phải có
-    required_files = ["index.html", "data/chapters.json", "manifest.json", "sw.js", "sitemap.xml", "robots.txt"]
+    required_files = ["index.html", "data/chapters.json", "manifest.json", "sw.js", "sitemap.xml", "robots.txt", "CNAME"]
     for req in required_files:
         p = DIST_DIR / req
         if not p.exists():

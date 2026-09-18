@@ -3,14 +3,14 @@
 > **Hệ điều hành sáng tác & Quản trị thực thể chuyên biệt cho tiểu thuyết trường thiên 3.000+ chương: “Phá Trời”.**
 
 [![Deploy Reader to GitHub Pages](https://github.com/bon-231900/pha-troi/actions/workflows/deploy.yml/badge.svg)](https://github.com/bon-231900/pha-troi/actions/workflows/deploy.yml)
-[![Live Reader](https://img.shields.io/badge/Live_Reader-24%2F7-brightgreen)](https://bon-231900.github.io/pha-troi/)
+[![Live Reader](https://img.shields.io/badge/Live_Reader-phatroi.com-brightgreen)](https://phatroi.com/)
 [![Novel License: All Rights Reserved](https://img.shields.io/badge/Novel_Content-All_Rights_Reserved-red.svg)](LICENSE.md)
 [![Code License: MIT](https://img.shields.io/badge/Novel_OS_Code-MIT-blue.svg)](LICENSE-CODE.md)
 
 ---
 
 ## 📖 Ứng Dụng Đọc Truyện Mobile 24/7 (PWA)
-- **Đọc Online / Offline mọi lúc mọi nơi (Tắt máy vẫn đọc tốt)**: [https://bon-231900.github.io/pha-troi/](https://bon-231900.github.io/pha-troi/)
+- **Đọc Online / Offline mọi lúc mọi nơi (Tắt máy vẫn đọc tốt)**: [https://phatroi.com/](https://phatroi.com/) *(hoặc dự phòng [GitHub Pages](https://bon-231900.github.io/pha-troi/))*
 - **Tiến độ phát hành**: Tác phẩm đang được sáng tác và đồng bộ chương mới trực tiếp lên Web Reader theo thời gian thực.
 - **Tính năng nổi bật**:
   - Hỗ trợ **PWA** (Thêm vào Màn hình chính trên iOS/Android dùng như app riêng).

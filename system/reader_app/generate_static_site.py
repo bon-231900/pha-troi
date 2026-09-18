@@ -20,6 +20,7 @@ if sys.stdout and hasattr(sys.stdout, 'reconfigure'):
 BASE_DIR = os.getenv("NOVEL_OS_ROOT", str(Path(__file__).resolve().parent.parent.parent))
 DIST_DIR = os.path.join(BASE_DIR, "system", "reader_app", "dist")
 STATIC_SRC_DIR = os.path.join(BASE_DIR, "system", "reader_app", "static")
+SITE_URL = os.getenv("SITE_URL", "https://phatroi.com")
 
 def get_codex_items():
     reg_path = os.path.join(BASE_DIR, "canon", "codex", "codex_registry.json")
@@ -491,10 +492,11 @@ def generate_404_html():
     (function() {
       var path = window.location.pathname;
       var match = path.match(/(?:chuong|chapter)[-_/]?(\\d+)/i);
+      var prefix = (path.indexOf('/pha-troi') === 0) ? '/pha-troi' : '';
       if (match) {
-        window.location.replace('/pha-troi/chuong-' + match[1] + '/');
+        window.location.replace(prefix + '/chuong-' + match[1] + '/');
       } else {
-        window.location.replace('/pha-troi/');
+        window.location.replace(prefix + '/');
       }
     })();
   </script>
@@ -513,7 +515,7 @@ def generate_sitemap_xml(chapters_index):
         '<?xml version="1.0" encoding="UTF-8"?>',
         '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
         '  <url>',
-        '    <loc>https://bon-231900.github.io/pha-troi/</loc>',
+        f'    <loc>{SITE_URL}/</loc>',
         f'    <lastmod>{today_str}</lastmod>',
         '    <changefreq>daily</changefreq>',
         '    <priority>1.0</priority>',
@@ -522,7 +524,7 @@ def generate_sitemap_xml(chapters_index):
     for ch in chapters_index:
         ch_num = ch["chapter"]
         lines.append('  <url>')
-        lines.append(f'    <loc>https://bon-231900.github.io/pha-troi/chuong-{ch_num}/</loc>')
+        lines.append(f'    <loc>{SITE_URL}/chuong-{ch_num}/</loc>')
         lines.append(f'    <lastmod>{today_str}</lastmod>')
         lines.append('    <changefreq>weekly</changefreq>')
         lines.append('    <priority>0.8</priority>')
@@ -531,9 +533,9 @@ def generate_sitemap_xml(chapters_index):
     return "\n".join(lines) + "\n"
 
 def generate_robots_txt():
-    return """User-agent: *
+    return f"""User-agent: *
 Allow: /
-Sitemap: https://bon-231900.github.io/pha-troi/sitemap.xml
+Sitemap: {SITE_URL}/sitemap.xml
 """
 
 def generate_home_html(chapters_index, total_words, codex_items=None):
@@ -564,19 +566,19 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
   <meta name="keywords" content="Phá Trời, Phá Toái Thần Hoang, Novel OS, tiểu thuyết đô thị, tu chân, thể đạo, Nguyễn Minh An, Lâm Tịch, An Bình">
   <meta name="author" content="An Bình">
   
-  <link rel="canonical" href="https://bon-231900.github.io/pha-troi/">
+  <link rel="canonical" href="{SITE_URL}/">
   <meta property="og:type" content="book">
-  <meta property="og:url" content="https://bon-231900.github.io/pha-troi/">
+  <meta property="og:url" content="{SITE_URL}/">
   <meta property="og:title" content="Phá Trời — Tiểu Thuyết Đô Thị Tu Chân Sài Gòn 2026">
   <meta property="og:description" content="Một nhân viên văn phòng tại TP.HCM phát hiện phong ấn sông ngầm 2.5 triệu năm. Không hệ thống, lấy Thể Đạo phàm nhân phá vỡ xiềng xích. Đọc trọn bộ {total_ch} chương.">
-  <meta property="og:image" content="https://bon-231900.github.io/pha-troi/assets/cover_vertical.jpg">
+  <meta property="og:image" content="{SITE_URL}/assets/cover_vertical.jpg">
   <meta property="og:image:width" content="682">
   <meta property="og:image:height" content="1024">
 
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Phá Trời — Tiểu Thuyết Đô Thị Tu Chân Sài Gòn 2026">
   <meta name="twitter:description" content="Một nhân viên văn phòng tại TP.HCM phát hiện phong ấn sông ngầm 2.5 triệu năm. Đọc trọn bộ {total_ch} chương online & offline 24/7.">
-  <meta name="twitter:image" content="https://bon-231900.github.io/pha-troi/assets/hero_horizontal.jpg">
+  <meta name="twitter:image" content="{SITE_URL}/assets/hero_horizontal.jpg">
 
   <link rel="manifest" href="./manifest.json">
   <link rel="icon" href="./assets/logo.webp" type="image/webp">
@@ -614,21 +616,21 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
     "@graph": [
       {{
         "@type": "WebSite",
-        "@id": "https://bon-231900.github.io/pha-troi/#website",
-        "url": "https://bon-231900.github.io/pha-troi/",
+        "@id": "{SITE_URL}/#website",
+        "url": "{SITE_URL}/",
         "name": "Phá Trời (Phá Toái Thần Hoang)",
         "description": "Trường thiên tiểu thuyết đô thị tu chân Sài Gòn 2026.",
         "inLanguage": "vi"
       }},
       {{
         "@type": "Book",
-        "@id": "https://bon-231900.github.io/pha-troi/#book",
+        "@id": "{SITE_URL}/#book",
         "name": "Phá Trời (Phá Toái Thần Hoang)",
         "author": {{
           "@type": "Person",
           "name": "An Bình"
         }},
-        "url": "https://bon-231900.github.io/pha-troi/",
+        "url": "{SITE_URL}/",
         "genre": ["Đô thị tu chân", "Huyền huyễn", "Khoa huyễn"],
         "inLanguage": "vi",
         "numberOfPages": {total_ch},
@@ -2009,17 +2011,17 @@ def generate_chapter_html(ch_info, chapters_index, total_words, codex_items=None
   <meta name="description" content="Đọc Chương {ch_num}: {clean_title} — Quyển {vol}, Hồi {arc} ({words:,} từ). {ch_info.get('excerpt', '')}">
   <meta name="author" content="An Bình">
   
-  <link rel="canonical" href="https://bon-231900.github.io/pha-troi/chuong-{ch_num}/">
+  <link rel="canonical" href="{SITE_URL}/chuong-{ch_num}/">
   <meta property="og:type" content="article">
-  <meta property="og:url" content="https://bon-231900.github.io/pha-troi/chuong-{ch_num}/">
+  <meta property="og:url" content="{SITE_URL}/chuong-{ch_num}/">
   <meta property="og:title" content="Phá Trời — Chương {ch_num}: {clean_title}">
   <meta property="og:description" content="Đọc Chương {ch_num}: {clean_title} — Đô thị tu chân Sài Gòn 2026.">
-  <meta property="og:image" content="https://bon-231900.github.io/pha-troi/assets/cover_vertical.jpg">
+  <meta property="og:image" content="{SITE_URL}/assets/cover_vertical.jpg">
 
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Phá Trời — Chương {ch_num}: {clean_title}">
   <meta name="twitter:description" content="Đọc Chương {ch_num}: {clean_title} ({words:,} từ) — Đô thị tu chân Sài Gòn 2026.">
-  <meta name="twitter:image" content="https://bon-231900.github.io/pha-troi/assets/hero_horizontal.jpg">
+  <meta name="twitter:image" content="{SITE_URL}/assets/hero_horizontal.jpg">
 
   <link rel="manifest" href="../manifest.json">
   <link rel="icon" href="../assets/logo.webp" type="image/webp">
@@ -2058,7 +2060,7 @@ def generate_chapter_html(ch_info, chapters_index, total_words, codex_items=None
     "headline": "Phá Trời — Chương {ch_num}: {clean_title}",
     "name": "Phá Trời — Chương {ch_num}: {clean_title}",
     "description": "{ch_info.get('excerpt', '')}",
-    "url": "https://bon-231900.github.io/pha-troi/chuong-{ch_num}/",
+    "url": "{SITE_URL}/chuong-{ch_num}/",
     "inLanguage": "vi",
     "author": {{
       "@type": "Person",
@@ -2067,7 +2069,7 @@ def generate_chapter_html(ch_info, chapters_index, total_words, codex_items=None
     "isPartOf": {{
       "@type": "Book",
       "name": "Phá Trời (Phá Toái Thần Hoang)",
-      "url": "https://bon-231900.github.io/pha-troi/",
+      "url": "{SITE_URL}/",
       "author": {{
         "@type": "Person",
         "name": "An Bình"
@@ -2640,7 +2642,7 @@ def generate_chapter_html(ch_info, chapters_index, total_words, codex_items=None
 
     // Share Chapter Feature (Phase 5)
     function shareChapter() {{
-      const canonicalUrl = 'https://bon-231900.github.io/pha-troi/chuong-{ch_num}/';
+      const canonicalUrl = '{SITE_URL}/chuong-{ch_num}/';
       const shareData = {{
         title: 'Phá Trời — Chương {ch_num}: ' + {json.dumps(clean_title)},
         text: 'Đọc Chương {ch_num}: ' + {json.dumps(clean_title)} + ' — Tiểu thuyết đô thị tu chân Sài Gòn 2026',
@@ -3236,6 +3238,11 @@ def build():
     with open(os.path.join(DIST_DIR, "robots.txt"), "w", encoding="utf-8") as out:
         out.write(generate_robots_txt())
     print("  [+] Generated dist/sitemap.xml and dist/robots.txt")
+
+    # 5c. Generate CNAME for custom domain
+    with open(os.path.join(DIST_DIR, "CNAME"), "w", encoding="utf-8") as out:
+        out.write("phatroi.com\n")
+    print("  [+] Generated dist/CNAME (phatroi.com)")
 
     # 6. Generate sw.js
     with open(os.path.join(DIST_DIR, "sw.js"), "w", encoding="utf-8") as out:

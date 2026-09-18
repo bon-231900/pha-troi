@@ -71,7 +71,8 @@ def sync():
         print("  ĐỒNG BỘ LÊN GITHUB PAGES THÀNH CÔNG RỰC RỠ!")
         print("="*60)
         print("-> Đọc online 24/7 (Tắt laptop vẫn đọc tốt):")
-        print("   https://bon-231900.github.io/pha-troi/\n")
+        print("   https://phatroi.com/ (Tên miền chính)")
+        print("   https://bon-231900.github.io/pha-troi/ (Tự động chuyển hướng)\n")
         print("="*60)
     else:
         print("[Lỗi Push]", push_res.stderr)
