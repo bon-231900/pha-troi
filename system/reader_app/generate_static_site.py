@@ -508,21 +508,22 @@ def generate_404_html():
 </html>"""
 
 def generate_sitemap_xml(chapters_index):
+    today_str = datetime.now().strftime("%Y-%m-%d")
     lines = [
         '<?xml version="1.0" encoding="UTF-8"?>',
         '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
         '  <url>',
         '    <loc>https://bon-231900.github.io/pha-troi/</loc>',
+        f'    <lastmod>{today_str}</lastmod>',
         '    <changefreq>daily</changefreq>',
         '    <priority>1.0</priority>',
         '  </url>'
     ]
     for ch in chapters_index:
         ch_num = ch["chapter"]
-        lastmod = ch.get("date") or "2026-10-23"
         lines.append('  <url>')
         lines.append(f'    <loc>https://bon-231900.github.io/pha-troi/chuong-{ch_num}/</loc>')
-        lines.append(f'    <lastmod>{lastmod}</lastmod>')
+        lines.append(f'    <lastmod>{today_str}</lastmod>')
         lines.append('    <changefreq>weekly</changefreq>')
         lines.append('    <priority>0.8</priority>')
         lines.append('  </url>')
