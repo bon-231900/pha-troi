@@ -10,6 +10,7 @@ import json
 import re
 import shutil
 import time
+from datetime import datetime
 from pathlib import Path
 import markdown
 
@@ -505,6 +506,34 @@ def generate_404_html():
   </div>
 </body>
 </html>"""
+
+def generate_sitemap_xml(chapters_index):
+    lines = [
+        '<?xml version="1.0" encoding="UTF-8"?>',
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+        '  <url>',
+        '    <loc>https://bon-231900.github.io/pha-troi/</loc>',
+        '    <changefreq>daily</changefreq>',
+        '    <priority>1.0</priority>',
+        '  </url>'
+    ]
+    for ch in chapters_index:
+        ch_num = ch["chapter"]
+        lastmod = ch.get("date") or "2026-10-23"
+        lines.append('  <url>')
+        lines.append(f'    <loc>https://bon-231900.github.io/pha-troi/chuong-{ch_num}/</loc>')
+        lines.append(f'    <lastmod>{lastmod}</lastmod>')
+        lines.append('    <changefreq>weekly</changefreq>')
+        lines.append('    <priority>0.8</priority>')
+        lines.append('  </url>')
+    lines.append('</urlset>')
+    return "\n".join(lines) + "\n"
+
+def generate_robots_txt():
+    return """User-agent: *
+Allow: /
+Sitemap: https://bon-231900.github.io/pha-troi/sitemap.xml
+"""
 
 def generate_home_html(chapters_index, total_words, codex_items=None):
     total_ch = len(chapters_index)
@@ -3151,12 +3180,13 @@ def build():
             "location": info["location"]
         })
 
+    now_iso = datetime.now().astimezone().strftime("%Y-%m-%dT%H:%M:%S+07:00")
     index_data = {
         "title": "Phá Trời (Phá Toái Thần Hoang)",
         "author": "An Bình",
         "total": len(chapters_index),
         "total_words": total_words,
-        "updated_at": "2026-09-17T23:00:00+07:00",
+        "updated_at": now_iso,
         "chapters": chapters_index
     }
     with open(os.path.join(data_dir, "chapters.json"), "w", encoding="utf-8") as out:
@@ -3196,6 +3226,13 @@ def build():
     with open(os.path.join(DIST_DIR, "404.html"), "w", encoding="utf-8") as out:
         out.write(generate_404_html())
     print("  [+] Generated dist/404.html")
+
+    # 5b. Generate sitemap.xml & robots.txt (SEO Architecture Phase 8)
+    with open(os.path.join(DIST_DIR, "sitemap.xml"), "w", encoding="utf-8") as out:
+        out.write(generate_sitemap_xml(chapters_index))
+    with open(os.path.join(DIST_DIR, "robots.txt"), "w", encoding="utf-8") as out:
+        out.write(generate_robots_txt())
+    print("  [+] Generated dist/sitemap.xml and dist/robots.txt")
 
     # 6. Generate sw.js
     with open(os.path.join(DIST_DIR, "sw.js"), "w", encoding="utf-8") as out:
