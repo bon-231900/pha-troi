@@ -3244,6 +3244,12 @@ def build():
         out.write("phatroi.com\n")
     print("  [+] Generated dist/CNAME (phatroi.com)")
 
+    # 5d. Google Search Console HTML verification file
+    gsc_file = "google54897adf661cd4b2.html"
+    with open(os.path.join(DIST_DIR, gsc_file), "w", encoding="utf-8") as out:
+        out.write(f"google-site-verification: {gsc_file}\n")
+    print(f"  [+] Generated dist/{gsc_file}")
+
     # 6. Generate sw.js
     with open(os.path.join(DIST_DIR, "sw.js"), "w", encoding="utf-8") as out:
         out.write(generate_sw(len(chapters_index)))
