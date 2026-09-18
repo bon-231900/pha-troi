@@ -551,19 +551,41 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
     latest_title = re.sub(r"^Chương\s+\d+:\s*", "", latest_title, flags=re.IGNORECASE)
     latest_words = latest_ch.get("word_count", 0) if latest_ch else 0
     latest_read_mins = max(1, round(latest_words / 300))
-    latest_date = latest_ch.get("date", "2026-09-17") if latest_ch else ""
+    latest_date = datetime.now().strftime("%d/%m/%Y")
+
+    # Pre-rendered static chapter cards for crawler SEO discovery
+    static_cards = []
+    for ch in chapters_index:
+        c_title = re.sub(r"^Chương\s+\d+:\s*", "", ch["title"], flags=re.IGNORECASE)
+        loc_str = f"<span>• {ch['location'].split(',')[0]}</span>" if ch.get("location") else ""
+        static_cards.append(f"""
+          <a href="./chuong-{ch['chapter']}/" class="home-ch-card">
+            <div class="home-ch-info">
+              <div class="home-ch-meta-top">
+                <span>HỒI {ch.get('arc', 1)} • CHƯƠNG {ch['chapter']}</span>
+              </div>
+              <div class="home-ch-title">{c_title}</div>
+              <div class="home-ch-meta-bottom">
+                <span>{ch['word_count']:,} từ</span>
+                {loc_str}
+              </div>
+            </div>
+            <div class="home-ch-arrow">→</div>
+          </a>
+        """)
+    static_grid_html = "".join(static_cards)
 
     return f"""<!DOCTYPE html>
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="google-site-verification" content="495lr0EokjP3LLADeovb1t_ecOikpcbgyO_mW9m8e00">
   <title>Phá Trời — Tiểu Thuyết Đô Thị Tu Chân Sài Gòn 2026</title>
   
   <meta name="title" content="Phá Trời — Tiểu Thuyết Đô Thị Tu Chân Sài Gòn 2026">
-  <meta name="description" content="Trường thiên tiểu thuyết đô thị tu chân Phá Trời. Một nhân viên văn phòng tại TP.HCM phát hiện phong ấn sông ngầm 2.5 triệu năm. Thể Đạo từ số 0 giữa đô thị hiện đại. Đọc trọn bộ {total_ch} chương online & offline 24/7.">
-  <meta name="keywords" content="Phá Trời, Phá Toái Thần Hoang, Novel OS, tiểu thuyết đô thị, tu chân, thể đạo, Nguyễn Minh An, Lâm Tịch, An Bình">
+  <meta name="description" content="Tiểu thuyết đô thị tu chân Sài Gòn 2026. Phàm nhân lấy Thể Đạo phá vỡ phong ấn 2,5 triệu năm. Đã phát hành {total_ch} chương ({total_words:,} từ), cập nhật đều đặn online & offline 24/7.">
+  <meta name="keywords" content="Phá Trời, Phá Toái Thần Hoang, tiểu thuyết đô thị, tu chân Sài Gòn, thể đạo, Nguyễn Minh An, Lâm Tịch, An Bình">
   <meta name="author" content="An Bình">
   
   <link rel="canonical" href="{SITE_URL}/">
@@ -717,8 +739,25 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
     .mobile-title {{ font-size: 32px; letter-spacing: 1.5px; }}
     .hero-subtitle {{ font-size: 14px; font-weight: 700; letter-spacing: 3px; color: #94a3b8; text-transform: uppercase; margin-top: 2px; }}
     .mobile-sub {{ font-size: 12px; letter-spacing: 2px; margin-bottom: 8px; }}
-    .hero-description {{ font-size: 14.5px; line-height: 1.75; color: #cbd5e1; margin: 10px 0 16px 0; opacity: 0.95; }}
-    .mobile-desc {{ font-size: 13px; margin-bottom: 16px; line-height: 1.6; }}
+    .hero-description {{ font-size: 14px; line-height: 1.7; color: #cbd5e1; margin: 8px 0 14px 0; opacity: 0.92; }}
+    .mobile-desc {{ font-size: 13px; margin-bottom: 14px; line-height: 1.6; }}
+    .hero-hook-card {{
+      margin: 12px 0 14px 0; padding: 12px 16px; border-radius: 12px;
+      background: rgba(255, 255, 255, 0.04); backdrop-filter: blur(8px);
+      border-left: 3.5px solid var(--gold-primary); border-top: 1px solid rgba(255, 255, 255, 0.06);
+      border-right: 1px solid rgba(255, 255, 255, 0.06); border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+    }}
+    .hero-hook-lead {{ font-size: 13.5px; color: #94a3b8; margin: 0 0 5px 0; line-height: 1.5; }}
+    .hero-hook-core {{ font-size: 14.5px; color: #f1f5f9; margin: 0 0 5px 0; line-height: 1.5; }}
+    .hero-hook-core strong {{ color: var(--gold-primary); }}
+    .hero-hook-tail {{ font-size: 13.5px; color: #cbd5e1; margin: 0; line-height: 1.5; }}
+    .hero-hook-tail strong {{ color: #34d399; }}
+    @media (max-width: 768px) {{
+      .hero-hook-card {{ text-align: left; margin: 10px 0 14px 0; padding: 10px 14px; width: 100%; box-sizing: border-box; }}
+      .hero-hook-lead, .hero-hook-tail {{ font-size: 12.5px; }}
+      .hero-hook-core {{ font-size: 13.5px; }}
+    }}
     .hero-stats-bar {{ display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px; font-size: 12px; color: var(--text-muted); margin-bottom: 20px; }}
     .hero-stat-tag {{
       display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 6px;
@@ -902,7 +941,7 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
     </div>
 
     <div class="header-center">
-      <h1 class="header-title" id="headerTitle">Phá Trời (Phá Toái Thần Hoang)</h1>
+      <span class="header-title" id="headerTitle">Phá Trời (Phá Toái Thần Hoang)</span>
       <p class="header-sub" id="headerSub">{total_ch} chương • An Bình</p>
     </div>
 
@@ -954,12 +993,17 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
               <div class="hero-subtitle">PHÁ TOÁI THẦN HOANG</div>
             </div>
           </div>
-          <p class="hero-description">Một nhân viên văn phòng bình thường tại TP.HCM vô tình phát hiện phong ấn cổ xưa 2.5 triệu năm ẩn sâu dưới lòng sông Sài Gòn. Không thiên phú, không gia thế, không hệ thống hack game — Minh An dấn thân vào con đường Thể Đạo, lấy nhục thân phàm nhân phá vỡ vạn trùng xiềng xích.</p>
+          <div class="hero-hook-card">
+            <p class="hero-hook-lead">Sài Gòn, 2026. Một người bình thường giữa guồng quay mưu sinh.</p>
+            <p class="hero-hook-core">Một phong ấn đại địa đã ngủ yên dưới lòng thành phố suốt <strong>2,5 triệu năm</strong>.</p>
+            <p class="hero-hook-tail">Và một con đường <strong>Thể Đạo phàm nhân</strong> không dành cho kẻ có thiên phú.</p>
+          </div>
+          <p class="hero-description">Không hệ thống hack điểm, không bàn tay vàng vô lý — Minh An dấn thân vào cổ đạo thất truyền, dùng từng tấc huyết nhục phàm nhân phá vỡ vạn trùng xiềng xích.</p>
           <div class="hero-stats-bar">
-            <span class="hero-stat-tag">📖 <strong>{total_ch}</strong> Chương</span>
-            <span class="hero-stat-tag">⚡ <strong>{total_words:,}</strong> từ</span>
-            <span class="hero-stat-tag">🌊 Quyển 1 & 2</span>
-            <span class="hero-stat-tag"><span class="dot-live"></span> Đang ra tiếp</span>
+            <span class="hero-stat-tag">📖 <strong>{total_ch}</strong> CHƯƠNG</span>
+            <span class="hero-stat-tag">⚡ <strong>{total_words:,}</strong> TỪ</span>
+            <span class="hero-stat-tag">🌊 <strong>QUYỂN 1–2</strong></span>
+            <span class="hero-stat-tag"><span class="dot-live"></span> <strong>ĐANG RA TIẾP</strong></span>
           </div>
           <div class="hero-actions">
             <a href="./chuong-1/" class="btn-hero-primary" id="btnHeroReadPrimary">
@@ -993,9 +1037,18 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
             </picture>
           </div>
           <div class="hero-badge-pill"><span class="dot-live"></span> ĐÔ THỊ TU CHÂN • TP.HCM 2026</div>
-          <h1 class="hero-main-title mobile-title">PHÁ TRỜI</h1>
+          <div class="hero-main-title mobile-title">PHÁ TRỜI</div>
           <div class="hero-subtitle mobile-sub">PHÁ TOÁI THẦN HOANG</div>
-          <p class="hero-description mobile-desc">Một nhân viên văn phòng bình thường tại TP.HCM phát hiện phong ấn sông ngầm Sài Gòn. Không thiên phú, không hệ thống — lấy Thể Đạo phàm nhân phá vỡ xiềng xích.</p>
+          <div class="hero-hook-card">
+            <p class="hero-hook-lead">Sài Gòn, 2026. Người bình thường giữa dòng mưu sinh.</p>
+            <p class="hero-hook-core">Phong ấn đại địa ngủ yên suốt <strong>2,5 triệu năm</strong>.</p>
+            <p class="hero-hook-tail">Con đường <strong>Thể Đạo phàm nhân</strong> phá vỡ vạn trùng xiềng xích.</p>
+          </div>
+          <div class="hero-stats-bar" style="justify-content:center; margin-bottom:14px;">
+            <span class="hero-stat-tag">📖 <strong>{total_ch}</strong> CHƯƠNG</span>
+            <span class="hero-stat-tag">⚡ <strong>{total_words:,}</strong> TỪ</span>
+            <span class="hero-stat-tag"><span class="dot-live"></span> <strong>ĐANG RA TIẾP</strong></span>
+          </div>
           <a href="./chuong-1/" class="btn-hero-primary mobile-cta-full" id="btnMobileHeroReadPrimary">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
             <span id="mobileHeroPrimaryText">▶ Bắt Đầu Đọc — Chương 1</span>
@@ -1034,7 +1087,7 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
             <div style="min-width:0; flex:1;">
               <div style="font-size:11px; font-weight:700; color:var(--gold-primary); text-transform:uppercase; letter-spacing:1px;">Chương {latest_num} Vừa Cập Nhật</div>
               <div style="font-size:15px; font-weight:700; color:var(--text-color); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Chương {latest_num}: {latest_title}</div>
-              <div style="font-size:11.5px; color:var(--text-muted); margin-top:2px;">{latest_words:,} từ • ~{latest_read_mins} phút đọc • Cập nhật {latest_date}</div>
+              <div style="font-size:11.5px; color:var(--text-muted); margin-top:2px;">{latest_words:,} từ • ~{latest_read_mins} phút đọc • Cập nhật ngày {latest_date}</div>
             </div>
           </div>
           <a href="./chuong-{latest_num}/" class="continue-btn" style="flex-shrink:0; border-color:var(--gold-primary); color:var(--gold-primary); background:rgba(245,158,11,0.12);">Đọc Ngay →</a>
@@ -1074,7 +1127,7 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
         </div>
 
         <div class="home-toc-grid" id="homeTocGrid">
-          <!-- Populated dynamically by JavaScript with status tags -->
+          {static_grid_html}
         </div>
       </div>
 
@@ -1105,7 +1158,10 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
         </picture>
         <div class="footer-title">PHÁ TRỜI — PHÁ TOÁI THẦN HOANG</div>
         <div class="footer-sub">Trường thiên tiểu thuyết đô thị tu chân Sài Gòn 2026 • Tác giả: An Bình</div>
-        <div class="footer-copy">Vận hành bởi Novel OS • Clean Slugs SEO • 100% Offline PWA • Tự động lưu tiến độ.</div>
+        <div class="footer-info-line" style="font-size:12px; color:var(--text-muted); margin-bottom:8px;">
+          Đã phát hành: <strong style="color:var(--gold-primary);">{total_ch} chương</strong> ({total_words:,} từ) • Tình trạng: <strong style="color:#34d399;">Đang sáng tác đều đặn</strong> • Đọc offline PWA 24/7
+        </div>
+        <div class="footer-copy">Phát hành độc quyền tại phatroi.com • Bản quyền nội dung thuộc về tác giả An Bình © 2026. Mọi quyền được bảo lưu.</div>
       </footer>
     </div>
   </div>
@@ -2003,7 +2059,7 @@ def generate_chapter_html(ch_info, chapters_index, total_words, codex_items=None
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="google-site-verification" content="495lr0EokjP3LLADeovb1t_ecOikpcbgyO_mW9m8e00">
   <title>Phá Trời — Chương {ch_num}: {clean_title}</title>
   
@@ -2077,8 +2133,8 @@ def generate_chapter_html(ch_info, chapters_index, total_words, codex_items=None
     }},
     "wordCount": {words},
     "publisher": {{
-      "@type": "Organization",
-      "name": "Novel OS"
+      "@type": "Person",
+      "name": "An Bình"
     }}
   }}
   </script>
@@ -2282,7 +2338,7 @@ def generate_chapter_html(ch_info, chapters_index, total_words, codex_items=None
     </div>
 
     <div class="header-center">
-      <h1 class="header-title">Chương {ch_num}: {clean_title}</h1>
+      <span class="header-title">Chương {ch_num}: {clean_title}</span>
       <p class="header-sub">Quyển {vol} • Hồi {arc} • {words:,} từ <span class="reader-progress-badge" id="readProgressPct">0%</span></p>
     </div>
 
