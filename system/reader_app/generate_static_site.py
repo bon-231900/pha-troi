@@ -555,6 +555,7 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="google-site-verification" content="495lr0EokjP3LLADeovb1t_ecOikpcbgyO_mW9m8e00">
   <title>Phá Trời — Tiểu Thuyết Đô Thị Tu Chân Sài Gòn 2026</title>
   
   <meta name="title" content="Phá Trời — Tiểu Thuyết Đô Thị Tu Chân Sài Gòn 2026">
@@ -2000,6 +2001,7 @@ def generate_chapter_html(ch_info, chapters_index, total_words, codex_items=None
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="google-site-verification" content="495lr0EokjP3LLADeovb1t_ecOikpcbgyO_mW9m8e00">
   <title>Phá Trời — Chương {ch_num}: {clean_title}</title>
   
   <meta name="title" content="Phá Trời — Chương {ch_num}: {clean_title}">
