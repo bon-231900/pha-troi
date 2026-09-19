@@ -612,6 +612,7 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
     shared_css = get_shared_css()
     codex_items = codex_items or get_codex_items()
     codex_json = json.dumps(codex_items, ensure_ascii=False)
+    chapters_json = json.dumps(chapters_index, ensure_ascii=False)
 
     # Latest chapter info (Phase 4)
     latest_ch = chapters_index[-1] if chapters_index else None
@@ -1350,7 +1351,7 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
       }} catch(e) {{}}
     }}
 
-    let chaptersData = [];
+    let chaptersData = {chapters_json};
     let totalChapters = {total_ch};
     let activeArcFilter = 'all';
     let homeArcFilter = 'all';
@@ -1435,11 +1436,15 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
       }}
     }}
 
-    document.getElementById('btnAmbient').onclick = toggleRainSound;
-    document.getElementById('btnSheetAudioToggle').onclick = toggleRainSound;
-    document.getElementById('audioVolume').oninput = (e) => {{
+    const btnAmb = document.getElementById('btnAmbient');
+    if (btnAmb) btnAmb.onclick = toggleRainSound;
+    const btnSheetAudio = document.getElementById('btnSheetAudioToggle');
+    if (btnSheetAudio) btnSheetAudio.onclick = toggleRainSound;
+    const audioVol = document.getElementById('audioVolume');
+    if (audioVol) audioVol.oninput = (e) => {{
       rainVolume = parseFloat(e.target.value);
-      document.getElementById('audioVolVal').innerText = Math.round(rainVolume * 100) + '%';
+      const audioVolVal = document.getElementById('audioVolVal');
+      if (audioVolVal) audioVolVal.innerText = Math.round(rainVolume * 100) + '%';
       if (gainNode && audioCtx) gainNode.gain.setValueAtTime(rainVolume, audioCtx.currentTime);
     }};
 
@@ -1552,9 +1557,10 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
         const titleNorm = normalizeVi(ch.title);
         const locNorm = normalizeVi(ch.location || '');
         const matchSearch = !searchNorm || titleNorm.includes(searchNorm) || locNorm.includes(searchNorm) || String(ch.chapter).includes(searchNorm);
+        const arcNum = Number(ch.arc) || 1;
         const matchArc = (activeArcFilter === 'all') ||
-                         (activeArcFilter === 'arc1' && ch.arc === 1) ||
-                         (activeArcFilter === 'arc2' && ch.arc === 2);
+                         (activeArcFilter === 'arc1' && arcNum === 1) ||
+                         (activeArcFilter === 'arc2' && arcNum === 2);
         return matchSearch && matchArc;
       }});
 
@@ -1610,9 +1616,10 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
         const titleNorm = normalizeVi(ch.title);
         const locNorm = normalizeVi(ch.location || '');
         const matchSearch = !searchNorm || titleNorm.includes(searchNorm) || locNorm.includes(searchNorm) || String(ch.chapter).includes(searchNorm);
+        const arcNum = Number(ch.arc) || 1;
         const matchArc = (homeArcFilter === 'all') ||
-                         (homeArcFilter === 'arc1' && ch.arc === 1) ||
-                         (homeArcFilter === 'arc2' && ch.arc === 2);
+                         (homeArcFilter === 'arc1' && arcNum === 1) ||
+                         (homeArcFilter === 'arc2' && arcNum === 2);
         return matchSearch && matchArc;
       }});
 
@@ -1804,13 +1811,19 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
       settingsSheet.classList.add('open');
     }}
 
-    modalOverlay.onclick = closeAllDrawers;
-    document.getElementById('btnMenu').onclick = openToc;
-    document.getElementById('btnCloseToc').onclick = closeAllDrawers;
-    document.getElementById('btnCodex').onclick = openCodex;
-    document.getElementById('btnCloseCodex').onclick = closeAllDrawers;
-    document.getElementById('btnSettings').onclick = openSettings;
-    document.getElementById('btnCloseSettings').onclick = closeAllDrawers;
+    if (modalOverlay) modalOverlay.onclick = closeAllDrawers;
+    const btnMenu = document.getElementById('btnMenu');
+    if (btnMenu) btnMenu.onclick = openToc;
+    const btnCloseToc = document.getElementById('btnCloseToc');
+    if (btnCloseToc) btnCloseToc.onclick = closeAllDrawers;
+    const btnCodex = document.getElementById('btnCodex');
+    if (btnCodex) btnCodex.onclick = openCodex;
+    const btnCloseCodex = document.getElementById('btnCloseCodex');
+    if (btnCloseCodex) btnCloseCodex.onclick = closeAllDrawers;
+    const btnSettings = document.getElementById('btnSettings');
+    if (btnSettings) btnSettings.onclick = openSettings;
+    const btnCloseSettings = document.getElementById('btnCloseSettings');
+    if (btnCloseSettings) btnCloseSettings.onclick = closeAllDrawers;
 
     // Reading Settings Handlers (Phase 1)
     const THEMES = ['theme-peaceful-dark', 'theme-saigon-night', 'theme-gentle-light', 'theme-paper', 'theme-oled', 'theme-warm-dark', 'theme-sepia'];
