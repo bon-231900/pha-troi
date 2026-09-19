@@ -32,6 +32,31 @@ def get_codex_items():
             print(f"[WARN] Khong the doc codex_registry.json: {e}")
     return []
 
+CHAPTER_LOCATIONS_FALLBACK = {
+    1: "Ngã tư Hàng Xanh & Đường Ung Văn Khiêm, Bình Thạnh, TP.HCM",
+    2: "Phòng trọ đường Ung Văn Khiêm, Bình Thạnh, TP.HCM",
+    3: "Sông Sài Gòn & Bán đảo Thanh Đa, Bình Thạnh, TP.HCM",
+    4: "Quán cà phê cóc đường D2 (Nguyễn Gia Trí), Bình Thạnh, TP.HCM",
+    5: "Bờ kè kênh Nhiêu Lộc - Thị Nghè, TP.HCM",
+    6: "Phòng trọ Ung Văn Khiêm, Bình Thạnh, TP.HCM",
+    7: "Ngã tư Hàng Xanh & Cầu Sài Gòn, TP.HCM",
+    8: "Phòng trọ mái tôn, Bình Thạnh, TP.HCM",
+    9: "Bờ kênh Nhiêu Lộc & Cầu Thị Nghè, TP.HCM",
+    10: "Bến Bạch Đằng & Sông Sài Gòn, Quận 1, TP.HCM",
+    11: "Tòa nhà văn phòng Quận 1, TP.HCM",
+    12: "Phòng trọ Bình Thạnh & Thức hải Minh An, TP.HCM",
+    13: "Công viên bờ sông Sài Gòn, TP. Thủ Đức, TP.HCM",
+    14: "Quán trà cổ đường Lương Nhữ Học, Quận 5, TP.HCM",
+    15: "Tòa nhà văn phòng Quận 1 & Trung tâm dữ liệu, TP.HCM",
+    16: "Võ đường cổ hẻm đường Trần Hưng Đạo, Quận 5, TP.HCM",
+    17: "Dòng kênh Tàu Hủ & Bến Bình Đông, Quận 8, TP.HCM",
+    18: "Võ đường cổ Quận 5 & Phòng trọ Bình Thạnh, TP.HCM",
+    19: "Đại lộ Mai Chí Thọ & Hầm Thủ Thiêm, TP.HCM",
+    20: "Đỉnh tòa tháp Bitexco & Bầu trời Quận 1, TP.HCM",
+    21: "Bàn trà đêm bờ sông Sài Gòn, Quận 1, TP.HCM",
+    22: "Địa tầng ngầm Sài Gòn & Thức hải Minh An, TP.HCM"
+}
+
 def parse_chapter_file(file_path):
     filename = os.path.basename(file_path)
     fn_match = re.search(r'ch_(\d+)', filename)
@@ -54,6 +79,18 @@ def parse_chapter_file(file_path):
 
     title_match = re.search(r"^#\s+(.+)$", body, re.MULTILINE)
     title = title_match.group(1) if title_match else meta.get("title", f"Chương {fallback_num}")
+
+    # Normalize ALL CAPS chapter titles to Title Case
+    m_ch = re.match(r'^(Chương\s+\d+:\s*)(.+)$', title, flags=re.IGNORECASE)
+    if m_ch:
+        ch_digits = re.search(r'\d+', m_ch.group(1)).group(0)
+        prefix = f"Chương {ch_digits}: "
+        sub_t = m_ch.group(2).strip()
+        if not any(c.islower() for c in sub_t):
+            sub_t = " ".join(w.capitalize() for w in sub_t.split())
+        title = prefix + sub_t
+    elif not any(c.islower() for c in title):
+        title = " ".join(w.capitalize() for w in title.split())
     
     # Remove # Title from markdown body
     body_clean = re.sub(r"^#\s+.+$\n*", "", body, count=1, flags=re.MULTILINE)
@@ -66,6 +103,10 @@ def parse_chapter_file(file_path):
     excerpt = (plain_text[:160] + '...') if len(plain_text) > 160 else plain_text
 
     ch_num = int(meta.get("chapter", fallback_num))
+    location = meta.get("location", "")
+    if not location and ch_num in CHAPTER_LOCATIONS_FALLBACK:
+        location = CHAPTER_LOCATIONS_FALLBACK[ch_num]
+
     return {
         "chapter": ch_num,
         "title": title,
@@ -73,7 +114,7 @@ def parse_chapter_file(file_path):
         "arc": int(meta.get("arc", 1)),
         "word_count": int(meta.get("word_count", len(body.split()))),
         "date": meta.get("date", "2026-10-07"),
-        "location": meta.get("location", ""),
+        "location": location,
         "excerpt": excerpt,
         "html": html_content
     }
@@ -122,8 +163,8 @@ def get_shared_css():
       --border-subtle: rgba(255, 255, 255, 0.04);
       --accent-primary: #517a8f;
       --accent-hover: #638fa6;
-      --gold-primary: #c4a059;
-      --gold-hover: #d4b26f;
+      --gold-primary: #e5c07b;
+      --gold-hover: #f3d498;
       --cyan-subtle: #41677d;
     }
 
@@ -140,8 +181,8 @@ def get_shared_css():
       --border-subtle: rgba(255, 255, 255, 0.04);
       --accent-primary: #8a7a60;
       --accent-hover: #a19074;
-      --gold-primary: #c4a059;
-      --gold-hover: #d4b26f;
+      --gold-primary: #e5c07b;
+      --gold-hover: #f3d498;
       --cyan-subtle: #635847;
     }
 
@@ -373,15 +414,21 @@ def get_shared_css():
     .toc-item {
       padding: 10px 12px; border-radius: 8px; margin-bottom: 4px; cursor: pointer;
       display: flex; align-items: center; justify-content: space-between; border: 1px solid transparent;
+      border-left: 2px solid transparent;
       transition: all 0.18s ease; text-decoration: none; color: inherit; box-sizing: border-box;
     }
-    .toc-item:hover { background: var(--card-bg-hover); border-color: var(--border-color); }
-    .toc-item.active { background: rgba(196, 160, 89, 0.1); border-color: var(--gold-primary); }
+    .toc-item:hover { background: var(--card-bg-hover); border-color: var(--border-color); border-left-color: var(--gold-primary); }
+    .toc-item.active { background: rgba(229, 192, 123, 0.08); border-color: var(--gold-primary); border-left-color: var(--gold-primary); }
     .toc-item.active .toc-name { color: var(--gold-primary); font-weight: 700; }
     .toc-info { min-width: 0; flex: 1; margin-right: 10px; overflow: hidden; }
     .toc-num {
       font-size: 11px; color: var(--gold-primary); font-weight: 700; text-transform: uppercase;
       margin-bottom: 2px; display: flex; align-items: center; gap: 6px;
+    }
+    .toc-num::before {
+      content: "❖";
+      font-size: 8px;
+      opacity: 0.85;
     }
     .toc-name { font-size: 13px; color: var(--text-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .toc-meta { font-size: 11px; color: var(--text-muted); flex-shrink: 0; }
@@ -395,7 +442,7 @@ def get_shared_css():
       background: transparent; color: var(--text-muted); border: 1px solid var(--border-subtle);
     }
     .ch-status-tag.current {
-      background: rgba(196, 160, 89, 0.12); color: var(--gold-primary); border: 1px solid var(--gold-primary);
+      background: rgba(229, 192, 123, 0.12); color: var(--gold-primary); border: 1px solid var(--gold-primary);
     }
     .ch-status-tag.unread {
       display: none;
@@ -460,7 +507,7 @@ def get_shared_css():
       color: var(--text-color); font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; text-align: center;
     }
     .btn-opt-step:hover { border-color: var(--gold-primary); color: var(--gold-primary); }
-    .btn-opt-step.active { background: rgba(196, 160, 89, 0.12); border-color: var(--gold-primary); color: var(--gold-primary); }
+    .btn-opt-step.active { background: rgba(229, 192, 123, 0.12); border-color: var(--gold-primary); color: var(--gold-primary); }
 
     .ambient-widget {
       display: flex; align-items: center; justify-content: space-between; padding: 10px 14px;
@@ -487,15 +534,15 @@ def generate_cover_svg():
     </radialGradient>
   </defs>
   <rect width="1200" height="630" fill="url(#bgGrad)"/>
-  <rect x="36" y="36" width="1128" height="558" fill="none" stroke="rgba(196,160,89,0.35)" stroke-width="1.2"/>
+  <rect x="36" y="36" width="1128" height="558" fill="none" stroke="rgba(229,192,123,0.35)" stroke-width="1.2"/>
   <rect x="44" y="44" width="1112" height="542" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
   
-  <text x="600" y="125" fill="#c4a059" font-family="'Be Vietnam Pro', -apple-system, sans-serif" font-size="13" font-weight="600" letter-spacing="4" text-anchor="middle">ĐÔ THỊ TU CHÂN · TRƯỜNG THIÊN ĐẠI TÁC · TP.HCM 2026</text>
+  <text x="600" y="125" fill="#e5c07b" font-family="'Be Vietnam Pro', -apple-system, sans-serif" font-size="13" font-weight="600" letter-spacing="4" text-anchor="middle">ĐÔ THỊ TU CHÂN · TRƯỜNG THIÊN ĐẠI TÁC · TP.HCM 2026</text>
   
-  <text x="600" y="260" fill="#c4a059" font-family="'Lora', 'Georgia', serif" font-size="96" font-weight="700" letter-spacing="12" text-anchor="middle">PHÁ TRỜI</text>
+  <text x="600" y="260" fill="#e5c07b" font-family="'Lora', 'Georgia', serif" font-size="96" font-weight="700" letter-spacing="12" text-anchor="middle">PHÁ TRỜI</text>
   <text x="600" y="315" fill="#8492a6" font-family="'Lora', 'Georgia', serif" font-size="24" font-weight="400" letter-spacing="6" text-anchor="middle">PHÁ TOÁI THẦN HOANG</text>
   
-  <text x="600" y="375" fill="#c4a059" font-size="18" letter-spacing="6" text-anchor="middle">· ✦ ·</text>
+  <text x="600" y="375" fill="#e5c07b" font-size="18" letter-spacing="6" text-anchor="middle">· ✦ ·</text>
   
   <text x="600" y="440" fill="#e2e8f0" font-family="'Lora', 'Georgia', serif" font-size="20" font-style="italic" text-anchor="middle">"Một nhân viên văn phòng... cho đến khi phát hiện đại phong ấn sông ngầm Sài Gòn."</text>
   
@@ -525,7 +572,7 @@ def generate_404_html():
 </head>
 <body style="background:#0b0f17; color:#e2e8f0; font-family:'Be Vietnam Pro', sans-serif; display:flex; align-items:center; justify-content:center; height:100vh; margin:0; text-align:center;">
   <div style="max-width:480px; padding:24px;">
-    <div style="font-family:'Lora', serif; font-size:32px; font-weight:700; color:#c4a059; margin-bottom:12px; letter-spacing:2px;">PHÁ TRỜI</div>
+    <div style="font-family:'Lora', serif; font-size:32px; font-weight:700; color:#e5c07b; margin-bottom:12px; letter-spacing:2px;">PHÁ TRỜI</div>
     <p style="color:#8492a6; font-size:15px; line-height:1.6;">Đang kết nối và chuyển hướng đến chương truyện...</p>
   </div>
 </body>
@@ -579,12 +626,12 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
     static_cards = []
     for ch in chapters_index:
         c_title = re.sub(r"^Chương\s+\d+:\s*", "", ch["title"], flags=re.IGNORECASE)
-        loc_str = f"<span>• {ch['location'].split(',')[0]}</span>" if ch.get("location") else ""
+        loc_str = f"<span>· {ch['location'].split(',')[0]}</span>" if ch.get("location") else ""
         static_cards.append(f"""
           <a href="./chuong-{ch['chapter']}/" class="home-ch-card">
             <div class="home-ch-info">
               <div class="home-ch-meta-top">
-                <span>HỒI {ch.get('arc', 1)} • CHƯƠNG {ch['chapter']}</span>
+                <span>HỒI {ch.get('arc', 1)} · CHƯƠNG {ch['chapter']}</span>
               </div>
               <div class="home-ch-title">{c_title}</div>
               <div class="home-ch-meta-bottom">
@@ -695,137 +742,89 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
   <style>
     {shared_css}
 
-    /* Hero Styling - Dark Literary Editorial */
-    .hero-section {{ position: relative; width: 100%; overflow: hidden; }}
-    .hero-desktop {{
-      display: none; position: relative; min-height: 560px; max-height: 650px;
-      align-items: stretch; border-bottom: 1px solid var(--border-color);
-      background: #0e1116; overflow: hidden;
+    /* Hero Titlepage - Frontispiece & Title Block (Standard Ebooks & Foliate Principle) */
+    .hero-titlepage {{
+      position: relative; width: 100%; box-sizing: border-box;
+      padding: 44px 20px 40px 20px;
+      border-bottom: 1px solid var(--border-color);
+      background: radial-gradient(ellipse at 50% 12%, rgba(81, 122, 143, 0.09) 0%, transparent 70%), var(--bg-color);
+      display: flex; justify-content: center; align-items: center;
     }}
-    .hero-bg-picture {{
-      position: relative; flex: 1 1 58%; min-width: 0; height: 100%; overflow: hidden; display: block;
+    .titlepage-container {{
+      max-width: 740px; width: 100%; display: flex; flex-direction: column; align-items: center; text-align: center;
     }}
-    .hero-bg-img {{
-      width: 100%; height: 100%; object-fit: cover; object-position: center 25%; display: block;
+    .titlepage-cover-frame {{
+      width: 175px; height: 262px; border-radius: 4px; overflow: hidden; margin-bottom: 22px;
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6), 0 2px 6px rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(229, 192, 123, 0.25); position: relative;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
     }}
-    .hero-desktop-overlay {{
-      position: absolute; inset: 0;
-      background: linear-gradient(90deg, transparent 65%, rgba(14, 17, 22, 0.7) 82%, #0e1116 100%),
-                  linear-gradient(0deg, #0e1116 0%, transparent 18%);
-      pointer-events: none; z-index: 2;
+    .titlepage-cover-frame:hover {{
+      transform: translateY(-4px);
+      box-shadow: 0 22px 48px rgba(0, 0, 0, 0.75), 0 0 20px rgba(229, 192, 123, 0.18);
     }}
-    .hero-desktop-content {{
-      position: relative; flex: 0 0 42%; min-width: 440px; max-width: 600px;
-      padding: 44px 48px 44px 32px; display: flex; flex-direction: column; justify-content: center;
-      background: #0e1116; z-index: 3; box-sizing: border-box;
+    .titlepage-cover-img {{ width: 100%; height: 100%; object-fit: cover; display: block; }}
+    .titlepage-meta-block {{ width: 100%; display: flex; flex-direction: column; align-items: center; }}
+    .titlepage-imprint {{
+      font-size: 11px; font-weight: 600; letter-spacing: 2.5px; text-transform: uppercase;
+      color: var(--gold-primary); margin-bottom: 10px; opacity: 0.9;
     }}
-    @media (max-width: 1100px) and (min-width: 769px) {{
-      .hero-desktop-content {{ flex: 0 0 46%; min-width: 360px; padding: 32px 24px; }}
-      .hero-main-title {{ font-size: 38px; }}
-      .hero-editorial-premise {{ padding: 10px 14px; }}
+    .titlepage-title {{
+      font-family: 'Lora', 'Georgia', serif; font-size: clamp(32px, 5vw, 48px); font-weight: 700;
+      letter-spacing: 3px; line-height: 1.15; color: var(--gold-primary); margin: 0 0 6px 0;
     }}
-    .hero-mobile {{
-      display: none; flex-direction: column; position: relative; padding: 24px 16px 28px 16px;
-      overflow: hidden; contain: paint; max-width: 100vw; width: 100%; box-sizing: border-box;
-      align-items: center; text-align: center; border-bottom: 1px solid var(--border-color);
-      background: #0e1116;
+    .titlepage-sub {{
+      font-size: 12.5px; font-weight: 600; letter-spacing: 3.5px; text-transform: uppercase;
+      color: var(--text-muted); margin-bottom: 8px;
     }}
-    @media (min-width: 769px) {{ .hero-desktop {{ display: flex !important; }} .hero-mobile {{ display: none !important; }} }}
-    @media (max-width: 768px) {{ .hero-desktop {{ display: none !important; }} .hero-mobile {{ display: flex !important; }} }}
-    .hero-mobile-backdrop {{
-      position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center top;
-      filter: blur(28px) brightness(0.2); z-index: 1; pointer-events: none;
+    .titlepage-author {{
+      font-family: 'Lora', 'Georgia', serif; font-size: 15px; color: var(--text-color); margin-bottom: 14px;
     }}
-    .hero-mobile-overlay {{
-      position: absolute; inset: 0;
-      background: linear-gradient(180deg, rgba(14, 17, 22, 0.5) 0%, rgba(14, 17, 22, 0.88) 60%, var(--bg-color) 100%);
-      z-index: 2; pointer-events: none;
+    .titlepage-author em {{ font-style: normal; color: var(--gold-primary); font-weight: 600; }}
+    .titlepage-ornament {{
+      font-size: 11px; color: var(--gold-primary); letter-spacing: 6px; opacity: 0.7; margin-bottom: 16px;
     }}
-    .hero-mobile-content {{
-      position: relative; z-index: 3; width: 100%; max-width: 440px; display: flex; flex-direction: column; align-items: center;
+    .titlepage-epigraph {{ max-width: 580px; margin: 0 auto 20px auto; padding: 0 16px; }}
+    .epigraph-quote {{
+      font-family: 'Lora', 'Georgia', serif; font-style: italic; font-size: 15.5px; line-height: 1.7;
+      color: var(--text-color); margin-bottom: 8px;
     }}
-    .mobile-cover-wrap {{
-      width: 150px; height: 225px; border-radius: 8px; box-shadow: 0 12px 32px rgba(0, 0, 0, 0.65);
-      border: 1px solid rgba(255, 255, 255, 0.12); overflow: hidden; margin-bottom: 16px; position: relative;
+    .epigraph-premise {{ font-size: 13.5px; line-height: 1.6; color: var(--text-muted); margin: 0; }}
+    .titlepage-colophon {{
+      display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 8px;
+      font-size: 12.5px; color: var(--text-muted); margin-bottom: 24px; padding: 8px 16px;
+      border-top: 1px solid var(--border-subtle); border-bottom: 1px solid var(--border-subtle);
     }}
-    .mobile-cover-img {{ width: 100%; height: 100%; object-fit: cover; }}
-
-    .hero-genre-line {{
-      font-size: 11.5px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase;
-      color: var(--gold-primary); margin-bottom: 12px;
+    .titlepage-colophon strong {{ color: var(--text-color); font-weight: 600; }}
+    .col-sep {{ opacity: 0.35; }}
+    .col-status {{ color: #34d399; font-weight: 500; }}
+    .titlepage-actions {{
+      display: flex; align-items: center; justify-content: center; gap: 16px; flex-wrap: wrap;
     }}
-    .hero-title-wrap {{ margin-bottom: 14px; }}
-    .hero-title-row {{ display: flex; align-items: center; gap: 14px; margin-bottom: 8px; }}
-    .hero-logo-crest {{
-      width: 54px; height: 54px; border-radius: 50%; border: 1.5px solid var(--gold-primary);
-      object-fit: cover; flex-shrink: 0;
+    .btn-titlepage-read {{
+      padding: 12px 28px; border-radius: 6px; background: var(--gold-primary);
+      border: 1px solid var(--gold-primary); color: #0b0f17; font-size: 14.5px; font-weight: 700;
+      letter-spacing: 0.3px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+      transition: background 0.2s, border-color 0.2s, transform 0.15s;
+      box-shadow: 0 4px 14px rgba(229, 192, 123, 0.25);
     }}
-    .hero-main-title {{
-      font-family: 'Lora', 'Georgia', serif; font-size: 46px; font-weight: 700; letter-spacing: 2.5px;
-      line-height: 1.1; margin: 0; color: var(--gold-primary);
+    .btn-titlepage-read:hover {{
+      background: var(--gold-hover); border-color: var(--gold-hover); transform: translateY(-1px);
     }}
-    .mobile-title {{ font-size: 34px; letter-spacing: 2px; }}
-    .hero-subtitle {{
-      font-size: 13px; font-weight: 600; letter-spacing: 3.5px; color: var(--text-muted);
-      text-transform: uppercase; margin-top: 5px;
-    }}
-    .mobile-sub {{ font-size: 12px; letter-spacing: 2.5px; margin-bottom: 10px; }}
-
-    .hero-editorial-premise {{
-      margin: 0 0 16px 0; padding: 13px 18px;
-      border-left: 2.5px solid var(--gold-primary); background: rgba(196, 160, 89, 0.04);
-      border-radius: 0 6px 6px 0;
-    }}
-    .hero-hook-lead {{ font-size: 13.5px; color: var(--text-muted); margin: 0 0 4px 0; line-height: 1.6; }}
-    .hero-hook-core {{ font-size: 14.5px; color: var(--text-color); margin: 0 0 4px 0; line-height: 1.6; }}
-    .hero-hook-core strong {{ color: var(--gold-primary); font-weight: 600; }}
-    .hero-hook-tail {{ font-size: 13.5px; color: #cbd5e1; margin: 0; line-height: 1.6; }}
-    .hero-hook-tail strong {{ color: var(--accent-primary); font-weight: 600; }}
-    @media (max-width: 768px) {{
-      .hero-editorial-premise {{ text-align: left; margin: 12px 0 14px 0; padding: 10px 14px; width: 100%; box-sizing: border-box; }}
-      .hero-hook-lead, .hero-hook-tail {{ font-size: 12.5px; }}
-      .hero-hook-core {{ font-size: 13.5px; }}
-    }}
-
-    .hero-description {{ font-size: 13.5px; line-height: 1.7; color: var(--text-muted); margin: 0 0 16px 0; }}
-    .mobile-desc {{ font-size: 13px; margin-bottom: 14px; line-height: 1.6; }}
-
-    .hero-stats-line {{
-      display: flex; align-items: center; flex-wrap: wrap; gap: 8px;
-      font-size: 13px; color: var(--text-muted); margin: 0 0 20px 0;
-      padding: 8px 0; border-top: 1px solid var(--border-subtle); border-bottom: 1px solid var(--border-subtle);
-    }}
-    .hero-stats-line strong {{ color: var(--text-color); font-weight: 600; }}
-    .stat-sep {{ opacity: 0.35; }}
-    .stat-status {{ color: var(--gold-primary); font-weight: 500; }}
-
-    .hero-actions {{ display: flex; align-items: center; flex-wrap: wrap; gap: 12px; }}
-    .btn-hero-primary {{
-      padding: 12px 24px; border-radius: 6px; background: var(--gold-primary);
-      border: 1px solid var(--gold-primary); color: #0e1116; font-size: 14.5px; font-weight: 700;
-      letter-spacing: 0.3px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-      transition: background 0.2s, border-color 0.2s;
-    }}
-    .btn-hero-primary:hover {{ background: var(--gold-hover); border-color: var(--gold-hover); }}
-    .btn-hero-primary:active {{ transform: scale(0.98); }}
-
-    .btn-hero-secondary {{
-      padding: 12px 20px; border-radius: 6px; background: transparent;
+    .btn-titlepage-read:active {{ transform: scale(0.98); }}
+    .btn-titlepage-toc {{
+      padding: 12px 22px; border-radius: 6px; background: transparent;
       border: 1px solid var(--border-color); color: var(--text-color); font-size: 14px; font-weight: 500;
-      cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
       transition: border-color 0.2s, color 0.2s;
     }}
-    .btn-hero-secondary:hover {{ border-color: var(--gold-primary); color: var(--gold-primary); }}
-
-    .btn-hero-outline {{
-      padding: 12px 18px; border-radius: 6px; background: transparent; border: 1px solid transparent;
-      color: var(--text-muted); font-size: 13.5px; font-weight: 500; cursor: pointer; display: inline-flex;
-      align-items: center; justify-content: center; gap: 6px; transition: color 0.2s;
+    .btn-titlepage-toc:hover {{ border-color: var(--gold-primary); color: var(--gold-primary); }}
+    @media (max-width: 600px) {{
+      .hero-titlepage {{ padding: 32px 16px 28px 16px; }}
+      .titlepage-cover-frame {{ width: 140px; height: 210px; margin-bottom: 16px; }}
+      .titlepage-actions {{ width: 100%; flex-direction: column; gap: 10px; }}
+      .btn-titlepage-read, .btn-titlepage-toc {{ width: 100%; justify-content: center; box-sizing: border-box; }}
     }}
-    .btn-hero-outline:hover {{ color: var(--text-color); }}
-    .mobile-cta-full {{ width: 100%; padding: 13px; font-size: 15px; margin-bottom: 10px; }}
-    .mobile-sub-row {{ display: flex; width: 100%; gap: 8px; }}
-    .mobile-sub-row button, .mobile-sub-row a {{ flex: 1; padding: 10px 8px; font-size: 13px; text-align: center; }}
 
     /* Home Content Container */
     .home-container {{ max-width: 1100px; margin: 0 auto; padding: 24px 20px 80px 20px; box-sizing: border-box; width: 100%; }}
@@ -842,19 +841,26 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
       margin: 36px 0 16px 0; padding-bottom: 12px; border-bottom: 1px solid var(--border-color);
     }}
     .section-title {{
-      font-family: 'Lora', 'Georgia', serif; font-size: 19px; font-weight: 700;
-      color: var(--gold-primary); letter-spacing: 0.5px; margin: 0;
+      font-family: 'Lora', 'Georgia', serif; font-size: 18px; font-weight: 700;
+      color: var(--gold-primary); letter-spacing: 0.8px; margin: 0;
+      display: inline-flex; align-items: center; gap: 8px;
+    }}
+    .section-title::before {{
+      content: "❖";
+      font-size: 11px;
+      opacity: 0.85;
     }}
 
     /* Resume Reading Card */
     .continue-card {{
       background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 16px 20px;
       display: flex; align-items: center; justify-content: space-between; gap: 16px;
+      border-left: 3px solid var(--border-color);
       transition: border-color 0.2s; margin-top: 16px; box-sizing: border-box; width: 100%;
     }}
-    .continue-card:hover {{ border-color: var(--gold-primary); }}
+    .continue-card:hover {{ border-color: var(--gold-primary); border-left-color: var(--gold-primary); }}
     .continue-card.welcome-mode {{
-      background: rgba(81, 122, 143, 0.05); border-color: var(--border-color);
+      background: rgba(81, 122, 143, 0.05); border-color: var(--border-color); border-left-color: var(--accent-primary);
     }}
     .continue-left {{ display: flex; align-items: center; gap: 16px; min-width: 0; flex: 1; }}
     .continue-thumb {{
@@ -872,11 +878,11 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
       padding: 9px 16px; border-radius: 6px; background: transparent; border: 1px solid var(--border-color);
       color: var(--gold-primary); font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: all 0.2s ease;
     }}
-    .continue-btn:hover {{ background: rgba(196, 160, 89, 0.08); border-color: var(--gold-primary); }}
+    .continue-btn:hover {{ background: rgba(229, 192, 123, 0.08); border-color: var(--gold-primary); }}
 
     /* Latest Chapter Highlight Banner */
     .latest-chapter-banner {{
-      background: rgba(196, 160, 89, 0.03); border: 1px solid var(--border-color);
+      background: rgba(229, 192, 123, 0.03); border: 1px solid var(--border-color);
       border-left: 3px solid var(--gold-primary); border-radius: 8px; padding: 14px 18px;
       margin-top: 12px; display: flex; align-items: center; justify-content: space-between; gap: 16px;
       transition: border-color 0.2s; box-sizing: border-box; width: 100%;
@@ -912,22 +918,32 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
     .home-ch-card {{
       background: var(--bg-color); padding: 14px 18px; cursor: pointer;
       display: flex; align-items: center; justify-content: space-between; gap: 12px;
-      transition: background 0.15s ease;
+      border-left: 2px solid transparent;
+      transition: background 0.15s ease, border-left-color 0.15s ease, transform 0.15s ease;
     }}
     .home-ch-card:hover {{
-      background: rgba(255, 255, 255, 0.03);
+      background: rgba(229, 192, 123, 0.04);
+      border-left-color: var(--gold-primary);
+      transform: translateX(2px);
     }}
     .home-ch-card:hover .home-ch-title {{ color: var(--gold-primary); }}
     .home-ch-card:hover .home-ch-arrow {{ color: var(--gold-primary); transform: translateX(2px); }}
     .home-ch-card.is-current {{
-      background: rgba(196, 160, 89, 0.05);
+      background: rgba(229, 192, 123, 0.06);
+      border-left-color: var(--gold-primary);
     }}
     .home-ch-card.is-current .home-ch-title {{ color: var(--gold-primary); font-weight: 600; }}
     .home-ch-card.is-read {{ opacity: 0.85; }}
     .home-ch-info {{ min-width: 0; flex: 1; }}
     .home-ch-meta-top {{
-      display: flex; align-items: center; gap: 8px; font-size: 11px;
-      color: var(--gold-primary); font-weight: 600; letter-spacing: 0.5px; margin-bottom: 3px;
+      display: flex; align-items: center; gap: 6px; font-size: 11px;
+      color: var(--gold-primary); font-weight: 600; letter-spacing: 0.8px; margin-bottom: 4px;
+    }}
+    .home-ch-meta-top::before {{
+      content: "❖";
+      font-size: 8px;
+      opacity: 0.85;
+      color: var(--gold-primary);
     }}
     .home-ch-title {{
       font-size: 14.5px; font-weight: 500; color: var(--text-color);
@@ -947,7 +963,7 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
     .home-codex-card.locked {{ opacity: 0.65; border-style: dashed; }}
     .home-codex-badge {{
       align-self: flex-start; font-size: 10px; font-weight: 600; letter-spacing: 0.8px; padding: 2px 6px;
-      border-radius: 3px; background: rgba(196, 160, 89, 0.1); color: var(--gold-primary); margin-bottom: 8px; text-transform: uppercase;
+      border-radius: 3px; background: rgba(229, 192, 123, 0.1); color: var(--gold-primary); margin-bottom: 8px; text-transform: uppercase;
     }}
     .home-codex-badge.locked-badge {{ background: rgba(255, 255, 255, 0.05); color: var(--text-muted); }}
     .home-codex-name {{ font-size: 15px; font-weight: 600; color: var(--text-color); margin: 0 0 6px 0; }}
@@ -990,15 +1006,6 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
       <button class="btn-icon" id="btnMenu" title="Mục Lục Chương (M)" aria-label="Mục lục chương">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
       </button>
-      
-      <button class="btn-icon header-desktop-only" id="btnCodex" title="Codex Phá Trời — Bách Khoa Thế Giới (C)" aria-label="Codex Bách khoa thế giới">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
-      </button>
-
-      <button class="btn-icon header-desktop-only" id="btnAmbient" title="Âm thanh Mưa Đêm Sài Gòn (Thư giãn)" aria-label="Bật tắt âm thanh mưa đêm">
-        <svg id="iconAudioOff" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"></path><path d="M16 14v6"></path><path d="M8 14v6"></path><path d="M12 16v6"></path></svg>
-        <svg id="iconAudioOn" style="display:none; color:var(--accent-primary);" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 5L6 9H2v6h4l5 4V5z"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
-      </button>
 
       <button class="btn-icon" id="btnQuickTheme" title="Chuyển Nhanh Sáng / Tối (T)" aria-label="Chuyển giao diện sáng tối">
         <svg id="iconMoon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
@@ -1013,87 +1020,52 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
 
   <!-- HOME VIEW -->
   <div id="homeView">
-    <!-- HERO SECTION -->
-    <section class="hero-section">
-      <!-- Desktop Widescreen Hero -->
-      <div class="hero-desktop">
-        <picture class="hero-bg-picture">
-          <source srcset="./assets/hero_horizontal.webp" type="image/webp">
-          <img src="./assets/hero_horizontal.jpg" alt="Phá Trời Hero" class="hero-bg-img" fetchpriority="high">
-        </picture>
-        <div class="hero-desktop-overlay"></div>
-        <div class="hero-desktop-content">
-          <div class="hero-genre-line">Tiểu thuyết Đô thị Tu chân · TP. Hồ Chí Minh 2026</div>
-          <div class="hero-title-wrap">
-            <h1 class="hero-main-title">PHÁ TRỜI</h1>
-            <div class="hero-subtitle">PHÁ TOÁI THẦN HOANG</div>
+    <!-- HERO TITLEPAGE (LITERARY FRONTISPIECE & TITLE BLOCK) -->
+    <section class="hero-titlepage">
+      <div class="titlepage-container">
+        <!-- Book Cover Frontispiece -->
+        <div class="titlepage-cover-frame">
+          <picture>
+            <source srcset="./assets/cover_vertical.webp" type="image/webp">
+            <img src="./assets/cover_vertical.jpg" alt="Bìa tiểu thuyết Phá Trời" class="titlepage-cover-img" fetchpriority="high">
+          </picture>
+        </div>
+
+        <!-- Typographic Title Block -->
+        <div class="titlepage-meta-block">
+          <div class="titlepage-imprint">TIỂU THUYẾT ĐÔ THỊ TU CHÂN · TP. HỒ CHÍ MINH</div>
+          <h1 class="titlepage-title">PHÁ TRỜI</h1>
+          <div class="titlepage-sub">PHÁ TOÁI THẦN HOANG</div>
+          <div class="titlepage-author">Tác giả: <em>An Bình</em></div>
+          
+          <div class="titlepage-ornament">❖ ─ ✦ ─ ❖</div>
+
+          <!-- Classical Epigraph / Đề từ -->
+          <div class="titlepage-epigraph">
+            <p class="epigraph-quote">“Sông Sài Gòn chảy qua ngàn năm dâu bể, dưới lớp phù sa ngầm là phong ấn đại địa hai triệu năm chưa từng thức giấc.”</p>
+            <p class="epigraph-premise">Phàm nhân không linh căn, không hệ thống hack điểm — lấy từng tấc huyết nhục Thể Đạo phá vỡ vạn trùng xiềng xích càn khôn.</p>
           </div>
-          <div class="hero-editorial-premise">
-            <p class="hero-hook-lead">Sài Gòn, 2026. Một người bình thường giữa guồng quay mưu sinh.</p>
-            <p class="hero-hook-core">Một phong ấn đại địa đã ngủ yên dưới lòng thành phố suốt <strong>2,5 triệu năm</strong>.</p>
-            <p class="hero-hook-tail">Và một con đường <strong>Thể Đạo phàm nhân</strong> không dành cho kẻ có thiên phú.</p>
+
+          <!-- Bibliographic Colophon Line -->
+          <div class="titlepage-colophon">
+            <span><strong>{total_ch}</strong> chương</span>
+            <span class="col-sep">·</span>
+            <span><strong>{total_words:,}</strong> từ</span>
+            <span class="col-sep">·</span>
+            <span>Quyển I–II</span>
+            <span class="col-sep">·</span>
+            <span class="col-status">Đang sáng tác đều đặn</span>
           </div>
-          <p class="hero-description">Không hệ thống hack điểm, không bàn tay vàng vô lý — Minh An dấn thân vào cổ đạo thất truyền, dùng từng tấc huyết nhục phàm nhân phá vỡ vạn trùng xiềng xích.</p>
-          <div class="hero-stats-line">
-            <span class="stat-item"><strong>{total_ch}</strong> chương</span>
-            <span class="stat-sep">·</span>
-            <span class="stat-item"><strong>{total_words:,}</strong> từ</span>
-            <span class="stat-sep">·</span>
-            <span class="stat-item">Quyển I–II</span>
-            <span class="stat-sep">·</span>
-            <span class="stat-status">Đang sáng tác đều đặn</span>
-          </div>
-          <div class="hero-actions">
-            <a href="./chuong-1/" class="btn-hero-primary" id="btnHeroReadPrimary">
+
+          <!-- Dignified Action Buttons -->
+          <div class="titlepage-actions">
+            <a href="./chuong-1/" class="btn-titlepage-read" id="btnHeroReadPrimary">
               <span id="heroPrimaryText">Bắt Đầu Đọc — Chương 1</span>
               <span>→</span>
             </a>
-            <button class="btn-hero-secondary" id="btnHeroTocScroll">
-              <span>Mục Lục ({total_ch})</span>
-            </button>
-            <button class="btn-hero-outline" id="btnHeroCodexOpen">
-              <span>Codex Phá Trời</span>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Mobile Portrait Cover Hero -->
-      <div class="hero-mobile">
-        <picture>
-          <source srcset="./assets/cover_vertical.webp" type="image/webp">
-          <img src="./assets/cover_vertical.jpg" class="hero-mobile-backdrop" alt="Backdrop">
-        </picture>
-        <div class="hero-mobile-overlay"></div>
-        <div class="hero-mobile-content">
-          <div class="mobile-cover-wrap">
-            <picture>
-              <source srcset="./assets/cover_vertical.webp" type="image/webp">
-              <img src="./assets/cover_vertical.jpg" class="mobile-cover-img" alt="Phá Trời Bìa Dọc" fetchpriority="high">
-            </picture>
-          </div>
-          <div class="hero-genre-line" style="margin-bottom:8px;">Tiểu thuyết Đô thị Tu chân · TP.HCM 2026</div>
-          <div class="hero-main-title mobile-title">PHÁ TRỜI</div>
-          <div class="hero-subtitle mobile-sub">PHÁ TOÁI THẦN HOANG</div>
-          <div class="hero-editorial-premise">
-            <p class="hero-hook-lead">Sài Gòn, 2026. Người bình thường giữa dòng mưu sinh.</p>
-            <p class="hero-hook-core">Phong ấn đại địa ngủ yên suốt <strong>2,5 triệu năm</strong>.</p>
-            <p class="hero-hook-tail">Con đường <strong>Thể Đạo phàm nhân</strong> phá vỡ vạn trùng xiềng xích.</p>
-          </div>
-          <div class="hero-stats-line" style="justify-content:center; margin:10px 0 16px 0;">
-            <span class="stat-item"><strong>{total_ch}</strong> chương</span>
-            <span class="stat-sep">·</span>
-            <span class="stat-item"><strong>{total_words:,}</strong> từ</span>
-            <span class="stat-sep">·</span>
-            <span class="stat-status">Đang ra tiếp</span>
-          </div>
-          <a href="./chuong-1/" class="btn-hero-primary mobile-cta-full" id="btnMobileHeroReadPrimary">
-            <span id="mobileHeroPrimaryText">Bắt Đầu Đọc — Chương 1</span>
-            <span>→</span>
-          </a>
-          <div class="mobile-sub-row">
-            <button class="btn-hero-secondary" id="btnMobileHeroTocScroll">Mục Lục ({total_ch})</button>
-            <button class="btn-hero-outline" id="btnMobileHeroCodexOpen">Codex</button>
+            <a href="#sectionToc" class="btn-titlepage-toc" id="btnHeroTocScroll">
+              <span>Mục Lục ({total_ch} Chương) ↓</span>
+            </a>
           </div>
         </div>
       </div>
@@ -1494,9 +1466,9 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
         if (metaEl) metaEl.innerText = 'Dấn thân vào đại phong ấn sông ngầm Sài Gòn 2.5 triệu năm cùng Minh An';
         if (btnJump) {{ btnJump.innerText = 'Bắt Đầu Hành Trình →'; btnJump.href = './chuong-1/'; }}
         if (heroPrimary) heroPrimary.href = './chuong-1/';
-        if (heroReadText) heroReadText.innerText = '▶ Bắt Đầu Hành Trình — Chương 1';
+        if (heroReadText) heroReadText.innerText = 'Bắt Đầu Đọc — Chương 1';
         if (mobileHeroPrimary) mobileHeroPrimary.href = './chuong-1/';
-        if (mobileHeroReadText) mobileHeroReadText.innerText = '▶ Bắt Đầu Hành Trình — Chương 1';
+        if (mobileHeroReadText) mobileHeroReadText.innerText = 'Bắt Đầu Đọc — Chương 1';
       }} else {{
         const chInfo = chaptersData.find(c => c.chapter === savedCh) || {{ title: `Chương ${{savedCh}}`, arc: 1 }};
         const cleanTitle = chInfo.title.replace(/^Chương\\s+\\d+:\\s*/i, '');
@@ -1506,12 +1478,12 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
         if (contCard) contCard.classList.remove('welcome-mode');
         if (contPill) contPill.innerText = 'BẠN ĐANG ĐỌC';
         if (contEl) contEl.innerText = `Chương ${{savedCh}}: ${{cleanTitle}}`;
-        if (metaEl) metaEl.innerText = `Tiến độ: Chương ${{savedCh}} / ${{totalChapters}} (${{pct}}%) • Hồi ${{chInfo.arc || 1}}`;
+        if (metaEl) metaEl.innerText = `Tiến độ: Chương ${{savedCh}} / ${{totalChapters}} (${{pct}}%) · Hồi ${{chInfo.arc || 1}}`;
         if (btnJump) {{ btnJump.innerText = `Tiếp Tục Đọc Chương ${{savedCh}} →`; btnJump.href = targetUrl; }}
         if (heroPrimary) heroPrimary.href = targetUrl;
-        if (heroReadText) heroReadText.innerText = `▶ Tiếp Tục Đọc — Chương ${{savedCh}}`;
+        if (heroReadText) heroReadText.innerText = `Tiếp Tục Đọc — Chương ${{savedCh}}`;
         if (mobileHeroPrimary) mobileHeroPrimary.href = targetUrl;
-        if (mobileHeroReadText) mobileHeroReadText.innerText = `▶ Tiếp Tục Đọc — Chương ${{savedCh}}`;
+        if (mobileHeroReadText) mobileHeroReadText.innerText = `Tiếp Tục Đọc — Chương ${{savedCh}}`;
       }}
 
       // Calculate read count
@@ -1534,15 +1506,26 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
       renderCodexDrawer();
     }}
 
-    document.getElementById('btnHeroTocScroll').onclick = () => {{
-      document.getElementById('sectionToc').scrollIntoView({{ behavior: 'smooth' }});
-    }};
-    document.getElementById('btnMobileHeroTocScroll').onclick = () => {{
-      document.getElementById('sectionToc').scrollIntoView({{ behavior: 'smooth' }});
-    }};
-    document.getElementById('btnHeroCodexOpen').onclick = () => openCodex();
-    document.getElementById('btnMobileHeroCodexOpen').onclick = () => openCodex();
-    document.getElementById('btnViewAllCodex').onclick = () => openCodex();
+    const btnHeroToc = document.getElementById('btnHeroTocScroll');
+    if (btnHeroToc) {{
+      btnHeroToc.onclick = (e) => {{
+        e.preventDefault();
+        document.getElementById('sectionToc').scrollIntoView({{ behavior: 'smooth' }});
+      }};
+    }}
+    const btnMobileHeroToc = document.getElementById('btnMobileHeroTocScroll');
+    if (btnMobileHeroToc) {{
+      btnMobileHeroToc.onclick = (e) => {{
+        e.preventDefault();
+        document.getElementById('sectionToc').scrollIntoView({{ behavior: 'smooth' }});
+      }};
+    }}
+    const btnHeroCodex = document.getElementById('btnHeroCodexOpen');
+    if (btnHeroCodex) btnHeroCodex.onclick = () => openCodex();
+    const btnMobileHeroCodex = document.getElementById('btnMobileHeroCodexOpen');
+    if (btnMobileHeroCodex) btnMobileHeroCodex.onclick = () => openCodex();
+    const btnViewAllCodex = document.getElementById('btnViewAllCodex');
+    if (btnViewAllCodex) btnViewAllCodex.onclick = () => openCodex();
 
     async function loadChaptersIndex() {{
       try {{
@@ -1591,7 +1574,7 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
           <a href="./chuong-${{ch.chapter}}/" class="toc-item">
             <div class="toc-info">
               <div class="toc-num">
-                <span>Hồi ${{ch.arc || 1}} • Chương ${{ch.chapter}}</span>
+                <span>Hồi ${{ch.arc || 1}} · Chương ${{ch.chapter}}</span>
                 ${{statusBadge}}
               </div>
               <div class="toc-name">${{ch.title.replace(/^Chương\\s+\\d+:\\s*/i, '')}}</div>
@@ -2321,7 +2304,7 @@ def generate_chapter_html(ch_info, chapters_index, total_words, codex_items=None
       border-color: var(--gold-primary); color: var(--gold-primary); background: var(--card-bg-hover);
     }}
     .btn-chapter-nav.next {{
-      background: rgba(196, 160, 89, 0.1); border-color: var(--gold-primary); color: var(--gold-primary);
+      background: rgba(229, 192, 123, 0.1); border-color: var(--gold-primary); color: var(--gold-primary);
     }}
     .btn-chapter-nav.next:hover:not(.disabled) {{
       background: var(--gold-primary); color: #0b0f17;
@@ -2369,7 +2352,7 @@ def generate_chapter_html(ch_info, chapters_index, total_words, codex_items=None
 
     <div class="header-center">
       <span class="header-title">Chương {ch_num}: {clean_title}</span>
-      <p class="header-sub">Quyển {vol} • Hồi {arc} • {words:,} từ <span class="reader-progress-badge" id="readProgressPct">0%</span></p>
+      <p class="header-sub">Quyển {vol} · Hồi {arc} · {words:,} từ <span class="reader-progress-badge" id="readProgressPct">0%</span></p>
     </div>
 
     <div class="header-right">
@@ -2428,7 +2411,7 @@ def generate_chapter_html(ch_info, chapters_index, total_words, codex_items=None
       </div>
 
       <section class="chapter-hero">
-        <div class="chapter-vol-arc">QUYỂN {vol} · HỒI {arc}</div>
+        <div class="chapter-vol-arc">❖ QUYỂN {vol} · HỒI {arc} ❖</div>
         <h1 class="chapter-main-title">Chương {ch_num}: {clean_title}</h1>
         <div class="chapter-hero-meta">
           <span>{words:,} từ</span>
