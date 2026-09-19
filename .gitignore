@@ -18,3 +18,4 @@ scratch/
 *.bak
 .env
 system/reader_app/dist/
+design_references/

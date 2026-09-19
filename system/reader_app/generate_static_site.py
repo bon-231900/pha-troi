@@ -87,76 +87,76 @@ def get_shared_css():
       --reader-max-width: 760px;
     }
 
-    /* Theme 1: Peaceful Dark (Mặc định) */
+    /* Theme 1: Peaceful Dark (Mặc định - Dark Literary) */
     :root, html.theme-peaceful-dark, body.theme-peaceful-dark {
-      --bg-color: #07090e;
-      --bg-gradient: radial-gradient(ellipse at 50% 10%, #0d121f 0%, #07090e 80%);
-      --text-color: #d6dce7;
-      --text-muted: #828d9f;
-      --header-bg: rgba(7, 9, 14, 0.92);
-      --card-bg: rgba(14, 18, 27, 0.85);
-      --card-bg-hover: rgba(22, 28, 42, 0.95);
+      --bg-color: #0e1116;
+      --bg-gradient: radial-gradient(ellipse at 50% 0%, #151922 0%, #0e1116 75%);
+      --text-color: #e5e2dc;
+      --text-muted: #8d929a;
+      --header-bg: #0e1116;
+      --card-bg: #141820;
+      --card-bg-hover: #1a202c;
       --border-color: rgba(255, 255, 255, 0.08);
-      --border-glow: rgba(16, 185, 129, 0.25);
-      --accent-primary: #10b981;
-      --accent-glow: rgba(16, 185, 129, 0.35);
-      --gold-primary: #f59e0b;
-      --gold-glow: rgba(245, 158, 11, 0.35);
-      --cyan-subtle: #38bdf8;
+      --border-subtle: rgba(255, 255, 255, 0.04);
+      --accent-primary: #517a8f;
+      --accent-hover: #638fa6;
+      --gold-primary: #c4a059;
+      --gold-hover: #d4b26f;
+      --cyan-subtle: #41677d;
     }
 
-    /* Theme 2: Gentle Light */
+    /* Theme 2: Gentle Light (Paper White / Classic Editorial) */
     html.theme-gentle-light, body.theme-gentle-light {
       --bg-color: #f7f5f0;
-      --bg-gradient: radial-gradient(circle at 50% 10%, #ffffff 0%, #f7f5f0 85%);
+      --bg-gradient: radial-gradient(circle at 50% 0%, #ffffff 0%, #f7f5f0 85%);
       --text-color: #24221f;
       --text-muted: #6b665f;
-      --header-bg: rgba(247, 245, 240, 0.94);
+      --header-bg: #f7f5f0;
       --card-bg: #ede9df;
       --card-bg-hover: #e4dfd3;
       --border-color: rgba(0, 0, 0, 0.09);
-      --border-glow: rgba(185, 28, 28, 0.15);
-      --accent-primary: #059669;
-      --accent-glow: rgba(5, 150, 105, 0.2);
-      --gold-primary: #92400e;
-      --gold-glow: rgba(146, 64, 14, 0.2);
-      --cyan-subtle: #0284c7;
+      --border-subtle: rgba(0, 0, 0, 0.05);
+      --accent-primary: #3d6070;
+      --accent-hover: #2e4b58;
+      --gold-primary: #8f6b28;
+      --gold-hover: #73541c;
+      --cyan-subtle: #355363;
     }
 
     /* Theme 3: OLED Pure Black */
     html.theme-oled, body.theme-oled {
       --bg-color: #000000;
       --bg-gradient: none;
-      --text-color: #d1d5db;
-      --text-muted: #6b7280;
-      --header-bg: rgba(0, 0, 0, 0.95);
-      --card-bg: #09090b;
-      --card-bg-hover: #141417;
-      --border-color: #27272a;
-      --border-glow: rgba(16, 185, 129, 0.3);
-      --accent-primary: #10b981;
-      --accent-glow: rgba(16, 185, 129, 0.4);
-      --gold-primary: #fbbf24;
-      --gold-glow: rgba(251, 191, 36, 0.3);
-      --cyan-subtle: #38bdf8;
+      --text-color: #dcd8d0;
+      --text-muted: #71767f;
+      --header-bg: #000000;
+      --card-bg: #090a0d;
+      --card-bg-hover: #12141a;
+      --border-color: rgba(255, 255, 255, 0.1);
+      --border-subtle: rgba(255, 255, 255, 0.05);
+      --accent-primary: #4d758a;
+      --accent-hover: #5e8aa2;
+      --gold-primary: #c4a059;
+      --gold-hover: #d4b26f;
+      --cyan-subtle: #3a5c70;
     }
 
-    /* Theme 4: Sepia */
+    /* Theme 4: Sepia (Aged Manuscript / Paper) */
     html.theme-sepia, body.theme-sepia {
-      --bg-color: #f4edd8;
-      --bg-gradient: radial-gradient(circle at 50% 10%, #faf6eb 0%, #f4edd8 85%);
+      --bg-color: #f1e8d0;
+      --bg-gradient: radial-gradient(circle at 50% 0%, #f8f1de 0%, #f1e8d0 85%);
       --text-color: #3b2d1d;
       --text-muted: #7d6a55;
-      --header-bg: rgba(244, 237, 216, 0.95);
-      --card-bg: #eae0c7;
-      --card-bg-hover: #e0d4b8;
+      --header-bg: #f1e8d0;
+      --card-bg: #e6dcbe;
+      --card-bg-hover: #ded2b2;
       --border-color: rgba(100, 75, 50, 0.14);
-      --border-glow: rgba(160, 80, 20, 0.2);
-      --accent-primary: #854d0e;
-      --accent-glow: rgba(133, 77, 14, 0.2);
-      --gold-primary: #b45309;
-      --gold-glow: rgba(180, 83, 9, 0.2);
-      --cyan-subtle: #0f766e;
+      --border-subtle: rgba(100, 75, 50, 0.07);
+      --accent-primary: #4d6d63;
+      --accent-hover: #3b574e;
+      --gold-primary: #8c5b1e;
+      --gold-hover: #734814;
+      --cyan-subtle: #415e55;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -165,8 +165,23 @@ def get_shared_css():
       font-family: var(--font-family); background: var(--bg-gradient); background-color: var(--bg-color);
       color: var(--text-color); min-height: 100vh; overflow-x: hidden; line-height: var(--reader-line-height);
       transition: background 0.3s ease, color 0.3s ease;
+      position: relative;
+    }
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.02'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 9999;
     }
     a { color: inherit; text-decoration: none; }
+
+    /* Editorial Typography Principles */
+    h1, h2, h3, h4, h5, h6 { text-wrap: balance; }
+    p { text-wrap: pretty; }
 
     /* Accessibility focus and motion */
     :focus-visible { outline: 2px solid var(--accent-primary); outline-offset: 2px; }
@@ -179,71 +194,73 @@ def get_shared_css():
       }
     }
 
-    ::-webkit-scrollbar { width: 7px; height: 7px; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: var(--bg-color); }
-    ::-webkit-scrollbar-thumb { background: var(--card-bg); border-radius: 4px; border: 1px solid var(--border-color); }
+    ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 3px; }
     ::-webkit-scrollbar-thumb:hover { background: var(--accent-primary); }
 
     #progressBarContainer {
-      position: fixed; top: 0; left: 0; width: 100%; height: 3px; background: transparent; z-index: 1050; pointer-events: none;
+      position: fixed; top: 0; left: 0; width: 100%; height: 2px; background: transparent; z-index: 1050; pointer-events: none;
     }
     #progressBar {
-      height: 100%; width: 0%; background: linear-gradient(90deg, var(--gold-primary), var(--accent-primary));
-      box-shadow: 0 0 10px var(--accent-glow); transition: width 0.1s ease-out;
+      height: 100%; width: 0%; background: var(--gold-primary);
+      transition: width 0.1s ease-out;
     }
 
     header {
       position: sticky; top: 0; left: 0; right: 0; width: 100%; max-width: 100vw; box-sizing: border-box;
       height: calc(56px + env(safe-area-inset-top, 0px));
-      padding: env(safe-area-inset-top, 0px) 16px 0 16px;
+      padding: env(safe-area-inset-top, 0px) 20px 0 20px;
       background: var(--header-bg);
-      backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-bottom: 1px solid var(--border-color);
+      border-bottom: 1px solid var(--border-color);
       display: flex; align-items: center; justify-content: space-between; z-index: 999;
       transition: transform 0.25s ease;
       overflow: hidden;
     }
-    .header-left, .header-right { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+    .header-left, .header-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
     .btn-brand {
-      display: inline-flex; align-items: center; gap: 8px; background: none; border: none;
-      cursor: pointer; padding: 4px 6px; border-radius: 24px; transition: all 0.2s ease;
+      display: inline-flex; align-items: center; gap: 10px; background: none; border: none;
+      cursor: pointer; padding: 4px 6px; border-radius: 6px; transition: opacity 0.2s ease;
     }
-    .btn-brand:hover { background: rgba(255, 255, 255, 0.06); }
+    .btn-brand:hover { opacity: 0.85; }
     .nav-logo {
       width: 32px; height: 32px; border-radius: 50%; border: 1.5px solid var(--gold-primary);
-      box-shadow: 0 0 10px rgba(245, 158, 11, 0.35); object-fit: cover;
+      object-fit: cover;
     }
     .nav-brand-text {
-      font-family: 'Lora', 'Georgia', serif; font-size: 15px; font-weight: 800; letter-spacing: 1.2px; color: var(--gold-primary);
+      font-family: 'Lora', 'Georgia', serif; font-size: 15px; font-weight: 700; letter-spacing: 1.5px; color: var(--gold-primary);
     }
     .nav-live-badge {
-      display: none; align-items: center; gap: 4px; padding: 2px 7px; border-radius: 12px;
-      background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.25);
-      font-size: 10px; font-weight: 700; color: #10b981;
+      display: none; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 4px;
+      background: transparent; border: 1px solid var(--border-color);
+      font-size: 11px; font-weight: 500; color: var(--text-muted);
     }
     @media (min-width: 900px) { .nav-live-badge { display: inline-flex; } }
 
-    .header-center { flex: 1; min-width: 0; text-align: center; padding: 0 6px; }
+    .header-center { flex: 1; min-width: 0; text-align: center; padding: 0 8px; overflow: hidden; }
     .header-title {
-      font-size: 14px; font-weight: 700; color: var(--gold-primary); white-space: nowrap;
-      overflow: hidden; text-overflow: ellipsis; margin: 0; letter-spacing: 0.2px;
+      display: block; width: 100%;
+      font-size: 13.5px; font-weight: 600; color: var(--text-color); white-space: nowrap;
+      overflow: hidden; text-overflow: ellipsis; margin: 0; letter-spacing: 0.3px;
     }
     .header-sub {
-      font-size: 10.5px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin: 0; opacity: 0.85;
+      display: block; width: 100%;
+      font-size: 11px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin: 0; opacity: 0.85;
     }
     .reader-progress-badge {
-      font-size: 10px; font-weight: 700; color: var(--accent-primary);
-      background: rgba(16, 185, 129, 0.14); border: 1px solid rgba(16, 185, 129, 0.28);
-      padding: 1px 7px; border-radius: 10px; display: inline-flex; align-items: center; gap: 3px;
+      font-size: 10.5px; font-weight: 600; color: var(--gold-primary);
+      background: transparent; border: 1px solid var(--border-color);
+      padding: 1px 6px; border-radius: 4px; display: inline-flex; align-items: center;
       margin-left: 6px; vertical-align: middle;
     }
 
     .btn-icon {
-      background: none; border: none; color: var(--text-color); width: 36px; height: 36px;
+      background: none; border: 1px solid transparent; color: var(--text-muted); width: 36px; height: 36px;
       cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
-      border-radius: 9px; transition: all 0.2s ease; position: relative; flex-shrink: 0;
+      border-radius: 6px; transition: color 0.2s, border-color 0.2s; position: relative; flex-shrink: 0;
     }
-    .btn-icon:hover { background: var(--card-bg); color: var(--gold-primary); }
-    .btn-icon:active { transform: scale(0.94); }
+    .btn-icon:hover { color: var(--gold-primary); border-color: var(--border-color); }
+    .btn-icon:active { transform: scale(0.96); }
 
     .btn-nav-home-pill {
       display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 8px;
@@ -261,6 +278,7 @@ def get_shared_css():
       .btn-icon { width: 35px; height: 35px; }
       .nav-brand-text { font-size: 14px; letter-spacing: 0.8px; }
       .nav-logo { width: 30px; height: 30px; }
+      body.is-home .header-center { display: none; }
     }
 
     .dot-live {
@@ -347,26 +365,26 @@ def get_shared_css():
     .toc-name { font-size: 13px; color: var(--text-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .toc-meta { font-size: 11px; color: var(--text-muted); flex-shrink: 0; }
 
-    /* Chapter Status Tags */
+    /* Chapter Status Indicators - Editorial */
     .ch-status-tag {
-      font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 4px;
+      font-size: 10px; font-weight: 600; padding: 1px 6px; border-radius: 3px;
       display: inline-flex; align-items: center; gap: 3px;
     }
     .ch-status-tag.read {
-      background: rgba(16, 185, 129, 0.14); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.28);
+      background: transparent; color: var(--text-muted); border: 1px solid var(--border-subtle);
     }
     .ch-status-tag.current {
-      background: rgba(245, 158, 11, 0.18); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.45);
+      background: rgba(196, 160, 89, 0.12); color: var(--gold-primary); border: 1px solid var(--gold-primary);
     }
     .ch-status-tag.unread {
-      background: rgba(255, 255, 255, 0.05); color: var(--text-muted); border: 1px solid transparent;
+      display: none;
     }
 
     /* Codex Drawer Styles */
     .codex-progress-pill {
-      font-size: 11.5px; font-weight: 700; color: var(--gold-primary);
-      background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.25);
-      padding: 3px 10px; border-radius: 12px; display: inline-flex; align-items: center; gap: 5px;
+      font-size: 11px; font-weight: 600; color: var(--gold-primary);
+      background: transparent; border: 1px solid var(--border-color);
+      padding: 2px 8px; border-radius: 4px; display: inline-flex; align-items: center; gap: 5px;
     }
     .codex-card {
       background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 12px; padding: 14px; margin-bottom: 14px;
@@ -673,257 +691,250 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
   <style>
     {shared_css}
 
-    /* Hero Styling */
+    /* Hero Styling - Dark Literary Editorial */
     .hero-section {{ position: relative; width: 100%; overflow: hidden; }}
     .hero-desktop {{
-      display: none; position: relative; min-height: 520px; max-height: 640px; align-items: center;
-      border-bottom: 1px solid var(--border-color); background: #07090e;
+      display: none; position: relative; min-height: 500px; max-height: 620px; align-items: center;
+      border-bottom: 1px solid var(--border-color); background: #0e1116;
     }}
-    @media (min-width: 769px) {{ .hero-desktop {{ display: flex; }} .hero-mobile {{ display: none; }} }}
-    @media (max-width: 768px) {{ .hero-desktop {{ display: none; }} .hero-mobile {{ display: flex; }} }}
-
-    .hero-bg-picture {{ position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; }}
-    .hero-bg-img {{ width: 100%; height: 100%; object-fit: cover; object-position: center 20%; }}
-    .hero-desktop-overlay {{
-      position: absolute; inset: 0;
-      background: 
-        linear-gradient(90deg, rgba(7, 9, 14, 0.96) 0%, rgba(7, 9, 14, 0.88) 36%, rgba(7, 9, 14, 0.48) 65%, rgba(7, 9, 14, 0.12) 80%, rgba(7, 9, 14, 0.55) 100%),
-        linear-gradient(0deg, var(--bg-color) 0%, rgba(7, 9, 14, 0.4) 25%, transparent 60%);
-      z-index: 2; pointer-events: none;
-    }}
-    .hero-desktop-content {{
-      position: relative; z-index: 3; max-width: 620px; padding: 44px 36px;
-      margin-left: max(24px, calc((100vw - 1200px) / 2));
-    }}
-
     .hero-mobile {{
-      display: flex; flex-direction: column; position: relative; padding: 24px 16px 28px 16px;
+      display: none; flex-direction: column; position: relative; padding: 24px 16px 28px 16px;
       overflow: hidden; contain: paint; max-width: 100vw; width: 100%; box-sizing: border-box;
       align-items: center; text-align: center; border-bottom: 1px solid var(--border-color);
-      background: #07090e;
+      background: #0e1116;
     }}
+    @media (min-width: 769px) {{ .hero-desktop {{ display: flex; }} .hero-mobile {{ display: none !important; }} }}
+    @media (max-width: 768px) {{ .hero-desktop {{ display: none !important; }} .hero-mobile {{ display: flex !important; }} }}
     .hero-mobile-backdrop {{
       position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center top;
-      filter: blur(28px) brightness(0.24); z-index: 1; pointer-events: none;
+      filter: blur(28px) brightness(0.2); z-index: 1; pointer-events: none;
     }}
     .hero-mobile-overlay {{
       position: absolute; inset: 0;
-      background: linear-gradient(180deg, rgba(7, 9, 14, 0.45) 0%, rgba(7, 9, 14, 0.85) 60%, var(--bg-color) 100%);
+      background: linear-gradient(180deg, rgba(14, 17, 22, 0.5) 0%, rgba(14, 17, 22, 0.88) 60%, var(--bg-color) 100%);
       z-index: 2; pointer-events: none;
     }}
     .hero-mobile-content {{
       position: relative; z-index: 3; width: 100%; max-width: 440px; display: flex; flex-direction: column; align-items: center;
     }}
     .mobile-cover-wrap {{
-      width: 160px; height: 240px; border-radius: 14px; box-shadow: 0 16px 36px rgba(0, 0, 0, 0.75), 0 0 24px rgba(16, 185, 129, 0.22);
-      border: 1.5px solid rgba(255, 255, 255, 0.16); overflow: hidden; margin-bottom: 14px; position: relative;
+      width: 150px; height: 225px; border-radius: 8px; box-shadow: 0 12px 32px rgba(0, 0, 0, 0.65);
+      border: 1px solid rgba(255, 255, 255, 0.12); overflow: hidden; margin-bottom: 16px; position: relative;
     }}
     .mobile-cover-img {{ width: 100%; height: 100%; object-fit: cover; }}
 
-    .hero-badge-pill {{
-      display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 20px;
-      background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.3); color: #34d399;
-      font-size: 11px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; margin-bottom: 12px;
+    .hero-genre-line {{
+      font-size: 11.5px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase;
+      color: var(--gold-primary); margin-bottom: 12px;
     }}
     .hero-title-row {{ display: flex; align-items: center; gap: 14px; margin-bottom: 8px; }}
     .hero-logo-crest {{
-      width: 58px; height: 58px; border-radius: 50%; border: 2px solid var(--gold-primary);
-      box-shadow: 0 0 20px rgba(245, 158, 11, 0.4); object-fit: cover; flex-shrink: 0;
+      width: 54px; height: 54px; border-radius: 50%; border: 1.5px solid var(--gold-primary);
+      object-fit: cover; flex-shrink: 0;
     }}
     .hero-main-title {{
-      font-family: 'Lora', 'Georgia', serif; font-size: 42px; font-weight: 900; letter-spacing: 2px;
-      line-height: 1.1; margin: 0;
-      background: linear-gradient(135deg, #fef08a 0%, #f59e0b 50%, #b45309 100%);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 0 30px rgba(245, 158, 11, 0.25);
+      font-family: 'Lora', 'Georgia', serif; font-size: 46px; font-weight: 700; letter-spacing: 2.5px;
+      line-height: 1.12; margin: 0; color: var(--gold-primary);
     }}
-    .mobile-title {{ font-size: 32px; letter-spacing: 1.5px; }}
-    .hero-subtitle {{ font-size: 14px; font-weight: 700; letter-spacing: 3px; color: #94a3b8; text-transform: uppercase; margin-top: 2px; }}
-    .mobile-sub {{ font-size: 12px; letter-spacing: 2px; margin-bottom: 8px; }}
-    .hero-description {{ font-size: 14px; line-height: 1.7; color: #cbd5e1; margin: 8px 0 14px 0; opacity: 0.92; }}
-    .mobile-desc {{ font-size: 13px; margin-bottom: 14px; line-height: 1.6; }}
-    .hero-hook-card {{
-      margin: 12px 0 14px 0; padding: 12px 16px; border-radius: 12px;
-      background: rgba(255, 255, 255, 0.04); backdrop-filter: blur(8px);
-      border-left: 3.5px solid var(--gold-primary); border-top: 1px solid rgba(255, 255, 255, 0.06);
-      border-right: 1px solid rgba(255, 255, 255, 0.06); border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+    .mobile-title {{ font-size: 34px; letter-spacing: 2px; }}
+    .hero-subtitle {{
+      font-size: 13px; font-weight: 600; letter-spacing: 3.5px; color: var(--text-muted);
+      text-transform: uppercase; margin-top: 4px;
     }}
-    .hero-hook-lead {{ font-size: 13.5px; color: #94a3b8; margin: 0 0 5px 0; line-height: 1.5; }}
-    .hero-hook-core {{ font-size: 14.5px; color: #f1f5f9; margin: 0 0 5px 0; line-height: 1.5; }}
-    .hero-hook-core strong {{ color: var(--gold-primary); }}
-    .hero-hook-tail {{ font-size: 13.5px; color: #cbd5e1; margin: 0; line-height: 1.5; }}
-    .hero-hook-tail strong {{ color: #34d399; }}
+    .mobile-sub {{ font-size: 12px; letter-spacing: 2.5px; margin-bottom: 10px; }}
+
+    .hero-editorial-premise {{
+      margin: 16px 0 12px 0; padding: 12px 18px;
+      border-left: 2px solid var(--gold-primary); background: rgba(255, 255, 255, 0.02);
+    }}
+    .hero-hook-lead {{ font-size: 13.5px; color: var(--text-muted); margin: 0 0 4px 0; line-height: 1.6; }}
+    .hero-hook-core {{ font-size: 14.5px; color: var(--text-color); margin: 0 0 4px 0; line-height: 1.6; }}
+    .hero-hook-core strong {{ color: var(--gold-primary); font-weight: 600; }}
+    .hero-hook-tail {{ font-size: 13.5px; color: #cbd5e1; margin: 0; line-height: 1.6; }}
+    .hero-hook-tail strong {{ color: var(--accent-primary); font-weight: 600; }}
     @media (max-width: 768px) {{
-      .hero-hook-card {{ text-align: left; margin: 10px 0 14px 0; padding: 10px 14px; width: 100%; box-sizing: border-box; }}
+      .hero-editorial-premise {{ text-align: left; margin: 12px 0 14px 0; padding: 10px 14px; width: 100%; box-sizing: border-box; }}
       .hero-hook-lead, .hero-hook-tail {{ font-size: 12.5px; }}
       .hero-hook-core {{ font-size: 13.5px; }}
     }}
-    .hero-stats-bar {{ display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px; font-size: 12px; color: var(--text-muted); margin-bottom: 20px; }}
-    .hero-stat-tag {{
-      display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 6px;
-      background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-color); color: #e2e8f0; font-weight: 500;
+
+    .hero-description {{ font-size: 14px; line-height: 1.7; color: var(--text-muted); margin: 0 0 14px 0; }}
+    .mobile-desc {{ font-size: 13px; margin-bottom: 14px; line-height: 1.6; }}
+
+    .hero-stats-line {{
+      display: flex; align-items: center; flex-wrap: wrap; gap: 8px;
+      font-size: 13px; color: var(--text-muted); margin: 14px 0 22px 0;
     }}
-    .hero-stat-tag strong {{ color: var(--gold-primary); }}
+    .hero-stats-line strong {{ color: var(--text-color); font-weight: 600; }}
+    .stat-sep {{ opacity: 0.35; }}
+    .stat-status {{ color: var(--gold-primary); font-weight: 500; }}
 
     .hero-actions {{ display: flex; align-items: center; flex-wrap: wrap; gap: 12px; }}
     .btn-hero-primary {{
-      padding: 13px 26px; border-radius: 12px; background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-      border: 1px solid rgba(52, 211, 153, 0.5); color: #ffffff; font-size: 15px; font-weight: 700;
-      cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 10px;
-      box-shadow: 0 8px 24px rgba(16, 185, 129, 0.35); transition: all 0.22s ease;
+      padding: 12px 24px; border-radius: 6px; background: var(--gold-primary);
+      border: 1px solid var(--gold-primary); color: #0e1116; font-size: 14.5px; font-weight: 700;
+      letter-spacing: 0.3px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      transition: background 0.2s, border-color 0.2s;
     }}
-    .btn-hero-primary:hover {{
-      background: linear-gradient(135deg, #34d399 0%, #10b981 100%); box-shadow: 0 10px 28px rgba(16, 185, 129, 0.45); transform: translateY(-2px);
-    }}
-    .btn-hero-primary:active {{ transform: translateY(0) scale(0.98); }}
+    .btn-hero-primary:hover {{ background: var(--gold-hover); border-color: var(--gold-hover); }}
+    .btn-hero-primary:active {{ transform: scale(0.98); }}
 
     .btn-hero-secondary {{
-      padding: 13px 20px; border-radius: 12px; background: rgba(255, 255, 255, 0.07); backdrop-filter: blur(8px);
-      border: 1px solid var(--border-color); color: var(--text-color); font-size: 14px; font-weight: 600;
-      cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s ease;
+      padding: 12px 20px; border-radius: 6px; background: transparent;
+      border: 1px solid var(--border-color); color: var(--text-color); font-size: 14px; font-weight: 500;
+      cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      transition: border-color 0.2s, color 0.2s;
     }}
-    .btn-hero-secondary:hover {{
-      background: rgba(255, 255, 255, 0.12); border-color: var(--gold-primary); color: var(--gold-primary); transform: translateY(-1px);
-    }}
+    .btn-hero-secondary:hover {{ border-color: var(--gold-primary); color: var(--gold-primary); }}
+
     .btn-hero-outline {{
-      padding: 13px 18px; border-radius: 12px; background: transparent; border: 1px dashed var(--border-color);
-      color: var(--text-muted); font-size: 14px; font-weight: 500; cursor: pointer; display: inline-flex;
-      align-items: center; justify-content: center; gap: 8px; transition: all 0.2s ease;
+      padding: 12px 18px; border-radius: 6px; background: transparent; border: 1px solid transparent;
+      color: var(--text-muted); font-size: 13.5px; font-weight: 500; cursor: pointer; display: inline-flex;
+      align-items: center; justify-content: center; gap: 6px; transition: color 0.2s;
     }}
-    .btn-hero-outline:hover {{ color: #38bdf8; border-color: #38bdf8; background: rgba(56, 189, 248, 0.06); }}
-    .mobile-cta-full {{ width: 100%; padding: 14px; font-size: 15px; margin-bottom: 10px; }}
+    .btn-hero-outline:hover {{ color: var(--text-color); }}
+    .mobile-cta-full {{ width: 100%; padding: 13px; font-size: 15px; margin-bottom: 10px; }}
     .mobile-sub-row {{ display: flex; width: 100%; gap: 8px; }}
-    .mobile-sub-row button, .mobile-sub-row a {{ flex: 1; padding: 11px 8px; font-size: 13px; text-align: center; }}
+    .mobile-sub-row button, .mobile-sub-row a {{ flex: 1; padding: 10px 8px; font-size: 13px; text-align: center; }}
 
     /* Home Content Container */
     .home-container {{ max-width: 1100px; margin: 0 auto; padding: 24px 20px 80px 20px; box-sizing: border-box; width: 100%; }}
     @media (max-width: 768px) {{
       .home-container {{ padding: 18px 14px 80px 14px; }}
-      .home-toc-grid {{ grid-template-columns: 1fr; }}
       .continue-card {{ padding: 16px; gap: 14px; flex-direction: column; align-items: stretch; }}
       .continue-left {{ gap: 12px; width: 100%; }}
-      .continue-thumb {{ width: 44px; height: 44px; }}
+      .continue-thumb {{ width: 42px; height: 42px; }}
       .continue-btn {{ text-align: center; width: 100%; box-sizing: border-box; display: block; }}
       .continue-pill {{ white-space: nowrap; }}
     }}
     .section-title-wrap {{
       display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
-      margin: 34px 0 16px 0; padding-bottom: 12px; border-bottom: 1px solid var(--border-color);
+      margin: 36px 0 16px 0; padding-bottom: 12px; border-bottom: 1px solid var(--border-color);
     }}
     .section-title {{
-      font-size: 18px; font-weight: 800; color: var(--gold-primary); letter-spacing: 0.5px; margin: 0;
-      display: flex; align-items: center; gap: 10px;
+      font-family: 'Lora', 'Georgia', serif; font-size: 19px; font-weight: 700;
+      color: var(--gold-primary); letter-spacing: 0.5px; margin: 0;
     }}
-    .section-title::before {{ content: ""; display: inline-block; width: 4px; height: 18px; background: var(--accent-primary); border-radius: 2px; }}
 
     /* Resume Reading Card */
     .continue-card {{
-      background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 18px 22px;
-      display: flex; align-items: center; justify-content: space-between; gap: 16px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-      transition: all 0.2s ease; margin-top: 14px; box-sizing: border-box; width: 100%;
+      background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 16px 20px;
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+      transition: border-color 0.2s; margin-top: 16px; box-sizing: border-box; width: 100%;
     }}
-    .continue-card:hover {{ border-color: rgba(16, 185, 129, 0.35); transform: translateY(-1px); }}
+    .continue-card:hover {{ border-color: var(--gold-primary); }}
     .continue-card.welcome-mode {{
-      background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(14, 18, 27, 0.9) 100%);
-      border-color: rgba(16, 185, 129, 0.25);
+      background: rgba(81, 122, 143, 0.05); border-color: var(--border-color);
     }}
     .continue-left {{ display: flex; align-items: center; gap: 16px; min-width: 0; flex: 1; }}
     .continue-thumb {{
-      width: 46px; height: 46px; border-radius: 10px; object-fit: cover; border: 1.5px solid var(--gold-primary); flex-shrink: 0;
+      width: 44px; height: 44px; border-radius: 6px; object-fit: cover; border: 1px solid var(--border-color); flex-shrink: 0;
     }}
     .continue-info {{ min-width: 0; flex: 1; }}
     .continue-pill {{
-      font-size: 11px; font-weight: 700; color: var(--accent-primary); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 2px;
+      font-size: 11px; font-weight: 600; color: var(--gold-primary); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 3px;
     }}
     .continue-chapter-name {{
-      font-size: 15.5px; font-weight: 700; color: var(--text-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      font-size: 15px; font-weight: 600; color: var(--text-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }}
     .continue-progress-meta {{ font-size: 12px; color: var(--text-muted); margin-top: 2px; }}
     .continue-btn {{
-      padding: 10px 18px; border-radius: 10px; background: rgba(16, 185, 129, 0.14); border: 1px solid var(--accent-primary);
-      color: #34d399; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; transition: all 0.2s ease;
+      padding: 9px 16px; border-radius: 6px; background: transparent; border: 1px solid var(--border-color);
+      color: var(--gold-primary); font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: all 0.2s ease;
     }}
-    .continue-btn:hover {{ background: var(--accent-primary); color: #ffffff; }}
+    .continue-btn:hover {{ background: rgba(196, 160, 89, 0.08); border-color: var(--gold-primary); }}
 
     /* Latest Chapter Highlight Banner */
     .latest-chapter-banner {{
-      background: linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(14, 18, 27, 0.88) 100%);
-      border: 1.5px solid rgba(245, 158, 11, 0.32); border-radius: 16px; padding: 16px 20px;
-      margin-top: 14px; display: flex; align-items: center; justify-content: space-between; gap: 16px;
-      transition: all 0.2s ease; box-sizing: border-box; width: 100%;
+      background: rgba(196, 160, 89, 0.03); border: 1px solid var(--border-color);
+      border-left: 3px solid var(--gold-primary); border-radius: 8px; padding: 14px 18px;
+      margin-top: 12px; display: flex; align-items: center; justify-content: space-between; gap: 16px;
+      transition: border-color 0.2s; box-sizing: border-box; width: 100%;
     }}
-    .latest-chapter-banner:hover {{
-      border-color: var(--gold-primary); transform: translateY(-1px); box-shadow: 0 4px 20px rgba(245, 158, 11, 0.15);
-    }}
+    .latest-chapter-banner:hover {{ border-color: var(--gold-primary); }}
     @media (max-width: 768px) {{
-      .latest-chapter-banner {{ flex-direction: column; align-items: stretch; padding: 16px; gap: 12px; }}
+      .latest-chapter-banner {{ flex-direction: column; align-items: stretch; padding: 14px; gap: 12px; }}
     }}
 
-    /* TOC Grid */
+    /* TOC Grid - Editorial Catalog */
     .home-toc-filter-row {{ display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 16px; }}
-    .home-tabs {{ display: flex; gap: 6px; background: rgba(0,0,0,0.2); padding: 4px; border-radius: 10px; border: 1px solid var(--border-color); }}
+    .home-tabs {{ display: flex; gap: 18px; border-bottom: 1px solid var(--border-color); padding: 0 2px; }}
     .home-tab-btn {{
-      padding: 6px 14px; border-radius: 8px; background: transparent; border: none; color: var(--text-muted);
-      font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;
+      padding: 8px 4px; background: none; border: none; border-bottom: 2px solid transparent;
+      color: var(--text-muted); font-size: 13.5px; font-weight: 500; cursor: pointer; transition: all 0.2s;
+      margin-bottom: -1px;
     }}
-    .home-tab-btn.active {{ background: var(--card-bg); color: var(--gold-primary); box-shadow: 0 2px 8px rgba(0,0,0,0.2); }}
-    .home-search-box {{ position: relative; min-width: 220px; flex: 1; max-width: 360px; }}
+    .home-tab-btn.active {{ color: var(--gold-primary); border-bottom-color: var(--gold-primary); font-weight: 600; }}
+    .home-search-box {{ position: relative; min-width: 220px; flex: 1; max-width: 340px; }}
     .home-search-input {{
-      width: 100%; padding: 8px 14px 8px 36px; border-radius: 8px; background: var(--card-bg); border: 1px solid var(--border-color);
-      color: var(--text-color); font-size: 13px; outline: none;
+      width: 100%; padding: 8px 12px 8px 34px; border-radius: 6px; background: var(--card-bg);
+      border: 1px solid var(--border-color); color: var(--text-color); font-size: 13px; outline: none;
+      transition: border-color 0.2s;
     }}
-    .home-search-input:focus {{ border-color: var(--accent-primary); }}
+    .home-search-input:focus {{ border-color: var(--gold-primary); }}
     .home-search-icon {{ position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: var(--text-muted); pointer-events: none; }}
-    .home-toc-grid {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); gap: 12px; }}
+    
+    .home-toc-grid {{
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 1px; background: var(--border-color); border: 1px solid var(--border-color);
+      border-radius: 8px; overflow: hidden;
+    }}
     .home-ch-card {{
-      background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 14px 16px;
-      cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 12px; transition: all 0.2s ease;
+      background: var(--bg-color); padding: 14px 18px; cursor: pointer;
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      transition: background 0.15s ease;
     }}
     .home-ch-card:hover {{
-      background: var(--card-bg-hover); border-color: var(--gold-primary); transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+      background: rgba(255, 255, 255, 0.03);
     }}
+    .home-ch-card:hover .home-ch-title {{ color: var(--gold-primary); }}
+    .home-ch-card:hover .home-ch-arrow {{ color: var(--gold-primary); transform: translateX(2px); }}
     .home-ch-card.is-current {{
-      border-color: var(--gold-primary); background: rgba(245, 158, 11, 0.06); box-shadow: 0 0 16px rgba(245, 158, 11, 0.15);
+      background: rgba(196, 160, 89, 0.05);
     }}
-    .home-ch-card.is-current .home-ch-title {{ color: var(--gold-primary); font-weight: 700; }}
-    .home-ch-card.is-read {{ opacity: 0.88; }}
+    .home-ch-card.is-current .home-ch-title {{ color: var(--gold-primary); font-weight: 600; }}
+    .home-ch-card.is-read {{ opacity: 0.85; }}
     .home-ch-info {{ min-width: 0; flex: 1; }}
-    .home-ch-meta-top {{ display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--gold-primary); font-weight: 700; margin-bottom: 3px; }}
+    .home-ch-meta-top {{
+      display: flex; align-items: center; gap: 8px; font-size: 11px;
+      color: var(--gold-primary); font-weight: 600; letter-spacing: 0.5px; margin-bottom: 3px;
+    }}
     .home-ch-title {{
-      font-size: 14.5px; font-weight: 600; color: var(--text-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 3px;
+      font-size: 14.5px; font-weight: 500; color: var(--text-color);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 3px;
+      transition: color 0.15s ease;
     }}
-    .home-ch-meta-bottom {{ font-size: 11px; color: var(--text-muted); display: flex; gap: 10px; }}
-    .home-ch-arrow {{ color: var(--text-muted); transition: transform 0.2s, color 0.2s; }}
-    .home-ch-card:hover .home-ch-arrow {{ color: var(--gold-primary); transform: translateX(3px); }}
+    .home-ch-meta-bottom {{ font-size: 11.5px; color: var(--text-muted); display: flex; gap: 8px; }}
+    .home-ch-arrow {{ color: var(--border-color); font-size: 14px; transition: transform 0.15s, color 0.15s; }}
 
-    /* Codex Preview Cards */
-    .home-codex-grid {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 14px; margin-bottom: 20px; }}
+    /* Codex Preview Cards - Archival Dossiers */
+    .home-codex-grid {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; margin-bottom: 20px; }}
     .home-codex-card {{
-      background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 14px; padding: 16px;
-      display: flex; flex-direction: column; cursor: pointer; transition: all 0.22s ease;
+      background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 16px;
+      display: flex; flex-direction: column; cursor: pointer; transition: border-color 0.2s ease;
     }}
-    .home-codex-card:hover {{ border-color: rgba(16, 185, 129, 0.4); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.3); }}
-    .home-codex-card.locked {{ border-style: dashed; opacity: 0.76; }}
+    .home-codex-card:hover {{ border-color: var(--gold-primary); }}
+    .home-codex-card.locked {{ opacity: 0.65; border-style: dashed; }}
     .home-codex-badge {{
-      align-self: flex-start; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 4px;
-      background: rgba(245, 158, 11, 0.12); color: var(--gold-primary); margin-bottom: 8px;
+      align-self: flex-start; font-size: 10px; font-weight: 600; letter-spacing: 0.8px; padding: 2px 6px;
+      border-radius: 3px; background: rgba(196, 160, 89, 0.1); color: var(--gold-primary); margin-bottom: 8px; text-transform: uppercase;
     }}
-    .home-codex-badge.locked-badge {{ background: rgba(255, 255, 255, 0.08); color: var(--text-muted); }}
-    .home-codex-name {{ font-size: 16px; font-weight: 700; color: var(--text-color); margin: 0 0 6px 0; }}
+    .home-codex-badge.locked-badge {{ background: rgba(255, 255, 255, 0.05); color: var(--text-muted); }}
+    .home-codex-name {{ font-size: 15px; font-weight: 600; color: var(--text-color); margin: 0 0 6px 0; }}
     .home-codex-desc {{ font-size: 12.5px; color: var(--text-muted); line-height: 1.6; margin: 0; flex: 1; }}
 
-    /* Footer */
+    /* Footer - Colophon */
     .site-footer {{
-      margin-top: 50px; padding: 40px 20px 80px 20px; border-top: 1px solid var(--border-color);
-      text-align: center; background: rgba(0, 0, 0, 0.2);
+      margin-top: 56px; padding: 44px 20px 80px 20px; border-top: 1px solid var(--border-color);
+      text-align: center; background: transparent;
     }}
-    .footer-logo {{ width: 46px; height: 46px; border-radius: 50%; border: 1.5px solid var(--gold-primary); margin-bottom: 12px; object-fit: cover; }}
+    .footer-logo {{ width: 42px; height: 42px; border-radius: 50%; border: 1px solid var(--gold-primary); margin-bottom: 12px; object-fit: cover; }}
     .footer-title {{ font-family: 'Lora', 'Georgia', serif; font-size: 16px; font-weight: 800; color: var(--gold-primary); letter-spacing: 1px; margin-bottom: 4px; }}
     .footer-sub {{ font-size: 12.5px; color: var(--text-muted); margin-bottom: 12px; }}
     .footer-copy {{ font-size: 11px; color: var(--text-muted); opacity: 0.75; }}
   </style>
 </head>
-<body class="theme-peaceful-dark">
+<body class="theme-peaceful-dark is-home">
 
   <div id="progressBarContainer"><div id="progressBar"></div></div>
 
@@ -982,7 +993,7 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
         </picture>
         <div class="hero-desktop-overlay"></div>
         <div class="hero-desktop-content">
-          <div class="hero-badge-pill"><span class="dot-live"></span> ĐÔ THỊ TU CHÂN • TP. HỒ CHÍ MINH 2026</div>
+          <div class="hero-genre-line">Tiểu thuyết Đô thị Tu chân · TP. Hồ Chí Minh 2026</div>
           <div class="hero-title-row">
             <picture>
               <source srcset="./assets/logo.webp" type="image/webp">
@@ -993,29 +1004,30 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
               <div class="hero-subtitle">PHÁ TOÁI THẦN HOANG</div>
             </div>
           </div>
-          <div class="hero-hook-card">
+          <div class="hero-editorial-premise">
             <p class="hero-hook-lead">Sài Gòn, 2026. Một người bình thường giữa guồng quay mưu sinh.</p>
             <p class="hero-hook-core">Một phong ấn đại địa đã ngủ yên dưới lòng thành phố suốt <strong>2,5 triệu năm</strong>.</p>
             <p class="hero-hook-tail">Và một con đường <strong>Thể Đạo phàm nhân</strong> không dành cho kẻ có thiên phú.</p>
           </div>
           <p class="hero-description">Không hệ thống hack điểm, không bàn tay vàng vô lý — Minh An dấn thân vào cổ đạo thất truyền, dùng từng tấc huyết nhục phàm nhân phá vỡ vạn trùng xiềng xích.</p>
-          <div class="hero-stats-bar">
-            <span class="hero-stat-tag">📖 <strong>{total_ch}</strong> CHƯƠNG</span>
-            <span class="hero-stat-tag">⚡ <strong>{total_words:,}</strong> TỪ</span>
-            <span class="hero-stat-tag">🌊 <strong>QUYỂN 1–2</strong></span>
-            <span class="hero-stat-tag"><span class="dot-live"></span> <strong>ĐANG RA TIẾP</strong></span>
+          <div class="hero-stats-line">
+            <span class="stat-item"><strong>{total_ch}</strong> chương</span>
+            <span class="stat-sep">·</span>
+            <span class="stat-item"><strong>{total_words:,}</strong> từ</span>
+            <span class="stat-sep">·</span>
+            <span class="stat-item">Quyển I–II</span>
+            <span class="stat-sep">·</span>
+            <span class="stat-status">Đang sáng tác đều đặn</span>
           </div>
           <div class="hero-actions">
             <a href="./chuong-1/" class="btn-hero-primary" id="btnHeroReadPrimary">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-              <span id="heroPrimaryText">▶ Bắt Đầu Đọc — Chương 1</span>
+              <span id="heroPrimaryText">Bắt Đầu Đọc — Chương 1</span>
+              <span>→</span>
             </a>
             <button class="btn-hero-secondary" id="btnHeroTocScroll">
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
               <span>Mục Lục ({total_ch})</span>
             </button>
             <button class="btn-hero-outline" id="btnHeroCodexOpen">
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
               <span>Codex Phá Trời</span>
             </button>
           </div>
@@ -1036,22 +1048,24 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
               <img src="./assets/cover_vertical.jpg" class="mobile-cover-img" alt="Phá Trời Bìa Dọc" fetchpriority="high">
             </picture>
           </div>
-          <div class="hero-badge-pill"><span class="dot-live"></span> ĐÔ THỊ TU CHÂN • TP.HCM 2026</div>
+          <div class="hero-genre-line" style="margin-bottom:8px;">Tiểu thuyết Đô thị Tu chân · TP.HCM 2026</div>
           <div class="hero-main-title mobile-title">PHÁ TRỜI</div>
           <div class="hero-subtitle mobile-sub">PHÁ TOÁI THẦN HOANG</div>
-          <div class="hero-hook-card">
+          <div class="hero-editorial-premise">
             <p class="hero-hook-lead">Sài Gòn, 2026. Người bình thường giữa dòng mưu sinh.</p>
             <p class="hero-hook-core">Phong ấn đại địa ngủ yên suốt <strong>2,5 triệu năm</strong>.</p>
             <p class="hero-hook-tail">Con đường <strong>Thể Đạo phàm nhân</strong> phá vỡ vạn trùng xiềng xích.</p>
           </div>
-          <div class="hero-stats-bar" style="justify-content:center; margin-bottom:14px;">
-            <span class="hero-stat-tag">📖 <strong>{total_ch}</strong> CHƯƠNG</span>
-            <span class="hero-stat-tag">⚡ <strong>{total_words:,}</strong> TỪ</span>
-            <span class="hero-stat-tag"><span class="dot-live"></span> <strong>ĐANG RA TIẾP</strong></span>
+          <div class="hero-stats-line" style="justify-content:center; margin:10px 0 16px 0;">
+            <span class="stat-item"><strong>{total_ch}</strong> chương</span>
+            <span class="stat-sep">·</span>
+            <span class="stat-item"><strong>{total_words:,}</strong> từ</span>
+            <span class="stat-sep">·</span>
+            <span class="stat-status">Đang ra tiếp</span>
           </div>
           <a href="./chuong-1/" class="btn-hero-primary mobile-cta-full" id="btnMobileHeroReadPrimary">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-            <span id="mobileHeroPrimaryText">▶ Bắt Đầu Đọc — Chương 1</span>
+            <span id="mobileHeroPrimaryText">Bắt Đầu Đọc — Chương 1</span>
+            <span>→</span>
           </a>
           <div class="mobile-sub-row">
             <button class="btn-hero-secondary" id="btnMobileHeroTocScroll">Mục Lục ({total_ch})</button>
@@ -1072,7 +1086,7 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
               <img src="./assets/logo.jpg" class="continue-thumb" alt="Phá Trời">
             </picture>
             <div class="continue-info">
-              <div class="continue-pill" id="contPill">HÀNH TRÌNH KHỞI ĐẦU</div>
+              <div class="continue-pill" id="contPill">HÀNH TRÌNH BẮT ĐẦU</div>
               <div class="continue-chapter-name" id="contChName">Bạn chưa từng đọc Phá Trời? Bắt đầu từ Chương 1</div>
               <div class="continue-progress-meta" id="contChMeta">Dấn thân vào đại phong ấn sông ngầm Sài Gòn 2.5 triệu năm cùng Minh An</div>
             </div>
@@ -1083,21 +1097,21 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
         <!-- SECTION 2B: LATEST CHAPTER HIGHLIGHT (PHASE 4) -->
         <div class="latest-chapter-banner" id="latestChapterBanner">
           <div style="display:flex; align-items:center; gap:14px; min-width:0; flex:1;">
-            <span class="next-card-badge gold" style="flex-shrink:0;">MỚI NHẤT</span>
+            <span style="flex-shrink:0; font-size:11px; font-weight:600; letter-spacing:1px; padding:3px 8px; border:1px solid var(--border-color); border-radius:4px; color:var(--gold-primary);">MỚI XUẤT BẢN</span>
             <div style="min-width:0; flex:1;">
-              <div style="font-size:11px; font-weight:700; color:var(--gold-primary); text-transform:uppercase; letter-spacing:1px;">Chương {latest_num} Vừa Cập Nhật</div>
-              <div style="font-size:15px; font-weight:700; color:var(--text-color); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Chương {latest_num}: {latest_title}</div>
-              <div style="font-size:11.5px; color:var(--text-muted); margin-top:2px;">{latest_words:,} từ • ~{latest_read_mins} phút đọc • Cập nhật ngày {latest_date}</div>
+              <div style="font-size:11px; font-weight:600; color:var(--gold-primary); text-transform:uppercase; letter-spacing:1px;">Chương {latest_num} Vừa Cập Nhật</div>
+              <div style="font-size:15px; font-weight:600; color:var(--text-color); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Chương {latest_num}: {latest_title}</div>
+              <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">{latest_words:,} từ · ~{latest_read_mins} phút đọc · Cập nhật ngày {latest_date}</div>
             </div>
           </div>
-          <a href="./chuong-{latest_num}/" class="continue-btn" style="flex-shrink:0; border-color:var(--gold-primary); color:var(--gold-primary); background:rgba(245,158,11,0.12);">Đọc Ngay →</a>
+          <a href="./chuong-{latest_num}/" class="continue-btn" style="flex-shrink:0;">Đọc Ngay →</a>
         </div>
       </div>
 
       <!-- SECTION 3: TABLE OF CONTENTS (PHASE 3) -->
       <div id="sectionToc">
         <div class="section-title-wrap">
-          <h2 class="section-title">MỤC LỤC TRỌN BỘ ({total_ch} CHƯƠNG)</h2>
+          <h2 class="section-title">MỤC LỤC TÁC PHẨM ({total_ch} CHƯƠNG)</h2>
           <div class="home-search-box">
             <svg class="home-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
             <input type="text" class="home-search-input" id="inputHomeSearch" placeholder="Tìm số chương, tiêu đề hoặc địa danh...">
@@ -1105,13 +1119,13 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
         </div>
 
         <!-- TOC Progress Summary (Phase 3) -->
-        <div class="toc-progress-summary" id="homeTocProgressSummary" style="border-radius:12px; margin-bottom:14px; border:1px solid var(--border-color);">
-          <div class="toc-progress-text">
+        <div class="toc-progress-summary" id="homeTocProgressSummary" style="border-radius:6px; margin-bottom:16px; border:1px solid var(--border-color); padding:10px 14px; background:var(--card-bg);">
+          <div class="toc-progress-text" style="font-size:12.5px;">
             <span>Tiến độ đọc toàn bộ:</span>
             <strong id="homeTocProgressText">Đã đọc 0 / {total_ch} chương (0%)</strong>
           </div>
-          <div class="toc-progress-track">
-            <div class="toc-progress-fill" id="homeTocProgressFill" style="width: 0%;"></div>
+          <div class="toc-progress-track" style="height:3px; border-radius:2px; background:var(--border-subtle); margin-top:6px;">
+            <div class="toc-progress-fill" id="homeTocProgressFill" style="width: 0%; height:100%; background:var(--gold-primary); border-radius:2px;"></div>
           </div>
         </div>
 
@@ -1122,7 +1136,7 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
             <button class="home-tab-btn" data-home-filter="arc2">Hồi 2 (47–{total_ch}+)</button>
           </div>
           <div style="font-size:12px; color:var(--text-muted);">
-            Tổng cộng: <strong style="color:var(--gold-primary);">{total_words:,}</strong> từ bản thảo
+            Tổng cộng: <strong style="color:var(--text-color);">{total_words:,}</strong> từ bản thảo
           </div>
         </div>
 
@@ -1135,14 +1149,14 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
       <div id="sectionCodexPreview">
         <div class="section-title-wrap">
           <div>
-            <h2 class="section-title">CODEX PHÁ TRỜI — KHÁM PHÁ THẾ GIỚI</h2>
+            <h2 class="section-title">CODEX PHÁ TRỜI — HỒ SƠ & BẢN THẢO THẾ GIỚI</h2>
             <div style="font-size:12.5px; color:var(--text-muted); margin-top:4px;">
-              Hồ sơ nhân vật, cổ vật và thế giới quan đô thị tu chân. Mở khóa theo tiến độ đọc.
+              Hồ sơ nhân vật, cổ vật và đại địa phong ấn đô thị tu chân. Mở khóa theo tiến độ đọc.
             </div>
           </div>
           <div style="display:flex; align-items:center; gap:10px;">
             <span class="codex-progress-pill" id="homeCodexProgressPill">Đã khám phá 0 / {len(codex_items)} mục</span>
-            <button class="btn-hero-outline" id="btnViewAllCodex" style="padding:6px 14px; font-size:12px;">Mở Bách Khoa →</button>
+            <button class="btn-hero-outline" id="btnViewAllCodex" style="padding:6px 14px; font-size:12px; border:1px solid var(--border-color);">Mở Bách Khoa →</button>
           </div>
         </div>
         <div class="home-codex-grid" id="homeCodexGrid">
@@ -1614,13 +1628,13 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
           <a href="./chuong-${{ch.chapter}}/" class="home-ch-card ${{cardClass}}">
             <div class="home-ch-info">
               <div class="home-ch-meta-top">
-                <span>HỒI ${{ch.arc || 1}} • CHƯƠNG ${{ch.chapter}}</span>
+                <span>HỒI ${{ch.arc || 1}} · CHƯƠNG ${{ch.chapter}}</span>
                 ${{statusBadge}}
               </div>
               <div class="home-ch-title">${{ch.title.replace(/^Chương\\s+\\d+:\\s*/i, '')}}</div>
               <div class="home-ch-meta-bottom">
                 <span>${{ch.word_count ? ch.word_count.toLocaleString() + ' từ' : ''}}</span>
-                ${{ch.location ? '<span>• ' + ch.location.split(',')[0] + '</span>' : ''}}
+                ${{ch.location ? '<span>· ' + ch.location.split(',')[0] + '</span>' : ''}}
               </div>
             </div>
             <div class="home-ch-arrow">→</div>
@@ -2320,7 +2334,7 @@ def generate_chapter_html(ch_info, chapters_index, total_words, codex_items=None
     .btn-bottom-item svg {{ width: 20px; height: 20px; }}
   </style>
 </head>
-<body class="theme-peaceful-dark">
+<body class="theme-peaceful-dark is-chapter">
 
   <div id="progressBarContainer"><div id="progressBar"></div></div>
 
