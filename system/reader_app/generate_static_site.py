@@ -694,8 +694,31 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
     /* Hero Styling - Dark Literary Editorial */
     .hero-section {{ position: relative; width: 100%; overflow: hidden; }}
     .hero-desktop {{
-      display: none; position: relative; min-height: 500px; max-height: 620px; align-items: center;
-      border-bottom: 1px solid var(--border-color); background: #0e1116;
+      display: none; position: relative; min-height: 560px; max-height: 650px;
+      align-items: stretch; border-bottom: 1px solid var(--border-color);
+      background: #0e1116; overflow: hidden;
+    }}
+    .hero-bg-picture {{
+      position: relative; flex: 1 1 58%; min-width: 0; height: 100%; overflow: hidden; display: block;
+    }}
+    .hero-bg-img {{
+      width: 100%; height: 100%; object-fit: cover; object-position: center 25%; display: block;
+    }}
+    .hero-desktop-overlay {{
+      position: absolute; inset: 0;
+      background: linear-gradient(90deg, transparent 65%, rgba(14, 17, 22, 0.7) 82%, #0e1116 100%),
+                  linear-gradient(0deg, #0e1116 0%, transparent 18%);
+      pointer-events: none; z-index: 2;
+    }}
+    .hero-desktop-content {{
+      position: relative; flex: 0 0 42%; min-width: 440px; max-width: 600px;
+      padding: 44px 48px 44px 32px; display: flex; flex-direction: column; justify-content: center;
+      background: #0e1116; z-index: 3; box-sizing: border-box;
+    }}
+    @media (max-width: 1100px) and (min-width: 769px) {{
+      .hero-desktop-content {{ flex: 0 0 46%; min-width: 360px; padding: 32px 24px; }}
+      .hero-main-title {{ font-size: 38px; }}
+      .hero-editorial-premise {{ padding: 10px 14px; }}
     }}
     .hero-mobile {{
       display: none; flex-direction: column; position: relative; padding: 24px 16px 28px 16px;
@@ -703,7 +726,7 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
       align-items: center; text-align: center; border-bottom: 1px solid var(--border-color);
       background: #0e1116;
     }}
-    @media (min-width: 769px) {{ .hero-desktop {{ display: flex; }} .hero-mobile {{ display: none !important; }} }}
+    @media (min-width: 769px) {{ .hero-desktop {{ display: flex !important; }} .hero-mobile {{ display: none !important; }} }}
     @media (max-width: 768px) {{ .hero-desktop {{ display: none !important; }} .hero-mobile {{ display: flex !important; }} }}
     .hero-mobile-backdrop {{
       position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center top;
@@ -727,6 +750,7 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
       font-size: 11.5px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase;
       color: var(--gold-primary); margin-bottom: 12px;
     }}
+    .hero-title-wrap {{ margin-bottom: 14px; }}
     .hero-title-row {{ display: flex; align-items: center; gap: 14px; margin-bottom: 8px; }}
     .hero-logo-crest {{
       width: 54px; height: 54px; border-radius: 50%; border: 1.5px solid var(--gold-primary);
@@ -734,18 +758,19 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
     }}
     .hero-main-title {{
       font-family: 'Lora', 'Georgia', serif; font-size: 46px; font-weight: 700; letter-spacing: 2.5px;
-      line-height: 1.12; margin: 0; color: var(--gold-primary);
+      line-height: 1.1; margin: 0; color: var(--gold-primary);
     }}
     .mobile-title {{ font-size: 34px; letter-spacing: 2px; }}
     .hero-subtitle {{
       font-size: 13px; font-weight: 600; letter-spacing: 3.5px; color: var(--text-muted);
-      text-transform: uppercase; margin-top: 4px;
+      text-transform: uppercase; margin-top: 5px;
     }}
     .mobile-sub {{ font-size: 12px; letter-spacing: 2.5px; margin-bottom: 10px; }}
 
     .hero-editorial-premise {{
-      margin: 16px 0 12px 0; padding: 12px 18px;
-      border-left: 2px solid var(--gold-primary); background: rgba(255, 255, 255, 0.02);
+      margin: 0 0 16px 0; padding: 13px 18px;
+      border-left: 2.5px solid var(--gold-primary); background: rgba(196, 160, 89, 0.04);
+      border-radius: 0 6px 6px 0;
     }}
     .hero-hook-lead {{ font-size: 13.5px; color: var(--text-muted); margin: 0 0 4px 0; line-height: 1.6; }}
     .hero-hook-core {{ font-size: 14.5px; color: var(--text-color); margin: 0 0 4px 0; line-height: 1.6; }}
@@ -758,12 +783,13 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
       .hero-hook-core {{ font-size: 13.5px; }}
     }}
 
-    .hero-description {{ font-size: 14px; line-height: 1.7; color: var(--text-muted); margin: 0 0 14px 0; }}
+    .hero-description {{ font-size: 13.5px; line-height: 1.7; color: var(--text-muted); margin: 0 0 16px 0; }}
     .mobile-desc {{ font-size: 13px; margin-bottom: 14px; line-height: 1.6; }}
 
     .hero-stats-line {{
       display: flex; align-items: center; flex-wrap: wrap; gap: 8px;
-      font-size: 13px; color: var(--text-muted); margin: 14px 0 22px 0;
+      font-size: 13px; color: var(--text-muted); margin: 0 0 20px 0;
+      padding: 8px 0; border-top: 1px solid var(--border-subtle); border-bottom: 1px solid var(--border-subtle);
     }}
     .hero-stats-line strong {{ color: var(--text-color); font-weight: 600; }}
     .stat-sep {{ opacity: 0.35; }}
@@ -994,15 +1020,9 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
         <div class="hero-desktop-overlay"></div>
         <div class="hero-desktop-content">
           <div class="hero-genre-line">Tiểu thuyết Đô thị Tu chân · TP. Hồ Chí Minh 2026</div>
-          <div class="hero-title-row">
-            <picture>
-              <source srcset="./assets/logo.webp" type="image/webp">
-              <img src="./assets/logo.jpg" class="hero-logo-crest" alt="Logo Phá Trời">
-            </picture>
-            <div>
-              <h1 class="hero-main-title">PHÁ TRỜI</h1>
-              <div class="hero-subtitle">PHÁ TOÁI THẦN HOANG</div>
-            </div>
+          <div class="hero-title-wrap">
+            <h1 class="hero-main-title">PHÁ TRỜI</h1>
+            <div class="hero-subtitle">PHÁ TOÁI THẦN HOANG</div>
           </div>
           <div class="hero-editorial-premise">
             <p class="hero-hook-lead">Sài Gòn, 2026. Một người bình thường giữa guồng quay mưu sinh.</p>
