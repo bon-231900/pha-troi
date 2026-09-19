@@ -670,7 +670,7 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Phá Trời — Tiểu Thuyết Đô Thị Tu Chân Sài Gòn 2026">
   <meta name="twitter:description" content="Một nhân viên văn phòng tại TP.HCM phát hiện phong ấn sông ngầm 2.5 triệu năm. Đọc trọn bộ {total_ch} chương online & offline 24/7.">
-  <meta name="twitter:image" content="{SITE_URL}/assets/hero_horizontal.jpg">
+  <meta name="twitter:image" content="{SITE_URL}/assets/tieu-thuyet-pha-troi-do-thi-tu-chan-sai-gon-huyen-ao.jpg">
 
   <link rel="manifest" href="./manifest.json">
   <link rel="icon" href="./assets/logo.webp" type="image/webp">
@@ -732,7 +732,7 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
   }}
   </script>
 
-  <link rel="preload" as="image" href="./assets/hero_horizontal.webp" type="image/webp" media="(min-width: 769px)">
+  <link rel="preload" as="image" href="./assets/tieu-thuyet-pha-troi-do-thi-tu-chan-sai-gon-huyen-ao.webp" type="image/webp">
   <link rel="preload" as="image" href="./assets/cover_vertical.webp" type="image/webp" media="(max-width: 768px)">
   <link rel="preload" as="image" href="./assets/logo.webp" type="image/webp">
 
@@ -748,10 +748,39 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
       position: relative; width: 100%; box-sizing: border-box;
       padding: 44px 20px 40px 20px;
       border-bottom: 1px solid var(--border-color);
-      background: radial-gradient(ellipse at 50% 12%, rgba(81, 122, 143, 0.09) 0%, transparent 70%), var(--bg-color);
+      background: var(--bg-color);
       display: flex; justify-content: center; align-items: center;
+      overflow: hidden;
+    }}
+    .hero-titlepage-bg {{
+      position: absolute; inset: 0;
+      background-image: url('./assets/tieu-thuyet-pha-troi-do-thi-tu-chan-sai-gon-huyen-ao.webp');
+      background-position: center 25%;
+      background-size: cover;
+      background-repeat: no-repeat;
+      opacity: 0.22;
+      pointer-events: none;
+      z-index: 0;
+      filter: contrast(108%) brightness(0.92);
+      transition: opacity 0.3s ease;
+    }}
+    .hero-titlepage-overlay {{
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse at 50% 36%, rgba(13, 17, 23, 0.72) 0%, rgba(13, 17, 23, 0.38) 55%, rgba(13, 17, 23, 0.96) 100%),
+                  linear-gradient(to bottom, transparent 65%, var(--bg-color) 100%);
+      pointer-events: none;
+      z-index: 1;
+    }}
+    html.theme-peaceful-light .hero-titlepage-bg {{
+      opacity: 0.09;
+      filter: grayscale(80%) brightness(1.1);
+    }}
+    html.theme-peaceful-light .hero-titlepage-overlay {{
+      background: radial-gradient(ellipse at 50% 36%, rgba(247, 245, 240, 0.85) 0%, rgba(247, 245, 240, 0.5) 55%, rgba(247, 245, 240, 0.98) 100%),
+                  linear-gradient(to bottom, transparent 65%, var(--bg-color) 100%);
     }}
     .titlepage-container {{
+      position: relative; z-index: 2;
       max-width: 740px; width: 100%; display: flex; flex-direction: column; align-items: center; text-align: center;
     }}
     .titlepage-cover-frame {{
@@ -1023,6 +1052,8 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
   <div id="homeView">
     <!-- HERO TITLEPAGE (LITERARY FRONTISPIECE & TITLE BLOCK) -->
     <section class="hero-titlepage">
+      <div class="hero-titlepage-bg" aria-hidden="true"></div>
+      <div class="hero-titlepage-overlay" aria-hidden="true"></div>
       <div class="titlepage-container">
         <!-- Book Cover Frontispiece -->
         <div class="titlepage-cover-frame">
@@ -1972,7 +2003,8 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
           './manifest.json',
           './assets/logo.webp',
           './assets/cover_vertical.webp',
-          './assets/hero_horizontal.webp'
+          './assets/hero_horizontal.webp',
+          './assets/tieu-thuyet-pha-troi-do-thi-tu-chan-sai-gon-huyen-ao.webp'
         ];
         for (let i = 1; i <= totalChapters; i++) {{
           urlsToCache.push(`./chuong-${{i}}/`);
@@ -3143,7 +3175,8 @@ const ASSETS_TO_CACHE = [
   './data/codex.json',
   './assets/logo.webp',
   './assets/cover_vertical.webp',
-  './assets/hero_horizontal.webp'
+  './assets/hero_horizontal.webp',
+  './assets/tieu-thuyet-pha-troi-do-thi-tu-chan-sai-gon-huyen-ao.webp'
 ];
 
 self.addEventListener('install', (e) => {{
