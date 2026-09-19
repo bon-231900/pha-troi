@@ -81,21 +81,43 @@ def parse_chapter_file(file_path):
 def get_shared_css():
     return """
     :root {
-      --font-family: 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      /* Typography Tokens */
+      --font-reading: 'Lora', 'Georgia', serif;
+      --font-ui: 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-family: var(--font-ui);
       --font-size: 19px;
       --reader-line-height: 1.85;
-      --reader-max-width: 760px;
+      --reader-max-width: 740px;
+
+      /* Spacing Scale (8pt System) */
+      --space-1: 4px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-5: 24px;
+      --space-6: 32px;
+      --space-7: 48px;
+      --space-8: 64px;
+
+      /* Radii (Clean, non-pill) */
+      --radius-sm: 4px;
+      --radius-md: 6px;
+      --radius-lg: 8px;
+
+      /* Motion */
+      --motion-fast: 150ms cubic-bezier(0.16, 1, 0.3, 1);
+      --motion-base: 220ms cubic-bezier(0.16, 1, 0.3, 1);
     }
 
-    /* Theme 1: Peaceful Dark (Mặc định - Dark Literary) */
-    :root, html.theme-peaceful-dark, body.theme-peaceful-dark {
-      --bg-color: #0e1116;
-      --bg-gradient: radial-gradient(ellipse at 50% 0%, #151922 0%, #0e1116 75%);
-      --text-color: #e5e2dc;
-      --text-muted: #8d929a;
-      --header-bg: #0e1116;
-      --card-bg: #141820;
-      --card-bg-hover: #1a202c;
+    /* Theme 1: Saigon Night (Mặc định - Deep Blue-Black & Rain Blue) */
+    :root, html.theme-peaceful-dark, body.theme-peaceful-dark, html.theme-saigon-night, body.theme-saigon-night {
+      --bg-color: #0b0f17;
+      --bg-gradient: radial-gradient(ellipse at 50% 0%, #111827 0%, #0b0f17 75%);
+      --text-color: #e2e8f0;
+      --text-muted: #8492a6;
+      --header-bg: #0b0f17;
+      --card-bg: #111722;
+      --card-bg-hover: #182232;
       --border-color: rgba(255, 255, 255, 0.08);
       --border-subtle: rgba(255, 255, 255, 0.04);
       --accent-primary: #517a8f;
@@ -105,43 +127,25 @@ def get_shared_css():
       --cyan-subtle: #41677d;
     }
 
-    /* Theme 2: Gentle Light (Paper White / Classic Editorial) */
-    html.theme-gentle-light, body.theme-gentle-light {
-      --bg-color: #f7f5f0;
-      --bg-gradient: radial-gradient(circle at 50% 0%, #ffffff 0%, #f7f5f0 85%);
-      --text-color: #24221f;
-      --text-muted: #6b665f;
-      --header-bg: #f7f5f0;
-      --card-bg: #ede9df;
-      --card-bg-hover: #e4dfd3;
-      --border-color: rgba(0, 0, 0, 0.09);
-      --border-subtle: rgba(0, 0, 0, 0.05);
-      --accent-primary: #3d6070;
-      --accent-hover: #2e4b58;
-      --gold-primary: #8f6b28;
-      --gold-hover: #73541c;
-      --cyan-subtle: #355363;
-    }
-
-    /* Theme 3: OLED Pure Black */
-    html.theme-oled, body.theme-oled {
-      --bg-color: #000000;
-      --bg-gradient: none;
-      --text-color: #dcd8d0;
-      --text-muted: #71767f;
-      --header-bg: #000000;
-      --card-bg: #090a0d;
-      --card-bg-hover: #12141a;
-      --border-color: rgba(255, 255, 255, 0.1);
-      --border-subtle: rgba(255, 255, 255, 0.05);
-      --accent-primary: #4d758a;
-      --accent-hover: #5e8aa2;
+    /* Theme 2: Warm Dark (Trầm Ấm - Warm Charcoal & Warm Ivory) */
+    html.theme-warm-dark, body.theme-warm-dark, html.theme-oled, body.theme-oled {
+      --bg-color: #121110;
+      --bg-gradient: radial-gradient(ellipse at 50% 0%, #1a1816 0%, #121110 75%);
+      --text-color: #e6dfd5;
+      --text-muted: #91887e;
+      --header-bg: #121110;
+      --card-bg: #181715;
+      --card-bg-hover: #211f1c;
+      --border-color: rgba(255, 255, 255, 0.08);
+      --border-subtle: rgba(255, 255, 255, 0.04);
+      --accent-primary: #8a7a60;
+      --accent-hover: #a19074;
       --gold-primary: #c4a059;
       --gold-hover: #d4b26f;
-      --cyan-subtle: #3a5c70;
+      --cyan-subtle: #635847;
     }
 
-    /* Theme 4: Sepia (Aged Manuscript / Paper) */
+    /* Theme 3: Sepia (Thư Tịch Cổ - Warm Paper & Dark Brown) */
     html.theme-sepia, body.theme-sepia {
       --bg-color: #f1e8d0;
       --bg-gradient: radial-gradient(circle at 50% 0%, #f8f1de 0%, #f1e8d0 85%);
@@ -157,6 +161,24 @@ def get_shared_css():
       --gold-primary: #8c5b1e;
       --gold-hover: #734814;
       --cyan-subtle: #415e55;
+    }
+
+    /* Theme 4: Paper (Giấy Sáng / Editorial Light - Soft Off-White & Dark Neutral) */
+    html.theme-gentle-light, body.theme-gentle-light, html.theme-paper, body.theme-paper {
+      --bg-color: #f7f5f0;
+      --bg-gradient: radial-gradient(circle at 50% 0%, #ffffff 0%, #f7f5f0 85%);
+      --text-color: #24221f;
+      --text-muted: #6b665f;
+      --header-bg: #f7f5f0;
+      --card-bg: #ede9df;
+      --card-bg-hover: #e4dfd3;
+      --border-color: rgba(0, 0, 0, 0.09);
+      --border-subtle: rgba(0, 0, 0, 0.05);
+      --accent-primary: #3d6070;
+      --accent-hover: #2e4b58;
+      --gold-primary: #8f6b28;
+      --gold-hover: #73541c;
+      --cyan-subtle: #355363;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -207,7 +229,7 @@ def get_shared_css():
       transition: width 0.1s ease-out;
     }
 
-    header {
+    header#topHeader {
       position: sticky; top: 0; left: 0; right: 0; width: 100%; max-width: 100vw; box-sizing: border-box;
       height: calc(56px + env(safe-area-inset-top, 0px));
       padding: env(safe-area-inset-top, 0px) 20px 0 20px;
@@ -263,17 +285,17 @@ def get_shared_css():
     .btn-icon:active { transform: scale(0.96); }
 
     .btn-nav-home-pill {
-      display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 8px;
-      background: rgba(16, 185, 129, 0.12); border: 1px solid var(--accent-primary);
-      color: #34d399; font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.2s ease;
+      display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: var(--radius-md);
+      background: var(--card-bg); border: 1px solid var(--border-color);
+      color: var(--text-muted); font-size: 12px; font-weight: 600; cursor: pointer; transition: all var(--motion-fast);
       white-space: nowrap;
     }
-    .btn-nav-home-pill:hover { background: var(--accent-primary); color: #ffffff; }
+    .btn-nav-home-pill:hover { border-color: var(--gold-primary); color: var(--gold-primary); }
 
     @media (max-width: 768px) {
       .btn-nav-home-pill { display: none !important; }
       .header-desktop-only { display: none !important; }
-      header { padding: env(safe-area-inset-top, 0px) 10px 0 10px; }
+      header#topHeader { padding: env(safe-area-inset-top, 0px) 10px 0 10px; }
       .header-left, .header-right { gap: 4px; }
       .btn-icon { width: 35px; height: 35px; }
       .nav-brand-text { font-size: 14px; letter-spacing: 0.8px; }
@@ -282,10 +304,9 @@ def get_shared_css():
     }
 
     .dot-live {
-      width: 6px; height: 6px; border-radius: 50%; background: #10b981;
-      box-shadow: 0 0 6px #10b981; animation: pulseDot 2s infinite ease-in-out;
+      width: 6px; height: 6px; border-radius: 50%; background: var(--gold-primary);
+      opacity: 0.85;
     }
-    @keyframes pulseDot { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.85); } }
 
     /* Chapter Meta Badges */
     .chapter-meta-pills {
@@ -355,8 +376,8 @@ def get_shared_css():
       transition: all 0.18s ease; text-decoration: none; color: inherit; box-sizing: border-box;
     }
     .toc-item:hover { background: var(--card-bg-hover); border-color: var(--border-color); }
-    .toc-item.active { background: rgba(16, 185, 129, 0.12); border-color: var(--accent-primary); }
-    .toc-item.active .toc-name { color: var(--accent-primary); font-weight: 700; }
+    .toc-item.active { background: rgba(196, 160, 89, 0.1); border-color: var(--gold-primary); }
+    .toc-item.active .toc-name { color: var(--gold-primary); font-weight: 700; }
     .toc-info { min-width: 0; flex: 1; margin-right: 10px; overflow: hidden; }
     .toc-num {
       font-size: 11px; color: var(--gold-primary); font-weight: 700; text-transform: uppercase;
@@ -421,7 +442,7 @@ def get_shared_css():
       padding: 10px 6px; border-radius: 10px; border: 2px solid var(--border-color); background: rgba(0,0,0,0.1);
       cursor: pointer; text-align: center; font-size: 12px; font-weight: 600; color: var(--text-color); transition: all 0.2s;
     }
-    .theme-opt.active { border-color: var(--accent-primary); box-shadow: 0 0 10px var(--accent-glow); }
+    .theme-opt.active { border-color: var(--gold-primary); outline: 2px solid var(--gold-primary); outline-offset: 1px; }
 
     .stepper-ctrl {
       display: flex; align-items: center; justify-content: space-between; background: rgba(0,0,0,0.15);
@@ -438,8 +459,8 @@ def get_shared_css():
       padding: 9px 4px; border-radius: 8px; border: 1px solid var(--border-color); background: rgba(0,0,0,0.15);
       color: var(--text-color); font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; text-align: center;
     }
-    .btn-opt-step:hover { border-color: var(--accent-primary); color: var(--accent-primary); }
-    .btn-opt-step.active { background: rgba(16, 185, 129, 0.15); border-color: var(--accent-primary); color: var(--accent-primary); }
+    .btn-opt-step:hover { border-color: var(--gold-primary); color: var(--gold-primary); }
+    .btn-opt-step.active { background: rgba(196, 160, 89, 0.12); border-color: var(--gold-primary); color: var(--gold-primary); }
 
     .ambient-widget {
       display: flex; align-items: center; justify-content: space-between; padding: 10px 14px;
@@ -448,10 +469,10 @@ def get_shared_css():
 
     #liveToast {
       position: fixed; bottom: 74px; left: 50%; transform: translateX(-50%) translateY(30px);
-      background: var(--card-bg); border: 1px solid var(--accent-primary); color: var(--text-color);
-      font-size: 13px; font-weight: 600; padding: 10px 18px; border-radius: 30px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.4); opacity: 0; pointer-events: none;
-      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); z-index: 2000; white-space: nowrap; display: flex; align-items: center; gap: 8px;
+      background: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-color);
+      font-size: 13px; font-weight: 600; padding: 9px 18px; border-radius: var(--radius-lg);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.3); opacity: 0; pointer-events: none;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1); z-index: 2000; white-space: nowrap; display: flex; align-items: center; gap: 8px;
     }
     #liveToast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
     """
@@ -459,44 +480,27 @@ def get_shared_css():
 def generate_cover_svg():
     return """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
   <defs>
-    <radialGradient id="bgGlow" cx="50%" cy="40%" r="60%">
-      <stop offset="0%" stop-color="#141824"/>
-      <stop offset="60%" stop-color="#08090d"/>
-      <stop offset="100%" stop-color="#040507"/>
+    <radialGradient id="bgGrad" cx="50%" cy="35%" r="65%">
+      <stop offset="0%" stop-color="#141c2b"/>
+      <stop offset="60%" stop-color="#0b0f17"/>
+      <stop offset="100%" stop-color="#070a10"/>
     </radialGradient>
-    <linearGradient id="goldText" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#fde047"/>
-      <stop offset="50%" stop-color="#f59e0b"/>
-      <stop offset="100%" stop-color="#d97706"/>
-    </linearGradient>
-    <linearGradient id="jadeAccent" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#10b981"/>
-      <stop offset="50%" stop-color="#34d399"/>
-      <stop offset="100%" stop-color="#06b6d4"/>
-    </linearGradient>
-    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-      <feGaussianBlur stdDeviation="8" result="blur" />
-      <feComposite in="SourceGraphic" in2="blur" operator="over" />
-    </filter>
   </defs>
-  <rect width="1200" height="630" fill="url(#bgGlow)"/>
-  <rect x="30" y="30" width="1140" height="570" fill="none" stroke="#262a38" stroke-width="2" rx="16"/>
-  <rect x="42" y="42" width="1116" height="546" fill="none" stroke="rgba(245,158,11,0.2)" stroke-width="1" rx="12"/>
-  <g transform="translate(600, 110)">
-    <rect x="-190" y="-22" width="380" height="44" rx="22" fill="#131722" stroke="#10b981" stroke-width="1.5"/>
-    <circle cx="-160" cy="0" r="5" fill="#10b981" filter="url(#glow)"/>
-    <text x="0" y="7" fill="#a7f3d0" font-family="-apple-system, sans-serif" font-size="14" font-weight="700" letter-spacing="3" text-anchor="middle">ĐÔ THỊ TU CHÂN • TRƯỜNG THIÊN ĐẠI TÁC</text>
-  </g>
-  <text x="600" y="270" fill="url(#goldText)" font-family="'Palatino', 'Georgia', serif" font-size="108" font-weight="900" letter-spacing="14" text-anchor="middle" filter="url(#glow)">PHÁ TRỜI</text>
-  <text x="600" y="330" fill="#94a3b8" font-family="-apple-system, sans-serif" font-size="22" font-weight="500" letter-spacing="8" text-anchor="middle">TIỂU THUYẾT ĐÔ THỊ TU CHÂN • TP. HỒ CHÍ MINH 2026</text>
-  <line x1="450" y1="365" x2="750" y2="365" stroke="url(#jadeAccent)" stroke-width="2.5" stroke-linecap="round"/>
-  <text x="600" y="420" fill="#cbd5e1" font-family="'Georgia', serif" font-size="20" font-style="italic" text-anchor="middle">"Một nhân viên văn phòng... cho đến khi phát hiện đại phong ấn sông ngầm Sài Gòn."</text>
-  <g transform="translate(600, 500)">
-    <text x="-320" y="0" fill="#f59e0b" font-family="-apple-system, sans-serif" font-size="15" font-weight="600" text-anchor="middle">📖 ĐỌC ONLINE / OFFLINE 24/7</text>
-    <text x="0" y="0" fill="#10b981" font-family="-apple-system, sans-serif" font-size="15" font-weight="600" text-anchor="middle">🌙 CHẾ ĐỘ TỐI BÌNH YÊN & SÁNG THANH NHÃ</text>
-    <text x="320" y="0" fill="#38bdf8" font-family="-apple-system, sans-serif" font-size="15" font-weight="600" text-anchor="middle">📱 HỖ TRỢ PWA MOBILE TOÀN DIỆN</text>
-  </g>
-  <text x="600" y="555" fill="#64748b" font-family="-apple-system, sans-serif" font-size="14" letter-spacing="2" text-anchor="middle">TÁC GIẢ: AN BÌNH • BẢO LƯU MỌI QUYỀN (ALL RIGHTS RESERVED)</text>
+  <rect width="1200" height="630" fill="url(#bgGrad)"/>
+  <rect x="36" y="36" width="1128" height="558" fill="none" stroke="rgba(196,160,89,0.35)" stroke-width="1.2"/>
+  <rect x="44" y="44" width="1112" height="542" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+  
+  <text x="600" y="125" fill="#c4a059" font-family="'Be Vietnam Pro', -apple-system, sans-serif" font-size="13" font-weight="600" letter-spacing="4" text-anchor="middle">ĐÔ THỊ TU CHÂN · TRƯỜNG THIÊN ĐẠI TÁC · TP.HCM 2026</text>
+  
+  <text x="600" y="260" fill="#c4a059" font-family="'Lora', 'Georgia', serif" font-size="96" font-weight="700" letter-spacing="12" text-anchor="middle">PHÁ TRỜI</text>
+  <text x="600" y="315" fill="#8492a6" font-family="'Lora', 'Georgia', serif" font-size="24" font-weight="400" letter-spacing="6" text-anchor="middle">PHÁ TOÁI THẦN HOANG</text>
+  
+  <text x="600" y="375" fill="#c4a059" font-size="18" letter-spacing="6" text-anchor="middle">· ✦ ·</text>
+  
+  <text x="600" y="440" fill="#e2e8f0" font-family="'Lora', 'Georgia', serif" font-size="20" font-style="italic" text-anchor="middle">"Một nhân viên văn phòng... cho đến khi phát hiện đại phong ấn sông ngầm Sài Gòn."</text>
+  
+  <text x="600" y="525" fill="#8492a6" font-family="'Be Vietnam Pro', -apple-system, sans-serif" font-size="13" font-weight="500" letter-spacing="2.5" text-anchor="middle">TÁC GIẢ: AN BÌNH · 76 CHƯƠNG HOÀN THIỆN · ĐỌC ONLINE &amp; OFFLINE</text>
+  <text x="600" y="555" fill="#517a8f" font-family="'Be Vietnam Pro', -apple-system, sans-serif" font-size="11.5" letter-spacing="1.5" text-anchor="middle">PHATROI.COM · TOÀN BỘ BẢN QUYỀN ĐƯỢC BẢO LƯU</text>
 </svg>"""
 
 def generate_404_html():
@@ -519,10 +523,10 @@ def generate_404_html():
     })();
   </script>
 </head>
-<body style="background:#07090e; color:#d6dce7; font-family:'Be Vietnam Pro', sans-serif; display:flex; align-items:center; justify-content:center; height:100vh; margin:0; text-align:center;">
-  <div>
-    <div style="font-size:32px; font-weight:800; color:#f59e0b; margin-bottom:12px;">PHÁ TRỜI</div>
-    <p style="color:#828d9f; font-size:15px;">Đang kết nối và chuyển hướng đến chương truyện...</p>
+<body style="background:#0b0f17; color:#e2e8f0; font-family:'Be Vietnam Pro', sans-serif; display:flex; align-items:center; justify-content:center; height:100vh; margin:0; text-align:center;">
+  <div style="max-width:480px; padding:24px;">
+    <div style="font-family:'Lora', serif; font-size:32px; font-weight:700; color:#c4a059; margin-bottom:12px; letter-spacing:2px;">PHÁ TRỜI</div>
+    <p style="color:#8492a6; font-size:15px; line-height:1.6;">Đang kết nối và chuyển hướng đến chương truyện...</p>
   </div>
 </body>
 </html>"""
@@ -1258,10 +1262,10 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
     <div class="setting-group">
       <div class="setting-label">Chủ Đề Giao Diện</div>
       <div class="theme-grid">
-        <div class="theme-opt active" data-theme="theme-peaceful-dark" style="background:#07090e; color:#d6dce7;">Tối Bình Yên</div>
-        <div class="theme-opt" data-theme="theme-gentle-light" style="background:#f7f5f0; color:#24221f;">Sáng Thanh Nhã</div>
-        <div class="theme-opt" data-theme="theme-oled" style="background:#000000; color:#cbd5e1;">OLED Đen</div>
-        <div class="theme-opt" data-theme="theme-sepia" style="background:#f4edd8; color:#3b2d1d;">Sepia Cổ Điển</div>
+        <div class="theme-opt active" data-theme="theme-saigon-night" style="background:#0b0f17; color:#e2e8f0;">Đêm Sài Gòn</div>
+        <div class="theme-opt" data-theme="theme-warm-dark" style="background:#121110; color:#e6dfd5;">Trầm Ấm</div>
+        <div class="theme-opt" data-theme="theme-sepia" style="background:#f1e8d0; color:#3b2d1d;">Sepia Cổ Điển</div>
+        <div class="theme-opt" data-theme="theme-gentle-light" style="background:#f7f5f0; color:#24221f;">Giấy Sáng</div>
       </div>
     </div>
     <div class="setting-group">
@@ -1826,7 +1830,7 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
     document.getElementById('btnCloseSettings').onclick = closeAllDrawers;
 
     // Reading Settings Handlers (Phase 1)
-    const THEMES = ['theme-peaceful-dark', 'theme-gentle-light', 'theme-oled', 'theme-sepia'];
+    const THEMES = ['theme-peaceful-dark', 'theme-saigon-night', 'theme-gentle-light', 'theme-paper', 'theme-oled', 'theme-warm-dark', 'theme-sepia'];
     function setTheme(theme) {{
       THEMES.forEach(t => {{
         document.documentElement.classList.remove(t);
@@ -1835,13 +1839,20 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
       document.documentElement.classList.add(theme);
       document.body.classList.add(theme);
 
+      let activeThemeKey = theme;
+      if (theme === 'theme-peaceful-dark') activeThemeKey = 'theme-saigon-night';
+      if (theme === 'theme-oled') activeThemeKey = 'theme-warm-dark';
+      if (theme === 'theme-paper') activeThemeKey = 'theme-gentle-light';
+
       document.querySelectorAll('.theme-opt').forEach(opt => {{
-        opt.classList.toggle('active', opt.dataset.theme === theme);
+        const optTheme = opt.dataset.theme;
+        const matches = (optTheme === theme || optTheme === activeThemeKey);
+        opt.classList.toggle('active', matches);
       }});
 
       const sunIcon = document.getElementById('iconSun');
       const moonIcon = document.getElementById('iconMoon');
-      if (theme === 'theme-gentle-light') {{
+      if (theme === 'theme-gentle-light' || theme === 'theme-paper') {{
         if (sunIcon) sunIcon.style.display = 'inline-block';
         if (moonIcon) moonIcon.style.display = 'none';
       }} else {{
@@ -1859,8 +1870,8 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
     }});
 
     document.getElementById('btnQuickTheme').onclick = () => {{
-      const isLight = document.body.classList.contains('theme-gentle-light');
-      const target = isLight ? 'theme-peaceful-dark' : 'theme-gentle-light';
+      const isLight = document.body.classList.contains('theme-gentle-light') || document.body.classList.contains('theme-paper');
+      const target = isLight ? 'theme-saigon-night' : 'theme-gentle-light';
       setTheme(target);
       showToast(target === 'theme-gentle-light' ? '☀️ Đã bật giao diện Sáng' : '🌙 Đã bật giao diện Tối');
     }};
@@ -2041,37 +2052,49 @@ def generate_chapter_html(ch_info, chapters_index, total_words, codex_items=None
         next_arc = next_ch_info.get("arc", 1)
         next_words = next_ch_info.get("word_count", 2500)
         next_read_mins = max(1, round(next_words / 300))
-        next_card_html = f"""
-      <div class="next-chapter-card" id="nextChapterCard">
-        <div class="next-card-badge">TIẾP NỐI HÀNH TRÌNH</div>
-        <div class="next-card-label">CHƯƠNG TIẾP THEO:</div>
-        <h3 class="next-card-title">Chương {ch_num + 1}: {next_ch_title}</h3>
-        <div class="next-card-meta">
-          <span>Quyển {next_vol} • Hồi {next_arc}</span>
-          <span>•</span>
-          <span>{next_words:,} từ</span>
-          <span>•</span>
-          <span>~{next_read_mins} phút đọc</span>
+        chapter_end_html = f"""
+      <section class="chapter-end-colophon" id="chapterEndColophon">
+        <div class="chapter-end-dinkus">· ✦ ·</div>
+        <div class="chapter-end-meta">
+          <div class="chapter-end-status">KẾT THÚC CHƯƠNG {ch_num}</div>
+          <h3 class="chapter-end-next-title">Chương {ch_num + 1}: {next_ch_title}</h3>
+          <p class="chapter-end-next-meta">Quyển {next_vol} · Hồi {next_arc} · {next_words:,} từ · Khoảng {next_read_mins} phút đọc</p>
         </div>
-        <a href="../chuong-{ch_num + 1}/" class="btn-read-next-pulse" id="btnReadNextMain">
-          <span>Tiếp Tục Đọc Chương {ch_num + 1} →</span>
-        </a>
-      </div>
+        <nav class="chapter-end-nav" aria-label="Điều hướng chương">
+          <a href="{prev_url}" class="btn-chapter-nav prev {prev_dis}" id="footerPrevBtn" aria-label="Chương trước">
+            <span>← Chương Trước</span>
+          </a>
+          <a href="../" class="btn-chapter-nav toc" id="btnFooterToc" aria-label="Mục lục tác phẩm">
+            <span>Mục Lục ({total_ch})</span>
+          </a>
+          <a href="../chuong-{ch_num + 1}/" class="btn-chapter-nav next" id="footerNextBtn" aria-label="Đọc tiếp chương {ch_num + 1}">
+            <span>Chương {ch_num + 1} →</span>
+          </a>
+        </nav>
+      </section>
         """
-        footer_next_text = f"Chương Sau ({ch_num + 1})"
     else:
-        next_card_html = f"""
-      <div class="next-chapter-card last-chapter-card" id="nextChapterCard">
-        <div class="next-card-badge gold">✨ BẠN ĐÃ ĐỌC ĐẾN CHƯƠNG MỚI NHẤT ({ch_num}/{total_ch})</div>
-        <h3 class="next-card-title">Chương {ch_num}: {clean_title}</h3>
-        <p class="next-card-desc">Tác giả đang tiếp tục sáng tác chương mới. Bản thảo sẽ được tự động cập nhật ngay khi hoàn thành.</p>
-        <div class="next-card-actions">
-          <a href="../" class="btn-card-action">Về Trang Chủ</a>
-          <button class="btn-card-action gold" id="btnCardCodex">Khám Phá Codex Bách Khoa</button>
+        chapter_end_html = f"""
+      <section class="chapter-end-colophon" id="chapterEndColophon">
+        <div class="chapter-end-dinkus">· ✦ ·</div>
+        <div class="chapter-end-meta">
+          <div class="chapter-end-status">KẾT THÚC CHƯƠNG {ch_num} · CHƯƠNG MỚI NHẤT</div>
+          <h3 class="chapter-end-next-title">Bạn đã đọc đến chương mới nhất!</h3>
+          <p class="chapter-end-next-meta">Tác giả An Bình đang tiếp tục sáng tác. Bản thảo sẽ được tự động cập nhật ngay khi hoàn thành.</p>
         </div>
-      </div>
+        <nav class="chapter-end-nav" aria-label="Điều hướng chương">
+          <a href="{prev_url}" class="btn-chapter-nav prev {prev_dis}" id="footerPrevBtn" aria-label="Chương trước">
+            <span>← Chương Trước</span>
+          </a>
+          <a href="../" class="btn-chapter-nav toc" id="btnFooterToc" aria-label="Mục lục tác phẩm">
+            <span>Mục Lục ({total_ch})</span>
+          </a>
+          <button type="button" class="btn-chapter-nav next" id="btnCardCodex" aria-label="Khám phá Codex">
+            <span>Khám Phá Codex</span>
+          </button>
+        </nav>
+      </section>
         """
-        footer_next_text = "Hết chương mới nhất"
 
     toc_items_html = []
     for c in chapters_index:
@@ -2216,142 +2239,115 @@ def generate_chapter_html(ch_info, chapters_index, total_words, codex_items=None
 
     .chapter-hero {{
       width: 100%; max-width: var(--reader-max-width); text-align: center;
-      padding: 16px 0 20px 0; border-bottom: 1px solid var(--border-color); margin-bottom: 24px;
+      padding: 24px 0 20px 0; border-bottom: 1px solid var(--border-color); margin-bottom: 28px;
       box-sizing: border-box;
     }}
     @media (min-width: 769px) {{
-      .chapter-hero {{ padding: 24px 0 28px 0; margin-bottom: 32px; }}
+      .chapter-hero {{ padding: 36px 0 28px 0; margin-bottom: 36px; }}
     }}
     .chapter-vol-arc {{
-      font-size: 11.5px; font-weight: 800; color: var(--accent-primary); letter-spacing: 2px;
-      text-transform: uppercase; margin-bottom: 6px;
+      font-size: 11.5px; font-weight: 700; color: var(--gold-primary); letter-spacing: 2.5px;
+      text-transform: uppercase; margin-bottom: 8px; opacity: 0.85; font-family: var(--font-ui);
     }}
     .chapter-main-title {{
-      font-family: 'Lora', 'Georgia', serif; font-size: 23px; font-weight: 800; line-height: 1.35;
-      color: var(--gold-primary); margin: 0 0 14px 0;
+      font-family: var(--font-reading); font-size: clamp(23px, 4vw, 30px); font-weight: 700; line-height: 1.35;
+      color: var(--gold-primary); margin: 0 0 12px 0;
     }}
-    @media (min-width: 769px) {{
-      .chapter-main-title {{ font-size: 28px; }}
+    .chapter-hero-meta {{
+      display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap;
+      font-size: 12.5px; color: var(--text-muted); font-family: var(--font-ui);
     }}
+    .chapter-hero-meta .meta-sep {{ opacity: 0.4; }}
 
     .novel-body {{
-      width: 100%; max-width: var(--reader-max-width); font-size: var(--font-size);
-      line-height: var(--reader-line-height); color: var(--text-color); letter-spacing: 0.15px;
-      box-sizing: border-box;
+      width: 100%; max-width: var(--reader-max-width); font-family: var(--font-reading);
+      font-size: var(--font-size); line-height: var(--reader-line-height); color: var(--text-color);
+      letter-spacing: 0.1px; box-sizing: border-box;
       transition: font-size 0.2s ease, max-width 0.2s ease, line-height 0.2s ease;
     }}
     .novel-body p {{
-      margin-bottom: 1.5em; text-align: justify; text-justify: inter-word;
-      word-break: break-word; hyphens: auto;
+      margin-bottom: 1.6em; text-align: left; text-wrap: pretty;
+      word-break: break-word;
     }}
     .novel-body blockquote {{
-      border-left: 3px solid var(--gold-primary); padding: 8px 16px; margin: 1.5em 0;
-      background: var(--card-bg); border-radius: 0 8px 8px 0; font-style: italic;
+      border-left: 2px solid var(--gold-primary); padding: 10px 18px; margin: 1.8em 0;
+      background: rgba(196, 160, 89, 0.04); font-style: italic; color: var(--text-color);
     }}
     .novel-body hr {{
-      border: none; height: 1px; background: linear-gradient(90deg, transparent, var(--border-color), transparent); margin: 2.5em 0;
+      border: none; height: 1px; width: 140px; margin: 3.5em auto; background: var(--border-color);
+      position: relative; overflow: visible;
+    }}
+    .novel-body hr::after {{
+      content: "· ✦ ·"; position: absolute; top: -0.7em; left: 50%; transform: translateX(-50%);
+      background: var(--bg-color); padding: 0 10px; color: var(--gold-primary); font-size: 13px;
+      letter-spacing: 4px;
     }}
 
-    /* Chapter Footer 3-Button Navigation (Phase 1) */
-    .chapter-footer-nav {{
-      width: 100%; max-width: var(--reader-max-width); display: flex; align-items: center;
-      justify-content: space-between; gap: 8px; margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--border-color);
+    /* Chapter End Colophon (Phase 3) */
+    .chapter-end-colophon {{
+      width: 100%; max-width: var(--reader-max-width); margin: 48px auto 20px auto;
+      padding: 32px 24px; border-top: 1px solid var(--border-color);
+      text-align: center; display: flex; flex-direction: column; align-items: center; gap: 16px;
       box-sizing: border-box;
     }}
-    .btn-nav-chapter {{
-      flex: 1; min-width: 0; padding: 12px 8px; border-radius: 12px; background: var(--card-bg); border: 1px solid var(--border-color);
-      color: var(--text-color); font-size: 13.5px; font-weight: 600; cursor: pointer; display: inline-flex;
-      align-items: center; justify-content: center; gap: 6px; transition: all 0.2s ease; text-decoration: none;
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; box-sizing: border-box;
+    .chapter-end-dinkus {{
+      color: var(--gold-primary); font-size: 16px; letter-spacing: 6px; opacity: 0.75;
     }}
-    .btn-nav-chapter:hover:not(.disabled) {{
-      border-color: var(--accent-primary); color: var(--accent-primary); background: var(--card-bg-hover);
+    .chapter-end-meta {{ display: flex; flex-direction: column; align-items: center; gap: 6px; }}
+    .chapter-end-status {{
+      font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
+      color: var(--text-muted); font-family: var(--font-ui);
     }}
-    .btn-nav-chapter.disabled {{ opacity: 0.35; cursor: not-allowed; pointer-events: none; }}
-    .btn-nav-chapter.footer-toc-btn {{ flex: 0.9; }}
-    @media (max-width: 480px) {{
-      .btn-nav-chapter {{ font-size: 12.5px; padding: 11px 4px; gap: 4px; }}
-      .btn-nav-chapter.footer-toc-btn {{ flex: 0.8; }}
+    .chapter-end-next-title {{
+      font-family: var(--font-reading); font-size: clamp(18px, 3vw, 22px); font-weight: 700;
+      color: var(--gold-primary); margin: 2px 0 4px 0; line-height: 1.4;
     }}
-
-    /* Next Chapter Prominent Card (Phase 1) */
-    .next-chapter-card {{
-      width: 100%; max-width: var(--reader-max-width); margin: 40px auto 20px auto;
-      padding: 26px 22px; border-radius: 18px;
-      background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(245, 158, 11, 0.09) 100%), var(--card-bg);
-      border: 1.5px solid rgba(245, 158, 11, 0.35);
-      box-shadow: 0 10px 36px rgba(0, 0, 0, 0.35), 0 0 24px rgba(245, 158, 11, 0.1);
-      text-align: center; display: flex; flex-direction: column; align-items: center; gap: 10px;
+    .chapter-end-next-meta {{
+      font-size: 12.5px; color: var(--text-muted); font-family: var(--font-ui);
     }}
-    .next-card-badge {{
-      display: inline-block; padding: 4px 14px; border-radius: 20px;
-      background: rgba(16, 185, 129, 0.18); border: 1px solid var(--accent-primary);
-      color: #34d399; font-size: 11px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase;
+    .chapter-end-nav {{
+      display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%;
+      margin-top: 8px; flex-wrap: wrap;
     }}
-    .next-card-badge.gold {{
-      background: rgba(245, 158, 11, 0.18); border-color: var(--gold-primary); color: #fbbf24;
+    .btn-chapter-nav {{
+      flex: 1; min-width: 120px; max-width: 220px; padding: 12px 16px; border-radius: var(--radius-md);
+      background: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-color);
+      font-family: var(--font-ui); font-size: 13px; font-weight: 600; cursor: pointer;
+      text-decoration: none; display: inline-flex; align-items: center; justify-content: center;
+      transition: border-color var(--motion-fast), color var(--motion-fast), background var(--motion-fast);
+      box-sizing: border-box;
     }}
-    .next-card-label {{ font-size: 12px; color: var(--text-muted); letter-spacing: 1px; margin-top: 2px; }}
-    .next-card-title {{
-      font-family: 'Lora', 'Georgia', serif; font-size: 21px; font-weight: 800;
-      color: var(--gold-primary); margin: 0; line-height: 1.35;
+    .btn-chapter-nav:hover:not(.disabled) {{
+      border-color: var(--gold-primary); color: var(--gold-primary); background: var(--card-bg-hover);
     }}
-    .next-card-meta {{ display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 8px; font-size: 12px; color: var(--text-muted); }}
-    .next-card-desc {{ font-size: 13px; color: var(--text-muted); max-width: 480px; margin: 4px 0 12px 0; line-height: 1.6; }}
-    .next-card-actions {{ display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }}
-    .btn-card-action {{
-      padding: 10px 20px; border-radius: 10px; font-size: 13px; font-weight: 700;
-      background: var(--card-bg-hover); border: 1px solid var(--border-color); color: var(--text-color);
-      cursor: pointer; text-decoration: none; transition: all 0.2s;
+    .btn-chapter-nav.next {{
+      background: rgba(196, 160, 89, 0.1); border-color: var(--gold-primary); color: var(--gold-primary);
     }}
-    .btn-card-action:hover {{ border-color: var(--gold-primary); color: var(--gold-primary); }}
-    .btn-card-action.gold {{ background: rgba(245, 158, 11, 0.15); border-color: var(--gold-primary); color: #fbbf24; }}
-    .btn-card-action.gold:hover {{ background: var(--gold-primary); color: #000; }}
-    .btn-read-next-pulse {{
-      margin-top: 10px; display: inline-flex; align-items: center; gap: 10px;
-      padding: 13px 30px; border-radius: 12px;
-      background: linear-gradient(135deg, var(--gold-primary), #d97706);
-      color: #000000; font-size: 15px; font-weight: 800; text-decoration: none;
-      box-shadow: 0 4px 20px rgba(245, 158, 11, 0.4); transition: all 0.25s ease;
+    .btn-chapter-nav.next:hover:not(.disabled) {{
+      background: var(--gold-primary); color: #0b0f17;
     }}
-    .btn-read-next-pulse:hover {{
-      transform: translateY(-2px) scale(1.02); box-shadow: 0 6px 28px rgba(245, 158, 11, 0.6);
-      background: linear-gradient(135deg, #fbbf24, #d97706);
-    }}
-
-    .desktop-nav-float {{
-      display: none; position: fixed; top: 50%; transform: translateY(-50%); z-index: 800;
-    }}
-    .desktop-nav-left {{ left: 24px; }}
-    .desktop-nav-right {{ right: 24px; }}
-    @media (min-width: 1024px) {{ .desktop-nav-float {{ display: flex; flex-direction: column; align-items: center; }} }}
-    .btn-float-nav {{
-      width: 48px; height: 48px; border-radius: 50%; background: var(--card-bg); border: 1px solid var(--border-color);
-      color: var(--text-color); cursor: pointer; display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 6px 18px rgba(0,0,0,0.25); transition: all 0.2s; text-decoration: none;
-    }}
-    .btn-float-nav:hover:not(.disabled) {{ border-color: var(--gold-primary); color: var(--gold-primary); transform: scale(1.1); }}
-    .btn-float-nav.disabled {{ opacity: 0.3; cursor: not-allowed; pointer-events: none; }}
+    .btn-chapter-nav.disabled {{ opacity: 0.3; cursor: not-allowed; pointer-events: none; }}
 
     /* Mobile Bottom Navigation Bar (Phase 1, 5, 9) */
     .bottom-bar {{
       position: fixed; bottom: 0; left: 0; right: 0;
-      height: calc(56px + env(safe-area-inset-bottom, 0px));
+      height: calc(54px + env(safe-area-inset-bottom, 0px));
       padding-bottom: env(safe-area-inset-bottom, 0px);
       background: var(--header-bg);
-      backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-top: 1px solid var(--border-color);
+      border-top: 1px solid var(--border-color);
       display: flex; align-items: center; justify-content: space-around; z-index: 998;
-      transition: transform 0.25s ease; box-sizing: border-box; max-width: 100vw;
+      transition: transform var(--motion-base); box-sizing: border-box; max-width: 100vw;
     }}
     @media (min-width: 769px) {{ .bottom-bar {{ display: none; }} }}
     .btn-bottom-item {{
       background: none; border: none; color: var(--text-muted); display: flex; flex-direction: column;
-      align-items: center; gap: 3px; font-size: 10px; font-weight: 600; cursor: pointer; padding: 6px 10px;
-      border-radius: 8px; text-decoration: none; -webkit-tap-highlight-color: transparent;
+      align-items: center; gap: 3px; font-size: 10.5px; font-family: var(--font-ui); font-weight: 500;
+      cursor: pointer; padding: 6px 12px; border-radius: var(--radius-sm); text-decoration: none;
+      -webkit-tap-highlight-color: transparent; transition: color var(--motion-fast);
     }}
-    .btn-bottom-item:active {{ color: var(--gold-primary); }}
+    .btn-bottom-item:active, .btn-bottom-item:hover {{ color: var(--gold-primary); }}
     .btn-bottom-item.disabled {{ opacity: 0.3; pointer-events: none; }}
-    .btn-bottom-item svg {{ width: 20px; height: 20px; }}
+    .btn-bottom-item svg {{ width: 19px; height: 19px; }}
   </style>
 </head>
 <body class="theme-peaceful-dark is-chapter">
@@ -2421,18 +2417,6 @@ def generate_chapter_html(ch_info, chapters_index, total_words, codex_items=None
       <div>{toc_list_rendered}</div>
     </aside>
 
-    <!-- Floating Nav Arrows (Desktop) -->
-    <div class="desktop-nav-float desktop-nav-left">
-      <a href="{prev_url}" class="btn-float-nav {prev_dis}" title="Chương trước (Phím ←)" aria-label="Chương trước">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
-      </a>
-    </div>
-    <div class="desktop-nav-float desktop-nav-right">
-      <a href="{next_url}" class="btn-float-nav {next_dis}" title="Chương sau (Phím →)" aria-label="Chương sau">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
-      </a>
-    </div>
-
     <!-- Main Reader Content -->
     <main class="main-reader">
       <div class="btn-back-home-wrap">
@@ -2440,16 +2424,17 @@ def generate_chapter_html(ch_info, chapters_index, total_words, codex_items=None
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
           <span>Về Trang Chủ Phá Trời</span>
         </a>
-        <div class="header-vol-arc-hide-mobile" style="font-size:12px; color:var(--text-muted);">QUYỂN {vol} • HỒI {arc}</div>
+        <div class="header-vol-arc-hide-mobile" style="font-size:12px; color:var(--text-muted); font-family:var(--font-ui);">QUYỂN {vol} · HỒI {arc}</div>
       </div>
 
       <section class="chapter-hero">
-        <div class="chapter-vol-arc">QUYỂN {vol} • HỒI {arc}</div>
+        <div class="chapter-vol-arc">QUYỂN {vol} · HỒI {arc}</div>
         <h1 class="chapter-main-title">Chương {ch_num}: {clean_title}</h1>
-        <div class="chapter-meta-pills">
-          <span class="meta-pill">📖 {words:,} từ</span>
-          <span class="meta-pill">⏱️ ~{read_mins} phút đọc</span>
-          {f'<span class="meta-pill">📍 {ch_info["location"]}</span>' if ch_info.get("location") else ""}
+        <div class="chapter-hero-meta">
+          <span>{words:,} từ</span>
+          <span class="meta-sep">·</span>
+          <span>Khoảng {read_mins} phút đọc</span>
+          {f'<span class="meta-sep">·</span><span>{ch_info["location"]}</span>' if ch_info.get("location") else ""}
         </div>
       </section>
 
@@ -2457,23 +2442,8 @@ def generate_chapter_html(ch_info, chapters_index, total_words, codex_items=None
         {ch_info["html"]}
       </article>
 
-      <!-- Next Chapter Card (Phase 1) -->
-      {next_card_html}
-
-      <!-- Chapter Footer 3-Button Navigation (Phase 1) -->
-      <div class="chapter-footer-nav">
-        <a href="{prev_url}" class="btn-nav-chapter {prev_dis}" id="footerPrevBtn" aria-label="Chương trước">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
-          <span>Chương Trước</span>
-        </a>
-        <button type="button" class="btn-nav-chapter footer-toc-btn" id="btnFooterToc" aria-label="Về mục lục">
-          <span>📑 Về Mục Lục</span>
-        </button>
-        <a href="{next_url}" class="btn-nav-chapter {next_dis}" id="footerNextBtn" aria-label="Chương tiếp theo">
-          <span>{footer_next_text}</span>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
-        </a>
-      </div>
+      <!-- End of Chapter Colophon & Navigation (Phase 3) -->
+      {chapter_end_html}
     </main>
   </div>
 
@@ -2543,10 +2513,10 @@ def generate_chapter_html(ch_info, chapters_index, total_words, codex_items=None
     <div class="setting-group">
       <div class="setting-label">Chủ Đề Giao Diện</div>
       <div class="theme-grid">
-        <div class="theme-opt active" data-theme="theme-peaceful-dark" style="background:#07090e; color:#d6dce7;">Tối Bình Yên</div>
-        <div class="theme-opt" data-theme="theme-gentle-light" style="background:#f7f5f0; color:#24221f;">Sáng Thanh Nhã</div>
-        <div class="theme-opt" data-theme="theme-oled" style="background:#000000; color:#cbd5e1;">OLED Đen</div>
-        <div class="theme-opt" data-theme="theme-sepia" style="background:#f4edd8; color:#3b2d1d;">Sepia Cổ Điển</div>
+        <div class="theme-opt active" data-theme="theme-saigon-night" style="background:#0b0f17; color:#e2e8f0;">Đêm Sài Gòn</div>
+        <div class="theme-opt" data-theme="theme-warm-dark" style="background:#121110; color:#e6dfd5;">Trầm Ấm</div>
+        <div class="theme-opt" data-theme="theme-sepia" style="background:#f1e8d0; color:#3b2d1d;">Sepia Cổ Điển</div>
+        <div class="theme-opt" data-theme="theme-gentle-light" style="background:#f7f5f0; color:#24221f;">Giấy Sáng</div>
       </div>
     </div>
     <div class="setting-group">
@@ -2956,7 +2926,7 @@ def generate_chapter_html(ch_info, chapters_index, total_words, codex_items=None
     }});
 
     // Settings Handlers
-    const THEMES = ['theme-peaceful-dark', 'theme-gentle-light', 'theme-oled', 'theme-sepia'];
+    const THEMES = ['theme-peaceful-dark', 'theme-saigon-night', 'theme-gentle-light', 'theme-paper', 'theme-oled', 'theme-warm-dark', 'theme-sepia'];
     function setTheme(theme) {{
       THEMES.forEach(t => {{
         document.documentElement.classList.remove(t);
@@ -2965,13 +2935,20 @@ def generate_chapter_html(ch_info, chapters_index, total_words, codex_items=None
       document.documentElement.classList.add(theme);
       document.body.classList.add(theme);
 
+      let activeThemeKey = theme;
+      if (theme === 'theme-peaceful-dark') activeThemeKey = 'theme-saigon-night';
+      if (theme === 'theme-oled') activeThemeKey = 'theme-warm-dark';
+      if (theme === 'theme-paper') activeThemeKey = 'theme-gentle-light';
+
       document.querySelectorAll('.theme-opt').forEach(opt => {{
-        opt.classList.toggle('active', opt.dataset.theme === theme);
+        const optTheme = opt.dataset.theme;
+        const matches = (optTheme === theme || optTheme === activeThemeKey);
+        opt.classList.toggle('active', matches);
       }});
 
       const sunIcon = document.getElementById('iconSun');
       const moonIcon = document.getElementById('iconMoon');
-      if (theme === 'theme-gentle-light') {{
+      if (theme === 'theme-gentle-light' || theme === 'theme-paper') {{
         if (sunIcon) sunIcon.style.display = 'inline-block';
         if (moonIcon) moonIcon.style.display = 'none';
       }} else {{
@@ -2989,8 +2966,8 @@ def generate_chapter_html(ch_info, chapters_index, total_words, codex_items=None
     }});
 
     document.getElementById('btnQuickTheme').onclick = () => {{
-      const isLight = document.body.classList.contains('theme-gentle-light');
-      const target = isLight ? 'theme-peaceful-dark' : 'theme-gentle-light';
+      const isLight = document.body.classList.contains('theme-gentle-light') || document.body.classList.contains('theme-paper');
+      const target = isLight ? 'theme-saigon-night' : 'theme-gentle-light';
       setTheme(target);
       showToast(target === 'theme-gentle-light' ? '☀️ Đã bật giao diện Sáng' : '🌙 Đã bật giao diện Tối');
     }};
