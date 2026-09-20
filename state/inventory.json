@@ -1,14 +1,14 @@
 {
-  "last_updated": "2026-10-24T16:30:00+07:00",
+  "last_updated": "2026-10-24T23:30:00+07:00",
   "holder": "Nguyễn Minh An",
-  "cultivation_realm": "Luyện Cốt Hậu kỳ Cực Cảnh (33 Đốt Sống Ngọc Thạch / Dĩ Thể Vi Kiếm)",
+  "cultivation_realm": "Luyện Cốt Hậu kỳ Cực Cảnh (33 Đốt Sống Ngọc Tủy Viên Mãn / Chuẩn Bị Hoán Huyết)",
   "core_weapons_and_artifacts": [
     {
       "name": "Trâm Ngọc Cổ Lâm Tịch (Cố Hồn Trâm)",
       "type": "Di vật bản mệnh / Cố hồn khí",
       "location": "Túi áo trong bên ngực trái",
-      "condition": "Xuất hiện vết rạn xám tro mới, đài sen thu nhỏ, Lâm Tịch rơi vào ngủ say sâu",
-      "durability": "80/100",
+      "condition": "Đài sen thu nhỏ bằng bàn tay, vết rạn xám tro kéo dài, Lâm Tịch rơi vào trầm miên sâu dài hạn",
+      "durability": "75/100",
       "function": "Cầu nối vật lý với thức hải và đài sen Lâm Tịch, bảo vệ tâm mạch"
     },
     {
@@ -140,5 +140,5 @@
       "stage": "Sơ ngộ (Lấy 33 đốt sống ngọc thạch làm vỏ kiếm, dẫn kiếm khí vào Hắc Thiết Đoản Côn chém đứt hợp kim)"
     }
   ],
-  "current_location": "Rừng Già Sườn Tây Núi Chứa Chan, Đồng Nai"
+  "current_location": "Khu Bến Bãi Hoang Ven Sông Đồng Nai, Dĩ An - Thủ Đức"
 }
