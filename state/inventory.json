@@ -1,14 +1,14 @@
 {
-  "last_updated": "2026-10-24T14:15:00+07:00",
+  "last_updated": "2026-10-24T16:30:00+07:00",
   "holder": "Nguyễn Minh An",
-  "cultivation_realm": "Luyện Cốt Hậu kỳ (33 Đốt Sống Ngọc Thạch / Thuần Dương Cương Huyết)",
+  "cultivation_realm": "Luyện Cốt Hậu kỳ Cực Cảnh (33 Đốt Sống Ngọc Thạch / Dĩ Thể Vi Kiếm)",
   "core_weapons_and_artifacts": [
     {
       "name": "Trâm Ngọc Cổ Lâm Tịch (Cố Hồn Trâm)",
       "type": "Di vật bản mệnh / Cố hồn khí",
       "location": "Túi áo trong bên ngực trái",
-      "condition": "Ba vết rạn li ti, thu liễm quang hoa, nguyên vẹn",
-      "durability": "100/100",
+      "condition": "Xuất hiện vết rạn xám tro mới, đài sen thu nhỏ, Lâm Tịch rơi vào ngủ say sâu",
+      "durability": "80/100",
       "function": "Cầu nối vật lý với thức hải và đài sen Lâm Tịch, bảo vệ tâm mạch"
     },
     {
@@ -133,7 +133,12 @@
       "name": "Long Lân Phá Kình (Kính Kình Kiếm Khí Hợp Nhất)",
       "type": "Thể Đạo / Dung hợp vũ khí & kiếm khí",
       "stage": "Sơ ngộ (Dẫn kiếm khí Thanh Long Lân Kiếm vào Hắc Thiết Đoản Côn phá giáp hộ thể)"
+    },
+    {
+      "name": "Dĩ Thể Vi Kiếm (Vô Ngân Kiếm Ý)",
+      "type": "Thể Kiếm Song Tu / Dung hợp kiếm ý cổ",
+      "stage": "Sơ ngộ (Lấy 33 đốt sống ngọc thạch làm vỏ kiếm, dẫn kiếm khí vào Hắc Thiết Đoản Côn chém đứt hợp kim)"
     }
   ],
-  "current_location": "Thềm Đá Cổ Thần Quy, Núi Chứa Chan, Huyện Xuân Lộc, Tỉnh Đồng Nai"
+  "current_location": "Rừng Già Sườn Tây Núi Chứa Chan, Đồng Nai"
 }
