@@ -213,7 +213,7 @@ Trái tim tôi bắt đầu đập chậm lại.
 
 Tám mươi nhịp... sáu mươi nhịp... bốn mươi nhịp... rồi dừng lại ở mức ba mươi lăm nhịp một phút.
 
-Nhịp tim chậm đến mức nếu một bác sĩ dùng ống nghe đặt vào ngực tôi lúc này, họ sẽ nghĩ rằng người thanh niên này đang cận kề cái chết lâm sàng. Nhưng trong lăng kính của Thể Đạo, đó lại là trạng thái "Quy Tức Cực Cảnh" — nơi mọi nguồn năng lượng của cơ thể được thu gom về hạch tâm, chuẩn bị cho một đợt bộc phát tôi luyện toàn diện.
+Nhịp tim chậm đến mức nếu một bác sĩ dùng ống nghe đặt vào ngực tôi lúc này, họ sẽ nghĩ rằng người thanh niên này đang cận kề cái chết lâm sàng. Nhưng trong lăng kính của Thể Đạo, đó lại là trạng thái "Quy Tức Cùng Cực" — nơi mọi nguồn năng lượng của cơ thể được thu gom về hạch tâm, chuẩn bị cho một đợt bộc phát tôi luyện toàn diện.
 
 *ÙNG... ÙNG...*
 
@@ -247,7 +247,7 @@ Ba mươi ba đốt sống lưng của tôi đồng loạt tỏa ra một làn q
 
 Vết rách do mảnh đạn trên vai trái khẽ giật giật, lớp vảy máu khô tự động bong tróc ra, để lại một làn da mới hồng hào, săn chắc như chưa từng chịu bất kỳ tổn thương nào.
 
-Cảnh giới Luyện Cốt Hậu kỳ của tôi đã chính thức viên mãn, chạm tới đỉnh cao Cực Cảnh — chỉ còn cách ngưỡng cửa Hoán Huyết một bước chân duy nhất!
+Cảnh giới Luyện Cốt Hậu kỳ của tôi đã chính thức viên mãn, chạm tới đỉnh cao Cùng Cực — chỉ còn cách ngưỡng cửa Hoán Huyết một bước chân duy nhất!
 
 Tôi từ từ mở mắt ra.
 
@@ -391,8 +391,8 @@ grounding_score: {emo_res['grounding_score']}
         CHAPTER_NUM,
         "loc_ven_song_dong_nai",
         json.dumps(["char_minh_an", "char_lam_tich"]),
-        "Minh An rút lui khỏi Núi Chứa Chan, lấy lại xe máy tại nhà dân và hòa vào dòng xe Quốc lộ 1A. Đối mặt với sự im lặng tuyệt đối của Lâm Tịch khi nàng chìm vào trầm miên sâu trong thức hải rạn nứt. Trong cơn mưa đêm Trảng Bom, Minh An nhận tin báo từ Tuấn về việc Cửu Long Thiên Hải tấn công hệ thống dữ liệu Viện Địa tầng để truy tìm thân nhân, đồng thời cắn răng nuốt nước mắt không gọi điện cho người mẹ già ở cù lao Tiền Giang để bảo vệ an toàn cho bà. Dừng chân tại bãi xưởng bỏ hoang ven sông Đồng Nai lúc nửa đêm, Minh An vận hành Quy Tức Quyết và Thuần Dương Cương Huyết tôi luyện tủy ngọc, thuần hóa toàn bộ tàn dư Vô Ngân Kiếm Khí, đạt cảnh giới Luyện Cốt Hậu kỳ Cực Cảnh. Nhận thức sâu sắc nguy cơ bị kiếm khí mài mòn nhân tính, Minh An giữ vững bản tâm phàm nhân và hướng tầm mắt về miền Tây Nam mở ra hành trình bảo vệ thầm lặng.",
-        "Thể phách Minh An đạt Luyện Cốt Hậu kỳ Cực Cảnh; tàn dư kiếm khí hòa tan vào tủy ngọc; Tuấn sơ tán an toàn sang Quận 7; Minh An quyết định bí mật xuôi về Tiền Giang thiết lập mạng lưới phòng thủ bảo vệ mẹ già."
+        "Minh An rút lui khỏi Núi Chứa Chan, lấy lại xe máy tại nhà dân và hòa vào dòng xe Quốc lộ 1A. Đối mặt với sự im lặng tuyệt đối của Lâm Tịch khi nàng chìm vào trầm miên sâu trong thức hải rạn nứt. Trong cơn mưa đêm Trảng Bom, Minh An nhận tin báo từ Tuấn về việc Cửu Long Thiên Hải tấn công hệ thống dữ liệu Viện Địa tầng để truy tìm thân nhân, đồng thời cắn răng nuốt nước mắt không gọi điện cho người mẹ già ở cù lao Tiền Giang để bảo vệ an toàn cho bà. Dừng chân tại bãi xưởng bỏ hoang ven sông Đồng Nai lúc nửa đêm, Minh An vận hành Quy Tức Quyết và Thuần Dương Cương Huyết tôi luyện tủy ngọc, thuần hóa toàn bộ tàn dư Vô Ngân Kiếm Khí, đạt cảnh giới Luyện Cốt Hậu kỳ Cùng Cực. Nhận thức sâu sắc nguy cơ bị kiếm khí mài mòn nhân tính, Minh An giữ vững bản tâm phàm nhân và hướng tầm mắt về miền Tây Nam mở ra hành trình bảo vệ thầm lặng.",
+        "Thể phách Minh An đạt Luyện Cốt Hậu kỳ Cùng Cực; tàn dư kiếm khí hòa tan vào tủy ngọc; Tuấn sơ tán an toàn sang Quận 7; Minh An quyết định bí mật xuôi về Tiền Giang thiết lập mạng lưới phòng thủ bảo vệ mẹ già."
     ))
 
     # 7.2 Cập nhật story threads
@@ -415,7 +415,7 @@ grounding_score: {emo_res['grounding_score']}
     WHERE thread_id = 'TH-PLT-002'
     """, (
         CHAPTER_NUM,
-        "Minh An thuần hóa Vô Ngân Kiếm Khí trong ba mươi ba đốt sống lưng, tủy ngọc viên mãn đạt Luyện Cốt Hậu kỳ Cực Cảnh; đứng trước ngưỡng cửa Hoán Huyết."
+        "Minh An thuần hóa Vô Ngân Kiếm Khí trong ba mươi ba đốt sống lưng, tủy ngọc viên mãn đạt Luyện Cốt Hậu kỳ Cùng Cực; đứng trước ngưỡng cửa Hoán Huyết."
     ))
 
     cur.execute("""
@@ -440,7 +440,7 @@ grounding_score: {emo_res['grounding_score']}
             inv_data = json.load(f)
         inv_data["last_updated"] = f"{DATE}T23:30:00+07:00"
         inv_data["current_location"] = "Khu Bến Bãi Hoang Ven Sông Đồng Nai, Dĩ An - Thủ Đức"
-        inv_data["cultivation_realm"] = "Luyện Cốt Hậu kỳ Cực Cảnh (33 Đốt Sống Ngọc Tủy Viên Mãn / Chuẩn Bị Hoán Huyết)"
+        inv_data["cultivation_realm"] = "Luyện Cốt Hậu kỳ Cùng Cực (33 Đốt Sống Ngọc Tủy Viên Mãn / Chuẩn Bị Hoán Huyết)"
         
         # Cập nhật tình trạng Trâm Ngọc Lâm Tịch
         for itm in inv_data.get("core_weapons_and_artifacts", []):
