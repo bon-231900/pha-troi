@@ -113,6 +113,9 @@ def parse_chapter_file(file_path):
     if not location and ch_num in CHAPTER_LOCATIONS_FALLBACK:
         location = CHAPTER_LOCATIONS_FALLBACK[ch_num]
 
+    custom_desc = meta.get("description", "") or meta.get("seo_description", "") or meta.get("desc", "")
+    custom_title = meta.get("seo_title", "")
+
     return {
         "chapter": ch_num,
         "title": title,
@@ -123,6 +126,8 @@ def parse_chapter_file(file_path):
         "location": location,
         "excerpt": excerpt,
         "plain_text": plain_text,
+        "custom_desc": custom_desc.strip(),
+        "custom_title": custom_title.strip(),
         "html": html_content
     }
 
@@ -1139,29 +1144,44 @@ def generate_chapter_html(ch_info, chapters_index, total_words, codex_items=None
     shared_css = get_shared_css()
 
     # Tiêu chuẩn SEO Title & Description chống Google append '- PhatROI' và trích xuất snippet rác
-    title_seo = f"Phá Trời — Chương {ch_num}: {clean_title} | phatroi.com"
+    custom_title = ch_info.get("custom_title", "").strip()
+    if custom_title:
+        title_seo = custom_title if "| phatroi.com" in custom_title else f"{custom_title} | phatroi.com"
+    else:
+        title_seo = f"Phá Trời — Chương {ch_num}: {clean_title} | phatroi.com"
+
     prefix_desc = f"Đọc Phá Trời Chương {ch_num}: {clean_title}."
     suffix_desc = " Tiểu thuyết đô thị tu chân Sài Gòn 2026 - Tác giả An Bình."
     max_snippet_len = 158 - len(prefix_desc) - len(suffix_desc) - 2
 
-    plain_body = ch_info.get("plain_text", ch_info.get("excerpt", ""))
-    clean_body = re.sub(r'^[#*\-—\s]+', '', plain_body).strip()
-    sentences = re.split(r'[.!?]\s+', clean_body)
-    first_sent = sentences[0].strip() if sentences else ""
-
-    if 35 <= len(first_sent) <= max_snippet_len:
-        snippet_desc = first_sent.rstrip('.')
-    elif max_snippet_len > 10:
-        cut_len = max_snippet_len - 3
-        cut = clean_body[:cut_len].rsplit(' ', 1)[0].strip()
-        snippet_desc = cut.rstrip('.,;:-') + '...'
+    custom_desc = ch_info.get("custom_desc", "").strip()
+    if custom_desc:
+        if 135 <= len(custom_desc) <= 158:
+            desc_seo = custom_desc
+        elif len(custom_desc) <= max_snippet_len:
+            desc_seo = f"{prefix_desc} {custom_desc.rstrip('.')}.{suffix_desc}"
+        else:
+            cut = custom_desc[:max_snippet_len - 3].rsplit(' ', 1)[0].strip()
+            desc_seo = f"{prefix_desc} {cut}...{suffix_desc}"
     else:
-        snippet_desc = ''
+        plain_body = ch_info.get("plain_text", ch_info.get("excerpt", ""))
+        clean_body = re.sub(r'^[#*\-—\s]+', '', plain_body).strip()
+        sentences = re.split(r'[.!?]\s+', clean_body)
+        first_sent = sentences[0].strip() if sentences else ""
 
-    if snippet_desc:
-        desc_seo = f"{prefix_desc} {snippet_desc}.{suffix_desc}"
-    else:
-        desc_seo = f"{prefix_desc}{suffix_desc}"
+        if 35 <= len(first_sent) <= max_snippet_len:
+            snippet_desc = first_sent.rstrip('.')
+        elif max_snippet_len > 10:
+            cut_len = max_snippet_len - 3
+            cut = clean_body[:cut_len].rsplit(' ', 1)[0].strip()
+            snippet_desc = cut.rstrip('.,;:-') + '...'
+        else:
+            snippet_desc = ''
+
+        if snippet_desc:
+            desc_seo = f"{prefix_desc} {snippet_desc}.{suffix_desc}"
+        else:
+            desc_seo = f"{prefix_desc}{suffix_desc}"
 
     title_seo_json = json.dumps(title_seo, ensure_ascii=False)
     desc_seo_json = json.dumps(desc_seo, ensure_ascii=False)
