@@ -12,6 +12,7 @@ import shutil
 import time
 from datetime import datetime
 from pathlib import Path
+import sqlite3
 import markdown
 
 if sys.stdout and hasattr(sys.stdout, 'reconfigure'):
@@ -27,6 +28,102 @@ try:
     from system.reader_app.seo_pages import SEO_PAGES, render_seo_page_html
 except ImportError:
     from seo_pages import SEO_PAGES, render_seo_page_html
+
+def get_db_chapter_summaries():
+    """Doc tom tat tung chuong tu timeline_events trong novel_os.db."""
+    db_path = os.path.join(BASE_DIR, "database", "novel_os.db")
+    if not os.path.exists(db_path):
+        return {}
+    try:
+        conn = sqlite3.connect(db_path)
+        cur = conn.cursor()
+        cur.execute("SELECT chapter_num, summary FROM timeline_events")
+        res = {row[0]: row[1] for row in cur.fetchall()}
+        conn.close()
+        return res
+    except Exception as e:
+        print(f"[WARN] Khong the doc timeline_events tu novel_os.db: {e}")
+        return {}
+
+def optimize_seo_title(ch_num, clean_title, custom_title=""):
+    """Toi uu Title cho Google SERP trong khoang 48-60 ky tu."""
+    if custom_title:
+        return custom_title if "| phatroi.com" in custom_title else f"{custom_title} | phatroi.com"
+    full = f"Phá Trời Chương {ch_num}: {clean_title} — Đọc Online | phatroi.com"
+    if len(full) <= 60:
+        return full
+    v2 = f"Phá Trời Chương {ch_num}: {clean_title} | phatroi.com"
+    if len(v2) <= 60:
+        return v2
+    prefix = f"Phá Trời Chương {ch_num}: "
+    suffix = " | phatroi.com"
+    avail = 60 - len(prefix) - len(suffix) - 3
+    short_clean = clean_title[:avail].rsplit(' ', 1)[0].strip() + "..."
+    return f"{prefix}{short_clean}{suffix}"
+
+def clean_body_narrative(text):
+    """Loc bo cac moc thoi gian mo dau de lay cau tu su hap dan."""
+    t = re.sub(r'^[#*\-—\s]+', '', text).strip()
+    t = re.sub(r'^(Năm|Sáu|Bảy|Tám|Chín|Mười|Mười một|Mười hai|\d+)\s+giờ(\s+\d+\s+phút)?\s+(sáng|trưa|chiều|tối|đêm)[^.]*\.\s*', '', t, flags=re.IGNORECASE)
+    t = re.sub(r'^(Ngày\s+\d+\s+tháng\s+\d+[^.]*\.\s*)', '', t, flags=re.IGNORECASE)
+    t = re.sub(r'\s+', ' ', t).strip()
+    return t
+
+def optimize_seo_description(ch_num, clean_title, custom_desc="", db_summary="", plain_text=""):
+    """Toi uu Description cho Google SERP Snippet trong khoang 145-158 ky tu."""
+    TARGET_MIN = 145
+    TARGET_MAX = 158
+
+    candidate = custom_desc.strip() if custom_desc else ""
+    if not candidate and db_summary:
+        candidate = db_summary.strip()
+    if not candidate:
+        candidate = clean_body_narrative(plain_text)
+
+    candidate = re.sub(r'\s+', ' ', candidate).strip()
+
+    # Mau 1: Doc Pha Troi Chuong {ch_num}: {clean_title}. {snippet}... Doc mien phi tai phatroi.com.
+    prefix = f"Đọc Phá Trời Chương {ch_num}: {clean_title}."
+    cta_short = " Đọc miễn phí tại phatroi.com."
+    avail = TARGET_MAX - len(prefix) - len(cta_short) - 1
+
+    if avail >= 25:
+        cut = candidate[:avail - 3].rsplit(' ', 1)[0].strip().rstrip('.,;:-')
+        candidate_snippet = f"{prefix} {cut}...{cta_short}"
+        if TARGET_MIN <= len(candidate_snippet) <= TARGET_MAX:
+            return candidate_snippet
+
+    # Mau 2: {snippet}... — Doc Pha Troi Chuong {ch_num} tai phatroi.com.
+    cta_ch = f" — Đọc Phá Trời Chương {ch_num} tại phatroi.com."
+    avail_ch = TARGET_MAX - len(cta_ch)
+    if avail_ch >= 30:
+        cut_ch = candidate[:avail_ch - 3].rsplit(' ', 1)[0].strip().rstrip('.,;:-')
+        candidate_ch = f"{cut_ch}...{cta_ch}"
+        if TARGET_MIN <= len(candidate_ch) <= TARGET_MAX:
+            return candidate_ch
+
+    # Mau 3: {snippet}... — Doc tieu thuyet Pha Troi Chuong {ch_num} tai phatroi.com.
+    cta_long = f" — Đọc tiểu thuyết Phá Trời Chương {ch_num} tại phatroi.com."
+    avail_long = TARGET_MAX - len(cta_long)
+    if avail_long >= 20:
+        cut_long = candidate[:avail_long - 3].rsplit(' ', 1)[0].strip().rstrip('.,;:-')
+        candidate_long = f"{cut_long}...{cta_long}"
+        if TARGET_MIN <= len(candidate_long) <= TARGET_MAX:
+            return candidate_long
+
+    # Mau 4: Fallback can chinh padding
+    base_prefix = f"Đọc Phá Trời Chương {ch_num}: {clean_title}. "
+    avail_fill = TARGET_MAX - len(base_prefix) - len(" Đọc tại phatroi.com.")
+    fill_cut = candidate[:avail_fill - 3].rsplit(' ', 1)[0].strip().rstrip('.,;:-')
+    res = f"{base_prefix}{fill_cut}... Đọc tại phatroi.com."
+
+    if len(res) < TARGET_MIN:
+        res = res.replace(" Đọc tại phatroi.com.", " Đọc truyện online miễn phí tại phatroi.com.")
+        if len(res) > TARGET_MAX:
+            res = res[:TARGET_MAX - 3].rsplit(' ', 1)[0].strip().rstrip('.,;:-') + "..."
+
+    return res[:TARGET_MAX]
+
 
 def get_codex_items():
     reg_path = os.path.join(BASE_DIR, "canon", "codex", "codex_registry.json")
@@ -1130,7 +1227,7 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
 </body>
 </html>"""
 
-def generate_chapter_html(ch_info, chapters_index, total_words, codex_items=None):
+def generate_chapter_html(ch_info, chapters_index, total_words, codex_items=None, db_summaries=None):
     ch_num = ch_info["chapter"]
     codex_items = codex_items or get_codex_items()
     codex_json = json.dumps(codex_items, ensure_ascii=False)
@@ -1143,45 +1240,16 @@ def generate_chapter_html(ch_info, chapters_index, total_words, codex_items=None
     total_ch = len(chapters_index)
     shared_css = get_shared_css()
 
-    # Tiêu chuẩn SEO Title & Description chống Google append '- PhatROI' và trích xuất snippet rác
-    custom_title = ch_info.get("custom_title", "").strip()
-    if custom_title:
-        title_seo = custom_title if "| phatroi.com" in custom_title else f"{custom_title} | phatroi.com"
-    else:
-        title_seo = f"Phá Trời — Chương {ch_num}: {clean_title} | phatroi.com"
-
-    prefix_desc = f"Đọc Phá Trời Chương {ch_num}: {clean_title}."
-    suffix_desc = " Tiểu thuyết đô thị tu chân Sài Gòn 2026 - Tác giả An Bình."
-    max_snippet_len = 158 - len(prefix_desc) - len(suffix_desc) - 2
-
-    custom_desc = ch_info.get("custom_desc", "").strip()
-    if custom_desc:
-        if 135 <= len(custom_desc) <= 158:
-            desc_seo = custom_desc
-        elif len(custom_desc) <= max_snippet_len:
-            desc_seo = f"{prefix_desc} {custom_desc.rstrip('.')}.{suffix_desc}"
-        else:
-            cut = custom_desc[:max_snippet_len - 3].rsplit(' ', 1)[0].strip()
-            desc_seo = f"{prefix_desc} {cut}...{suffix_desc}"
-    else:
-        plain_body = ch_info.get("plain_text", ch_info.get("excerpt", ""))
-        clean_body = re.sub(r'^[#*\-—\s]+', '', plain_body).strip()
-        sentences = re.split(r'[.!?]\s+', clean_body)
-        first_sent = sentences[0].strip() if sentences else ""
-
-        if 35 <= len(first_sent) <= max_snippet_len:
-            snippet_desc = first_sent.rstrip('.')
-        elif max_snippet_len > 10:
-            cut_len = max_snippet_len - 3
-            cut = clean_body[:cut_len].rsplit(' ', 1)[0].strip()
-            snippet_desc = cut.rstrip('.,;:-') + '...'
-        else:
-            snippet_desc = ''
-
-        if snippet_desc:
-            desc_seo = f"{prefix_desc} {snippet_desc}.{suffix_desc}"
-        else:
-            desc_seo = f"{prefix_desc}{suffix_desc}"
+    # Tiêu chuẩn SEO Title (48-60 ký tự) & Description (145-158 ký tự) chuẩn Google SERP
+    db_sum = db_summaries.get(ch_num, "") if db_summaries else ""
+    title_seo = optimize_seo_title(ch_num, clean_title, ch_info.get("custom_title", ""))
+    desc_seo = optimize_seo_description(
+        ch_num=ch_num,
+        clean_title=clean_title,
+        custom_desc=ch_info.get("custom_desc", ""),
+        db_summary=db_sum,
+        plain_text=ch_info.get("plain_text", ch_info.get("excerpt", ""))
+    )
 
     title_seo_json = json.dumps(title_seo, ensure_ascii=False)
     desc_seo_json = json.dumps(desc_seo, ensure_ascii=False)
@@ -1840,10 +1908,11 @@ def build():
     print("  [+] Generated dist/index.html")
 
     # 4. Generate Clean Slug Directory for each chapter: dist/chuong-X/index.html
+    db_summaries = get_db_chapter_summaries()
     for ch_info in parsed_chapters:
         ch_slug_dir = os.path.join(DIST_DIR, f"chuong-{ch_info['chapter']}")
         os.makedirs(ch_slug_dir, exist_ok=True)
-        ch_html = generate_chapter_html(ch_info, chapters_index, total_words, codex_items)
+        ch_html = generate_chapter_html(ch_info, chapters_index, total_words, codex_items, db_summaries)
         with open(os.path.join(ch_slug_dir, "index.html"), "w", encoding="utf-8") as out:
             out.write(ch_html)
     print(f"  [+] Generated {len(parsed_chapters)} Clean Slug chapter pages: dist/chuong-X/index.html")
