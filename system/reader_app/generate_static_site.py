@@ -23,6 +23,7 @@ DIST_DIR = os.path.join(BASE_DIR, "system", "reader_app", "dist")
 STATIC_SRC_DIR = os.path.join(BASE_DIR, "system", "reader_app", "static")
 SITE_URL = os.getenv("SITE_URL", "https://phatroi.com")
 GA_MEASUREMENT_ID = os.getenv("GA_MEASUREMENT_ID", "G-PELE9QCESB")
+ASSET_VERSION = int(time.time())
 
 try:
     from system.reader_app.seo_pages import SEO_PAGES, render_seo_page_html
@@ -898,7 +899,7 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="/assets/home.css">
+  <link rel="stylesheet" href="/assets/home.css?v={ASSET_VERSION}">
 </head>
 <body class="theme-peaceful-dark is-home">
 
@@ -1223,7 +1224,7 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
       chapters: {chapters_json}
     }};
   </script>
-  <script defer src="/assets/home.js"></script>
+  <script defer src="/assets/home.js?v={ASSET_VERSION}"></script>
 </body>
 </html>"""
 
@@ -1484,7 +1485,7 @@ def generate_chapter_html(ch_info, chapters_index, total_words, codex_items=None
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="/assets/reader.css">
+  <link rel="stylesheet" href="/assets/reader.css?v={ASSET_VERSION}">
 </head>
 <body class="theme-peaceful-dark is-chapter">
 
@@ -1746,7 +1747,7 @@ def generate_chapter_html(ch_info, chapters_index, total_words, codex_items=None
       siteUrl: "{SITE_URL}"
     }};
   </script>
-  <script defer src="/assets/reader.js"></script>
+  <script defer src="/assets/reader.js?v={ASSET_VERSION}"></script>
 </body>
 </html>"""
 
