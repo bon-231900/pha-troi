@@ -16,8 +16,8 @@ SEO_PAGES = [
     {
         "slug": "phat-troi-la-truyen-gi",
         "title": "Phá Trời Là Truyện Gì? Cẩm Nang Toàn Diện Về Tiểu Thuyết Đô Thị Tu Chân Sài Gòn 2026",
-        "meta_title": "Phá Trời Là Truyện Gì? | Cẩm Nang Tiểu Thuyết Đô Thị Tu Chân Sài Gòn 2026",
-        "meta_desc": "Tìm hiểu toàn diện về Phá Trời (Phá Toái Thần Hoang): tiểu thuyết đô thị tu chân TP.HCM 2026 của tác giả An Bình. Bối cảnh Sài Gòn, nhân vật Minh An, Lâm Tịch, Thể Đạo và phong ấn 2,5 triệu năm.",
+        "meta_title": "Phá Trời Là Truyện Gì? Cẩm Nang Đô Thị Tu Chân | phatroi.com",
+        "meta_desc": "Tìm hiểu về Phá Trời: tiểu thuyết đô thị tu chân TP.HCM 2026 của tác giả An Bình. Bối cảnh Sài Gòn, nhân vật Minh An, Lâm Tịch và Thể Đạo phàm nhân.",
         "keywords": "Phá Trời là truyện gì, tiểu thuyết Phá Trời, Phá Toái Thần Hoang, đô thị tu chân Sài Gòn, Nguyễn Minh An, Lâm Tịch, Thể Đạo, tác giả An Bình, truyện tiên hiệp Việt Nam",
         "category": "CẨM NANG TÁC PHẨM",
         "read_mins": 7,
@@ -98,8 +98,8 @@ SEO_PAGES = [
     {
         "slug": "truyen-tu-tien-viet-nam-sai-gon",
         "title": "Truyện Tu Tiên Việt Nam Lấy Bối Cảnh Sài Gòn: Khi Huyền Huyễn Giao Thoa Đời Thực",
-        "meta_title": "Truyện Tu Tiên Việt Nam Bối Cảnh Sài Gòn | Phá Trời — Huyền Huyễn Đô Thị",
-        "meta_desc": "Khám phá làn sóng truyện tu tiên Việt Nam hiện đại lấy bối cảnh TP.HCM. Phân tích sự độc đáo của Phá Trời khi đưa ngã tư Hàng Xanh, sông Sài Gòn vào thế giới huyền ảo.",
+        "meta_title": "Truyện Tu Tiên Việt Nam Sài Gòn: Phá Trời | phatroi.com",
+        "meta_desc": "Khám phá làn sóng truyện tu tiên Việt Nam hiện đại. Phân tích sự độc đáo của Phá Trời khi đưa ngã tư Hàng Xanh, sông Sài Gòn vào tiểu thuyết huyền ảo.",
         "keywords": "truyện tu tiên Việt Nam, tu tiên Sài Gòn, đô thị tu chân Việt Nam, tiểu thuyết huyền huyễn TP.HCM, truyện tiên hiệp Việt Nam hiện đại, Phá Trời Sài Gòn",
         "category": "PHÂN TÍCH VĂN HỌC",
         "read_mins": 6,
@@ -152,8 +152,8 @@ SEO_PAGES = [
     {
         "slug": "do-thi-tu-chan-la-gi",
         "title": "Truyện Đô Thị Tu Chân Là Gì? Giải Mã Sức Hút Của Thể Loại Tu Tiên Hiện Đại",
-        "meta_title": "Truyện Đô Thị Tu Chân Là Gì? | Giải Mã Thể Loại Tu Tiên Hiện Đại",
-        "meta_desc": "Đô thị tu chân là gì? Tìm hiểu nguồn gốc, đặc điểm và sự cách tân của thể loại tu tiên hiện đại qua tiểu thuyết Phá Trời — TP.HCM 2026.",
+        "meta_title": "Đô Thị Tu Chân Là Gì? Cẩm Nang Tu Tiên | phatroi.com",
+        "meta_desc": "Đô thị tu chân là gì? Tìm hiểu nguồn gốc, đặc điểm và sự cách tân của thể loại tu tiên hiện đại qua tiểu thuyết đô thị tu chân Phá Trời — TP.HCM 2026.",
         "keywords": "đô thị tu chân là gì, truyện đô thị tu tiên, urban cultivation, thể loại đô thị tu chân, tu tiên hiện đại, đặc điểm đô thị tu chân, Phá Trời",
         "category": "KIẾN THỨC THỂ LOẠI",
         "read_mins": 5,
@@ -208,8 +208,8 @@ SEO_PAGES = [
     {
         "slug": "the-dao",
         "title": "Thể Đạo Trong Phá Trời: Con Đường Tu Luyện Nhục Thân Của Phàm Nhân",
-        "meta_title": "Thể Đạo Trong Phá Trời | Con Đường Khí Huyết & Nhục Thân Phàm Nhân",
-        "meta_desc": "Giải mã Thể Đạo trong Phá Trời: hệ thống tu luyện nhục thân phàm nhân không cần linh căn giữa thời mạt pháp tại TP.HCM 2026.",
+        "meta_title": "Thể Đạo Trong Phá Trời: Tu Luyện Nhục Thân | phatroi.com",
+        "meta_desc": "Giải mã Thể Đạo trong Phá Trời: con đường tu luyện nhục thân và khí huyết phàm nhân không cần linh căn giữa thời mạt pháp tại TP.HCM 2026. Tác giả An Bình.",
         "keywords": "Thể Đạo Phá Trời, tu luyện nhục thân, Thể Đạo là gì, khí huyết đạo, Nguyễn Minh An Thể Đạo, mạt pháp tu chân, hệ thống tu luyện Phá Trời",
         "category": "HỒ SƠ LORE & HỆ THỐNG",
         "read_mins": 5,
@@ -255,7 +255,7 @@ SEO_PAGES = [
     {
         "slug": "nguyen-minh-an",
         "title": "Hồ Sơ Nguyễn Minh An: Nhân Viên Văn Phòng 25 Tuổi Và Đại Địa Phong Ấn Sài Gòn",
-        "meta_title": "Hồ Sơ Nguyễn Minh An | Nhân Vật Chính Tiểu Thuyết Phá Trời",
+        "meta_title": "Hồ Sơ Nguyễn Minh An — Phàm Nhân Thể Đạo | phatroi.com",
         "meta_desc": "Hồ sơ chi tiết về Nguyễn Minh An: 25 tuổi, nhân viên văn phòng tại TP.HCM, người thức tỉnh Thể Đạo phàm nhân dưới phong ấn 2,5 triệu năm của sông Sài Gòn.",
         "keywords": "Nguyễn Minh An, nhân vật Minh An Phá Trời, hồ sơ Nguyễn Minh An, nhân vật chính Phá Trời, tiểu sử Minh An, Thể Đạo Minh An",
         "category": "HỒ SƠ NHÂN VẬT",

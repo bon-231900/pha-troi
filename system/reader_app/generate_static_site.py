@@ -122,6 +122,7 @@ def parse_chapter_file(file_path):
         "date": meta.get("date", "2026-10-07"),
         "location": location,
         "excerpt": excerpt,
+        "plain_text": plain_text,
         "html": html_content
     }
 
@@ -676,25 +677,25 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="google-site-verification" content="495lr0EokjP3LLADeovb1t_ecOikpcbgyO_mW9m8e00">
   <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
-  <title>Phá Trời — Tiểu Thuyết Đô Thị Tu Chân Sài Gòn 2026</title>
+  <title>Phá Trời — Tiểu Thuyết Đô Thị Tu Chân TP.HCM | An Bình</title>
   
-  <meta name="title" content="Phá Trời — Tiểu Thuyết Đô Thị Tu Chân Sài Gòn 2026">
-  <meta name="description" content="Tiểu thuyết đô thị tu chân Sài Gòn 2026. Phàm nhân lấy Thể Đạo phá vỡ phong ấn 2,5 triệu năm. Đã phát hành {total_ch} chương ({total_words:,} từ), cập nhật đều đặn online & offline 24/7.">
-  <meta name="keywords" content="Phá Trời, Phá Toái Thần Hoang, tiểu thuyết đô thị, tu chân Sài Gòn, thể đạo, Nguyễn Minh An, Lâm Tịch, An Bình">
+  <meta name="title" content="Phá Trời — Tiểu Thuyết Đô Thị Tu Chân TP.HCM | An Bình">
+  <meta name="description" content="Đọc tiểu thuyết đô thị tu chân Phá Trời của tác giả An Bình. Hành trình phàm nhân Thể Đạo phá vỡ phong ấn 2,5 triệu năm dưới sông Sài Gòn. Đọc miễn phí 24/7.">
+  <meta name="keywords" content="Phá Trời, Phá Toái Thần Hoang, tiểu thuyết đô thị tu chân, tu chân Sài Gòn, Thể Đạo, Nguyễn Minh An, Lâm Tịch, tác giả An Bình, phatroi.com">
   <meta name="author" content="An Bình">
   
   <link rel="canonical" href="{SITE_URL}/">
   <meta property="og:type" content="book">
   <meta property="og:url" content="{SITE_URL}/">
-  <meta property="og:title" content="Phá Trời — Tiểu Thuyết Đô Thị Tu Chân Sài Gòn 2026">
-  <meta property="og:description" content="Một nhân viên văn phòng tại TP.HCM phát hiện phong ấn sông ngầm 2.5 triệu năm. Không hệ thống, lấy Thể Đạo phàm nhân phá vỡ xiềng xích. Đọc trọn bộ {total_ch} chương.">
+  <meta property="og:title" content="Phá Trời — Tiểu Thuyết Đô Thị Tu Chân TP.HCM | An Bình">
+  <meta property="og:description" content="Đọc tiểu thuyết đô thị tu chân Phá Trời của tác giả An Bình. Hành trình phàm nhân Thể Đạo phá vỡ phong ấn 2,5 triệu năm dưới sông Sài Gòn. Đọc miễn phí 24/7.">
   <meta property="og:image" content="{SITE_URL}/assets/cover_vertical.jpg">
   <meta property="og:image:width" content="682">
   <meta property="og:image:height" content="1024">
 
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Phá Trời — Tiểu Thuyết Đô Thị Tu Chân Sài Gòn 2026">
-  <meta name="twitter:description" content="Một nhân viên văn phòng tại TP.HCM phát hiện phong ấn sông ngầm 2.5 triệu năm. Đọc trọn bộ {total_ch} chương online & offline 24/7.">
+  <meta name="twitter:title" content="Phá Trời — Tiểu Thuyết Đô Thị Tu Chân TP.HCM | An Bình">
+  <meta name="twitter:description" content="Đọc tiểu thuyết đô thị tu chân Phá Trời của tác giả An Bình. Hành trình phàm nhân Thể Đạo phá vỡ phong ấn 2,5 triệu năm dưới sông Sài Gòn. Đọc miễn phí 24/7.">
   <meta name="twitter:image" content="{SITE_URL}/assets/tieu-thuyet-pha-troi-do-thi-tu-chan-sai-gon-huyen-ao.jpg">
 
   <link rel="manifest" href="/manifest.json">
@@ -713,7 +714,7 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
     function gtag(){{dataLayer.push(arguments);}}
     gtag('js', new Date());
     gtag('config', '{GA_MEASUREMENT_ID}', {{
-      page_title: 'Phá Trời — Tiểu Thuyết Đô Thị Tu Chân Sài Gòn 2026',
+      page_title: 'Phá Trời — Tiểu Thuyết Đô Thị Tu Chân TP.HCM | An Bình',
       page_path: '/'
     }});
   </script>
@@ -738,7 +739,7 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
     }})();
   </script>
 
-  <!-- Structured Data JSON-LD (WebSite & Book) (Phase 8) -->
+  <!-- Structured Data JSON-LD (WebSite, Book & Organization) (Phase 8) -->
   <script type="application/ld+json">
   {{
     "@context": "https://schema.org",
@@ -747,9 +748,23 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
         "@type": "WebSite",
         "@id": "{SITE_URL}/#website",
         "url": "{SITE_URL}/",
-        "name": "Phá Trời (Phá Toái Thần Hoang)",
-        "description": "Trường thiên tiểu thuyết đô thị tu chân Sài Gòn 2026.",
-        "inLanguage": "vi"
+        "name": "Phá Trời",
+        "alternateName": ["Phá Toái Thần Hoang", "Phá Trời Novel"],
+        "description": "Trường thiên tiểu thuyết đô thị tu chân Sài Gòn 2026 của tác giả An Bình.",
+        "inLanguage": "vi",
+        "publisher": {{
+          "@id": "{SITE_URL}/#organization"
+        }}
+      }},
+      {{
+        "@type": "Organization",
+        "@id": "{SITE_URL}/#organization",
+        "name": "Phá Trời",
+        "url": "{SITE_URL}/",
+        "logo": {{
+          "@type": "ImageObject",
+          "url": "{SITE_URL}/assets/logo.webp"
+        }}
       }},
       {{
         "@type": "Book",
@@ -757,10 +772,14 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
         "name": "Phá Trời (Phá Toái Thần Hoang)",
         "author": {{
           "@type": "Person",
-          "name": "An Bình"
+          "name": "An Bình",
+          "url": "{SITE_URL}/"
+        }},
+        "publisher": {{
+          "@id": "{SITE_URL}/#organization"
         }},
         "url": "{SITE_URL}/",
-        "genre": ["Đô thị tu chân", "Huyền huyễn", "Khoa huyễn"],
+        "genre": ["Đô thị tu chân", "Huyền huyễn", "Khoa huyễn", "Võ hiệp"],
         "inLanguage": "vi",
         "numberOfPages": {total_ch},
         "description": "Một nhân viên văn phòng tại TP.HCM phát hiện phong ấn sông ngầm 2.5 triệu năm. Không hệ thống, lấy Thể Đạo phàm nhân phá vỡ xiềng xích."
@@ -827,8 +846,8 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
         <!-- Book Cover Frontispiece -->
         <div class="titlepage-cover-frame">
           <picture>
-            <source srcset="./assets/cover_vertical.webp" type="image/webp">
-            <img src="./assets/cover_vertical.jpg" alt="Bìa tiểu thuyết Phá Trời" class="titlepage-cover-img" fetchpriority="high">
+            <source srcset="/assets/cover_vertical.webp" type="image/webp">
+            <img src="/assets/cover_vertical.jpg" alt="Bìa tiểu thuyết Phá Trời" class="titlepage-cover-img" fetchpriority="high">
           </picture>
         </div>
 
@@ -1119,6 +1138,34 @@ def generate_chapter_html(ch_info, chapters_index, total_words, codex_items=None
     total_ch = len(chapters_index)
     shared_css = get_shared_css()
 
+    # Tiêu chuẩn SEO Title & Description chống Google append '- PhatROI' và trích xuất snippet rác
+    title_seo = f"Phá Trời — Chương {ch_num}: {clean_title} | phatroi.com"
+    prefix_desc = f"Đọc Phá Trời Chương {ch_num}: {clean_title}."
+    suffix_desc = " Tiểu thuyết đô thị tu chân Sài Gòn 2026 - Tác giả An Bình."
+    max_snippet_len = 158 - len(prefix_desc) - len(suffix_desc) - 2
+
+    plain_body = ch_info.get("plain_text", ch_info.get("excerpt", ""))
+    clean_body = re.sub(r'^[#*\-—\s]+', '', plain_body).strip()
+    sentences = re.split(r'[.!?]\s+', clean_body)
+    first_sent = sentences[0].strip() if sentences else ""
+
+    if 35 <= len(first_sent) <= max_snippet_len:
+        snippet_desc = first_sent.rstrip('.')
+    elif max_snippet_len > 10:
+        cut_len = max_snippet_len - 3
+        cut = clean_body[:cut_len].rsplit(' ', 1)[0].strip()
+        snippet_desc = cut.rstrip('.,;:-') + '...'
+    else:
+        snippet_desc = ''
+
+    if snippet_desc:
+        desc_seo = f"{prefix_desc} {snippet_desc}.{suffix_desc}"
+    else:
+        desc_seo = f"{prefix_desc}{suffix_desc}"
+
+    title_seo_json = json.dumps(title_seo, ensure_ascii=False)
+    desc_seo_json = json.dumps(desc_seo, ensure_ascii=False)
+
     prev_url = f"/chuong-{ch_num - 1}/" if ch_num > 1 else "javascript:void(0)"
     prev_dis = "disabled" if ch_num <= 1 else ""
     next_url = f"/chuong-{ch_num + 1}/" if ch_num < total_ch else "javascript:void(0)"
@@ -1199,22 +1246,23 @@ def generate_chapter_html(ch_info, chapters_index, total_words, codex_items=None
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="google-site-verification" content="495lr0EokjP3LLADeovb1t_ecOikpcbgyO_mW9m8e00">
   <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
-  <title>Phá Trời — Chương {ch_num}: {clean_title}</title>
+  <title>{title_seo}</title>
   
-  <meta name="title" content="Phá Trời — Chương {ch_num}: {clean_title}">
-  <meta name="description" content="Đọc Chương {ch_num}: {clean_title} — Quyển {vol}, Hồi {arc} ({words:,} từ). {ch_info.get('excerpt', '')}">
+  <meta name="title" content="{title_seo}">
+  <meta name="description" content="{desc_seo}">
+  <meta name="keywords" content="Phá Trời Chương {ch_num}, {clean_title}, đọc Phá Trời, tiểu thuyết đô thị tu chân, tu chân Sài Gòn, Thể Đạo, Nguyễn Minh An, tác giả An Bình, phatroi.com">
   <meta name="author" content="An Bình">
   
   <link rel="canonical" href="{SITE_URL}/chuong-{ch_num}/">
   <meta property="og:type" content="article">
   <meta property="og:url" content="{SITE_URL}/chuong-{ch_num}/">
-  <meta property="og:title" content="Phá Trời — Chương {ch_num}: {clean_title}">
-  <meta property="og:description" content="Đọc Chương {ch_num}: {clean_title} — Đô thị tu chân Sài Gòn 2026.">
+  <meta property="og:title" content="{title_seo}">
+  <meta property="og:description" content="{desc_seo}">
   <meta property="og:image" content="{SITE_URL}/assets/cover_vertical.jpg">
 
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Phá Trời — Chương {ch_num}: {clean_title}">
-  <meta name="twitter:description" content="Đọc Chương {ch_num}: {clean_title} ({words:,} từ) — Đô thị tu chân Sài Gòn 2026.">
+  <meta name="twitter:title" content="{title_seo}">
+  <meta name="twitter:description" content="{desc_seo}">
   <meta name="twitter:image" content="{SITE_URL}/assets/hero_horizontal.jpg">
 
   <link rel="manifest" href="/manifest.json">
@@ -1233,7 +1281,7 @@ def generate_chapter_html(ch_info, chapters_index, total_words, codex_items=None
     function gtag(){{dataLayer.push(arguments);}}
     gtag('js', new Date());
     gtag('config', '{GA_MEASUREMENT_ID}', {{
-      page_title: 'Phá Trời — Chương {ch_num}: {clean_title}',
+      page_title: {title_seo_json},
       page_path: '/chuong-{ch_num}/'
     }});
     gtag('event', 'view_chapter', {{
@@ -1310,12 +1358,13 @@ def generate_chapter_html(ch_info, chapters_index, total_words, codex_items=None
         "@id": "{SITE_URL}/chuong-{ch_num}/#article",
         "isPartOf": {{
           "@type": "Book",
+          "@id": "{SITE_URL}/#book",
           "name": "Phá Trời (Phá Toái Thần Hoang)",
           "url": "{SITE_URL}/"
         }},
-        "headline": "Phá Trời — Chương {ch_num}: {clean_title}",
-        "name": "Phá Trời — Chương {ch_num}: {clean_title}",
-        "description": "{ch_info.get('excerpt', '')}",
+        "headline": {title_seo_json},
+        "name": {title_seo_json},
+        "description": {desc_seo_json},
         "url": "{SITE_URL}/chuong-{ch_num}/",
         "mainEntityOfPage": "{SITE_URL}/chuong-{ch_num}/",
         "inLanguage": "vi-VN",
