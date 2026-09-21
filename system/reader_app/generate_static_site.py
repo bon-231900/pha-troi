@@ -1951,6 +1951,11 @@ def build():
         out.write(f"google-site-verification: {gsc_file}\n")
     print(f"  [+] Generated dist/{gsc_file}")
 
+    # 5e. Bypass Jekyll for instant deployment on GitHub Pages
+    with open(os.path.join(DIST_DIR, ".nojekyll"), "w", encoding="utf-8") as out:
+        out.write("")
+    print("  [+] Generated dist/.nojekyll (Bypass Jekyll)")
+
     # 6. Generate sw.js
     with open(os.path.join(DIST_DIR, "sw.js"), "w", encoding="utf-8") as out:
         out.write(generate_sw(len(chapters_index)))
