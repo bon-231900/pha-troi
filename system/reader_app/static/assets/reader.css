@@ -156,9 +156,10 @@
       border-bottom: 1px solid var(--border-color);
       display: flex; align-items: center; justify-content: space-between; z-index: 999;
       transition: transform 0.25s ease;
-      overflow: hidden;
+      position: relative;
     }
-    .header-left, .header-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+    .header-left { display: flex; align-items: center; gap: 8px; flex-shrink: 0; z-index: 2; }
+    .header-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; z-index: 2; margin-left: auto; }
     .btn-brand {
       display: inline-flex; align-items: center; gap: 10px; background: none; border: none;
       cursor: pointer; padding: 4px 6px; border-radius: 6px; transition: opacity 0.2s ease;
@@ -178,7 +179,19 @@
     }
     @media (min-width: 900px) { .nav-live-badge { display: inline-flex; } }
 
-    .header-center { flex: 1; min-width: 0; text-align: center; padding: 0 8px; overflow: hidden; }
+    .header-center {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      padding: 0 8px;
+      max-width: min(560px, calc(100% - 480px));
+      min-width: 0;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 1;
+    }
     .header-title {
       display: block; width: 100%;
       font-size: 13.5px; font-weight: 600; color: var(--text-color); white-space: nowrap;
@@ -216,6 +229,7 @@
       .header-desktop-only { display: none !important; }
       header#topHeader { padding: env(safe-area-inset-top, 0px) 10px 0 10px; }
       .header-left, .header-right { gap: 4px; }
+      .header-center { max-width: calc(100% - 220px); }
       .btn-icon { width: 35px; height: 35px; }
       .nav-brand-text { font-size: 14px; letter-spacing: 0.8px; }
       .nav-logo { width: 30px; height: 30px; }
