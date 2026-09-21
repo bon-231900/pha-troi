@@ -413,20 +413,20 @@
     }
     .hero-titlepage-bg {
       position: absolute; inset: 0;
-      background-image: url('./tieu-thuyet-pha-troi-do-thi-tu-chan-sai-gon-huyen-ao.webp');
+      background-image: url('/assets/tieu-thuyet-pha-troi-do-thi-tu-chan-sai-gon-huyen-ao.webp');
       background-position: center 25%;
       background-size: cover;
       background-repeat: no-repeat;
-      opacity: 0.28;
+      opacity: 0.55;
       pointer-events: none;
       z-index: 0;
-      filter: contrast(110%) brightness(0.95);
+      filter: contrast(118%) brightness(1.05);
       transition: opacity 0.3s ease;
     }
     .hero-titlepage-overlay {
       position: absolute; inset: 0;
-      background: radial-gradient(ellipse at 50% 36%, rgba(13, 17, 23, 0.72) 0%, rgba(13, 17, 23, 0.38) 55%, rgba(13, 17, 23, 0.96) 100%),
-                  linear-gradient(to bottom, transparent 65%, var(--bg-color) 100%);
+      background: radial-gradient(ellipse at 50% 38%, rgba(11, 15, 23, 0.5) 0%, rgba(11, 15, 23, 0.25) 50%, rgba(11, 15, 23, 0.85) 100%),
+                  linear-gradient(to bottom, transparent 60%, var(--bg-color) 100%);
       pointer-events: none;
       z-index: 1;
     }
