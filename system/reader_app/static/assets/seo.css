@@ -156,7 +156,6 @@
       border-bottom: 1px solid var(--border-color);
       display: flex; align-items: center; justify-content: space-between; z-index: 999;
       transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), background 0.3s ease;
-      position: relative;
     }
     header#topHeader.header-unpinned { transform: translateY(-100%) !important; }
     header#topHeader.header-pinned { transform: translateY(0) !important; }

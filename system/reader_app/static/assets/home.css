@@ -155,8 +155,7 @@
       background: var(--header-bg);
       border-bottom: 1px solid var(--border-color);
       display: flex; align-items: center; justify-content: space-between; z-index: 999;
-      transition: transform 0.25s ease;
-      position: relative;
+      transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), background 0.3s ease;
     }
     .header-left { display: flex; align-items: center; gap: 8px; flex-shrink: 0; z-index: 2; }
     .header-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; z-index: 2; margin-left: auto; }
