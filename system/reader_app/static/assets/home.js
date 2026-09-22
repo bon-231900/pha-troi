@@ -756,6 +756,75 @@ async function loadCodexData() {
       }
     };
 
+    // Cinematic Scroll Controller (Parallax & Header Title Reveal) (Phase 13)
+    function initCinematicScroll() {
+      const heroBg = document.querySelector('.hero-titlepage-bg');
+      const heroSection = document.querySelector('.hero-titlepage');
+      const coverFrame = document.querySelector('.titlepage-cover-frame');
+      const topHeader = document.getElementById('topHeader');
+      const scrollHint = document.getElementById('heroScrollHint');
+      const titleBlock = document.querySelector('.titlepage-meta-block');
+
+      if (!heroSection || !topHeader) return;
+
+      const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      let isTicking = false;
+      let heroHeight = heroSection.offsetHeight;
+
+      window.addEventListener('resize', () => {
+        heroHeight = heroSection.offsetHeight;
+      }, { passive: true });
+
+      function onScroll() {
+        const scrollY = window.scrollY || window.pageYOffset;
+
+        // 1. Scroll Hint: Fade out when user starts scrolling
+        if (scrollHint) {
+          if (scrollY > 20) {
+            scrollHint.classList.add('is-hidden');
+          } else {
+            scrollHint.classList.remove('is-hidden');
+          }
+        }
+
+        // 2. Parallax Depth: only update when within hero view
+        if (scrollY <= heroHeight + 60) {
+          if (!prefersReducedMotion && heroBg) {
+            const parallaxOffset = Math.round(scrollY * 0.32);
+            heroBg.style.transform = `translate3d(0, ${parallaxOffset}px, 0)`;
+          }
+          if (!prefersReducedMotion && coverFrame) {
+            const fadeProgress = Math.min(1, Math.max(0, scrollY / (heroHeight * 0.7)));
+            coverFrame.style.opacity = (1 - fadeProgress * 0.4).toFixed(3);
+          }
+        }
+
+        // 3. Header Title Reveal: Reveal when scrolled past cover/title block
+        const triggerThreshold = titleBlock ? (titleBlock.offsetTop + 30) : 250;
+        if (scrollY >= triggerThreshold) {
+          topHeader.classList.add('scrolled-past-hero');
+          document.body.classList.add('scrolled-past-hero');
+        } else {
+          topHeader.classList.remove('scrolled-past-hero');
+          document.body.classList.remove('scrolled-past-hero');
+        }
+
+        isTicking = false;
+      }
+
+      window.addEventListener('scroll', () => {
+        if (!isTicking) {
+          window.requestAnimationFrame(onScroll);
+          isTicking = true;
+        }
+      }, { passive: true });
+
+      // Run once on initial load
+      onScroll();
+    }
+
+    initCinematicScroll();
     loadChaptersIndex();
 
     if ('serviceWorker' in navigator) {

@@ -387,9 +387,11 @@ def get_shared_css():
       background: var(--header-bg);
       border-bottom: 1px solid var(--border-color);
       display: flex; align-items: center; justify-content: space-between; z-index: 999;
-      transition: transform 0.25s ease;
+      transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), background 0.3s ease;
       position: relative;
     }
+    header#topHeader.header-unpinned { transform: translateY(-100%) !important; }
+    header#topHeader.header-pinned { transform: translateY(0) !important; }
     .header-left { display: flex; align-items: center; gap: 8px; flex-shrink: 0; z-index: 2; }
     .header-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; z-index: 2; margin-left: auto; }
     .btn-brand {
@@ -423,6 +425,22 @@ def get_shared_css():
       overflow: hidden;
       pointer-events: none;
       z-index: 1;
+    }
+    /* Header Center on Homepage - Hidden initially, revealed when scrolling past Hero */
+    body.is-home .header-center {
+      opacity: 0;
+      transform: translate(-50%, -70%);
+      pointer-events: none;
+      transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    body.is-home header#topHeader.scrolled-past-hero .header-center {
+      opacity: 1;
+      transform: translate(-50%, -50%);
+      pointer-events: auto;
+    }
+    header#topHeader.scrolled-past-hero {
+      border-bottom-color: rgba(229, 192, 123, 0.2);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
     }
     .header-title {
       display: block; width: 100%;
@@ -461,11 +479,12 @@ def get_shared_css():
       .header-desktop-only { display: none !important; }
       header#topHeader { padding: env(safe-area-inset-top, 0px) 10px 0 10px; }
       .header-left, .header-right { gap: 4px; }
-      .header-center { max-width: calc(100% - 220px); }
+      .header-center { max-width: calc(100% - 200px); }
       .btn-icon { width: 35px; height: 35px; }
       .nav-brand-text { font-size: 14px; letter-spacing: 0.8px; }
       .nav-logo { width: 30px; height: 30px; }
-      body.is-home .header-center { display: none; }
+      body.is-home:not(.scrolled-past-hero) .header-center { display: none; }
+      body.is-home header#topHeader.scrolled-past-hero .header-center { display: block; }
     }
 
     .dot-live {
@@ -1006,6 +1025,12 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
           </div>
         </div>
       </div>
+
+      <!-- Scroll Hint Indicator (Phase 13 Cinematic Scroll) -->
+      <a href="#sectionContinue" class="hero-scroll-hint" id="heroScrollHint" aria-label="Cuộn xuống khám phá tác phẩm">
+        <span class="scroll-hint-label">Khám phá</span>
+        <svg class="scroll-hint-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+      </a>
     </section>
 
     <!-- HOME BODY CONTENT -->

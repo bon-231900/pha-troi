@@ -67,7 +67,7 @@
       saveReadingState(state);
     })();
 
-    // Scroll Progress Bar, Reading % Indicator & Debounced Scroll Persistence (Phase 1)
+    // Scroll Progress Bar, Reading % Indicator & Smart Auto-hide Navigation (Phase 1, 13)
     let lastScrollY = window.scrollY;
     let isBarsHidden = false;
     let scrollSaveTimer = null;
@@ -76,15 +76,39 @@
     const progressBar = document.getElementById('progressBar');
     const readProgressPct = document.getElementById('readProgressPct');
 
+    function isAnyModalOrDrawerOpen() {
+      const tocDrawer = document.getElementById('tocDrawer');
+      const settingsModal = document.getElementById('settingsModal');
+      const codexDrawer = document.getElementById('codexDrawer');
+      return (
+        (tocDrawer && tocDrawer.classList.contains('open')) ||
+        (settingsModal && settingsModal.classList.contains('open')) ||
+        (codexDrawer && codexDrawer.classList.contains('open'))
+      );
+    }
+
     function showBars() {
-      if (topHeader) topHeader.style.transform = 'translateY(0)';
-      if (bottomBar) bottomBar.style.transform = 'translateY(0)';
+      if (topHeader) {
+        topHeader.classList.remove('header-unpinned');
+        topHeader.classList.add('header-pinned');
+      }
+      if (bottomBar) {
+        bottomBar.classList.remove('bar-unpinned');
+        bottomBar.classList.add('bar-pinned');
+      }
       isBarsHidden = false;
     }
 
     function hideBars() {
-      if (topHeader) topHeader.style.transform = 'translateY(-100%)';
-      if (bottomBar) bottomBar.style.transform = 'translateY(100%)';
+      if (isAnyModalOrDrawerOpen()) return;
+      if (topHeader) {
+        topHeader.classList.remove('header-pinned');
+        topHeader.classList.add('header-unpinned');
+      }
+      if (bottomBar) {
+        bottomBar.classList.remove('bar-pinned');
+        bottomBar.classList.add('bar-unpinned');
+      }
       isBarsHidden = true;
     }
 
@@ -96,10 +120,10 @@
       if (progressBar) progressBar.style.width = pct + '%';
       if (readProgressPct) readProgressPct.innerText = pct + '%';
 
-      // Smart auto-hide on mobile reader
+      // Smart auto-hide with anti-jitter threshold (Headroom pattern)
       if (curY > 80) {
         const diff = curY - lastScrollY;
-        if (diff > 12 && !isBarsHidden) {
+        if (diff > 14 && !isBarsHidden) {
           hideBars();
         } else if (diff < -10 && isBarsHidden) {
           showBars();
