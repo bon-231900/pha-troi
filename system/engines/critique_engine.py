@@ -83,13 +83,54 @@ class CritiqueEngine:
                     "description": "HEAD_HOPPING: POV đang là Minh An nhưng lại miêu tả trực tiếp dòng suy nghĩ thầm kín của Lâm Tịch!"
                 })
 
-        # 6. Style & Cheap Cliffhangers
+        # 6. Style & Cheap Cliffhangers & Anti-AI Smells
         for cc in self.cheap_cliffhangers:
             if cc in text.lower():
                 issues.append({
                     "category": "STYLE", "severity": "MEDIUM",
                     "description": f"Lạm dụng sáo ngữ giật gân rẻ tiền: '{cc}'!"
                 })
+
+        # 6.1. Banned Formulaic Ending Teasers
+        forbidden_ending_teasers = [
+            "mọi thứ giờ mới thật sự bắt đầu", "mọi thứ giờ mới bắt đầu",
+            "mọi chuyện giờ mới bắt đầu", "chuẩn bị có thử thách",
+            "chuẩn bị đón nhận", "thử thách mới đang chờ",
+            "chặng đường mới đang chờ", "hành trình mới đang vẫy gọi",
+            "đang vẫy gọi tôi", "đang vẫy gọi"
+        ]
+        text_clean = text.strip()
+        paragraphs = [p.strip() for p in text_clean.split("\n") if p.strip()]
+        last_para = paragraphs[-1].lower() if paragraphs else ""
+        for fet in forbidden_ending_teasers:
+            if fet in last_para:
+                issues.append({
+                    "category": "STYLE", "severity": "CRITICAL",
+                    "description": f"FORMULAIC_ENDING_TEASER: Kết chương dập khuôn mo-tip 'Chuẩn bị có thử thách': '{fet}'"
+                })
+
+        # 6.2. Shonen Exclamation Ending (!)
+        if paragraphs and (paragraphs[-1].endswith("!") or paragraphs[-1].endswith('!"') or paragraphs[-1].endswith("!'")):
+            issues.append({
+                "category": "STYLE", "severity": "HIGH",
+                "description": f"SHONEN_EXCLAMATION_ENDING: Chương kết thúc bằng câu hô khẩu hiệu dấu chấm than (!)"
+            })
+
+        # 6.3. Opening Formulaic Timestamp
+        if paragraphs:
+            p_first = paragraphs[0]
+            if re.search(r'^(?:[B|b]ây giờ là|[V|v]ào lúc)?\s*(?:[M|m]ột|[H|h]ai|[B|b]a|[B|b]ốn|[N|n]ăm|[S|s]áu|[B|b]ảy|[T|t]ám|[C|c]hín|[M|m]ười|[M|m]ười một|[M|m]ười hai)\s*giờ(?:\s*(?:ba mươi|mười lăm|bốn mươi lăm|\d+)\s*phút)?(?:\s*(?:sáng|trưa|chiều|tối|đêm))?', p_first):
+                issues.append({
+                    "category": "STYLE", "severity": "CRITICAL",
+                    "description": f"FORMULAIC_OPENING_TIMESTAMP: Mở đầu chương dập khuôn mo-tip 'Bây giờ là mấy giờ': '{p_first[:60]}...'"
+                })
+
+        # 6.4. Bold Entity Slop
+        if re.search(r'\*\*[^*]+\*\*', text):
+            issues.append({
+                "category": "STYLE", "severity": "HIGH",
+                "description": "BOLD_ENTITY_SLOP: Phát hiện thẻ in đậm Markdown (**...**) trong thân bài văn xuôi."
+            })
 
         # 7. Word Count Check
         words = len(text.split())
