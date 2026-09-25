@@ -32,7 +32,7 @@ class DocxPipeline:
         # Meta
         p_meta = doc.add_paragraph()
         p_meta.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        run_meta = p_meta.add_run("Tác giả: Author & Novel OS Co-Author Engine | Bản Thảo Chính Thức")
+        run_meta = p_meta.add_run("Tác giả: Nguyễn Minh An | Bản Thảo Chính Thức")
         run_meta.font.name = "Times New Roman"
         run_meta.font.size = Pt(10)
         run_meta.font.italic = True
