@@ -47,15 +47,15 @@ def sync():
         print("[Lỗi biên dịch]", res.stderr)
         return
 
-    print("[2/3] Đang đóng gói và đẩy dữ liệu lên nhánh gh-pages của GitHub...")
+    print("[2/3] Đang đóng gói và đẩy dữ liệu lên nhánh gh-pages của GitHub (OPSEC Mode)...")
     commands = [
         "git init",
-        'git config user.name "NovelOS Architect"',
-        'git config user.email "novelos@pha-troi.local"',
+        'git config user.name "Nguyen Minh An"',
+        'git config user.email "nguyenminhan@phatroi.com"',
         f"git remote add origin {repo_remote}",
         "git checkout -B gh-pages",
         "git add -A",
-        'git commit -m "[NovelOS] Cap nhat chuong moi va dong bo Web Reader App"',
+        'git commit -m "Cap nhat ban thao va hieu dinh noi dung chuong moi"',
         "git push -u origin gh-pages --force"
     ]
     full_cmd = " && ".join(commands)

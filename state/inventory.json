@@ -1,7 +1,7 @@
 {
-  "last_updated": "2026-10-28T11:00:00+07:00",
+  "last_updated": "2026-11-02T21:00:00+07:00",
   "holder": "Nguyễn Minh An",
-  "cultivation_realm": "Hoán Huyết Sơ kỳ (Cương Huyết Ánh Kim / Cốt Tủy Thấu Quang / Tự Phục Hồi Phi Thường)",
+  "cultivation_realm": "Hoán Huyết Sơ kỳ (Thể Đạo Giao Hòa Đất Đỏ Bazan / Khí Huyết Lôi Hóa Nhập Môn)",
   "core_weapons_and_artifacts": [
     {
       "name": "Trâm Ngọc Cổ Lâm Tịch (Cố Hồn Trâm)",
@@ -140,5 +140,14 @@
       "stage": "Sơ ngộ (Lấy 33 đốt sống ngọc thạch làm vỏ kiếm, dẫn kiếm khí vào Hắc Thiết Đoản Côn chém đứt hợp kim)"
     }
   ],
-  "current_location": "Bến Xe Khách Năm Căn, Cà Mau (Đang di chuyển về TP.HCM)"
+  "current_location": "Trạm Kiểm Lâm Số 4, Vùng Đệm Vườn Quốc Gia Chư Yang Sin, Tỉnh Đắk Lắk",
+  "special_items": [
+    {
+      "id": "item_moc_hoang_loi_tam_thach",
+      "name": "Mộc Hoàng Lôi Tâm Thạch",
+      "type": "Hóa Thạch Mộc Tâm Bazan Ngàn Năm",
+      "origin": "Rừng già Buôn Đôn, Chân núi Chư Yang Sin (Di vật của cha Minh An năm 1996)",
+      "properties": "Phát ra lôi âm trầm đục cộng hưởng cùng Thuần Dương Cương Huyết; mắt xích Thổ Mộc linh mạch Tây Nguyên"
+    }
+  ]
 }

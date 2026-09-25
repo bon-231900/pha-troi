@@ -9,6 +9,15 @@
   const TOTAL_CH = parseInt(CFG.totalCh || 81, 10);
   const SITE_URL = CFG.siteUrl || 'https://phatroi.com';
 
+  // Early reset if freshly navigating from another chapter to avoid browser scroll jump
+  try {
+    if (sessionStorage.getItem('pha_troi_nav_fresh') === '1') {
+      if ('scrollRestoration' in history) {
+        history.scrollRestoration = 'manual';
+      }
+      window.scrollTo(0, 0);
+    }
+  } catch(e) {}
 
     // Efficient Single-DOM TOC Sync (Reduces chapter HTML size by 12KB)
     function ensureDrawerToc() {
@@ -137,7 +146,19 @@
       clearTimeout(scrollSaveTimer);
       scrollSaveTimer = setTimeout(() => {
         try {
-          localStorage.setItem('pha_troi_scroll_CH_NUM', curY);
+          const scrollKey = 'pha_troi_scroll_ch_' + CH_NUM;
+          // Clear legacy buggy global key
+          localStorage.removeItem('pha_troi_scroll_CH_NUM');
+
+          // If reading near end (>= 85%), clear scroll memory so returning later starts fresh at top
+          if (pct >= 85) {
+            localStorage.removeItem(scrollKey);
+          } else if (curY > 150) {
+            localStorage.setItem(scrollKey, String(curY));
+          } else {
+            localStorage.removeItem(scrollKey);
+          }
+
           const state = getReadingState();
           state.cur_ch = CH_NUM;
           state.scroll_y = curY;
@@ -161,33 +182,62 @@
       }, 150);
     }, { passive: true });
 
-    // GA4 Next Chapter Tracking
-    window.addEventListener('DOMContentLoaded', () => {
-      document.querySelectorAll('#topNextBtn, #footerNextBtn, .btn-bottom-item').forEach(el => {
-        el.addEventListener('click', () => {
-          const href = el.getAttribute('href') || '';
-          if (href.includes('chuong-')) {
-            if (typeof gtag === 'function') {
-              gtag('event', 'click_next_chapter', {
-                from_chapter: CH_NUM,
-                to_chapter: CH_NUM + 1
-              });
-            }
-          }
-        });
-      });
+    // Track chapter click navigation & GA4 Next Chapter Tracking
+    document.addEventListener('click', (e) => {
+      const link = e.target.closest('a');
+      if (!link) return;
+      const href = link.getAttribute('href') || '';
+      if (href.includes('chuong-')) {
+        try {
+          sessionStorage.setItem('pha_troi_nav_fresh', '1');
+        } catch(err) {}
+
+        const isNextBtn = link.id === 'topNextBtn' || link.id === 'footerNextBtn' || link.classList.contains('btn-bottom-item') || link.classList.contains('btn-read-next-pulse');
+        if (isNextBtn && typeof gtag === 'function') {
+          gtag('event', 'click_next_chapter', {
+            from_chapter: CH_NUM,
+            to_chapter: CH_NUM + 1
+          });
+        }
+      }
     });
 
     // Scroll Position Restoration on Revisit (Phase 1)
     window.addEventListener('DOMContentLoaded', () => {
-      if (!window.location.hash) {
-        const savedScroll = parseInt(localStorage.getItem('pha_troi_scroll_CH_NUM') || '0', 10);
-        if (savedScroll > 150) {
-          setTimeout(() => {
+      // 1. Dọn dẹp key lỗi cũ nếu còn tồn đọng trong localStorage
+      try {
+        localStorage.removeItem('pha_troi_scroll_CH_NUM');
+      } catch(e) {}
+
+      // 2. Kiểm tra cờ fresh navigation khi người đọc bấm chuyển chương
+      let isFreshNav = false;
+      try {
+        if (sessionStorage.getItem('pha_troi_nav_fresh') === '1') {
+          isFreshNav = true;
+          sessionStorage.removeItem('pha_troi_nav_fresh');
+        }
+      } catch(e) {}
+
+      if (isFreshNav || window.location.hash) {
+        if ('scrollRestoration' in history) {
+          history.scrollRestoration = 'manual';
+        }
+        if (!window.location.hash) {
+          window.scrollTo({ top: 0, behavior: 'instant' });
+        }
+        return;
+      }
+
+      // 3. Chỉ khôi phục vị trí khi mở lại tab hoặc reload trang đang đọc dở
+      const scrollKey = 'pha_troi_scroll_ch_' + CH_NUM;
+      const savedScroll = parseInt(localStorage.getItem(scrollKey) || '0', 10);
+      if (savedScroll > 150) {
+        setTimeout(() => {
+          if (window.scrollY < 80) {
             window.scrollTo({ top: savedScroll, behavior: 'instant' });
             showToast('📖 Đã khôi phục vị trí đọc gần nhất');
-          }, 80);
-        }
+          }
+        }, 80);
       }
     });
 
@@ -206,17 +256,17 @@
 
     // Share Chapter Feature (Phase 5)
     function shareChapter() {
-      const canonicalUrl = ''+SITE_URL+'/chuong-CH_NUM/';
+      const canonicalUrl = SITE_URL + '/chuong-' + CH_NUM + '/';
       const shareData = {
-        title: 'Phá Trời — Chương CH_NUM: ' + CLEAN_TITLE,
-        text: 'Đọc Chương CH_NUM: ' + CLEAN_TITLE + ' — Tiểu thuyết đô thị tu chân Sài Gòn 2026',
+        title: 'Phá Trời — Chương ' + CH_NUM + ': ' + CLEAN_TITLE,
+        text: 'Đọc Chương ' + CH_NUM + ': ' + CLEAN_TITLE + ' — Tiểu thuyết đô thị tu chân Sài Gòn 2026',
         url: canonicalUrl
       };
       if (navigator.share) {
         navigator.share(shareData).catch(() => {});
       } else if (navigator.clipboard) {
         navigator.clipboard.writeText(canonicalUrl).then(() => {
-          showToast('✓ Đã sao chép liên kết Chương CH_NUM');
+          showToast('✓ Đã sao chép liên kết Chương ' + CH_NUM);
         }).catch(() => {
           showToast('Liên kết: ' + canonicalUrl);
         });
@@ -595,7 +645,7 @@ async function loadCodexData() {
 
     // Dynamic Next Chapter Resolver (Bảo đảm hiển thị chương mới kể cả khi dính browser cache cũ)
     (function() {
-      const curCh = parseInt('CH_NUM', 10);
+      const curCh = CH_NUM;
       fetch('/data/chapters.json?t=' + Date.now())
         .then(r => r.json())
         .then(data => {

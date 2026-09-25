@@ -27,9 +27,16 @@ class FatigueEngine:
         ("sắc mặt đại biến", 1),
         ("trong lòng run lên", 2),
         ("cười khổ", 3),
-        ("không khỏi", 4),
+        ("không khỏi", 3),
         ("nhướng mày", 3),
-        ("chợt giật mình", 2)
+        ("chợt giật mình", 2),
+        ("hơn ai hết", 1),
+        ("như một lẽ tất nhiên", 1),
+        ("thời gian như ngưng đọng", 1),
+        ("ánh mắt phức tạp", 2),
+        ("vô cùng cổ xưa", 1),
+        ("khôn cùng", 2),
+        ("không thể nghi ngờ", 1)
     ]
 
     def __init__(self, db_path: str = DB_PATH):

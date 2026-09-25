@@ -22,7 +22,11 @@ class CritiqueEngine:
     CHEAP_CLIFFHANGERS = [
         "và hắn không biết rằng",
         "hắn vĩnh viễn không thể ngờ được",
-        "chuyện gì đến cũng phải đến"
+        "chuyện gì đến cũng phải đến",
+        "hơn ai hết, hắn hiểu rằng",
+        "như một lẽ tất nhiên",
+        "thời gian như ngưng đọng",
+        "dường như đang muốn nói điều gì đó"
     ]
 
     FORBIDDEN_SPONTANEOUS_ITEMS = [
