@@ -1,0 +1,24 @@
+{
+  "name": "Phá Trời — Tiểu Thuyết Đô Thị Tu Chân",
+  "short_name": "Phá Trời",
+  "description": "Ứng dụng đọc tiểu thuyết trọn bộ thời gian thực cho Phá Trời",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#07090e",
+  "theme_color": "#07090e",
+  "icons": [
+    {
+      "src": "/assets/logo.webp",
+      "sizes": "512x512",
+      "type": "image/webp",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

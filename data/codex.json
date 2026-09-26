@@ -1,0 +1,322 @@
+[
+ {
+  "id": "char_minh_an",
+  "name": "Nguyễn Minh An",
+  "category": "char",
+  "badge": "NAM CHÍNH • THỂ ĐẠO",
+  "unlock_chapter": 1,
+  "hidden_name": "Nhân Vật Bí Ẩn",
+  "hidden_desc": "Phàm nhân bước vào đại biến sông ngầm...",
+  "unlocked_desc": "Giám Đốc Kỹ Thuật Dữ Liệu tại Trung tâm Phân tích Địa tầng Đô thị. Tu luyện Thể Đạo phàm nhân, đúc cốt ngự kình, kình lực vạn cân, mang trọng trách bảo vệ lưu vực sông ngòi Sài Gòn.",
+  "stats": {
+   "Cơ Quan": "Trung tâm Phân tích Địa tầng Đô thị",
+   "Cảnh Giới": "Luyện Cốt Trung Kỳ (Ngọc Tủy Quy Nhất)",
+   "Kình Lực": "Cốt Nhược Kim Thạch (Vạn Cân)",
+   "Tuyệt Kỹ": "Kính Phách Phản Chấn • Long Lân Phá Kình"
+  },
+  "image_prompt": {
+   "en": "Cinematic 8k portrait of a 25-year-old Vietnamese male data engineer named Minh An standing on a rain-slicked concrete pier by the Saigon River at midnight. Lean muscular build, intense determined eyes, wearing a dark waterproof tactical jacket over a casual gray shirt. Faint cyan-golden energetic luminescence faintly glowing through his forearm veins and knuckles. Dark stormy rainy night, city neon reflections in water puddles, photorealistic, Unreal Engine 5 render, cinematic lighting, 8k resolution.",
+   "vi": "Chân dung điện ảnh 8K của Nguyễn Minh An (25 tuổi), kỹ sư dữ liệu kiêm tu sĩ Thể Đạo đứng trên cầu cảng bê tông ướt mưa cạnh sông Sài Gòn lúc nửa đêm. Thân hình săn chắc, ánh mắt cương nghị, mặc áo khoác dã chiến chống nước màu tối. Dưới da cánh tay phát quang hoàng kim và lam ngọc mờ ảo. Mưa đêm đô thị, ánh đèn neon phản chiếu, phong cách Dark Fantasy chân thực."
+  }
+ },
+ {
+  "id": "char_lam_tich",
+  "name": "Lâm Tịch (Bạch Y Tiên Tử)",
+  "category": "lotus",
+  "badge": "NỮ CHÍNH • THỨC HẢI",
+  "unlock_chapter": 10,
+  "hidden_name": "Bóng Hình Bí Ẩn",
+  "hidden_desc": "Tàn niệm cổ xưa ẩn hiện trong làn sương đêm sông Sài Gòn...",
+  "unlocked_desc": "Tàn phiến Nguyên Thần viễn cổ hơn 2.5 triệu năm ngụ trên Thanh Liên Đài ngọc bích nơi Thức Hải của Minh An. Hướng dẫn Thể Đạo, che chở tâm mạch phàm trần trước hàn khí và âm sát.",
+  "stats": {
+   "Thân Phận": "Nguyên Thần Tàn Phiến Viễn Cổ",
+   "Nơi Trú Ngụ": "Thanh Liên Đài (Thức Hải Minh An)",
+   "Trạng Thái": "Trầm Miên & Tĩnh Dưỡng Tàn Hồn",
+   "Liên Kết": "Trâm Ngọc Cổ Lâm Tịch"
+  },
+  "image_prompt": {
+   "en": "Ethereal mystical close-up portrait of Lam Tich, an ancient female immortal spirit with pure porcelain skin and flowing dark silk hair floating in a spiritual realm. She wears translucent flowing white robes with intricate lotus motifs. Sleeping peacefully atop a giant glowing jade lotus platform surrounded by tranquil cyan mists and celestial water ripples. Mystical, ethereal lighting, high fantasy art, intricate details, masterpiece, 8k resolution.",
+   "vi": "Chân dung huyền ảo của Lâm Tịch, tàn hồn tiên tử viễn cổ với làn da trắng như sứ, tóc đen buông xõa bay nhẹ trong thức hải. Nàng mặc bạch y lụa mỏng thanh tao, ngủ say trên đài sen ngọc bích phát quang bao bọc bởi làn sương lam ngọc và gợn sóng tinh thần. Nghệ thuật Dark Fantasy huyền bí 8K."
+  }
+ },
+ {
+  "id": "item_hac_thiet_doan_con",
+  "name": "Hắc Thiết Đoản Côn",
+  "category": "item",
+  "badge": "VŨ KHÍ THỰC CHIẾN",
+  "unlock_chapter": 15,
+  "hidden_name": "Vũ Khí Thể Đạo",
+  "hidden_desc": "Trọng khí thể đạo rèn trong lò lửa thầm lặng của phàm trần...",
+  "unlocked_desc": "Rèn từ thép nhíp Zil tôi dầu cám chu sa thạch anh bởi bác Sáu Kiên và Minh An. Dài 52cm, nặng 3.2kg, thân bát giác khía rãnh ánh đỏ chu sa, chuôi quấn da bò. Dẫn truyền Kính Kình hoàn hảo, miễn nhiễm âm sát.",
+  "stats": {
+   "Phân Loại": "Đoản côn bát giác cận chiến",
+   "Kích Thước": "Dài 52cm • Nặng 3.2kg",
+   "Chất Liệu": "Thép nhíp Zil tôi chu sa thạch anh",
+   "Cơ Chế": "Dẫn truyền Kính Kình, chịu lực đè nửa tấn"
+  },
+  "image_prompt": {
+   "en": "Close-up cinematic macro product shot of an ancient combat octagonal short steel baton lying on a weathered dark granite pedestal. Length 52cm, heavy tempered industrial spring steel with subtle deep crimson cinnabar veins running along geometric groove lines. The grip is wrapped in distressed dark brown cowhide with twisted brass wire fittings. Rain drops glistening on metallic surface, dramatic studio side lighting, high contrast, 8k resolution, photorealistic.",
+   "vi": "Cận cảnh đoản côn bát giác thép nhíp Zil dài 52cm nằm trên bệ đá hoa cương đen. Thân thép ánh đen bóng với đường vân chu sa đỏ sẫm ẩn hiện theo rãnh khía. Chuôi quấn da bò thuộc màu nâu sẫm thắt gút dây đồng. Giọt nước mưa đọng long lanh trên mặt thép, ánh sáng studio góc nghiêng sắc nét 8K."
+  }
+ },
+ {
+  "id": "item_tran_thuy_doan_dao",
+  "name": "Trấn Thủy Đoản Đao",
+  "category": "item",
+  "badge": "CỔ KHÍ TRẤN THỦY",
+  "unlock_chapter": 25,
+  "hidden_name": "Cổ Vật Trấn Thủy",
+  "hidden_desc": "Cổ đao trấn áp phong ấn sông ngầm sâu dưới lòng đất...",
+  "unlocked_desc": "Thanh đoản đao đồng thau cổ niên đại địa chất hơn 2.5 triệu năm, cọc tiêu chốt chặn Thủy Môn Tiêu rạch Lò Gốm. Lộ đường chỉ hoàng kim đồng thau sau khi được kình lực Luyện Cốt thuần phục.",
+  "stats": {
+   "Niên Đại": "> 2.5 Triệu Năm",
+   "Chất Liệu": "Hợp kim đồng thau - thiếc cổ",
+   "Khắc Bản": "Bốn chữ chìm 'Trấn Thủy Hạ Du'",
+   "Dao Động": "7.83 Hz (Cộng hưởng sóng Trái Đất)"
+  },
+  "image_prompt": {
+   "en": "Macro cinematic shot of an ancient primeval bronze ritual short blade, 33cm long, heavily patinated with emerald-green verdigris and weathered oxidation revealing golden bronze etchings underneath. Archaic geometric talismanic symbols carved along the spine. Resting on damp dark river clay, glowing with a faint mystical teal resonance, atmospheric cinematic lighting, shallow depth of field, photorealistic 8k.",
+   "vi": "Cận cảnh đoản đao đồng thau cổ 33cm với lớp rỉ đồng màu xanh ngọc bích nứt rạn lộ những đường chỉ hoàng kim đồng thau. Khắc chữ cổ dọc sống đao, đặt trên nền đất phù sa ẩm ướt ven sông, phát ra ánh sáng lam ngọc cộng hưởng huyền bí, chất lượng điện ảnh 8K."
+  }
+ },
+ {
+  "id": "item_thanh_long_lan_kiem",
+  "name": "Thanh Long Lân Kiếm",
+  "category": "item",
+  "badge": "THẦN BINH PHONG ẤN",
+  "unlock_chapter": 68,
+  "hidden_name": "Cổ Kiếm Cầu Mống",
+  "hidden_desc": "Cổ vật cọc tiêu số 5 trấn áp huyết mạch Bến Nghé...",
+  "unlocked_desc": "Thần kiếm trấn thủy đúc từ lân giáp Thanh Long và băng phách ngàn năm dưới chân mố đá Cầu Mống. Tỏa ra kiếm khí hàn băng thanh lãnh, đã được Minh An dung hòa vào kinh mạch tủy sống.",
+  "stats": {
+   "Vị Trí Mắt Trận": "Chân mố đá Cầu Mống (Rạch Bến Nghé)",
+   "Chất Liệu": "Ngọc phỉ thúy vảy rồng • Băng phách",
+   "Thuộc Tính": "Hàn Băng Thủy Sát Cực Thịnh",
+   "Dung Hợp": "Tủy ngọc cột sống Minh An"
+  },
+  "image_prompt": {
+   "en": "Cinematic shot of a legendary mystical ancient Chinese jade longsword embedded into submerged black basalt stone beneath an ancient iron bridge arch. The blade is carved from translucent imperial emerald dragon scale jade, emanating frosty cyan mist and cold ethereal dragon qi. Water ripples crystallizing into delicate ice patterns around the blade, dark mysterious underwater ambiance, volumetric god rays, 8k resolution, photorealistic.",
+   "vi": "Thần kiếm Thanh Long Lân Kiếm bằng ngọc phỉ thúy vảy rồng xanh biếc cắm sâu vào bệ đá bazan đen dưới vòm mố cầu sắt cổ. Thân kiếm tỏa ra sương mù hàn băng lam ngọc và kiếm khí rồng uốn lượn, mặt nước xung quanh đóng băng li ti, ánh sáng thể tích điện ảnh 8K."
+  }
+ },
+ {
+  "id": "item_thuy_mon_chan_tieu",
+  "name": "Thủy Môn Chấn Tiêu",
+  "category": "item",
+  "badge": "TRẤN GIANG THẦN KHÍ",
+  "unlock_chapter": 69,
+  "hidden_name": "Trụ Đồng Ba Son",
+  "hidden_desc": "Cọc đồng cổ nghìn năm tại ụ tàu cổ Ba Son...",
+  "unlocked_desc": "Cọc số 6 của Thủy Môn Thập Nhị Tiêu, là trụ đồng nguyên khối nặng hơn sáu vạn cân cắm sâu 42m tại khúc uốn nanh rồng Ba Son, khống chế toàn bộ huyết mạch giao thông thủy bộ phương Nam.",
+  "stats": {
+   "Độ Sâu": "42 mét dưới giếng kỹ thuật Ba Son",
+   "Trọng Lượng": "Hơn sáu vạn cân (30 tấn đồng cổ)",
+   "Hiện Trạng": "Đang giải trừ xích Hắc Thiết Âm Cương",
+   "Uy Lực": "Hoàng kim long khí trấn áp toàn bộ lưu vực"
+  },
+  "image_prompt": {
+   "en": "Epic cinematic perspective looking down into a massive 42-meter deep industrial brick and granite stone well beneath the historic Ba Son shipyard. In the center stands a colossal ancient weathered bronze pillar covered in prehistoric Dong Son sun and bird engravings. Heavy dark iron chains are shattered and snapping, releasing blinding golden dragon-shaped energy erupting upward through swirling water mist. Dramatic high-contrast lighting, 8k render, masterpiece.",
+   "vi": "Góc nhìn điện ảnh từ trên nhìn xuống miệng giếng đá hoa cương sâu 42m dưới ụ tàu Ba Son. Ở giữa là trụ đồng cổ đại khổng lồ chạm hoa văn mặt trời chim lạc Đông Sơn. Những sợi xích hắc thiết âm cương vỡ vụn bung đứt, giải phóng cột long khí hoàng kim rực rỡ phun trào lên không trung qua làn hơi nước, 8K siêu thực."
+  }
+ },
+ {
+  "id": "artifact_tram_ngoc_co",
+  "name": "Trâm Ngọc Cổ Lâm Tịch",
+  "category": "artifact",
+  "badge": "DI VẬT BẢN MỆNH",
+  "unlock_chapter": 1,
+  "hidden_name": "Trâm Cài Tóc Cổ",
+  "hidden_desc": "Cổ vật nhặt được trong đêm mưa định mệnh...",
+  "unlocked_desc": "Chiếc trâm ngọc cổ màu trắng đục có ba vết rạn li ti, di vật duy nhất kết nối thế giới hiện thực với tàn niệm của Lâm Tịch trong Thức Hải. Luôn tỏa nhiệt độ ấm áp bảo vệ tâm mạch Minh An.",
+  "stats": {
+   "Chất Liệu": "Cổ ngọc ôn nhuận viễn cổ",
+   "Vị Trí Mang": "Túi áo trong bên ngực trái",
+   "Đặc Tính": "Ba vết rạn li ti, thu liễm quang hoa",
+   "Tác Dụng": "Dẫn đường thần niệm, ổn định khí huyết"
+  },
+  "image_prompt": {
+   "en": "Macro delicate still-life photograph of an ancient Chinese white jade hairpin resting inside a worn leather pocket notebook. The jade has three fine hairline fractures with subtle golden kintsugi-like luminous spirit energy glowing softly from within. Elegant lotus bud carved at the finial. Warm intimate indoor lighting on a wooden desk, rainy night outside the window, cinematic depth of field, 8k resolution.",
+   "vi": "Ảnh cận cảnh tinh xảo chiếc trâm ngọc cổ màu trắng ngà nằm trên cuốn sổ tay bọc da sờn. Thân trâm có ba vết rạn nứt li ti phát ra ánh sáng vàng kim ấm áp từ bên trong. Đầu trâm khắc hình búp sen thanh nhã, ánh sáng ấm cúng trên bàn gỗ trong đêm mưa, độ sâu trường ảnh điện ảnh 8K."
+  }
+ },
+ {
+  "id": "artifact_hac_thuy_huyen_thach",
+  "name": "Hắc Thủy Huyền Thạch",
+  "category": "artifact",
+  "badge": "CỔ THẠCH TRẬN NHÃN",
+  "unlock_chapter": 59,
+  "hidden_name": "Khoáng Thạch Rạch Lò Gốm",
+  "hidden_desc": "Trận nhãn số 2 trích xuất từ cọc đồng rạch Lò Gốm...",
+  "unlocked_desc": "Khối khoáng thạch cổ màu đen tuyền ánh lam u trầm trích xuất từ lớp sáp niêm phong cọc Thủy Môn số 2. Có khả năng nhiếp thủy trấn sát, tinh lọc khí huyết và phụ trợ tôi luyện tủy xương.",
+  "stats": {
+   "Xuất Xứ": "Cọc số 2 rạch Lò Gốm",
+   "Màu Sắc": "Đen tuyền ánh lam u trầm",
+   "Tính Chất": "Thủy linh khoáng thạch viễn cổ",
+   "Ứng Dụng": "Tôi tủy Luyện Cốt, hóa giải âm sát"
+  },
+  "image_prompt": {
+   "en": "Macro shot of a dark mystical obsidian-like water stone called Black Water Mystic Stone resting on black velvet fabric. The stone is pitch black with deep pulsating midnight-blue crystal veins glowing from within. Cool misty condensation rolling off its edges, moody dark sci-fi fantasy lighting, 8k resolution, octane render.",
+   "vi": "Cận cảnh hòn đá Hắc Thủy Huyền Thạch màu đen tuyền tựa hắc diệu thạch đặt trên vải nhung đen. Bên trong đá phát ra những gân sáng màu xanh thẫm huyền ảo, làn sương lạnh bốc lên quanh gờ đá, phong cách huyền ảo 8K."
+  }
+ },
+ {
+  "id": "artifact_dinh_hai_huyen_chau",
+  "name": "Định Hải Huyền Châu",
+  "category": "artifact",
+  "badge": "CỔ NGỌC TRẬN NHÃN",
+  "unlock_chapter": 60,
+  "hidden_name": "Huyền Châu Bến Phú Định",
+  "hidden_desc": "Trận nhãn số 3 thu giữ tại Bến Phú Định...",
+  "unlocked_desc": "Viên châu ngọc cổ màu xanh thẫm chuyển sắc hắc ám, thu giữ tại trận nhãn Bến Phú Định. Trấn định thủy lưu, hội tụ âm thủy sát, trợ lực thấu cốt kình lực Thể Đạo.",
+  "stats": {
+   "Xuất Xứ": "Cọc số 3 Bến Phú Định",
+   "Hình Dáng": "Viên cầu ngọc cổ đường kính 4cm",
+   "Thuộc Tính": "Định Hải Thủy Sát",
+   "Tác Dụng": "Cộng hưởng sóng hạ âm đáy sông"
+  },
+  "image_prompt": {
+   "en": "Close up shot of an ancient mysterious 4cm dark cyan pearl floating 2 centimeters above a bronze ritual plate. Deep oceanic vortex swirls visible inside the translucent orb, emanating cold blue atmospheric light, dark atmospheric background, photorealistic 8k.",
+   "vi": "Cận cảnh Định Hải Huyền Châu đường kính 4cm màu lam thẫm lơ lửng cách đĩa đồng cổ 2cm. Bên trong hạt châu trong mờ là xoáy nước đại dương thu nhỏ cuộn trào, tỏa ánh sáng xanh lạnh buốt, 8K siêu thực."
+  }
+ },
+ {
+  "id": "artifact_tran_giang_huyen_ty",
+  "name": "Trấn Giang Huyền Tỷ",
+  "category": "artifact",
+  "badge": "THẦN QUY NGỌC TỶ",
+  "unlock_chapter": 65,
+  "hidden_name": "Cổ Ấn Mũi Đèn Đỏ",
+  "hidden_desc": "Trận nhãn số 4 tại ngã ba Mũi Đèn Đỏ...",
+  "unlocked_desc": "Ngọc tỷ cổ bằng đá hổ phách quyện lam ngọc, chạm khắc tượng Thần Quy đạp sóng ngậm kiếm ngọc. Trấn giữ cửa ngõ thủy lộ Cần Giờ, hội tụ thủy triều tam giang để mở ra la bàn định vị Cực Tù.",
+  "stats": {
+   "Xuất Xứ": "Cọc số 4 Mũi Đèn Đỏ (Nhà Bè)",
+   "Chất Liệu": "Hổ phách quyện lam ngọc cổ",
+   "Hình Tượng": "Thần Quy đạp sóng ngậm kiếm",
+   "Công Năng": "La bàn định vị đại phong ấn ngầm"
+  },
+  "image_prompt": {
+   "en": "A magnificent ancient amber-and-jade royal seal carved in the form of a Divine Dragon Turtle stepping on roaring oceanic waves with an ornamental jade sword in its jaws. Intricate archaic script carved on the base. Luminous golden and cyan radiance dispersing around it, dramatic museum display lighting, 8k resolution.",
+   "vi": "Ngọc tỷ cổ chạm khắc hình Thần Quy đạp sóng ngậm kiếm ngọc bằng chất liệu hổ phách quyện lam ngọc. Dưới đáy khắc cổ triện phù văn, tỏa hào quang vàng kim và lam ngọc huyền ảo, ánh sáng trưng bày bảo tàng sắc nét 8K."
+  }
+ },
+ {
+  "id": "artifact_lenh_bai_thiet_ve_tam",
+  "name": "Lệnh Bài Huyền Thiết Thiết Vệ Tam",
+  "category": "artifact",
+  "badge": "CHIẾN LỢI PHẨM TÀ ĐẠO",
+  "unlock_chapter": 70,
+  "hidden_name": "Lệnh Bài Hắc Thiết",
+  "hidden_desc": "Chiến lợi phẩm thu từ cường giả hầm Ba Son...",
+  "unlocked_desc": "Lệnh bài đúc bằng kim loại huyền thiết nặng trịch thu được sau khi Minh An đả bại Hắc Lân Thiết Vệ tại tháp nước Ba Son. Mặt trước khắc rồng chín đầu nuốt trăng, mặt sau khắc chữ 'Thiết Vệ Tam'.",
+  "stats": {
+   "Tổ Chức": "Cửu Long Thiên Hải",
+   "Chủ Sở Hữu Cũ": "Hắc Lân Thiết Vệ (Thiết Vệ Tam)",
+   "Chất Liệu": "Huyền thiết đen bóng nặng 1.5kg",
+   "Ý Nghĩa": "Bằng chứng thâm nhập cấp cao của tà giáo"
+  },
+  "image_prompt": {
+   "en": "Macro shot of a dark metallic nine-headed dragon talisman badge cast from heavy black meteoric iron. Deeply engraved with a menacing nine-headed serpent dragon swallowing a crescent moon, Chinese seal script 'Iron Guard Three' on the back. Scratched battle wear with metallic sheen, placed on a dark steel workbench, 8k cinematic lighting.",
+   "vi": "Cận cảnh lệnh bài huyền thiết màu đen đúc hình rồng chín đầu nuốt trăng của Cửu Long Thiên Hải, mặt sau khắc chữ Thiết Vệ Tam. Vết trầy xước chiến trận đanh thép, đặt trên bàn làm việc kim loại trong hầm kỹ thuật, 8K điện ảnh."
+  }
+ },
+ {
+  "id": "skill_doan_cot_thap_nhi",
+  "name": "Đoán Cốt Thập Nhị Thức",
+  "category": "skill",
+  "badge": "CÔNG PHÁP THỂ ĐẠO",
+  "unlock_chapter": 12,
+  "hidden_name": "Thể Thuật Nhục Thân",
+  "hidden_desc": "Bí quyết tôi luyện xương tủy của Thể Đạo...",
+  "unlocked_desc": "Bộ công pháp 12 thức rèn luyện xương tủy cổ xưa. Không cần linh căn, dùng kình lực phàm nhân ép sâu vào tủy, biến khung xương thành cứng như đá hoa cương và thép tôi.",
+  "stats": {
+   "Cảnh Giới": "Luyện Cốt (Cốt Nhược Kim Thạch)",
+   "Thức Đã Luyện": "7 / 12 Thức",
+   "Đỉnh Cao Hiện Tại": "Thức 7: Ngọc Tủy Quy Nhất",
+   "Đặc Tính": "Chống va đập, kháng chấn động"
+  },
+  "image_prompt": {
+   "en": "Artistic medical and martial x-ray illustration of a human skeletal system undergoing bone strengthening cultivation. The spine, ribs, and limb bones are glowing with an internal crystalline diamond and jade density, golden marrow pulsing inside the bone cores. Dark anatomical background, scientific and fantasy hybrid aesthetic, 8k resolution.",
+   "vi": "Minh họa x-quang nghệ thuật hệ xương khớp cơ thể người đang tôi luyện Đoán Cốt Thập Nhị Thức. Cột sống, xương sườn và xương cẳng tay phát sáng ánh kim cương và ngọc bích, tủy xương vàng kim cuộn chảy, phong cách kết hợp khoa học giải phẫu và Dark Fantasy 8K."
+  }
+ },
+ {
+  "id": "skill_kinh_phach_phan_chan",
+  "name": "Kính Phách Phản Chấn Thuật",
+  "category": "skill",
+  "badge": "NGỰ LỰC THỂ THUẬT",
+  "unlock_chapter": 25,
+  "hidden_name": "Bí Kỹ Phản Lực",
+  "hidden_desc": "Kỹ thuật phản chấn mượn lực đả lực...",
+  "unlocked_desc": "Nguyên lý 'Xương như gương đá, gân tựa dây cung'. Khi bị ngoại lực va đập cực đại, hấp thu 40% xung lực nuôi dưỡng tủy xương, đồng thời chuyển hóa 60% lực phản chấn phóng ngược qua vũ khí đánh gãy kinh mạch đối phương.",
+  "stats": {
+   "Nguyên Lý": "Xương như gương đá, gân tựa dây cung",
+   "Hấp Thụ": "40% lực va đập ngoại giới",
+   "Phản Chấn": "60% xung lực ngược trở lại",
+   "Hiệu Quả": "Đánh sụp nội kình và vũ khí đối thủ"
+  },
+  "image_prompt": {
+   "en": "Dynamic martial arts action concept showing kinetic shockwaves rippling through an athletic fighter's muscular arm and fist upon impact with an iron shield. A crystalline mirror-like shock barrier forms at the contact point, reflecting violent kinetic shockwaves back toward the attacker. High speed photography effect, sparks and dust particles, 8k.",
+   "vi": "Khái niệm kình lực võ thuật cho thấy sóng xung kích động năng lan truyền qua cánh tay cơ bắp khi va chạm. Một màn chắn kình lực tựa gương đá pha lê ngưng tụ phản chấn toàn bộ lực va đập ngược trở lại kẻ tấn công, tia lửa và bụi bay tốc độ cao 8K."
+  }
+ },
+ {
+  "id": "skill_long_lan_pha_kinh",
+  "name": "Long Lân Phá Kình",
+  "category": "skill",
+  "badge": "TUYỆT KỸ DUNG HỢP",
+  "unlock_chapter": 70,
+  "hidden_name": "Chiêu Thức Sáng Tạo",
+  "hidden_desc": "Tuyệt kỹ sáng tạo trong trận chiến hầm Ba Son...",
+  "unlocked_desc": "Tuyệt chiêu do Minh An sáng tạo trong trận quyết đấu với Hắc Lân Thiết Vệ: Dẫn truyền kiếm khí hàn băng Thanh Long Lân Kiếm vào Hắc Thiết Đoản Côn, kết hợp Kính Phách Phản Chấn tạo luồng kình phong xé rách lân giáp hộ thể và phong tỏa kinh mạch đối thủ.",
+  "stats": {
+   "Sáng Tạo Tại": "Chương 70 (Hầm Tháp Thủy Đài Ba Son)",
+   "Kết Hợp": "Thanh Long Kiếm Khí + Hắc Thiết Côn",
+   "Thuộc Tính": "Hàn Băng Thấu Cốt + Phá Giáp",
+   "Uy Lực": "Đánh gãy đoản kích hắc thiết, phế kinh mạch"
+  },
+  "image_prompt": {
+   "en": "Cinematic freeze-frame action shot of a steel octagonal baton engulfed in swirling dragon-shaped emerald frost qi smashing directly into an enemy's dark armor. Ice shards explosion, emerald and azure shockwaves shattering the armor plates, dramatic lighting in a dark industrial basement, motion blur, 8k masterpiece.",
+   "vi": "Cảnh quay điện ảnh đóng băng khoảnh khắc đoản côn bát giác bọc kiếm khí hàn băng hình rồng xanh ngọc bích đánh vỡ đôi đoản kích và áo giáp lân phiến của đối thủ trong tầng hầm kỹ thuật tối. Vụn băng và sóng xung kích lam ngọc bùng nổ dữ dội, chất lượng 8K tuyệt đỉnh."
+  }
+ },
+ {
+  "id": "skill_hoan_huyet_hoa_cuong",
+  "name": "Hoán Huyết Hóa Cương (Thức Thứ Tám)",
+  "category": "skill",
+  "badge": "TUYỆT KỸ HOÁN HUYẾT",
+  "unlock_chapter": 72,
+  "hidden_name": "Bí Pháp Thay Máu",
+  "hidden_desc": "Thức thứ tám của Đoán Cốt Thập Nhị Thức mở khóa khi đủ 6 cọc tiêu...",
+  "unlocked_desc": "Thức thứ tám của Đoán Cốt Thập Nhị Thức: Mượn ngọc tủy làm lò luyện, mượn kiếm khí hàn băng Thanh Long làm búa nện, nung nấu phàm huyết thành Cương Huyết đặc quánh tựa đồng thau lỏng. Tăng dung lượng dưỡng khí gấp mười lần, tạo áp lực thủy tĩnh nội sinh đối kháng áp suất biển sâu ngàn mét.",
+  "stats": {
+   "Cảnh Giới": "Luyện Cốt Hậu kỳ",
+   "Thức": "Thức 8 / 12 Đoán Cốt Thập Nhị Thức",
+   "Đặc Tính": "Cương Huyết (Đồng thau lỏng, dung tích oxy x10)",
+   "Khả Năng": "Kháng áp suất biển sâu >120 atm (>1,200m nước)"
+  },
+  "image_prompt": {
+   "en": "Artistic medical and martial cultivation concept of a human heart and arterial vascular system glowing with molten golden-bronze adamantine blood (Cương Huyết). Blood vessels pulsing with intense liquid brass luminance through an athletic body silhouette. Deep oceanic underwater background, biophotonic glow, 8k cinematic render.",
+   "vi": "Khái niệm nghệ thuật tu chân kết hợp y học thể hiện trái tim và mạng lưới động mạch con người phát sáng dòng máu Cương Huyết màu đồng thau và vàng kim óng ánh. Các mạch máu dẻo dai bọc thép phát quang sinh học rực rỡ trên nền bóng tối biển sâu thẳm, kết xuất điện ảnh 8K sắc nét."
+  }
+ },
+ {
+  "id": "artifact_toa_long_huyen_ty",
+  "name": "Tỏa Long Huyền Tỷ",
+  "category": "artifact",
+  "badge": "CỔ NGỌC TRẬN NHÃN",
+  "unlock_chapter": 75,
+  "hidden_name": "Cổ Ngọc Trấn Hải",
+  "hidden_desc": "Ngọc tỷ viễn cổ phong tỏa rãnh nứt ngàn mét đáy biển...",
+  "unlocked_desc": "Khối ngọc tỷ cổ chạm khắc chín rồng hoàng kim ngậm minh châu lam thẫm, thu được dưới chân Hải Uyên Tỏa Long Trụ ở độ sâu 1.200m vịnh Gành Rái. Là Trận Nhãn thứ bảy của Thủy Môn Thập Nhị Tiêu, có khả năng trấn áp âm trọc khí Cực Tù và xoa dịu thương tổn xương tủy sau kịch chiến.",
+  "stats": {
+   "Vị Trí Thu Được": "Cực Tù Hải Uyên (-1.200m)",
+   "Chất Liệu": "Ngọc bích viễn cổ & Hoàng kim thần long",
+   "Công Năng": "Trấn áp âm trọc • Dưỡng cốt an thần",
+   "Liên Kết": "Trận Nhãn thứ 7 Thủy Môn Thập Nhị Tiêu"
+  },
+  "image_prompt": {
+   "en": "Cinematic product shot of an ancient square imperial seal carved from deep ocean green jade, surrounded by nine exquisitely coiled golden dragons holding a glowing azure sapphire pearl. Archaic seal script glowing golden on the polished jade base. Resting on dark wet basalt stone with faint ocean water ripples, cinematic moody lighting, 8k masterpiece.",
+   "vi": "Ảnh chụp điện ảnh cận cảnh khối ngọc tỷ vuông đúc bằng ngọc bích màu xanh đáy biển, xung quanh chạm khắc chín con rồng vàng uốn lượn ngậm ngọc bích lam thẫm phát quang. Chữ triện cổ phát sáng hoàng kim dưới đáy bệ ngọc. Đặt trên phiến đá bazan ướt nước biển đêm, ánh sáng điện ảnh kỳ ảo 8K."
+  }
+ }
+]

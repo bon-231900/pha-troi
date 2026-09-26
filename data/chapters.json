@@ -1,0 +1,837 @@
+{
+ "title": "Phá Trời (Phá Toái Thần Hoang)",
+ "author": "An Bình",
+ "total": 92,
+ "total_words": 277513,
+ "updated_at": "2026-09-26T09:48:47+07:00",
+ "chapters": [
+  {
+   "chapter": 1,
+   "title": "Chương 1: Mưa Trên Phố Cũ",
+   "volume": 1,
+   "arc": 1,
+   "word_count": 964,
+   "date": "2026-10-07",
+   "location": "Ngã tư Hàng Xanh & Đường Ung Văn Khiêm, Bình Thạnh, TP.HCM"
+  },
+  {
+   "chapter": 2,
+   "title": "Chương 2: Căn Phòng Trọ Và Đốm Lửa Tàn",
+   "volume": 1,
+   "arc": 1,
+   "word_count": 2115,
+   "date": "2026-10-07",
+   "location": "Phòng trọ đường Ung Văn Khiêm, Bình Thạnh, TP.HCM"
+  },
+  {
+   "chapter": 3,
+   "title": "Chương 3: Nhịp Thở Dưới Đáy Sâu",
+   "volume": 1,
+   "arc": 1,
+   "word_count": 1673,
+   "date": "2026-10-07",
+   "location": "Sông Sài Gòn & Bán đảo Thanh Đa, Bình Thạnh, TP.HCM"
+  },
+  {
+   "chapter": 4,
+   "title": "Chương 4: Bản Hòa Âm Trần Thế",
+   "volume": 1,
+   "arc": 1,
+   "word_count": 2057,
+   "date": "2026-10-07",
+   "location": "Quán cà phê cóc đường D2 (Nguyễn Gia Trí), Bình Thạnh, TP.HCM"
+  },
+  {
+   "chapter": 5,
+   "title": "Chương 5: Đối Thoại Dưới Đèn Đêm",
+   "volume": 1,
+   "arc": 1,
+   "word_count": 2349,
+   "date": "2026-10-07",
+   "location": "Bờ kè kênh Nhiêu Lộc - Thị Nghè, TP.HCM"
+  },
+  {
+   "chapter": 6,
+   "title": "Chương 6: Ngọn Lửa Dưới Làn Da",
+   "volume": 1,
+   "arc": 1,
+   "word_count": 1980,
+   "date": "2026-10-07",
+   "location": "Phòng trọ Ung Văn Khiêm, Bình Thạnh, TP.HCM"
+  },
+  {
+   "chapter": 7,
+   "title": "Chương 7: Hàn Ý Giữa Chảo Lửa",
+   "volume": 1,
+   "arc": 1,
+   "word_count": 2857,
+   "date": "2026-10-07",
+   "location": "Ngã tư Hàng Xanh & Cầu Sài Gòn, TP.HCM"
+  },
+  {
+   "chapter": 8,
+   "title": "Chương 8: Tĩnh Khí Dưới Mái Tôn",
+   "volume": 1,
+   "arc": 1,
+   "word_count": 2557,
+   "date": "2026-10-07",
+   "location": "Phòng trọ mái tôn, Bình Thạnh, TP.HCM"
+  },
+  {
+   "chapter": 9,
+   "title": "Chương 9: Ánh Bình Minh Bên Dòng Kênh",
+   "volume": 1,
+   "arc": 1,
+   "word_count": 1784,
+   "date": "2026-10-07",
+   "location": "Bờ kênh Nhiêu Lộc & Cầu Thị Nghè, TP.HCM"
+  },
+  {
+   "chapter": 10,
+   "title": "Chương 10: Dòng Sông Và Ý Niệm",
+   "volume": 1,
+   "arc": 1,
+   "word_count": 1990,
+   "date": "2026-10-07",
+   "location": "Bến Bạch Đằng & Sông Sài Gòn, Quận 1, TP.HCM"
+  },
+  {
+   "chapter": 11,
+   "title": "Chương 11: Dưới Lăng Kính Công Nghệ",
+   "volume": 1,
+   "arc": 1,
+   "word_count": 1867,
+   "date": "2026-10-07",
+   "location": "Tòa nhà văn phòng Quận 1, TP.HCM"
+  },
+  {
+   "chapter": 12,
+   "title": "Chương 12: Chu Thiên Đầu Tiên",
+   "volume": 1,
+   "arc": 1,
+   "word_count": 1611,
+   "date": "2026-10-07",
+   "location": "Phòng trọ Bình Thạnh & Thức hải Minh An, TP.HCM"
+  },
+  {
+   "chapter": 13,
+   "title": "Chương 13: Kình Lực Trần Thế",
+   "volume": 1,
+   "arc": 1,
+   "word_count": 1652,
+   "date": "2026-10-07",
+   "location": "Công viên bờ sông Sài Gòn, TP. Thủ Đức, TP.HCM"
+  },
+  {
+   "chapter": 14,
+   "title": "Chương 14: Tiếng Trà Góc Phố",
+   "volume": 1,
+   "arc": 1,
+   "word_count": 2237,
+   "date": "2026-10-07",
+   "location": "Quán trà cổ đường Lương Nhữ Học, Quận 5, TP.HCM"
+  },
+  {
+   "chapter": 15,
+   "title": "Chương 15: Sóng Ngầm Dưới Lăng Kính",
+   "volume": 1,
+   "arc": 1,
+   "word_count": 2598,
+   "date": "2026-10-07",
+   "location": "Tòa nhà văn phòng Quận 1 & Trung tâm dữ liệu, TP.HCM"
+  },
+  {
+   "chapter": 16,
+   "title": "Chương 16: Võ Đường Trong Hẻm Cổ",
+   "volume": 1,
+   "arc": 1,
+   "word_count": 3077,
+   "date": "2026-10-07",
+   "location": "Võ đường cổ hẻm đường Trần Hưng Đạo, Quận 5, TP.HCM"
+  },
+  {
+   "chapter": 17,
+   "title": "Chương 17: Ánh Đèn Bên Dòng Kênh",
+   "volume": 1,
+   "arc": 1,
+   "word_count": 1949,
+   "date": "2026-10-07",
+   "location": "Dòng kênh Tàu Hủ & Bến Bình Đông, Quận 8, TP.HCM"
+  },
+  {
+   "chapter": 18,
+   "title": "Chương 18: Khí Huyết Thấu Não",
+   "volume": 1,
+   "arc": 1,
+   "word_count": 2127,
+   "date": "2026-10-07",
+   "location": "Võ đường cổ Quận 5 & Phòng trọ Bình Thạnh, TP.HCM"
+  },
+  {
+   "chapter": 19,
+   "title": "Chương 19: Thế Giới Dưới Tầng Giác Quan",
+   "volume": 1,
+   "arc": 1,
+   "word_count": 1816,
+   "date": "2026-10-07",
+   "location": "Đại lộ Mai Chí Thọ & Hầm Thủ Thiêm, TP.HCM"
+  },
+  {
+   "chapter": 20,
+   "title": "Chương 20: Bầu Trời Bị Tha Hóa",
+   "volume": 1,
+   "arc": 1,
+   "word_count": 3788,
+   "date": "2026-10-07",
+   "location": "Đỉnh tòa tháp Bitexco & Bầu trời Quận 1, TP.HCM"
+  },
+  {
+   "chapter": 21,
+   "title": "Chương 21: Tiếng Kiếm Ngân Và Bàn Trà Đêm",
+   "volume": 1,
+   "arc": 1,
+   "word_count": 2898,
+   "date": "2026-10-07",
+   "location": "Bàn trà đêm bờ sông Sài Gòn, Quận 1, TP.HCM"
+  },
+  {
+   "chapter": 22,
+   "title": "Chương 22: Tâm Kiếm Nhập Thần Và Mạng Lưới Địa Tầng",
+   "volume": 1,
+   "arc": 1,
+   "word_count": 2585,
+   "date": "2026-10-07",
+   "location": "Địa tầng ngầm Sài Gòn & Thức hải Minh An, TP.HCM"
+  },
+  {
+   "chapter": 23,
+   "title": "Chương 23: Cơm Tấm Trưa Hè Và Nhịp Đập Mạch Đất",
+   "volume": 1,
+   "arc": 1,
+   "word_count": 2715,
+   "date": "2026-09-22",
+   "location": "Tòa nhà văn phòng Quận 1 & Quán cơm tấm hẻm Nguyễn Du, TP.HCM"
+  },
+  {
+   "chapter": 24,
+   "title": "Chương 24: Hồ Sơ Mật NV-2026-X Và Cổ Đồ Long Xà",
+   "volume": 1,
+   "arc": 1,
+   "word_count": 2850,
+   "date": "2026-09-22",
+   "location": "Phòng làm việc Tổ chuyên trách Tầng 10 Quận 1 & Lê Gia Võ Quán, TP.HCM"
+  },
+  {
+   "chapter": 25,
+   "title": "Chương 25: Bức Tường Thành Của Cố Thổ",
+   "volume": 1,
+   "arc": 1,
+   "word_count": 2850,
+   "date": "2026-09-24",
+   "location": "Phòng trọ Nơ Trang Long & Viện Nghiên cứu Địa chất, TP.HCM"
+  },
+  {
+   "chapter": 26,
+   "title": "Chương 26: Dấu Chân Rừng Sác Và Nhịp Thở Long Xà",
+   "volume": 1,
+   "arc": 1,
+   "word_count": 2950,
+   "date": "2026-09-26",
+   "location": "Phà Bình Khánh, Đường Rừng Sác & Ngã ba sông Soài Rạp - Lòng Tàu, Cần Giờ"
+  },
+  {
+   "chapter": 27,
+   "title": "Chương 27: Trà Lài Đêm Khuya Và Mầm Mống Tam Chu Thiên",
+   "volume": 1,
+   "arc": 1,
+   "word_count": 2820,
+   "date": "2026-09-27",
+   "location": "Thị trấn Cần Thạnh, Đường Rừng Sác & Phòng trọ Bình Thạnh, TP.HCM"
+  },
+  {
+   "chapter": 28,
+   "title": "Chương 28: Phiên Điều Trần Chấn Động Và Tiếng Vỗ Tay Giữa Hội Trường",
+   "volume": 1,
+   "arc": 1,
+   "word_count": 2980,
+   "date": "2026-09-29",
+   "location": "Trung tâm Hội nghị Quốc tế Thành phố, Quận 1, TP.HCM"
+  },
+  {
+   "chapter": 29,
+   "title": "Chương 29: Trấn Mạch Thạch Dưới Đáy Sông Sâu",
+   "volume": 1,
+   "arc": 1,
+   "word_count": 2890,
+   "date": "2026-09-29",
+   "location": "Viện Địa chất & Phòng bảo quản cổ vật Bảo tàng Lịch sử, TP.HCM"
+  },
+  {
+   "chapter": 30,
+   "title": "Chương 30: Trận Nhãn Đáy Sông Và Đột Phá Tam Chu Thiên",
+   "volume": 1,
+   "arc": 1,
+   "word_count": 3100,
+   "date": "2026-09-30",
+   "location": "Tàu khảo sát Hải Thần 02 & Đáy sông Soài Rạp (độ sâu 40m), Cần Giờ"
+  },
+  {
+   "chapter": 31,
+   "title": "Chương 31: Đèn Lồng Phố Cũ Và Mùa Trăng Nhân Gian",
+   "volume": 1,
+   "arc": 1,
+   "word_count": 2850,
+   "date": "2026-10-01",
+   "location": "Phố lồng đèn Lương Nhữ Học Quận 5, Bến Bạch Đằng & Phòng trọ Bình Thạnh, TP.HCM"
+  },
+  {
+   "chapter": 32,
+   "title": "Chương 32: Thần Mục Khai Mở Và Mật Mã Cổ Đô",
+   "volume": 1,
+   "arc": 1,
+   "word_count": 4130,
+   "date": "2026-10-02",
+   "location": "Viện Nghiên cứu Địa tầng và Năng lượng Nội sinh Đô thị, Quận 1 & Gác trọ Bình Thạnh, TP.HCM"
+  },
+  {
+   "chapter": 33,
+   "title": "Chương 33: Dấu Vết Lòng Đất Ba Son",
+   "volume": 1,
+   "arc": 1,
+   "word_count": 3055,
+   "date": "2026-10-02",
+   "location": "Khu phức hợp Ba Son, Ngã ba sông Sài Gòn - rạch Thị Nghè, Quận 1, TP.HCM"
+  },
+  {
+   "chapter": 34,
+   "title": "Chương 34: Mạng Lưới Bát Quái Dưới Lòng Đô Thị",
+   "volume": 1,
+   "arc": 1,
+   "word_count": 2663,
+   "date": "2026-10-03",
+   "location": "Phòng trọ Bình Thạnh & Hội trường Viện Nghiên cứu Địa tầng, Quận 1, TP.HCM"
+  },
+  {
+   "chapter": 35,
+   "title": "Chương 35: Ngự Khí Thể Đạo Và Giếng Cổ Chợ Lớn",
+   "volume": 1,
+   "arc": 1,
+   "word_count": 3083,
+   "date": "2026-10-03",
+   "location": "Đại lộ Võ Văn Kiệt & Tuệ Thành Hội Quán, Chợ Lớn, Quận 5, TP.HCM"
+  },
+  {
+   "chapter": 36,
+   "title": "Chương 36: Thám Hiểm Tầng Sâu Và Trái Tim Cổ Đô",
+   "volume": 1,
+   "arc": 1,
+   "word_count": 2508,
+   "date": "2026-10-04",
+   "location": "Giếng thăm dò kỹ thuật Ba Son, Ngã ba sông Sài Gòn - rạch Thị Nghè, Quận 1, TP.HCM"
+  },
+  {
+   "chapter": 37,
+   "title": "Chương 37: Hàn Tuyết Tàn Kiếm Và Bí Mật Viễn Cổ",
+   "volume": 1,
+   "arc": 1,
+   "word_count": 2589,
+   "date": "2026-10-05",
+   "location": "Phòng trọ Bình Thạnh & Viện Nghiên cứu Địa tầng, Quận 1, TP.HCM"
+  },
+  {
+   "chapter": 38,
+   "title": "Chương 38: Băng Kiếm Cố Huyệt Và Kiếm Hồn Hợp Nhất",
+   "volume": 1,
+   "arc": 1,
+   "word_count": 4002,
+   "date": "2026-10-05",
+   "location": "Khu vực gò đồi Củ Chi & Băng Kiếm Cố Huyệt, TP.HCM"
+  },
+  {
+   "chapter": 39,
+   "title": "Chương 39: Tinh Hoa Luyện Cốt Và Thủy Mạch Thủ Thiêm",
+   "volume": 1,
+   "arc": 1,
+   "word_count": 3186,
+   "date": "2026-10-06",
+   "location": "Phòng trọ Bình Thạnh, Công viên ven sông Sài Gòn & Viện Địa tầng, Quận 1, TP.HCM"
+  },
+  {
+   "chapter": 40,
+   "title": "Chương 40: Lặn Sâu Ba Mươi Lăm Mét Dưới Đáy Sông Cổ",
+   "volume": 1,
+   "arc": 1,
+   "word_count": 2843,
+   "date": "2026-10-06",
+   "location": "Đại công trường Tháp Tài Chính Đôi Thủ Thiêm & Hố móng sâu 35m, TP.HCM"
+  },
+  {
+   "chapter": 41,
+   "title": "Chương 41: Tiếng Chuông Trấn Thủy Và Cốt Tủy Thông Minh",
+   "volume": 1,
+   "arc": 1,
+   "word_count": 2498,
+   "date": "2026-10-07",
+   "location": "Đại công trường Tháp Tài Chính Đôi Thủ Thiêm, Phòng trọ Bình Thạnh & Viện Địa tầng, TP.HCM"
+  },
+  {
+   "chapter": 42,
+   "title": "Chương 42: Hải Trình Sóng Tím Và Thủy Môn Khởi Động",
+   "volume": 1,
+   "arc": 1,
+   "word_count": 2134,
+   "date": "2026-10-07",
+   "location": "Cảng Tân Cảng, Dọc sông Sài Gòn & Ngã ba sông Nhà Bè, TP.HCM"
+  },
+  {
+   "chapter": 43,
+   "title": "Chương 43: Thủy Môn Cổ Phách Và Dấu Vết Vực Sâu Ngoại Giới",
+   "volume": 1,
+   "arc": 1,
+   "word_count": 2876,
+   "date": "2026-10-07",
+   "location": "Ngã ba sông Nhà Bè (độ sâu 40m), TP.HCM"
+  },
+  {
+   "chapter": 44,
+   "title": "Chương 44: Vết Rạn Phong Ấn Và Cái Giá Của Phàm Nhân",
+   "volume": 1,
+   "arc": 1,
+   "word_count": 2360,
+   "date": "2026-10-07",
+   "location": "Đáy ngã ba sông Nhà Bè (độ sâu 40m) & Buồng giải áp tàu Đại Dương 09, TP.HCM"
+  },
+  {
+   "chapter": 45,
+   "title": "Chương 45: Lâm Tịch Trầm Miên Và Người Gác Cổng Cô Độc",
+   "volume": 1,
+   "arc": 1,
+   "word_count": 3292,
+   "date": "2026-10-07",
+   "location": "Cảng Tân Thuận (Quận 7) & Phòng trọ Bình Thạnh, TP.HCM"
+  },
+  {
+   "chapter": 46,
+   "title": "Chương 46: Lời Thề Dưới Bình Minh Sài Gòn",
+   "volume": 1,
+   "arc": 1,
+   "word_count": 1937,
+   "date": "2026-10-08",
+   "location": "Bán đảo Thanh Đa & Đỉnh cầu Sài Gòn, TP.HCM"
+  },
+  {
+   "chapter": 47,
+   "title": "Chương 47: Hương Trà Lúc Canh Ba",
+   "volume": 1,
+   "arc": 2,
+   "word_count": 2458,
+   "date": "2026-10-08",
+   "location": "Phòng trọ Nơ Trang Long, Quận Bình Thạnh, TP.HCM"
+  },
+  {
+   "chapter": 48,
+   "title": "Chương 48: Vết Mực Tàu Trên Đường Phùng Hưng",
+   "volume": 1,
+   "arc": 2,
+   "word_count": 2684,
+   "date": "2026-10-09",
+   "location": "Đường Phùng Hưng, Chợ Lớn, Quận 5, TP.HCM"
+  },
+  {
+   "chapter": 49,
+   "title": "Chương 49: Vụ Mất Tích Dưới Hầm Rượu Cổ",
+   "volume": 1,
+   "arc": 2,
+   "word_count": 2795,
+   "date": "2026-10-10",
+   "location": "Đường Tú Xương, Quận 3 & Bệnh viện Chợ Rẫy, TP.HCM"
+  },
+  {
+   "chapter": 50,
+   "title": "Chương 50: Lưỡi Dao Gấp Và Bụi Đồng",
+   "volume": 1,
+   "arc": 2,
+   "word_count": 2842,
+   "date": "2026-10-11",
+   "location": "Lò rèn Hóc Môn, ngoại thành TP.HCM"
+  },
+  {
+   "chapter": 51,
+   "title": "Chương 51: Thanh Âm Từ Đài Sen",
+   "volume": 1,
+   "arc": 2,
+   "word_count": 2912,
+   "date": "2026-10-12",
+   "location": "Phòng trọ Nơ Trang Long, Quận Bình Thạnh, TP.HCM"
+  },
+  {
+   "chapter": 52,
+   "title": "Chương 52: Bóng Đêm Bến Phú Định",
+   "volume": 1,
+   "arc": 2,
+   "word_count": 2876,
+   "date": "2026-10-13",
+   "location": "Bến Phú Định, Quận 8, TP.HCM"
+  },
+  {
+   "chapter": 53,
+   "title": "Chương 53: Máu Nhuộm Bãi Phế Liệu",
+   "volume": 1,
+   "arc": 2,
+   "word_count": 3015,
+   "date": "2026-10-14",
+   "location": "Bãi phế liệu Ba Láng, ven sông Chợ Đệm, Quận 8, TP.HCM"
+  },
+  {
+   "chapter": 54,
+   "title": "Chương 54: Cơn Sốt Dài Và Bát Cháo Hành",
+   "volume": 1,
+   "arc": 2,
+   "word_count": 2984,
+   "date": "2026-10-15",
+   "location": "Phòng trọ Nơ Trang Long, Quận Bình Thạnh, TP.HCM"
+  },
+  {
+   "chapter": 55,
+   "title": "Chương 55: Khối Hắc Thiết Dưới Lò Nung",
+   "volume": 1,
+   "arc": 2,
+   "word_count": 2895,
+   "date": "2026-10-16",
+   "location": "Lò rèn Hóc Môn & Phòng trọ Nơ Trang Long, TP.HCM"
+  },
+  {
+   "chapter": 56,
+   "title": "Chương 56: Đêm Trăng Mười Bảy Trên Sông Sài Gòn",
+   "volume": 1,
+   "arc": 2,
+   "word_count": 3120,
+   "date": "2026-10-17",
+   "location": "Bờ kè bán đảo Thanh Đa, Quận Bình Thạnh, TP.HCM"
+  },
+  {
+   "chapter": 57,
+   "title": "Chương 57: Bản Phân Tích Dưới Ánh Huỳnh Quang",
+   "volume": 1,
+   "arc": 2,
+   "word_count": 2980,
+   "date": "2026-10-18",
+   "location": "Phòng Giám đốc Kỹ thuật & Phòng Thí nghiệm Quang phổ Viện Địa tầng, Quận 1, TP.HCM"
+  },
+  {
+   "chapter": 58,
+   "title": "Chương 58: Dấu Vết Rạch Lò Gốm",
+   "volume": 1,
+   "arc": 2,
+   "word_count": 3120,
+   "date": "2026-10-18",
+   "location": "Kênh Lò Gốm, Phường 7, Quận 6, TP.HCM"
+  },
+  {
+   "chapter": 59,
+   "title": "Chương 59: Trận Đồ Mười Hai Chốt Chặn",
+   "volume": 1,
+   "arc": 2,
+   "word_count": 3432,
+   "date": "2026-10-18",
+   "location": "Phường 7, Quận 6 & Phòng trọ Nơ Trang Long, Bình Thạnh, TP.HCM"
+  },
+  {
+   "chapter": 60,
+   "title": "Chương 60: Đêm Mưa Bình Thạnh",
+   "volume": 1,
+   "arc": 2,
+   "word_count": 3601,
+   "date": "2026-10-18",
+   "location": "Phòng trọ đường Nơ Trang Long, Phường 13, Bình Thạnh, TP.HCM"
+  },
+  {
+   "chapter": 61,
+   "title": "Chương 61: Tọa Độ Bến Phú Định",
+   "volume": 1,
+   "arc": 2,
+   "word_count": 3576,
+   "date": "2026-10-19",
+   "location": "Viện Địa tầng (Quận 1) & Bến Phú Định (Phường 16, Quận 8, TP.HCM)"
+  },
+  {
+   "chapter": 62,
+   "title": "Chương 62: Đáy Nước Bến Phú Định",
+   "volume": 1,
+   "arc": 2,
+   "word_count": 3387,
+   "date": "2026-10-20",
+   "location": "Bến Phú Định (Phường 16, Quận 8, TP.HCM)"
+  },
+  {
+   "chapter": 63,
+   "title": "Chương 63: Ngọc Tủy Quy Nhất",
+   "volume": 1,
+   "arc": 2,
+   "word_count": 4336,
+   "date": "2026-10-20",
+   "location": "Phòng trọ Nơ Trang Long (Bình Thạnh) & Viện Địa tầng Đô thị (Quận 1, TP.HCM)"
+  },
+  {
+   "chapter": 64,
+   "title": "Chương 64: Phong Ba Mũi Đèn Đỏ",
+   "volume": 1,
+   "arc": 2,
+   "word_count": 3624,
+   "date": "2026-10-20",
+   "location": "Mũi Đèn Đỏ (Phường Phú Thuận, Quận 7, TP.HCM)"
+  },
+  {
+   "chapter": 65,
+   "title": "Chương 65: Trấn Giang Thủy Chiến",
+   "volume": 1,
+   "arc": 2,
+   "word_count": 3477,
+   "date": "2026-10-20",
+   "location": "Mũi Đèn Đỏ & Lòng Sông Soài Rạp (Quận 7, TP.HCM)"
+  },
+  {
+   "chapter": 66,
+   "title": "Chương 66: Tam Giác Phong Ấn",
+   "volume": 1,
+   "arc": 2,
+   "word_count": 3523,
+   "date": "2026-10-20",
+   "location": "Viện Địa tầng Đô thị (Quận 1) & Phòng trọ Nơ Trang Long (Bình Thạnh, TP.HCM)"
+  },
+  {
+   "chapter": 67,
+   "title": "Chương 67: Cầu Mống Ám Triều",
+   "volume": 1,
+   "arc": 2,
+   "word_count": 3349,
+   "date": "2026-10-21",
+   "location": "Viện Địa tầng Đô thị (Quận 1) & Ngã ba Rạch Bến Nghé — Cầu Mống (TP.HCM)"
+  },
+  {
+   "chapter": 68,
+   "title": "Chương 68: Thanh Long Lân Kiếm",
+   "volume": 1,
+   "arc": 2,
+   "word_count": 3464,
+   "date": "2026-10-21",
+   "location": "Lòng rạch Bến Nghé — Chân mố Cầu Mống (Quận 1 & Quận 4, TP.HCM)"
+  },
+  {
+   "chapter": 69,
+   "title": "Chương 69: Ba Son Cổ Trận",
+   "volume": 1,
+   "arc": 2,
+   "word_count": 3522,
+   "date": "2026-10-22",
+   "location": "Phòng trọ Nơ Trang Long, Viện Địa tầng & Ụ tàu cổ Ba Son (TP.HCM)"
+  },
+  {
+   "chapter": 70,
+   "title": "Chương 70: Long Lân Phá Kình",
+   "volume": 1,
+   "arc": 2,
+   "word_count": 3482,
+   "date": "2026-10-22",
+   "location": "Tầng hầm kỹ thuật Tháp Thủy Đài — Ụ tàu cổ Ba Son (TP.HCM)"
+  },
+  {
+   "chapter": 71,
+   "title": "Chương 71: Đáy Giếng Ba Son",
+   "volume": 1,
+   "arc": 2,
+   "word_count": 3612,
+   "date": "2026-10-22",
+   "location": "Tầng hầm kỹ thuật & Giếng ngầm 42m tháp thủy đài Ba Son (TP.HCM)"
+  },
+  {
+   "chapter": 72,
+   "title": "Chương 72: Hoán Huyết Hóa Cương",
+   "volume": 1,
+   "arc": 2,
+   "word_count": 3539,
+   "date": "2026-10-23",
+   "location": "Phòng thí nghiệm ngầm B2 & Tầng thượng Viện Địa tầng Đô thị (TP.HCM)"
+  },
+  {
+   "chapter": 73,
+   "title": "Chương 73: Hải Trình Cần Giờ",
+   "volume": 1,
+   "arc": 2,
+   "word_count": 3372,
+   "date": "2026-10-23",
+   "location": "Quân cảng Cát Lái & Tàu Tuần Tra HQ-268 trên Vịnh Gành Rái (Cần Giờ)"
+  },
+  {
+   "chapter": 74,
+   "title": "Chương 74: Cực Tù Hải Uyên",
+   "volume": 1,
+   "arc": 2,
+   "word_count": 3614,
+   "date": "2026-10-23",
+   "location": "Rãnh Nứt Cực Tù Hải Uyên (Độ sâu 1.200m, Vịnh Gành Rái - Cần Giờ)"
+  },
+  {
+   "chapter": 75,
+   "title": "Chương 75: Hải Uyên Tỏa Long",
+   "volume": 1,
+   "arc": 2,
+   "word_count": 3522,
+   "date": "2026-10-23",
+   "location": "Rãnh Nứt Cực Tù Hải Uyên (-1.200m) & Boong Tàu HQ-268 (Vịnh Gành Rái)"
+  },
+  {
+   "chapter": 76,
+   "title": "Chương 76: Dạ Hành Quy Đô",
+   "volume": 1,
+   "arc": 2,
+   "word_count": 4460,
+   "date": "2026-10-24",
+   "location": "Sông Lòng Tàu (Cần Giờ) & Căn Hộ Phòng Trọ Đường Nơ Trang Long (Bình Thạnh, TP.HCM)"
+  },
+  {
+   "chapter": 77,
+   "title": "Chương 77: Thạch Kiếm Chứa Chan",
+   "volume": 1,
+   "arc": 2,
+   "word_count": 4904,
+   "date": "2026-10-24",
+   "location": "Quốc Lộ 1A (Sài Gòn - Đồng Nai) & Sườn Đông Bắc Núi Chứa Chan (Xuân Lộc, Đồng Nai)"
+  },
+  {
+   "chapter": 78,
+   "title": "Chương 78: Khí Quán Chứa Chan",
+   "volume": 1,
+   "arc": 2,
+   "word_count": 4234,
+   "date": "2026-10-24",
+   "location": "Thềm Đá Cổ Thần Quy & Rừng Núi Chứa Chan (Xuân Lộc, Đồng Nai)"
+  },
+  {
+   "chapter": 79,
+   "title": "Chương 79: Dạ Hành Độc Lộ",
+   "volume": 1,
+   "arc": 2,
+   "word_count": 4894,
+   "date": "2026-10-24",
+   "location": "Núi Chứa Chan & Quốc Lộ 1A (Đồng Nai) -> Ngoại Vi TP.HCM"
+  },
+  {
+   "chapter": 80,
+   "title": "Chương 80: Sóng Vỗ Cù Lao",
+   "volume": 1,
+   "arc": 2,
+   "word_count": 3576,
+   "date": "2026-10-25",
+   "location": "Kênh Chợ Gạo & Cù Lao Ven Sông Tiền (Tiền Giang)"
+  },
+  {
+   "chapter": 81,
+   "title": "Chương 81: Trấn Ba Thạch Quy",
+   "volume": 1,
+   "arc": 2,
+   "word_count": 3563,
+   "date": "2026-10-25",
+   "location": "Cồn Trấn Ba & Cổ Miếu Trấn Ba (Sông Tiền, Tiền Giang)"
+  },
+  {
+   "chapter": 82,
+   "title": "Chương 82: Tam Môn Khởi Lãng",
+   "volume": 1,
+   "arc": 2,
+   "word_count": 3708,
+   "date": "2026-10-26",
+   "location": "Cửa Tiểu (Sông Tiền) & Cửa Biển Soài Rạp (Cần Giờ)"
+  },
+  {
+   "chapter": 83,
+   "title": "Chương 83: Cổ Chiên Nộ Lãng",
+   "volume": 1,
+   "arc": 2,
+   "word_count": 3276,
+   "date": "2026-10-26",
+   "location": "Cửa Sông Ba Lai & Cửa Biển Cổ Chiên (Bến Tre - Trà Vinh)"
+  },
+  {
+   "chapter": 84,
+   "title": "Chương 84: Cực Nam Phong Hải",
+   "volume": 1,
+   "arc": 2,
+   "word_count": 3364,
+   "date": "2026-10-27",
+   "location": "Rừng Đước Năm Căn & Đất Mũi Cà Mau"
+  },
+  {
+   "chapter": 85,
+   "title": "Chương 85: Huyết Khí Quy Nguyên",
+   "volume": 1,
+   "arc": 2,
+   "word_count": 3157,
+   "date": "2026-10-28",
+   "location": "Mốc Tọa Độ Quốc Gia GPS 0001 & Bến Tàu Năm Căn, Cà Mau"
+  },
+  {
+   "chapter": 86,
+   "title": "Chương 86: Bão Ngầm Sài Gòn",
+   "volume": 1,
+   "arc": 2,
+   "word_count": 3537,
+   "date": "2026-10-29",
+   "location": "Bến Xe Miền Tây & Bán Đảo Thanh Đa, TP. Hồ Chí Minh"
+  },
+  {
+   "chapter": 87,
+   "title": "Chương 87: Huyết Chiến Thanh Đa",
+   "volume": 1,
+   "arc": 2,
+   "word_count": 4707,
+   "date": "2026-10-29",
+   "location": "Viện Khảo Sát Địa Chất & Bán Đảo Thanh Đa, Sông Sài Gòn"
+  },
+  {
+   "chapter": 88,
+   "title": "Chương 88: Bình Minh Sau Bão",
+   "volume": 1,
+   "arc": 2,
+   "word_count": 3203,
+   "date": "2026-10-30",
+   "location": "Bán Đảo Thanh Đa & Khu Trọ Nơ Trang Long, TP. Hồ Chí Minh"
+  },
+  {
+   "chapter": 89,
+   "title": "Chương 89: Khói Bếp Cù Lao",
+   "volume": 1,
+   "arc": 2,
+   "word_count": 3983,
+   "date": "2026-10-31",
+   "location": "Cù Lao Ven Sông Tiền, Huyện Chợ Gạo, Tỉnh Tiền Giang"
+  },
+  {
+   "chapter": 90,
+   "title": "Chương 90: Tiếng Sấm Đại Ngàn",
+   "volume": 1,
+   "arc": 2,
+   "word_count": 3325,
+   "date": "2026-11-01",
+   "location": "Cù Lao Chợ Gạo, Tiền Giang & Viện Nghiên Cứu Địa Tầng, TP. Hồ Chí Minh"
+  },
+  {
+   "chapter": 91,
+   "title": "Chương 91: Bụi Đỏ Đại Ngàn",
+   "volume": 1,
+   "arc": 2,
+   "word_count": 3341,
+   "date": "2026-11-02",
+   "location": "Quốc Lộ 14, Buôn Đôn & Cửa Ngõ Vườn Quốc Gia Chư Yang Sin, Tỉnh Đắk Lắk"
+  },
+  {
+   "chapter": 92,
+   "title": "Chương 92: Mật Ngữ Chư Yang Sin",
+   "volume": 1,
+   "arc": 2,
+   "word_count": 3476,
+   "date": "2026-11-03",
+   "location": "Trạm Kiểm Lâm Số 4 & Cửa Rừng Nguyên Sinh Chư Yang Sin, Huyện Krông Bông, Tỉnh Đắk Lắk"
+  }
+ ]
+}
