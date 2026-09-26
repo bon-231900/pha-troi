@@ -993,12 +993,12 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
           <div class="titlepage-sub">PHÁ TOÁI THẦN HOANG</div>
           <div class="titlepage-author">Tác giả: <em>An Bình</em></div>
           
-          <div class="titlepage-ornament">❖ ─ ✦ ─ ❖</div>
+          <div class="titlepage-ornament" aria-hidden="true"></div>
 
           <!-- Classical Epigraph / Đề từ -->
           <div class="titlepage-epigraph">
             <p class="epigraph-quote">“Sông Sài Gòn chảy qua ngàn năm dâu bể, dưới lớp phù sa ngầm là phong ấn đại địa hai triệu năm chưa từng thức giấc.”</p>
-            <p class="epigraph-premise">Phàm nhân không linh căn, không hệ thống hack điểm — lấy từng tấc huyết nhục Thể Đạo phá vỡ vạn trùng xiềng xích càn khôn.</p>
+            <p class="epigraph-premise">Phàm nhân không linh căn, không hệ thống hack điểm — lấy từng tấc huyết nhục <strong>Thể Đạo</strong> phá vỡ vạn trùng xiềng xích càn khôn.</p>
           </div>
 
           <!-- Bibliographic Colophon Line -->
