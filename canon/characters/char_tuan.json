@@ -1,0 +1,59 @@
+{
+  "id": "char_tuan",
+  "name": "Trần Anh Tuấn",
+  "aliases": [
+    "anh Tuấn",
+    "kỹ sư Tuấn",
+    "Tuấn",
+    "Tuấn Búa Tạ",
+    "Tuấn Máy Móc"
+  ],
+  "age": 34,
+  "birth_year": 1992,
+  "start_year": 2026,
+  "role": "Đồng đội Phàm Trần / Trưởng Đội Kỹ thuật Cơ điện & Thăm dò Địa tầng sâu",
+  "pov_type": "Ngôi thứ ba / Xuất hiện qua POV Minh An",
+  "origin": "Củ Chi, TP. Hồ Chí Minh, Việt Nam",
+  "affiliations": [
+    "Viện Khảo sát Địa chất (Phân viện TP.HCM)",
+    "Tổ Kỹ thuật Thực địa & Vi chấn Đô thị",
+    "Nhóm Khảo sát Địa chấn Dự án EARTH-SEAL"
+  ],
+  "family": {
+    "wife": "Chị Thảo (Giáo viên mầm non)",
+    "daughter": "Bé Bống (6 tuổi, xuất hiện ở Chương 31)"
+  },
+  "personality": {
+    "traits": [
+      "Bộc trực",
+      "Thực tế",
+      "Gan góc",
+      "Hào sảng Nam Bộ",
+      "Trọng tình nghĩa",
+      "Bảo bọc đàn em"
+    ],
+    "habits": [
+      "Nghiện cà phê đen đá không đường",
+      "Hút thuốc lá/thuốc rê khi trực ca đêm lạnh",
+      "Gõ ngón tay bắt nhịp máy nổ",
+      "Áo gi-lê kỹ thuật dắt mỏ lết mini và bút thử điện"
+    ]
+  },
+  "technical_skills": [
+    "Bậc thầy cơ khí dã chiến và độ xe bán tải vượt địa hình",
+    "Vận hành và sửa chữa trạm đo vi chấn tần số thấp (0.08Hz - 0.12Hz)",
+    "Chế tạo buồng áp suất dã chiến và vỏ hợp kim titan chịu nhiệt",
+    "Xử lý dữ liệu cảm biến ngầm và lập báo cáo khoa học hợp thức hóa dị thường",
+    "Kỹ thuật lặn sâu và hoa tiêu âm học quét đáy biển"
+  ],
+  "narrative_role": {
+    "archetype": "The Grounded Mortal Brother & Technical Lifeline",
+    "core_function": "Mỏ neo phàm trần níu giữ nhân tính cho Minh An; lá chắn hậu cần kỹ thuật; hợp thức hóa khoa học mọi vết tích Thể Đạo",
+    "forbidden_attributes": [
+      "tu tiên",
+      "năng lực dị năng siêu nhiên",
+      "đấu đá quan trường",
+      "phản bội An"
+    ]
+  }
+}
