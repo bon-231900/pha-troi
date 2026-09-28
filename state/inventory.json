@@ -1,7 +1,7 @@
 {
-  "last_updated": "2026-11-03T06:45:00+07:00",
+  "last_updated": "2026-11-04T21:00:00+07:00",
   "holder": "Nguyễn Minh An",
-  "cultivation_realm": "Hoán Huyết Sơ kỳ (Cương Khí Dung Hợp Thần Binh & Cơ Quan Khóa Địa)",
+  "cultivation_realm": "Hoán Huyết Sơ kỳ (Cương Khí Ly Thể & Nhận Biết Căn Cốt Thủy Mạch)",
   "core_weapons_and_artifacts": [
     {
       "name": "Trâm Ngọc Cổ Lâm Tịch (Cố Hồn Trâm)",
@@ -148,7 +148,7 @@
       "stage": "Sơ ngộ (Lấy 33 đốt sống ngọc thạch làm vỏ kiếm, dẫn kiếm khí vào Hắc Thiết Đoản Côn chém đứt hợp kim)"
     }
   ],
-  "current_location": "Sườn Đông Núi Lửa Chư Yang Sin, Huyện Krông Bông, Tỉnh Đắk Lắk",
+  "current_location": "Trạm Khảo Sát Thủy Văn & Địa Chất Biển Duyên Hải, Vịnh Xuân Đài, Phú Yên",
   "special_items": [
     {
       "id": "item_moc_hoang_loi_tam_thach",
