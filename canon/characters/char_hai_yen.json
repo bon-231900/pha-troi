@@ -1,0 +1,47 @@
+{
+  "id": "char_hai_yen",
+  "name": "Trần Vũ Hải Yến",
+  "aliases": [
+    "Hải Yến",
+    "Yến",
+    "kỹ sư Yến"
+  ],
+  "age": 24,
+  "birth_year": 2002,
+  "start_year": 2026,
+  "height_cm": 168,
+  "hair_style": "Bình thường buông dài ngang lưng mềm mại, khi làm việc hoặc lặn biển thì búi cao củ tỏi gọn gàng",
+  "role": "Nữ Chính Phàm Trần (Mortal Female Deuteragonist) — Kỹ sư Trắc địa Địa chất Hải dương & Thợ lặn kỹ thuật cao",
+  "pov_type": "Ngôi thứ ba / Xuất hiện qua POV Nguyễn Minh An",
+  "origin": "Vịnh Xuân Đài, Phú Yên, Việt Nam",
+  "affiliations": [
+    "Trạm Nghiên cứu Thủy văn & Địa chất Biển Duyên hải Nam Trung Bộ",
+    "Tổ Công tác Thực địa Khảo sát Sector 05 Hòn Yến"
+  ],
+  "family": {
+    "father": "Ông Trần Vũ Cương (Thợ lặn kỳ cựu từng dẫn đường cho đoàn khảo sát của bác Nguyễn Văn Hùng năm 1996)"
+  },
+  "heirloom": "Đồng hồ lặn cơ khí Liên Xô Vostok Amphibia 200m có ren vát ngược V.H. - 1996",
+  "cultivation": {
+    "system": "Thể Đạo Phàm Trần — Nhánh Thủy Mạch Nhu Thể (Thuần Âm Nhu Kình)",
+    "awakening_location": "Rạn san hô bazan đáy biển Hòn Yến (Sector 05)",
+    "mentor_indirect": "Bạch Y Thần Nữ Lâm Tịch (chỉ điểm khẩu quyết cổ)",
+    "initiator": "Nguyễn Minh An (truyền Thuần Dương Cương Huyết cứu mạng)",
+    "specialties": [
+      "Nhu Kình sương muối hóa giải xung lực",
+      "Nín thở lặn sâu hàng giờ không bình khí",
+      "Lướt nước tốc độ cao",
+      "Điều hòa hỏa khí tủy ngọc cho Minh An"
+    ]
+  },
+  "narrative_role": {
+    "archetype": "The Resilient Marine Diver & Yin-Yang Partner",
+    "core_function": "Chiến hữu sinh tử, mỏ neo hơi ấm đời thường cho Minh An; chất xúc tác tâm lý thúc đẩy tình cảm với Lâm Tịch; 0% Harem",
+    "forbidden_attributes": [
+      "bình hoa di động",
+      "hậu cung",
+      "chuyển sinh",
+      "linh đạo hư ảo"
+    ]
+  }
+}
