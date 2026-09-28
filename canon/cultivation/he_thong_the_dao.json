@@ -1,0 +1,86 @@
+{
+  "id": "cultivation_system_the_dao",
+  "name": "Hệ thống Thể Đạo (Nhục Thân Chi Đạo)",
+  "concept": "Con đường rèn luyện thân thể, khai phá tiềm năng sinh học con người đến cực hạn, không phụ thuộc linh khí",
+  "earth_tier": {
+    "name": "Thể Đạo Phàm Trần (Dạng Thấp - Trái Đất)",
+    "practitioner": "Nguyễn Minh An (Hiện tại: Hoán Huyết Sơ kỳ)",
+    "environment": "Tuyệt linh, áp suất bazan, trọng lực 1G, bùn đất phù sa Tiền Giang",
+    "stages": [
+      {
+        "rank": 1,
+        "name": "Tôi Thể",
+        "sub_stages": ["Luyện Bì", "Luyện Nhục", "Luyện Cân"],
+        "description": "Siêu bù đắp cơ bắp, da dẻ dẻo dai da trâu, gân mạc đàn hồi lò xo"
+      },
+      {
+        "rank": 2,
+        "name": "Hoán Huyết",
+        "current_status": "Minh An hiện tại",
+        "key_elements": [
+          "33 đốt sống tủy ngọc thấu quang",
+          "Thuần Dương Cương Huyết ánh kim ấm áp",
+          "Kình lực Cương Khí Ly Thể 1 - 3m",
+          "Miễn nhiễm độc tố, áp suất nước sâu, nhịp tim thủy lực trầm đục"
+        ]
+      },
+      {
+        "rank": 3,
+        "name": "Đoán Cốt",
+        "key_elements": [
+          "Cốt Nhược Kim Thạch hóa Ngọc Tủy Kim Cốt",
+          "Xương cứng titan, mật độ dày đặc, rơi vách núi 30m không gãy",
+          "Khớp xương va chạm như chuông đồng"
+        ]
+      },
+      {
+        "rank": 4,
+        "name": "Thần Tạng",
+        "key_elements": [
+          "Ngũ Tạng Hóa Thần (Tâm, Can, Tỳ, Phế, Thận)",
+          "Nín thở 2 giờ đáy biển, gan thận lọc sạch chất độc trong vài giây, tim bơm 7 ngày đêm không mệt"
+        ]
+      },
+      {
+        "rank": 5,
+        "name": "Pháp Thân Phàm Cực",
+        "key_elements": [
+          "Cực hạn nhục thân Trái Đất",
+          "Tay không đấm vỡ giáp Pháp Tướng Đại Thừa N839, một bước nứt đường nhựa"
+        ]
+      }
+    ]
+  },
+  "upper_tier": {
+    "name": "Thể Đạo Vũ Trụ (Dạng Cao - Thượng Vị Diện / Giới Lâm Tịch)",
+    "origin": "Đại Đại Giới",
+    "concept": "Dùng Nhục Thân Nuốt Chửng Quy Tắc Vũ Trụ (Vật Lý Hạt Vi Mô x Đại Đạo Thiên Địa)",
+    "stages": [
+      {
+        "rank": 5,
+        "name": "Pháp Thân Chân Cảnh",
+        "description": "Nhục thân thực thể bằng xương bằng thịt cao vạn trượng, mỗi giọt máu đè nát hồ sâu"
+      },
+      {
+        "rank": 6,
+        "name": "Thánh Thể",
+        "description": "Cốt tủy pha lê thấu quang, Thánh Vực Nhục Thân bẻ cong ánh sáng và trọng lực vạn lần"
+      },
+      {
+        "rank": 7,
+        "name": "Bá Thể",
+        "description": "Chư Thiên Bá Thể, Vạn Pháp Bất Nhiễm, một quyền đấm vỡ tiểu hành tinh, tay không bóp nát thần binh"
+      },
+      {
+        "rank": 8,
+        "name": "Bất Diệt",
+        "description": "Bất Diệt Nhục Thân, một giọt máu hoặc tế bào vi mô tự hấp thu bức xạ vũ trụ tái tạo cơ thể nguyên vẹn trong chớp mắt"
+      },
+      {
+        "rank": 9,
+        "name": "Vô Cực",
+        "description": "Chung Cực Chi Thể, nhục thân là vũ trụ, hơi thở hóa tinh vân, đạp nát luân hồi bẻ gãy nhân quả"
+      }
+    ]
+  }
+}
