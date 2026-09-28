@@ -1,0 +1,75 @@
+{
+  "id": "cultivation_system_n839",
+  "name": "Hệ thống Tu Tiên Cổ Tinh Hà N839 (Gia Tộc Ẩn Thế)",
+  "origin": "Tinh hà N839 (Thiên văn học Trái Đất định danh là Hành tinh chết)",
+  "type": "Khí Tu Sơ Sài / Linh Đạo Suy Thoái",
+  "status_on_earth": "Ẩn thế trong các Động Thiên Gấp Khúc dưới đáy vực và đới đứt gãy",
+  "power_tier_global": "Trung bình thấp (Low-Mid Tier) so với đại vũ trụ và Thượng Vị Diện",
+  "narrative_focus_arc": "Chương 500 đến Chương 1200",
+  "post_1200_status": "Mờ nhạt dần, chỉ còn một vài người bạn thân thiết hỗ trợ trạm quan trắc tinh hà",
+  "stages": [
+    {
+      "rank": 1,
+      "name": "Ngưng Khí",
+      "levels": "Tầng 1 - 9",
+      "description": "Dẫn khí nhập thể, thân nhẹ phản xạ nhanh, pháp thuật sơ cấp, nhục thân giòn xốp"
+    },
+    {
+      "rank": 2,
+      "name": "Trúc Cơ",
+      "is_key_stage": true,
+      "core_principle": "Trúc Cơ mạnh thì cơ thể mới mạnh",
+      "description": "Linh dịch tẩy tủy và đúc tạc đạo cơ nhục thân; quyết định độ bền cơ thể và khả năng chịu tải"
+    },
+    {
+      "rank": 3,
+      "name": "Kim Đan",
+      "description": "Ngưng kết đan thể, thọ 300 - 500 năm, ngự không phi hành, hộ thể linh quang"
+    },
+    {
+      "rank": 4,
+      "name": "Nguyên Anh",
+      "is_key_stage": true,
+      "core_principle": "Nguyên Anh mạnh thì mới dễ thông hiểu mọi thứ",
+      "description": "Phá đan hóa anh, cội nguồn thần thức và ngộ tính, thấu suốt đạo văn quy luật, nhìn thấu chiêu thức đối thủ"
+    },
+    {
+      "rank": 5,
+      "name": "Hóa Thần",
+      "description": "Thần thức khuếch trương thành lĩnh vực, mượn một phần thiên địa chi thế"
+    },
+    {
+      "rank": 6,
+      "name": "Luyện Hư",
+      "description": "Hư thực chuyển hóa, thuấn di cự ly ngắn, thọ ngàn năm"
+    },
+    {
+      "rank": 7,
+      "name": "Đại Thừa",
+      "is_supreme_stage": true,
+      "description": "Cực hạn cao nhất của hệ thống N839, chia làm 4 giai đoạn tiến hóa công thủ",
+      "phases": [
+        {
+          "phase": 1,
+          "name": "Xây dựng Pháp Tướng",
+          "description": "Ngưng tụ cự nhân năng lượng khổng lồ phản chiếu bản mệnh đạo cơ"
+        },
+        {
+          "phase": 2,
+          "name": "Mặc giáp Pháp Tướng",
+          "description": "Phủ lớp Chiến Giáp Linh Cương chịu áp lực và chấn động cực hạn"
+        },
+        {
+          "phase": 3,
+          "name": "Rèn vũ khí Pháp Tướng",
+          "description": "Đúc cự đại linh binh bản mệnh (Đao, Kiếm, Kích, Đỉnh) có uy lực chẻ đôi núi đá"
+        },
+        {
+          "phase": 4,
+          "name": "Thời kỳ Độ Kiếp Trường Kỳ",
+          "description": "Kéo dài hàng trăm đến hàng ngàn năm bế quan chống chọi thiên kiếp và thọ nguyên suy kiệt; thành công sẽ Thành Tiên (phi thăng ra tinh hải bên ngoài)"
+        }
+      ]
+    }
+  ]
+}
