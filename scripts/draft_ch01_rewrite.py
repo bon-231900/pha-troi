@@ -182,7 +182,7 @@ Tôi run rẩy đưa bàn tay lên sờ vào sau gáy mình. Làn da sau đốt 
 
 "Trúng gió... Chắc chắn là trúng gió độc rồi..." 
 
-Tôi tự lẩm bẩm thành tiếng, cố gắng dùng âm sắc khàn đặc của mình để xua đi nỗi kinh hoàng vô cớ vừa bóp nghẹt tâm can. Tôi quẹt mạnh dòng nước mưa bết dính trên trán, hít sâu một hơi không khí ẩm ướt nồng nặc mùi xăng xe để trấn định tinh thần. Làm việc thực địa mệt mỏi cả ngày dưới hố sâu mười hai mét, thiếu dưỡng khí lại dầm mưa lạnh đột ngột, chuyện não bộ sinh ra ảo giác phân liệt do tụt huyết áp cũng không phải là điều hiếm gặp trong y văn.
+Tôi tự lẩm bẩm thành tiếng, cố gắng dùng âm sắc khàn đặc của mình để xua đi nỗi kinh hoàng vô cớ vừa bóp nghẹt tâm can. Tôi quẹt mạnh dòng nước mưa bết dính trên trán, nuốt một ngụm không khí ẩm ướt nồng nặc mùi xăng xe vào lồng ngực để ghìm lại cơn hoảng loạn. Làm việc thực địa mệt mỏi cả ngày dưới hố sâu mười hai mét, thiếu dưỡng khí lại dầm mưa lạnh đột ngột, chuyện não bộ sinh ra ảo giác phân liệt do tụt huyết áp cũng không phải là điều hiếm gặp trong y văn.
 
 Tôi tự trấn an mình như thế, nhưng đôi bàn tay đang nắm lấy ghi đông xe máy vẫn không ngừng run rẩy bần bật.
 

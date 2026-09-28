@@ -18,24 +18,24 @@ SEO_PAGES = [
         "title": "Phá Trời Là Truyện Gì? Cẩm Nang Toàn Diện Về Tiểu Thuyết Đô Thị Tu Chân Sài Gòn 2026",
         "meta_title": "Phá Trời Là Truyện Gì? Cẩm Nang Đô Thị Tu Chân | phatroi.com",
         "meta_desc": "Tìm hiểu về Phá Trời: tiểu thuyết đô thị tu chân TP.HCM 2026 của tác giả An Bình. Bối cảnh Sài Gòn, nhân vật Minh An, Lâm Tịch và Thể Đạo phàm nhân.",
-        "keywords": "Phá Trời là truyện gì, tiểu thuyết Phá Trời, Phá Toái Thần Hoang, đô thị tu chân Sài Gòn, Nguyễn Minh An, Lâm Tịch, Thể Đạo, tác giả An Bình, truyện tiên hiệp Việt Nam",
+        "keywords": "Phá Trời là truyện gì, tiểu thuyết Phá Trời, Thể Đạo phàm nhân, địa chất Việt Nam, Nguyễn Minh An, Lâm Tịch, Thể Đạo, tác giả An Bình, truyện tiên hiệp Việt Nam",
         "category": "CẨM NANG TÁC PHẨM",
         "read_mins": 7,
         "date": "2026-10-01",
         "content_html": """
 <p class="lead-p">
-  <strong>Phá Trời</strong> (tên đầy đủ: <em>Phá Toái Thần Hoang</em>) là bộ trường thiên tiểu thuyết đô thị tu chân hiện đại của tác giả <strong>An Bình</strong>, lấy bối cảnh chính xác tại <strong>Thành phố Hồ Chí Minh năm 2026</strong>. Tác phẩm kể về hành trình của <strong>Nguyễn Minh An</strong> — một nhân viên văn phòng 25 tuổi bình thường — vô tình bước vào thế giới tu chân khi phong ấn đại địa cổ xưa ngủ vùi 2,5 triệu năm dưới lòng sông Sài Gòn bắt đầu thức giấc.
+  <strong>Phá Trời</strong> là bộ đại trường thiên tiểu thuyết Thể Đạo phàm nhân kết hợp địa chất non sông của tác giả <strong>An Bình</strong>, lấy bối cảnh chính xác tại <strong>Việt Nam năm 2026</strong>. Tác phẩm kể về hành trình của <strong>Nguyễn Minh An</strong> — một kỹ sư thực địa 25 tuổi của Viện Khảo sát Địa chất — bước vào con đường Thể Đạo khổ tu khi phong ấn đại địa cổ xưa ngủ vùi 2,5 triệu năm dưới lòng đất bắt đầu thức giấc.
 </p>
 
 <h2>1. Thông Tin Tổng Quan Tác Phẩm</h2>
 <div class="info-table-box">
   <table class="data-table">
     <tbody>
-      <tr><td><strong>Tên tác phẩm:</strong></td><td>Phá Trời (Phá Toái Thần Hoang)</td></tr>
+      <tr><td><strong>Tên tác phẩm:</strong></td><td>Phá Trời</td></tr>
       <tr><td><strong>Tác giả:</strong></td><td>An Bình</td></tr>
-      <tr><td><strong>Thể loại:</strong></td><td>Đô thị tu chân, Huyền huyễn hiện đại, Thể thuật, Triết luận</td></tr>
-      <tr><td><strong>Bối cảnh chính:</strong></td><td>TP. Hồ Chí Minh (Sài Gòn), Việt Nam — Năm 2026</td></tr>
-      <tr><td><strong>Quy mô hiện tại:</strong></td><td>78+ chương (~226.500+ từ), đang phát hành liên tục</td></tr>
+      <tr><td><strong>Thể loại:</strong></td><td>Thể Đạo phàm nhân, Phiêu lưu mạo hiểm, Địa chất, Huyền huyễn</td></tr>
+      <tr><td><strong>Bối cảnh chính:</strong></td><td>TP. Hồ Chí Minh & Tây Nguyên, Việt Nam — Năm 2026</td></tr>
+      <tr><td><strong>Quy mô hiện tại:</strong></td><td>95+ chương (~291.000+ từ), đang phát hành liên tục</td></tr>
       <tr><td><strong>Nền tảng đọc chính thức:</strong></td><td><a href="https://phatroi.com/">phatroi.com</a> (Đọc miễn phí, hỗ trợ PWA offline 24/7)</td></tr>
     </tbody>
   </table>
@@ -57,7 +57,7 @@ SEO_PAGES = [
   Nhân vật chính <strong>Nguyễn Minh An</strong> được xây dựng hoàn toàn đối lập với hình mẫu nhân vật "tiên hiệp mì ăn liền":
 </p>
 <blockquote>
-  “Hắn không có linh căn thượng phẩm, không có hệ thống điểm số nhảy số trước mắt, và càng không phải là đại năng chuyển thế mang theo ký ức bá đạo. Hắn chỉ là một người phàm 25 tuổi, ban ngày chen chúc trên chiếc xe máy cũ qua cầu Sài Gòn để kịp giờ chấm công, ban đêm đối diện với những cơn đau xé rách xương tủy khi huyết mạch thức giấc.”
+  “Hắn không có linh căn thượng phẩm, không có hệ thống điểm số nhảy số trước mắt, và càng không phải là đại năng chuyển thế mang theo ký ức bá đạo. Hắn chỉ là một người phàm 25 tuổi dãi dầu sương gió, ban ngày lấm lem bùn đất công trường với chiếc búa địa chất, ban đêm đối diện với những cơn đau tôi luyện xương tủy khi Thuần Dương Cương Huyết thức giấc.”
 </blockquote>
 <p>
   Minh An đại diện cho ý chí quật cường của một con người bình dị. Khi bị cuốn vào cơn lốc giữa các thế lực siêu nhiên cổ xưa và nguy cơ đại địa sụp đổ, vũ khí duy nhất hắn sở hữu là ý chí sắt đá và <strong>Thể Đạo</strong> — con đường tu luyện nhục thân thuần túy.
@@ -83,7 +83,7 @@ SEO_PAGES = [
 
 <h2>6. Hướng Dẫn Đọc & Theo Dõi Tác Phẩm</h2>
 <p>
-  Hiện tại, <em>Phá Trời</em> đã xuất bản trọn vẹn <strong>78 chương</strong> đầu tiên (tương đương Quyển I và nửa đầu Quyển II). Tác phẩm được phát hành miễn phí và chính thức tại website:
+  Hiện tại, <em>Phá Trời</em> đã xuất bản trọn vẹn <strong>95 chương</strong> đầu tiên (tương đương Quyển I và trọn vẹn hai phân đoạn lớn). Tác phẩm được phát hành miễn phí và chính thức tại website:
 </p>
 <div class="cta-box">
   <h3>Bắt Đầu Đọc Phá Trời Ngay Hôm Nay</h3>
@@ -254,16 +254,16 @@ SEO_PAGES = [
     },
     {
         "slug": "nguyen-minh-an",
-        "title": "Hồ Sơ Nguyễn Minh An: Nhân Viên Văn Phòng 25 Tuổi Và Đại Địa Phong Ấn Sài Gòn",
+        "title": "Hồ Sơ Nguyễn Minh An: Kỹ Sư Thực Địa 25 Tuổi Và Hành Trình Thể Đạo Phàm Nhân",
         "meta_title": "Hồ Sơ Nguyễn Minh An — Phàm Nhân Thể Đạo | phatroi.com",
-        "meta_desc": "Hồ sơ chi tiết về Nguyễn Minh An: 25 tuổi, nhân viên văn phòng tại TP.HCM, người thức tỉnh Thể Đạo phàm nhân dưới phong ấn 2,5 triệu năm của sông Sài Gòn.",
-        "keywords": "Nguyễn Minh An, nhân vật Minh An Phá Trời, hồ sơ Nguyễn Minh An, nhân vật chính Phá Trời, tiểu sử Minh An, Thể Đạo Minh An",
+        "meta_desc": "Hồ sơ chi tiết về Nguyễn Minh An: 25 tuổi, kỹ sư thực địa Viện Khảo sát Địa chất tại TP.HCM, người thức tỉnh Thể Đạo phàm nhân dãi dầu sương gió cùng tàn hồn Lâm Tịch.",
+        "keywords": "Nguyễn Minh An, nhân vật Minh An Phá Trời, hồ sơ Nguyễn Minh An, kỹ sư địa chất, Thể Đạo Minh An, phàm nhân khổ tu",
         "category": "HỒ SƠ NHÂN VẬT",
         "read_mins": 5,
         "date": "2026-10-03",
         "content_html": """
 <p class="lead-p">
-  <strong>Nguyễn Minh An</strong> là nhân vật chính của trường thiên tiểu thuyết đô thị tu chân <strong>Phá Trời</strong>. Một thanh niên 25 tuổi mang đầy đủ những nét đặc trưng của thế hệ trẻ Sài Gòn hiện đại: kiên trì, thực tế, sống có trách nhiệm nhưng ẩn chứa bên trong là một ý chí bất khuất trước nghịch cảnh.
+  <strong>Nguyễn Minh An</strong> là nhân vật chính của trường thiên tiểu thuyết <strong>Phá Trời</strong>. Một kỹ sư thực địa 25 tuổi mang đầy đủ những nét đặc trưng của con người phương Nam: mộc mạc, thực tế, hiếu thảo với má già ở cù lao sông Tiền, bàn tay chai sạn vì quai búa đập đá bazan nhưng ẩn chứa bên trong là ý chí quật cường của Thể Đạo phàm nhân.
 </p>
 
 <h2>1. Thông Tin Cơ Bản</h2>
@@ -272,25 +272,27 @@ SEO_PAGES = [
     <tbody>
       <tr><td><strong>Họ và tên:</strong></td><td>Nguyễn Minh An</td></tr>
       <tr><td><strong>Tuổi:</strong></td><td>25 tuổi (Sinh năm 2001, mốc truyện 2026)</td></tr>
-      <tr><td><strong>Nơi cư trú:</strong></td><td>Phòng trọ đường Ung Văn Khiêm, P. 25, Q. Bình Thạnh, TP.HCM</td></tr>
-      <tr><td><strong>Nghề nghiệp:</strong></td><td>Nhân viên văn phòng / Thiết kế dữ liệu</td></tr>
-      <tr><td><strong>Đạo đồ tu luyện:</strong></td><td>Thể Đạo (Không linh căn, không pháp môn)</td></tr>
-      <tr><td><strong>Tình trạng hiện tại:</strong></td><td>Đã kích hoạt Khí Huyết Lạc Mạch, cộng sinh cùng tàn hồn Lâm Tịch</td></tr>
+      <tr><td><strong>Quê quán:</strong></td><td>Cù lao bãi bồi sông Tiền, Huyện Cai Lậy, Tỉnh Tiền Giang</td></tr>
+      <tr><td><strong>Nơi cư trú:</strong></td><td>Phòng trọ đường Ung Văn Khiêm & Nơ Trang Long, Q. Bình Thạnh, TP.HCM</td></tr>
+      <tr><td><strong>Nghề nghiệp:</strong></td><td>Kỹ sư thực địa (Viện Khảo sát Địa chất)</td></tr>
+      <tr><td><strong>Đạo đồ tu luyện:</strong></td><td>Thể Đạo phàm nhân (Cảnh giới Hoán Huyết, không linh căn, không hệ thống)</td></tr>
+      <tr><td><strong>Binh khí cốt lõi:</strong></td><td>Hắc Thiết Đoản Côn (thép nhíp Zil) & Trấn Thủy Đoản Đao gia bảo</td></tr>
+      <tr><td><strong>Tình trạng hiện tại:</strong></td><td>Thuần Dương Cương Huyết sơ kỳ, đồng hành sinh mệnh cùng tàn hồn Lâm Tịch</td></tr>
     </tbody>
   </table>
 </div>
 
 <h2>2. Tính Cách & Triết Lý Sống</h2>
 <p>
-  Minh An không phải là kẻ háo danh hay khao khát quyền lực thống trị. Mục tiêu ban đầu của hắn rất đỗi bình thường: kiếm đủ tiền trang trải cuộc sống, chăm lo cho người thân và có một chỗ đứng yên bình tại thành phố này.
+  Minh An không phải là kẻ háo danh hay khao khát quyền lực thống trị. Mục tiêu ban đầu của anh rất đỗi bình dị: làm lụng trắc địa gửi tiền về phụ má đắp bờ bao chống lũ, chăm sóc vườn sầu riêng bãi bồi và sống một đời phàm nhân an ổn.
 </p>
 <p>
-  Tuy nhiên, khi biến cố ập đến và phát hiện bản thân là mắt xích quan trọng nhất của đại phong ấn sông Sài Gòn, hắn không hề trốn chạy. Thái độ đối mặt với khó khăn của Minh An mang đậm tính cách người miền Nam: điềm tĩnh, dám làm dám chịu và kiên cường tới cùng.
+  Tuy nhiên, khi biến cố địa chấn ập đến và phát hiện dấu chân của người cha quá cố in hằn trên những trận nhãn phong ấn non sông, anh không hề thoái lui. Thái độ đối mặt với hiểm nguy của Minh An mang đậm cốt cách người thợ: cẩn trọng, kiên nhẫn, dám làm dám chịu, dùng mồ hôi và máu thật sự để bảo bọc sự bình yên cho xóm làng.
 </p>
 
 <h2>3. Bước Ngoặt Định Mệnh</h2>
 <p>
-  Cơn mưa rào đêm tháng 10 năm 2026 tại ngã tư Hàng Xanh đã thay đổi hoàn toàn cuộc đời Minh An. Hiện tượng địa chấn ngầm kích hoạt dòng ký ức viễn cổ ngủ sâu trong gien di truyền, mở ra cánh cổng thức hải và đánh thức Lâm Tịch — người đã ngủ vùi 2,5 triệu năm.
+  Cơn mưa dông chiều tháng Chín năm 2026 tại ngã tư Hàng Xanh đã thay đổi hoàn toàn cuộc đời Minh An. Vệt tàn tro cổ xưa xé toạc màn mưa rơi vào sau đốt sống cổ, mở ra cánh cổng thức hải và kết nối sinh mệnh cùng Bạch Y Thần Nữ Lâm Tịch — người mang theo bí mật phong ấn đại địa hàng triệu năm trước của non sông đất Việt.
 </p>
 
 <div class="cta-box">
@@ -298,7 +300,7 @@ SEO_PAGES = [
   <p>Đón đọc hành trình đầy kịch tính của Nguyễn Minh An tại phatroi.com.</p>
   <div class="cta-actions">
     <a href="/chuong-1/" class="btn-cta-primary">Đọc Chương 1 Ngay →</a>
-    <a href="/phat-troi-la-truyen-gi/" class="btn-cta-secondary">Về Trang Chủ Phá Trời</a>
+    <a href="/the-dao/" class="btn-cta-secondary">Tìm Hiểu Thể Đạo</a>
   </div>
 </div>
 """
@@ -490,8 +492,8 @@ def render_seo_page_html(article, shared_css, site_url, ga_measurement_id, total
     </div>
 
     <footer class="site-footer">
-      <div class="footer-title">PHÁ TRỜI — PHÁ TOÁI THẦN HOANG</div>
-      <div class="footer-sub">Trường thiên tiểu thuyết đô thị tu chân Sài Gòn 2026 • Tác giả: An Bình</div>
+      <div class="footer-title">PHÁ TRỜI</div>
+      <div class="footer-sub">Đại trường thiên Thể Đạo phàm nhân & Địa chất non sông 2026 • Tác giả: An Bình</div>
       <div class="footer-copy">Bản quyền nội dung thuộc về tác giả An Bình © 2026. Mọi quyền được bảo lưu.</div>
     </footer>
   </main>

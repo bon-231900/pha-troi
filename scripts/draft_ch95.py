@@ -45,7 +45,7 @@ Và ngay trên tấm biển tên bằng thép không gỉ dày hai phân gắn c
 
 Dự án Earth-Seal. Phân khu số 4 — Chư Yang Sin. Cụm neo hạch tâm phiên bản 2026.
 
-Tôi hít sâu một hơi không khí ẩm lạnh, lồng ngực thắt lại. 
+Làn không khí ẩm lạnh thốc vào khoang mũi buốt rát, lồng ngực tôi thắt lại. 
 
 Năm 2026 chính là năm nay! 
 
@@ -120,14 +120,15 @@ Nhưng khi tôi lật đến những trang cuối cùng, ngày tháng ghi trên 
 
 Đó là những dòng ghi chép mới toanh, chỉ cách thời điểm hiện tại chưa đầy ba tháng!
 
-Nét chữ lần này thanh mảnh hơn, viết bằng bút bi xanh của một kỹ sư trẻ thuộc thế hệ chúng tôi:
+Nét chữ lần này thanh mảnh hơn, viết bằng bút bi xanh của một kỹ sư trẻ thuộc thế hệ chúng tôi. Nhật ký ghi nhận đội công tác đã hoàn tất việc hiệu chỉnh ba mươi sáu cụm neo thủy lực Anchor Core V.2026 tại đáy vạc Chư Yang Sin theo đúng đồ án lưu trữ năm 1996 của cha tôi. Cấu trúc vành đai hợp kim chịu lực ổn định ở mức nhiệt độ 280 độ C.
 
-*"...Đã hoàn tất việc hiệu chỉnh 36 cụm neo thủy lực Anchor Core V.2026 tại đáy vạc Chư Yang Sin theo đúng đồ án lưu trữ năm 1996 của bác Hùng. Cấu trúc vành đai hợp kim chịu lực ổn định ở mức nhiệt độ 280 độ C.*
+Tuy nhiên, phần cảnh báo bên dưới lại được gạch chân hai lần mực đỏ:
 
-*Cảnh báo: Tần số dao động hạ âm 0.08 Hertz dưới lòng ống dẫn dung nham đang có dấu hiệu khuếch đại theo cấp số nhân. Vòng tròn cơ học chỉ có thể neo giữ cấu trúc đá mẹ trong giới hạn chịu tải tối đa 90 ngày. Nếu sau tiết Sương Giáng mà dao động không giảm, áp lực magma sẽ bẻ gãy toàn bộ bu-lông neo, gây phun trào dây chuyền dọc theo mạng lưới đứt gãy Nam Trung Bộ.*
+Tần số dao động hạ âm 0.08 Hertz dưới lòng ống dẫn dung nham đang có dấu hiệu khuếch đại theo cấp số nhân. Vòng tròn cơ học chỉ có thể neo giữ cấu trúc đá mẹ trong giới hạn chịu tải tối đa chín mươi ngày. Nếu sau tiết Sương Giáng mà dao động không giảm, áp lực magma sẽ bẻ gãy toàn bộ bu-lông neo, gây phun trào dây chuyền dọc theo mạng lưới đứt gãy Nam Trung Bộ.
 
-*Ghi chú đặc biệt bằng bút chì của Viện trưởng:*
-*Mọi thông số khoa học đã đạt tới hạn của kỹ thuật cơ khí phàm trần. Chiếc khóa này đã sẵn sàng. Phần còn lại... chỉ còn biết trông cậy vào người giữ thanh Trấn Thủy Đoản Đao và khối Mộc Tâm từ phương Nam trở về..."*'''
+Phía dưới cùng là dòng ghi chú đặc biệt bằng nét chì của Viện trưởng:
+
+Mọi thông số khoa học đã đạt tới hạn của kỹ thuật cơ khí phàm trần. Chiếc khóa này đã sẵn sàng. Phần còn lại... chỉ còn biết trông cậy vào người giữ thanh Trấn Thủy Đoản Đao và khối Mộc Tâm từ phương Nam trở về...'''
 
 ACT4 = '''Đọc đến dòng chữ cuối cùng, sống mũi tôi cay xè, những ngón tay siết chặt lấy mép cuốn sổ bọc vải dầu.
 
@@ -147,7 +148,7 @@ Tôi bước tới trước rãnh tra then, nắm chặt chuôi Trấn Thủy Đ
 
 Một tiếng khớp then kim loại vang lên giòn tan, chuẩn xác đến từng phần mười milimét. 
 
-Tôi hít sâu một hơi, vận chuyển Thuần Dương Cương Huyết vừa thức tỉnh trong cơ thể. Ba mươi ba đốt sống tủy ngọc sau lưng tôi nóng bừng lên, một dòng nhiệt lượng thuần dương ấm áp từ đan điền cuộn trào qua các kinh mạch cánh tay, rót thẳng vào chuôi dao.
+Tôi nín thở điều hòa nhịp tim đang đập dồn dập trong lồng ngực, thúc giục Thuần Dương Cương Huyết vừa thức tỉnh trong cơ thể. Ba mươi ba đốt sống tủy ngọc sau lưng tôi nóng bừng lên, một dòng nhiệt lượng thuần dương ấm áp từ đan điền cuộn trào qua các kinh mạch cánh tay, rót thẳng vào chuôi dao.
 
 "Mở mạch khóa địa!"
 
@@ -171,7 +172,7 @@ Tôi xoay người, bám vào những gờ đá bazan nguội lạnh men theo l�
 
 Nửa tiếng sau, ánh sáng vàng ấm áp của ngọn đèn bão dã chiến hiện ra nơi khúc quanh của Hang Dơi.
 
-Già Y Dăm đang ngồi tựa lưng vào vách đá, tay nắm chặt cây nỏ săn bóng loáng, đầu gật gù trong cơn mệt mỏi. Nghe thấy tiếng bước chân ủng cao su dẫm trên đá dăm lạo xạo, ông già giật mình mở bừng mắt, mũi tên nỏ lập tức giương lên trong bóng tối. Nhưng khi nhận ra bóng dáng quen thuộc của tôi bước ra từ cửa hầm, đôi mắt đục mờ của người thợ săn già bỗng chốc ứa nước mắt.
+Già Y Dăm đang ngồi tựa lưng vào vách đá, tay nắm chặt cây nỏ săn bóng loáng, đầu gật gù trong cơn mệt mỏi. Nghe thấy tiếng bước chân ủng cao su dẫm trên đá dăm lạo xạo, ông già giật thót người choàng tỉnh, mũi tên nỏ lập tức giương lên trong bóng tối. Nhưng khi nhận ra bóng dáng quen thuộc của tôi bước ra từ cửa hầm, đôi mắt đục mờ của người thợ săn già bỗng chốc ứa nước mắt.
 
 — Ơi An... Mày... mày còn sống về được rồi!
 

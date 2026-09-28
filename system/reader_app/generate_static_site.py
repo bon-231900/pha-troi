@@ -679,14 +679,14 @@ def generate_cover_svg(total_ch=81):
   <rect x="36" y="36" width="1128" height="558" fill="none" stroke="rgba(229,192,123,0.35)" stroke-width="1.2"/>
   <rect x="44" y="44" width="1112" height="542" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
   
-  <text x="600" y="125" fill="#e5c07b" font-family="'Be Vietnam Pro', -apple-system, sans-serif" font-size="13" font-weight="600" letter-spacing="4" text-anchor="middle">ĐÔ THỊ TU CHÂN · TRƯỜNG THIÊN ĐẠI TÁC · TP.HCM 2026</text>
+  <text x="600" y="125" fill="#e5c07b" font-family="'Be Vietnam Pro', -apple-system, sans-serif" font-size="13" font-weight="600" letter-spacing="4" text-anchor="middle">ĐẠI TRƯỜNG THIÊN THỂ ĐẠO PHÀM NHÂN · ĐỊA CHẤT NON SÔNG 2026</text>
   
   <text x="600" y="260" fill="#e5c07b" font-family="'Lora', 'Georgia', serif" font-size="96" font-weight="700" letter-spacing="12" text-anchor="middle">PHÁ TRỜI</text>
-  <text x="600" y="315" fill="#8492a6" font-family="'Lora', 'Georgia', serif" font-size="24" font-weight="400" letter-spacing="6" text-anchor="middle">PHÁ TOÁI THẦN HOANG</text>
+  <text x="600" y="315" fill="#8492a6" font-family="'Lora', 'Georgia', serif" font-size="24" font-weight="400" letter-spacing="6" text-anchor="middle">THỂ ĐẠO PHÀM NHÂN</text>
   
   <text x="600" y="375" fill="#e5c07b" font-size="18" letter-spacing="6" text-anchor="middle">· ✦ ·</text>
   
-  <text x="600" y="440" fill="#e2e8f0" font-family="'Lora', 'Georgia', serif" font-size="20" font-style="italic" text-anchor="middle">"Một nhân viên văn phòng... cho đến khi phát hiện đại phong ấn sông ngầm Sài Gòn."</text>
+  <text x="600" y="440" fill="#e2e8f0" font-family="'Lora', 'Georgia', serif" font-size="20" font-style="italic" text-anchor="middle">"Hành trình phàm nhân Thể Đạo dãi dầu sương gió, khám phá bí ẩn địa chất non sông."</text>
   
   <text x="600" y="525" fill="#8492a6" font-family="'Be Vietnam Pro', -apple-system, sans-serif" font-size="13" font-weight="500" letter-spacing="2.5" text-anchor="middle">TÁC GIẢ: AN BÌNH · {total_ch} CHƯƠNG HOÀN THIỆN · ĐỌC ONLINE &amp; OFFLINE</text>
   <text x="600" y="555" fill="#517a8f" font-family="'Be Vietnam Pro', -apple-system, sans-serif" font-size="11.5" letter-spacing="1.5" text-anchor="middle">PHATROI.COM · TOÀN BỘ BẢN QUYỀN ĐƯỢC BẢO LƯU</text>
@@ -812,25 +812,25 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="google-site-verification" content="495lr0EokjP3LLADeovb1t_ecOikpcbgyO_mW9m8e00">
   <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
-  <title>Phá Trời — Tiểu Thuyết Đô Thị Tu Chân TP.HCM | An Bình</title>
+  <title>Phá Trời — Đại Trường Thiên Thể Đạo Phàm Nhân & Địa Chất Non Sông | An Bình</title>
   
-  <meta name="title" content="Phá Trời — Tiểu Thuyết Đô Thị Tu Chân TP.HCM | An Bình">
-  <meta name="description" content="Đọc tiểu thuyết đô thị tu chân Phá Trời của tác giả An Bình. Hành trình phàm nhân Thể Đạo phá vỡ phong ấn 2,5 triệu năm dưới sông Sài Gòn. Đọc miễn phí 24/7.">
-  <meta name="keywords" content="Phá Trời, Phá Toái Thần Hoang, tiểu thuyết đô thị tu chân, tu chân Sài Gòn, Thể Đạo, Nguyễn Minh An, Lâm Tịch, tác giả An Bình, phatroi.com">
+  <meta name="title" content="Phá Trời — Đại Trường Thiên Thể Đạo Phàm Nhân & Địa Chất Non Sông | An Bình">
+  <meta name="description" content="Đọc tiểu thuyết Phá Trời của tác giả An Bình. Hành trình Thể Đạo phàm nhân dãi dầu sương gió, khám phá bí ẩn địa chất non sông và phong ấn cổ xưa nghìn năm của đất Việt. Đọc miễn phí 24/7.">
+  <meta name="keywords" content="Phá Trời, tiểu thuyết Thể Đạo, địa chất Việt Nam, Thể Đạo phàm nhân, Nguyễn Minh An, Lâm Tịch, tác giả An Bình, phatroi.com">
   <meta name="author" content="An Bình">
   
   <link rel="canonical" href="{SITE_URL}/">
   <meta property="og:type" content="book">
   <meta property="og:url" content="{SITE_URL}/">
-  <meta property="og:title" content="Phá Trời — Tiểu Thuyết Đô Thị Tu Chân TP.HCM | An Bình">
-  <meta property="og:description" content="Đọc tiểu thuyết đô thị tu chân Phá Trời của tác giả An Bình. Hành trình phàm nhân Thể Đạo phá vỡ phong ấn 2,5 triệu năm dưới sông Sài Gòn. Đọc miễn phí 24/7.">
+  <meta property="og:title" content="Phá Trời — Đại Trường Thiên Thể Đạo Phàm Nhân & Địa Chất Non Sông | An Bình">
+  <meta property="og:description" content="Đọc tiểu thuyết Phá Trời của tác giả An Bình. Hành trình Thể Đạo phàm nhân dãi dầu sương gió, khám phá bí ẩn địa chất non sông và phong ấn cổ xưa nghìn năm của đất Việt. Đọc miễn phí 24/7.">
   <meta property="og:image" content="{SITE_URL}/assets/cover_vertical.jpg">
   <meta property="og:image:width" content="682">
   <meta property="og:image:height" content="1024">
 
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Phá Trời — Tiểu Thuyết Đô Thị Tu Chân TP.HCM | An Bình">
-  <meta name="twitter:description" content="Đọc tiểu thuyết đô thị tu chân Phá Trời của tác giả An Bình. Hành trình phàm nhân Thể Đạo phá vỡ phong ấn 2,5 triệu năm dưới sông Sài Gòn. Đọc miễn phí 24/7.">
+  <meta name="twitter:title" content="Phá Trời — Đại Trường Thiên Thể Đạo Phàm Nhân & Địa Chất Non Sông | An Bình">
+  <meta name="twitter:description" content="Đọc tiểu thuyết Phá Trời của tác giả An Bình. Hành trình Thể Đạo phàm nhân dãi dầu sương gió, khám phá bí ẩn địa chất non sông và phong ấn cổ xưa nghìn năm của đất Việt. Đọc miễn phí 24/7.">
   <meta name="twitter:image" content="{SITE_URL}/assets/tieu-thuyet-pha-troi-do-thi-tu-chan-sai-gon-huyen-ao.jpg">
 
   <link rel="manifest" href="/manifest.json">
@@ -884,8 +884,8 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
         "@id": "{SITE_URL}/#website",
         "url": "{SITE_URL}/",
         "name": "Phá Trời",
-        "alternateName": ["Phá Toái Thần Hoang", "Phá Trời Novel"],
-        "description": "Trường thiên tiểu thuyết đô thị tu chân Sài Gòn 2026 của tác giả An Bình.",
+        "alternateName": ["Phá Trời Novel", "Pha Troi Novel"],
+        "description": "Đại trường thiên tiểu thuyết Thể Đạo phàm nhân kết hợp địa chất non sông Việt Nam của tác giả An Bình.",
         "inLanguage": "vi",
         "publisher": {{
           "@id": "{SITE_URL}/#organization"
@@ -904,7 +904,7 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
       {{
         "@type": "Book",
         "@id": "{SITE_URL}/#book",
-        "name": "Phá Trời (Phá Toái Thần Hoang)",
+        "name": "Phá Trời",
         "author": {{
           "@type": "Person",
           "name": "An Bình",
@@ -914,10 +914,10 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
           "@id": "{SITE_URL}/#organization"
         }},
         "url": "{SITE_URL}/",
-        "genre": ["Đô thị tu chân", "Huyền huyễn", "Khoa huyễn", "Võ hiệp"],
+        "genre": ["Tiểu thuyết Thể Đạo", "Phiêu lưu mạo hiểm", "Địa chất", "Huyền huyễn"],
         "inLanguage": "vi",
         "numberOfPages": {total_ch},
-        "description": "Một nhân viên văn phòng tại TP.HCM phát hiện phong ấn sông ngầm 2.5 triệu năm. Không hệ thống, lấy Thể Đạo phàm nhân phá vỡ xiềng xích."
+        "description": "Hành trình Thể Đạo phàm nhân dãi dầu sương gió, khám phá bí ẩn địa chất non sông và phong ấn cổ xưa nghìn năm của đất Việt. Không hệ thống, khổ tu thực chiến."
       }}
     ]
   }}
@@ -951,7 +951,7 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
     </div>
 
     <div class="header-center">
-      <span class="header-title" id="headerTitle">Phá Trời (Phá Toái Thần Hoang)</span>
+      <span class="header-title" id="headerTitle">Phá Trời</span>
       <p class="header-sub" id="headerSub">{total_ch} chương • An Bình</p>
     </div>
 
@@ -988,9 +988,9 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
 
         <!-- Typographic Title Block -->
         <div class="titlepage-meta-block">
-          <div class="titlepage-imprint">TIỂU THUYẾT ĐÔ THỊ TU CHÂN · TP. HỒ CHÍ MINH</div>
+          <div class="titlepage-imprint">ĐẠI TRƯỜNG THIÊN THỂ ĐẠO PHÀM NHÂN & ĐỊA CHẤT NON SÔNG</div>
           <h1 class="titlepage-title">PHÁ TRỜI</h1>
-          <div class="titlepage-sub">PHÁ TOÁI THẦN HOANG</div>
+          <div class="titlepage-sub">ĐẠI TRƯỜNG THIÊN THỂ ĐẠO PHÀM NHÂN</div>
           <div class="titlepage-author">Tác giả: <em>An Bình</em></div>
           
           <div class="titlepage-ornament" aria-hidden="true"></div>
@@ -998,7 +998,7 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
           <!-- Classical Epigraph / Đề từ -->
           <div class="titlepage-epigraph">
             <p class="epigraph-quote">“Sông Sài Gòn chảy qua ngàn năm dâu bể, dưới lớp phù sa ngầm là phong ấn đại địa hai triệu năm chưa từng thức giấc.”</p>
-            <p class="epigraph-premise">Phàm nhân không linh căn, không hệ thống hack điểm — lấy từng tấc huyết nhục <strong>Thể Đạo</strong> phá vỡ vạn trùng xiềng xích càn khôn.</p>
+            <p class="epigraph-premise">Phàm nhân không linh căn, không hệ thống — lấy từng tấc da thịt Thể Đạo khổ tu phá vỡ vạn trùng xiềng xích càn khôn.</p>
           </div>
 
           <!-- Bibliographic Colophon Line -->
@@ -1127,8 +1127,8 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
           <source srcset="/assets/logo.webp" type="image/webp">
           <img src="/assets/logo.jpg" class="footer-logo" alt="Phá Trời">
         </picture>
-        <div class="footer-title">PHÁ TRỜI — PHÁ TOÁI THẦN HOANG</div>
-        <div class="footer-sub">Trường thiên tiểu thuyết đô thị tu chân Sài Gòn 2026 • Tác giả: An Bình</div>
+        <div class="footer-title">PHÁ TRỜI</div>
+        <div class="footer-sub">Đại trường thiên Thể Đạo phàm nhân & Địa chất non sông 2026 • Tác giả: An Bình</div>
         <div class="footer-info-line" style="font-size:12px; color:var(--text-muted); margin-bottom:8px;">
           Đã phát hành: <strong style="color:var(--gold-primary);">{total_ch} chương</strong> ({total_words:,} từ) • Tình trạng: <strong style="color:#34d399;">Đang sáng tác đều đặn</strong> • Đọc offline PWA 24/7
         </div>
@@ -1377,7 +1377,7 @@ def generate_chapter_html(ch_info, chapters_index, total_words, codex_items=None
   
   <meta name="title" content="{title_seo}">
   <meta name="description" content="{desc_seo}">
-  <meta name="keywords" content="Phá Trời Chương {ch_num}, {clean_title}, đọc Phá Trời, tiểu thuyết đô thị tu chân, tu chân Sài Gòn, Thể Đạo, Nguyễn Minh An, tác giả An Bình, phatroi.com">
+  <meta name="keywords" content="Phá Trời Chương {ch_num}, {clean_title}, đọc Phá Trời, tiểu thuyết Thể Đạo, Thể Đạo phàm nhân, Nguyễn Minh An, tác giả An Bình, phatroi.com">
   <meta name="author" content="An Bình">
   
   <link rel="canonical" href="{SITE_URL}/chuong-{ch_num}/">
@@ -1453,8 +1453,8 @@ def generate_chapter_html(ch_info, chapters_index, total_words, codex_items=None
         "@type": "WebSite",
         "@id": "{SITE_URL}/#website",
         "url": "{SITE_URL}/",
-        "name": "Phá Trời (Phá Toái Thần Hoang)",
-        "description": "Trường thiên tiểu thuyết đô thị tu chân Sài Gòn 2026."
+        "name": "Phá Trời",
+        "description": "Đại trường thiên tiểu thuyết Thể Đạo phàm nhân & Địa chất non sông."
       }},
       {{
         "@type": "BreadcrumbList",
@@ -1486,7 +1486,7 @@ def generate_chapter_html(ch_info, chapters_index, total_words, codex_items=None
         "isPartOf": {{
           "@type": "Book",
           "@id": "{SITE_URL}/#book",
-          "name": "Phá Trời (Phá Toái Thần Hoang)",
+          "name": "Phá Trời",
           "url": "{SITE_URL}/"
         }},
         "headline": {title_seo_json},
@@ -1633,7 +1633,7 @@ def generate_chapter_html(ch_info, chapters_index, total_words, codex_items=None
           <span>❖ KHÁM PHÁ THẾ GIỚI PHÁ TRỜI</span>
         </div>
         <p class="chapter-lore-cta-desc">
-          Bạn muốn hiểu sâu hơn về bối cảnh Sài Gòn 2026 và hệ thống tu chân độc nhất của Phá Trời? Khám phá ngay các hồ sơ mở rộng:
+          Bạn muốn hiểu sâu hơn về bối cảnh địa chất và con đường Thể Đạo độc nhất của Phá Trời? Khám phá ngay các hồ sơ mở rộng:
         </p>
         <div class="chapter-lore-grid">
           <a href="/the-dao/" class="lore-cta-link">
@@ -1642,11 +1642,11 @@ def generate_chapter_html(ch_info, chapters_index, total_words, codex_items=None
           </a>
           <a href="/nguyen-minh-an/" class="lore-cta-link">
             <div class="lore-cta-link-title">✦ Hồ Sơ Nguyễn Minh An</div>
-            <div class="lore-cta-link-desc">Nhân viên văn phòng 25 tuổi và phong ấn sông ngầm Sài Gòn 2.5 triệu năm.</div>
+            <div class="lore-cta-link-desc">Kỹ sư thực địa 25 tuổi của Viện Khảo sát Địa chất và hành trình Thể Đạo phàm nhân dãi dầu sương gió.</div>
           </a>
           <a href="/phat-troi-la-truyen-gi/" class="lore-cta-link">
             <div class="lore-cta-link-title">✦ Cẩm Nang Phá Trời</div>
-            <div class="lore-cta-link-desc">Toàn cảnh cốt truyện, địa danh TP.HCM có thật và hệ thống tu chân.</div>
+            <div class="lore-cta-link-desc">Toàn cảnh cốt truyện, địa chất non sông và thế giới quan Thể Đạo.</div>
           </a>
         </div>
         <div class="chapter-lore-footer">
@@ -1915,7 +1915,7 @@ def build():
 
     now_iso = datetime.now().astimezone().strftime("%Y-%m-%dT%H:%M:%S+07:00")
     index_data = {
-        "title": "Phá Trời (Phá Toái Thần Hoang)",
+        "title": "Phá Trời",
         "author": "An Bình",
         "total": len(chapters_index),
         "total_words": total_words,
