@@ -114,13 +114,21 @@
       "condition": "Nguyên vẹn trong ống nhôm dã chiến, giấy can dầu mực tàu",
       "durability": "95/100",
       "function": "Dẫn đường qua hầm đứt gãy số 3 thâm nhập miệng núi lửa Chư Yang Sin; ghi chép chu kỳ địa chấn 30 năm"
+    },
+    {
+      "name": "Tấm Ảnh Đen Trắng Khảo Sát 1996 (Ba Hùng & Bác Trần Vũ Cương)",
+      "type": "Di vật kỷ niệm / Manh mối địa tầng",
+      "location": "Chiếc ví da cũ trong túi áo gi-lê dã chiến",
+      "condition": "Ảnh ố vàng theo thời gian, góc nẹp cẩn thận",
+      "durability": "100/100",
+      "function": "Minh chứng kết nghĩa sinh tử giữa thợ cơ khí Nguyễn Văn Hùng và thợ lặn Trần Vũ Cương tại Hòn Yến năm 1996; bảo chứng niềm tin với hoa tiêu Hải Yến"
     }
   ],
   "core_skills": [
     {
       "name": "Đoán Cốt Thập Nhị Thức",
       "type": "Thể Đạo / Luyện Cốt quyền pháp",
-      "stage": "Luyện Cốt Trung kỳ (Thông thạo đến Thức thứ 7: Ngọc Tủy Quy Nhất)"
+      "stage": "Đại Viên Mãn (12/12 Thức, 33 đốt sống tủy ngọc thấu quang, tiến nhập Hoán Huyết Sơ kỳ)"
     },
     {
       "name": "Kính Kình Thể Thuật (Kính Phách Phản Chấn Quyết)",
