@@ -18,10 +18,13 @@ Tài liệu này là quy tắc tối cao được tải tự động trong toàn
 
 ---
 
-## 3. QUY TẮC VĂN PHONG & TỪ NGỮ CẤM KỴ (RULE-07 & CANON)
+## 3. QUY TẮC VĂN PHONG, TỪ NGỮ CẤM KỴ & CẤU TRÚC PHÂN CHƯƠNG (RULE-07 & CANON)
 - **0 Meta-words**: Cấm tuyệt đối các từ `chương`, `hồi`, `quyển`, `tác giả`, `hệ thống`, `bản thảo`, `canon`, `database`, `plot`, `foreshadowing` trong thân bài văn xuôi.
 - **0 Từ "huyết mạch"**: Cấm tiệt từ `huyết mạch` (dùng `dòng máu`, `cương huyết`, `khí huyết`, `kinh mạch`).
 - **Cấm sáo ngữ giật gân rẻ tiền**: *"và hắn không biết rằng"*, *"hắn vĩnh viễn không thể ngờ"*, *"chuyện gì đến cũng phải đến"*.
+- **CẤM TUYỆT ĐỐI CẤU TRÚC BÀI LUẬN / TẬP LÀM VĂN ("MỞ — THÂN — KẾT")**:
+  - **Mở đầu chương**: Tuyệt đối cấm đoạn đệm tả cảnh thời tiết sáo mòn (nắng sớm hanh hao, hoàng hôn buông xuống, gió thổi qua khe cửa, mưa rào xối xả, trời sập tối), mốc giờ cơ học hay thức dậy/ngồi trầm ngâm. **Bắt buộc dùng Cold Open**: nhảy thẳng vào hiện trường hành động, tiếng động cơ, va đập kim loại cơ khí, áp lực thể xác hoặc đón trọn quán tính từ câu thoại/hành động cuối của chương trước.
+  - **Kết thúc chương**: Tuyệt đối cấm đúc kết triết lý luận điểm, tự sự tổng kết ("Tôi biết rằng...", "Bánh xe số phận bắt đầu...", "Một ngày mới tiếp diễn...", "Con đường phía trước còn nhiều thử thách/bão táp..."). Cấm rặn cliffhanger giật gân rẻ tiền. Bắt buộc kết thúc bằng: cắt ngang hành động (Hard Cut / Mid-Action Snap), buông 1 câu thoại quyết định hoặc đọng lại một chi tiết giác quan đời thường trần trụi.
 - **Độ dài chương**: Chuẩn mực **3.200 – 4.500 từ**.
 - **Góc nhìn**: Nhất quán ngôi thứ nhất (POV Nguyễn Minh An), không nhảy góc nhìn (no head-hopping).
 
