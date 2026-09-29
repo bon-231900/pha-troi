@@ -8,8 +8,8 @@
 | Mức Độ | Số Chương | Đặc Điểm Nhận Diện |
 | :--- | :--- | :--- |
 | Nặng (Score >= 4) | 0 chương | Mở bài tả đủ mây gió thời tiết, kết bài hô hào đúc kết triết lý kiên định/bánh xe số phận |
-| Trung bình (Score 2-3) | 16 chương | Mở bài hoặc kết bài dính 1 trong các văn mẫu quen thuộc |
-| Sạch / Liền mạch (Score <= 1) | 80 chương | Vào thẳng hiện trường (Cold Open) hoặc kết thúc bằng hình ảnh cụ thể/cắt rụp |
+| Trung bình (Score 2-3) | 18 chương | Mở bài hoặc kết bài dính 1 trong các văn mẫu quen thuộc |
+| Sạch / Liền mạch (Score <= 1) | 78 chương | Vào thẳng hiện trường (Cold Open) hoặc kết thúc bằng hình ảnh cụ thể/cắt rụp |
 
 ## 2. BẢNG CHI TIẾT TỪNG CHƯƠNG BỊ DÍNH CÔNG THỨC
 
@@ -141,7 +141,7 @@
 
 ### [Chương 015] — 🟢 ĐẠT CHUẨN (Điểm: 0)
 - **Mở bài** (Không dính mẫu):
-> Thẻ từ quẹt qua cổng an ninh tòa nhà Quận 1 phát ra tiếng bíp gấp gáp hơn thường lệ. Ở sảnh thang máy tầng trệt, hai nhân viên kỹ thuật địa chấn đang vội vã ôm những chồng bản đồ địa tầng cuộn tròn rảo bước nhanh về phía phòng họp khẩn.
+> Thẻ từ quẹt qua cổng an ninh tòa nhà Quận 1 phát ra tiếng bíp gấp gáp hơn thường lệ. Ở sảnh thang máy kỹ thuật tầng trệt, hai nhân viên an ninh đứng gác nghiêm trang bên cạnh ba chiếc vali hợp kim nhôm dán tem niêm phong đỏ của Viện Nghiên cứu Năng lượng Đô thị.
 
 - **Kết bài** (Không dính mẫu):
 > Dưới biểu đồ tần số thấp, một dòng ghi chú vội bằng mực xanh của chuyên viên phân tích khiến sống lưng tôi bỗng ớn lạnh: *“Tâm chấn dao động ngược dòng phù sa, độ sâu 18 mét, trùng khớp tuyệt đối với vị trí giếng cổ Ba Son.”*
@@ -171,13 +171,15 @@
 > Mùi sáp ong cháy khét quyện với tiếng sấm rền đập rung chuyển khung kính căn phòng trọ trên đường Nơ Trang Long. Tôi ngồi xếp bằng trên chiếc chiếu cói, hai mắt khép hờ, toàn bộ sự tập trung dồn vào luồng nhiệt đang sục sôi nơi chân gáy.
 
 - **Kết bài** (Không dính mẫu):
-> Trên màn hình điện thoại đặt ở góc bàn, dòng thông báo khẩn màu đỏ từ ban chỉ huy công trường vẫn nhấp nháy từng hồi: *Tập trung toàn đội trắc địa tại hố móng ngầm Ba Son trước 07:00.*
+> Cơn mưa đêm dần tạnh, để lại hơi đất ẩm ướt bốc lên từ mặt ngõ. Tôi với tay thổi tắt ngọn nến nhỏ nơi góc tường, ngả lưng xuống chiếc chiếu cói đơn sơ. Dòng cương huyết ấm nóng từ huyệt Đại Chùy sau gáy vẫn đang âm thầm thẩm thấu qua từng tế bào tủy não, đưa tôi chìm vào một giấc ngủ sâu tĩnh tại trước khi bước vào tuần làm việc mới.
 
 ---
 
-### [Chương 019] — 🟢 ĐẠT CHUẨN (Điểm: 0)
-- **Mở bài** (Không dính mẫu):
-> Mũi khoan trắc địa ngập sâu sáu mét dưới lòng đất Ba Son đột ngột rít lên ken két vì chạm phải một vỉa đá cứng dị thường. Bùn khoáng màu xám tro trào ngược lên miệng ống nòng đôi, bốc ra mùi lưu huỳnh ngai ngái làm cay xè sống mũi tôi.
+### [Chương 019] — 🟡 CÓ SẠN (Điểm: 2)
+- **Mở bài** (Mốc thời gian hành chính/sinh hoạt, Thói quen bắt đầu ngày mới/tỉnh giấc):
+> Tiếng nổ pành pành giòn giã của chiếc xe Wave phá tan không khí ẩm ướt của con hẻm nhỏ đường Nơ Trang Long khi tôi gạt chân chống dắt xe ra đầu ngõ.
+ 
+Khác với cảm giác uể oải, nặng nề quen thuộc của những buổi sáng đầu tuần trước đây, toàn bộ cơ thể tôi lúc này tràn trề một nguồn sinh lực nhẹ nhõm đến lạ kỳ. Sau khi khai mở chiếc then cài phong ấn Đại Chùy ở đốt sống cổ thứ ba và hoàn thành vòng Nhị Chu Thiên vào rạng sáng, dòng máu giàu dưỡng chất lưu thông lên đại não với tốc độ êm ả và dồi dào, khiến mọi tế bào thần kinh của tôi duy trì trạng thái minh mẫn tột đỉnh.
 
 - **Kết bài** (Không dính mẫu):
 > Nắp hộp cơm đậy cạch lại. Cuống họng tôi vẫn còn vương vị cay nồng của ớt hiểm, bàn chân rảo bước nhanh qua hành lang hướng thẳng về phía phòng lưu trữ lõi khoan địa chất.
@@ -519,7 +521,7 @@
 
 ### [Chương 057] — 🟢 ĐẠT CHUẨN (Điểm: 0)
 - **Mở bài** (Không dính mẫu):
-> Cánh cửa phòng lưu trữ ngầm tầng hầm B2 Viện Địa chất bật mở toang, phả ra mùi hóa chất chống ẩm và giấy can dầu mốc meo. Kỹ sư Tuấn đã đứng chờ sẵn bên chiếc bàn inox, tay cầm xấp hồ sơ vi chấn đóng dấu mật màu đỏ tươi.
+> Tôi dừng chiếc xe Wave Alpha màu đỏ mận trước cổng rào kiểm soát của Viện Nghiên cứu Địa tầng và Năng lượng Nội sinh Đô thị.
 
 - **Kết bài** (Không dính mẫu):
 > Tôi quấn thanh đoản đao vào tấm vải bạt chống ẩm, cất vào đáy vali bảo hộ rồi sải bước rời khỏi phòng lab tầng hầm B2.
@@ -555,7 +557,7 @@
 
 ### [Chương 061] — 🟢 ĐẠT CHUẨN (Điểm: 0)
 - **Mở bài** (Không dính mẫu):
-> Mũi kim la bàn địa chất trong tay tôi xoay tít ba vòng rồi khựng cứng chỉ về phía cầu chữ Y. Chiếc Wave Alpha nổ máy giòn giã lách qua dòng xe cộ ken đặc đường Nguyễn Thị Minh Khai, hướng thẳng về hạ lưu rạch Bến Nghé.
+> Tôi dựng chiếc xe Wave Alpha vào tầng hầm trụ sở Viện Địa tầng, bước nhanh lên thang máy lên tầng tám.
 
 - **Kết bài** (Không dính mẫu):
 > Tôi quay đầu xe lủi vào bóng tối của hàng dừa nước, bàn tay siết nhẹ ghi đông, nhịp thở lắng dịu theo từng nhịp sóng vỗ chân bờ kè.
@@ -580,9 +582,9 @@
 
 ---
 
-### [Chương 064] — 🟢 ĐẠT CHUẨN (Điểm: 0)
-- **Mở bài** (Không dính mẫu):
-> Lốp xe bán tải chuyên dụng của Viện Địa chất rít lên khét lẹt trên mặt đường Huỳnh Tấn Phát khi tài xế bẻ lái gấp vào ngã ba Đào Trí, Quận 7. Hai chiếc xe dã chiến của lực lượng trinh sát bám sát phía sau, còi ưu tiên hú dồn dập xé tan bầu không khí oi nồng.
+### [Chương 064] — 🟢 ĐẠT CHUẨN (Điểm: 1)
+- **Mở bài** (Cử chỉ tĩnh trầm ngâm):
+> Chiếc xe bán tải chuyên dụng của Viện Địa tầng Đô thị rẽ khỏi đại lộ Nguyễn Văn Linh, lao nhanh vào đường Huỳnh Tấn Phát rồi quặt sang trục đường Đào Trí thuộc địa phận phường Phú Thuận, Quận 7. Đi kèm sát phía sau là hai chiếc xe dã chiến của lực lượng trinh sát thuộc Công an Thành phố Hồ Chí Minh.
 
 - **Kết bài** (Không dính mẫu):
 > Cùng lúc đó, bốn bóng đen ngậm ống thở tuần hoàn khép kín bất ngờ tách khỏi chân giàn khoan, súng phóng lao ngầm dưới đáy nước đồng loạt hướng thẳng về phía tôi, xé toạc lớp phù sa mịt mùng.
@@ -600,7 +602,7 @@
 
 ### [Chương 066] — 🟢 ĐẠT CHUẨN (Điểm: 1)
 - **Mở bài** (Tả gió):
-> Chân chống chiếc xe Wave gạt đánh xoẹt trên sân sỏi Viện Địa chất trên đường Mạc Đĩnh Chi. Tôi cởi chiếc áo khoác gió còn nồng nặc mùi bùn mặn ngã ba sông Mũi Đèn Đỏ, sải bước nhanh lên cầu thang gỗ dẫn vào phòng thí nghiệm vi chấn tầng hai.
+> Tôi dựng chiếc xe Wave cũ vào góc sân Viện Địa chất, cởi chiếc áo khoác gió còn vương mùi nước lợ mặn mòi, bước lên cầu thang gỗ dẫn vào phòng thí nghiệm vi chấn tầng hai.
 
 - **Kết bài** (Không dính mẫu):
 > Nhìn qua khe cửa sổ gỗ, ánh trăng rằm tháng Mười đã lên cao, rọi một vệt sáng bạc mát rượi xuống mặt sàn gạch bông. Tôi cẩn thận cất giữ ba khối trận nhãn vào ngăn bí mật của chiếc ba lô dã chiến. Hai tọa độ tiếp theo đã định hình rõ ràng trong tâm trí: Cầu Mống và Ba Son. Đêm nay, một giấc ngủ sâu sẽ giúp bồi hoàn khí huyết để đón nhận con nước ròng rạng đông.
@@ -609,7 +611,7 @@
 
 ### [Chương 067] — 🟢 ĐẠT CHUẨN (Điểm: 0)
 - **Mở bài** (Không dính mẫu):
-> Tia X từ chiếc máy quang phổ huỳnh quang quét ro ro trên mặt khối Hắc Thủy Huyền Thạch đặt trong buồng chì chân không. Kỹ sư Tuấn đeo kính bảo hộ, tay thoăn thoắt gõ bàn phím đối chiếu tần số dao động với đồ thị vi chấn rạch Bến Nghé.
+> Tôi bước vào phòng thí nghiệm, thấy kỹ sư Tuấn đã đến từ sớm, chiếc máy quang phổ huỳnh quang tia X đang quét ro ro lên bề mặt mẫu vật Hắc Thủy Huyền Thạch đặt trong buồng chì chân không.
 
 - **Kết bài** (Không dính mẫu):
 > Dưới chân tôi, mặt nước rạch Bến Nghé đã phẳng lặng trở lại, phản chiếu lung linh ánh đèn vàng của phố thị. Nhưng ngay mép nước sát chân mố đá, một vệt dầu máy màu tím sẫm nổi lên lềnh bềnh, kèm theo một mẩu dây cáp ngòi nổ quang học bọc nhựa xanh nổi lập lờ trôi dạt vào kẽ nứt. Đầu dây còn sót lại một vết cắt ngọt lịm chưa kịp bám rêu — kẻ đặt bẫy chấn động vừa mới rời khỏi đáy sông chỉ trước tôi vài bước chân.
@@ -618,7 +620,7 @@
 
 ### [Chương 068] — 🟢 ĐẠT CHUẨN (Điểm: 0)
 - **Mở bài** (Không dính mẫu):
-> Cáp tín hiệu cảm biến vi chấn thả tõm xuống dòng nước đen ngòm dưới chân mố đá Cầu Mống phía bờ Quận 4. Kỹ sư Tuấn ghì chặt tai nghe chuyên dụng, đôi lông mày nhíu chặt lại khi màn hình máy tính dã chiến nhảy loạn xạ những dải sóng âm bất thường.
+> Cáp tín hiệu cảm biến vi chấn thả tõm xuống dòng nước đen ngòm dưới chân mố đá Cầu Mống phía bờ Quận 4. Trên chiếc xà lan kỹ thuật của Viện Địa tầng neo sát bờ kè đá hoa cương, ánh đèn màn hình máy tính dã chiến hắt lên gương mặt đăm chiêu của kỹ sư Tuấn. Anh đeo tai nghe chuyên dụng, hai ngón tay gõ nhịp liên tục lên bàn phím, đôi lông mày nhíu chặt lại sau tròng kính cận:
 
 - **Kết bài** (Không dính mẫu):
 > Nói đoạn, tôi mở nắp chiếc hộp đồng vừa nhặt được dưới đáy sâu. Bên trong là một tấm da rùa cổ khắc họa đồ thủy đạo Sài Gòn xưa. Nổi bật giữa các nhánh sông uốn lượn, một điểm chấm chu sa son đỏ thắm được đánh dấu chính xác tại vị trí thủy đài ngầm của xưởng đóng tàu Ba Son — nơi cọc tiêu thứ sáu Thủy Môn Chấn Tiêu đang đợi người khai mở.
@@ -688,9 +690,9 @@
 
 ---
 
-### [Chương 076] — 🟢 ĐẠT CHUẨN (Điểm: 1)
-- **Mở bài** (Tả gió):
-> Mũi tàu tuần tra HQ-268 húc mạnh vào trụ đệm cao su của cầu cảng Nhà Bè, xích sắt quăng phập xuống sàn bê tông giữ chặt thân tàu.
+### [Chương 076] — 🟡 CÓ SẠN (Điểm: 2)
+- **Mở bài** (Tả gió, Cử chỉ tĩnh trầm ngâm):
+> Tiếng động cơ diesel cỡ lớn dưới khoang máy tàu tuần tra HQ-268 phát ra những nhịp rung trầm đục, đều đặn đẩy thân tàu lướt đi êm ả giữa hai dải rừng ngập mặn Rừng Sác đen thẫm sừng sững đôi bờ. Đêm trên sông Lòng Tàu dày đặc một màu sương lam quánh lạnh. Những rặng đước, rặng mắm nghìn năm cắm bộ rễ chằng chịt xuống bãi bùn lầy, trông tựa như những bức tường thành tự nhiên che chắn cho cửa ngõ phía đông nam thành phố. Gió sông thốc vào mặt tôi, mang theo mùi ngai ngái của bùn phù sa, hương lá mục và cái lạnh thanh sạch của đất trời sau cơn giông lớn.
 
 - **Kết bài** (Không dính mẫu):
 > Dưới tầng trệt khu nhà trọ, chiếc Wave Alpha màu đỏ mận quen thuộc đã được đổ đầy bình xăng, chiếc ba lô dã chiến chằng buộc vững vàng sau yên. Tôi tra chìa khóa vào ổ, gạt chân chống nổ máy. Tiếng pô xe giòn giã vang lên xua tan những ưu tư trầm mặc, đưa tôi lăn bánh ra khỏi con hẻm, trực chỉ đại lộ Phạm Văn Đồng hướng về ngọn núi Chứa Chan hùng vĩ của miền Đông.
@@ -706,9 +708,9 @@
 
 ---
 
-### [Chương 078] — 🟢 ĐẠT CHUẨN (Điểm: 1)
-- **Mở bài** (Tả gió):
-> Từ trên gờ đá granite cao hơn bốn mét so với mặt bằng công trường, tôi búng người lao xuống như một cánh chim ưng vồ mồi.
+### [Chương 078] — 🟢 ĐẠT CHUẨN (Điểm: 0)
+- **Mở bài** (Không dính mẫu):
+> *KENG!*
 
 - **Kết bài** (Không dính mẫu):
 > Tôi dừng chân trên một mỏm đá nhô cao ở độ cao bảy trăm mét, cúi nhìn xuống lòng bàn tay phải rớm máu sau cú va chạm với kiếm đá. Cương Huyết màu đồng thau đang chậm rãi đông lại thành những vệt nâu sẫm trên kẽ ngón. Từ phía bình nguyên dưới chân núi, tiếng còi xe chở nông sản trên Quốc lộ 1A vọng lên đứt quãng, nhạt nhòa rồi chìm nghỉm vào rừng cao su đang ngả sang màu tím thẫm.
@@ -752,11 +754,11 @@
 ---
 
 ### [Chương 083] — 🟢 ĐẠT CHUẨN (Điểm: 1)
-- **Mở bài** (Cử chỉ tĩnh trầm ngâm):
-> Đáy ca-nô composite chém phầm phập qua những bãi cạn bùn lầy Bình Đại, luồn lách qua những rặng bần ken dày của mạng lưới thủy lộ Bến Tre. Tôi đứng vững chãi ở khoang lái, mắt dán chặt vào tọa độ cọc tiêu rạch Ba Lai trên màn hình định vị.
+- **Mở bài** (Tả gió):
+> Đáy ca-nô composite chém phầm phập qua những bãi cạn bùn lầy Bình Đại, luồn lách qua những rặng bần ken dày của mạng lưới thủy lộ Bến Tre. Tôi ghì chặt tay lái, mắt dán vào tọa độ cọc tiêu rạch Ba Lai trên màn hình định vị, điều hòa từng nhịp thở sâu và chậm.
 
 - **Kết bài** (Không dính mẫu):
-> Gió biển thổi ào qua rặng bần, lay động dải lụa đỏ buộc trên chuôi đao, lạnh tanh và bí hiểm.
+> Nước triều rút để lộ dải bùn mịn mát lạnh dưới chân trần. Tôi ngồi xuống một thân cây bần đổ, dùng vạt áo lau sạch lớp phù sa bám trên lưỡi Trấn Thủy Đoản Đao rồi tra đao vào bao. Rút chiếc la bàn địa chấn trong túi chống nước kiểm tra lần cuối, mũi kim nam châm rung nhẹ rồi chỉ thẳng về hướng cực Nam — nơi cọc tiêu thứ mười hai đang đợi được định vị. Tôi xốc lại quai ba lô, rảo bước men theo con đường đất đỏ xuyên qua rặng dừa nước hướng ra quốc lộ đón chuyến xe sớm về Năm Căn.
 
 ---
 
