@@ -7,8 +7,8 @@
       "name": "Trâm Ngọc Cổ Lâm Tịch (Cố Hồn Trâm)",
       "type": "Di vật bản mệnh / Cố hồn khí",
       "location": "Túi áo trong bên ngực trái",
-      "condition": "Đài sen thu nhỏ bằng bàn tay, vết rạn xám tro kéo dài, Lâm Tịch rơi vào trầm miên sâu dài hạn",
-      "durability": "75/100",
+      "condition": "Lâm Tịch hồi phục 6/10 nguyên thần, ngự trên đài sen Lục Diệp Thanh Liên trong Thức Hải, thường xuyên tương tác thần niệm và phối hợp Băng Phách Kiếm Ý cùng Minh An",
+      "durability": "60/100",
       "function": "Cầu nối vật lý với thức hải và đài sen Lâm Tịch, bảo vệ tâm mạch"
     },
     {
@@ -143,7 +143,7 @@
     {
       "name": "Nhập Định Quan Tưởng (Thanh Liên Thức Hải)",
       "type": "Tâm pháp thần niệm",
-      "stage": "Quan tưởng đài sen, ngắm Lâm Tịch trầm miên"
+      "stage": "Tĩnh tọa tương thông thần niệm cùng Lâm Tịch trên đài sen Lục Diệp Thanh Liên, quan sát địa mạch vi mô"
     },
     {
       "name": "Long Lân Phá Kình (Kính Kình Kiếm Khí Hợp Nhất)",
@@ -156,14 +156,23 @@
       "stage": "Sơ ngộ (Lấy 33 đốt sống ngọc thạch làm vỏ kiếm, dẫn kiếm khí vào Hắc Thiết Đoản Côn chém đứt hợp kim)"
     }
   ],
-  "current_location": "Trạm Khảo Sát Thủy Văn & Địa Chất Biển Duyên Hải, Vịnh Xuân Đài, Phú Yên",
+  "current_location": "Trạm Khảo Sát Thủy Văn & Địa Chất Biển Duyên Hải, Vịnh Xuân Đài / Hòn Yến, Phú Yên",
   "special_items": [
     {
       "id": "item_moc_hoang_loi_tam_thach",
       "name": "Mộc Hoàng Lôi Tâm Thạch",
       "type": "Hóa Thạch Mộc Tâm Bazan Ngàn Năm",
       "origin": "Rừng già Buôn Đôn, Chân núi Chư Yang Sin (Di vật của cha Minh An năm 1996)",
+      "status": "Đã an vị thành công tại gò bazan đáy vạc Chư Yang Sin (Chương 94), hòa nhịp đập cùng mạch Thổ Mộc Tây Nguyên",
       "properties": "Phát ra lôi âm trầm đục cộng hưởng cùng Thuần Dương Cương Huyết; mắt xích Thổ Mộc linh mạch Tây Nguyên"
+    },
+    {
+      "id": "item_dong_ho_vostok_1996",
+      "name": "Đồng hồ cơ khí lặn biển Vostok Amphibia 1996",
+      "type": "Kỷ vật của cha Nguyễn Văn Hùng",
+      "location": "Được kỹ sư hải văn Trần Vũ Hải Yến đeo trên cổ tay (khắc chìm NVH-1996)",
+      "status": "Minh chứng kết nghĩa sinh tử năm 1996 giữa thợ cơ khí Nguyễn Văn Hùng và thợ lặn Trần Vũ Cương tại Hòn Yến",
+      "properties": "Chịu áp suất nước sâu 200m, bánh răng cơ khí Liên Xô chạy bền bỉ qua 30 năm"
     }
   ]
 }
