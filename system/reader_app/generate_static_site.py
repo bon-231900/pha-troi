@@ -847,10 +847,10 @@ GLOBAL_CAM_NANG_ARTICLES = [
     {
         "slug": "bach-y-than-nu-lam-tich",
         "badge": "HỒ SƠ NHÂN VẬT",
-        "title": "Bạch Y Thần Nữ Lâm Tịch — Kiếm Tiên Thức Hải",
-        "desc": "Thân thế nữ kiếm tiên ngự trên đài sen Lục Diệp Thanh Liên, Băng Phách Kiếm Ý cùng mối liên kết sinh mệnh slow-burn dãi dầu sương gió bên cạnh Minh An.",
-        "read_mins": 6,
-        "highlight": False
+        "title": "Bạch Y Thần Nữ Lâm Tịch — Nữ Kiếm Tiên Viễn Cổ",
+        "desc": "Khám phá Lâm Tịch trong Phá Trời: nữ kiếm tiên viễn cổ, Băng Phách Kiếm Ý, Lục Diệp Thanh Liên và mối duyên slow burn cùng Nguyễn Minh An.",
+        "read_mins": 9,
+        "highlight": True
     },
     {
         "slug": "nguyen-minh-an",
