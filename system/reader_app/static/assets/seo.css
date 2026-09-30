@@ -457,7 +457,8 @@
       font-size: 18.5px; line-height: 1.85; color: var(--text-color);
     }
     .article-body p { margin-bottom: 1.6em; text-align: left; text-wrap: pretty; }
-    .article-body .lead-p {
+    .article-body .lead-p,
+    .article-body .lead {
       font-size: 20px; line-height: 1.75; color: var(--text-color);
       border-left: 3px solid var(--gold-primary); padding-left: 18px; margin-bottom: 1.8em;
     }

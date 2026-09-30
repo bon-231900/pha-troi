@@ -840,9 +840,9 @@ GLOBAL_CAM_NANG_ARTICLES = [
         "slug": "canh-gioi-the-dao",
         "badge": "THỂ ĐẠO KHỔ TU",
         "title": "Lộ Trình Tu Luyện Thể Đạo Phàm Nhân",
-        "desc": "Bốn nấc thang tôi luyện nhục thân: Khí Huyết Chu Thiên, Đoán Cốt Thập Nhị Thức, Hoán Huyết và Thần Tạng. Lấy thân xác làm đỉnh lô, nghịch mệnh không linh căn.",
-        "read_mins": 8,
-        "highlight": False
+        "desc": "Giải mã 4 cảnh giới Thể Đạo trong Phá Trời: Khí Huyết Chu Thiên, Đoán Cốt, Hoán Huyết, Thần Tạng và cơ chế chiến đấu của Nguyễn Minh An thời mạt pháp.",
+        "read_mins": 9,
+        "highlight": True
     },
     {
         "slug": "bach-y-than-nu-lam-tich",
