@@ -178,6 +178,19 @@
     }
     @media (min-width: 900px) { .nav-live-badge { display: inline-flex; } }
 
+    .nav-header-pill {
+      display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 4px;
+      background: rgba(229, 192, 123, 0.08); border: 1px solid rgba(229, 192, 123, 0.28);
+      font-size: 11px; font-weight: 600; color: var(--gold-primary); letter-spacing: 0.5px;
+      text-decoration: none; transition: all 0.2s ease; margin-left: 4px;
+    }
+    .nav-header-pill:hover {
+      background: rgba(229, 192, 123, 0.18); border-color: var(--gold-primary); transform: translateY(-1px);
+    }
+    @media (max-width: 640px) {
+      .nav-header-pill { display: none; }
+    }
+
     .header-center {
       position: absolute;
       left: 50%;
@@ -741,12 +754,140 @@
     .home-codex-name { font-size: 15px; font-weight: 600; color: var(--text-color); margin: 0 0 6px 0; }
     .home-codex-desc { font-size: 12.5px; color: var(--text-muted); line-height: 1.6; margin: 0; flex: 1; }
 
-    /* Footer - Colophon */
-    .site-footer {
-      margin-top: 56px; padding: 44px 20px 80px 20px; border-top: 1px solid var(--border-color);
-      text-align: center; background: transparent;
+    /* Section: Cẩm Nang & Hồ Sơ Chuyên Đề (Magazine / Editorial Cards) */
+    .home-articles-section { margin-top: 44px; margin-bottom: 24px; }
+    .articles-header-badge {
+      font-size: 11px; font-weight: 700; color: var(--gold-primary); letter-spacing: 1px;
+      padding: 3px 8px; border-radius: 4px; border: 1px solid rgba(229, 192, 123, 0.3);
+      background: rgba(229, 192, 123, 0.06); text-transform: uppercase;
     }
-    .footer-logo { width: 42px; height: 42px; border-radius: 50%; border: 1px solid var(--gold-primary); margin-bottom: 12px; object-fit: cover; }
-    .footer-title { font-family: 'Lora', 'Georgia', serif; font-size: 16px; font-weight: 800; color: var(--gold-primary); letter-spacing: 1px; margin-bottom: 4px; }
-    .footer-sub { font-size: 12.5px; color: var(--text-muted); margin-bottom: 12px; }
-    .footer-copy { font-size: 11px; color: var(--text-muted); opacity: 0.75; }
+    .home-articles-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 16px; margin-top: 16px;
+    }
+    .home-article-card {
+      background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px;
+      padding: 20px 22px; display: flex; flex-direction: column; justify-content: space-between;
+      text-decoration: none; transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+      position: relative; overflow: hidden;
+    }
+    .home-article-card:hover {
+      border-color: var(--gold-primary); transform: translateY(-2px);
+      background: var(--card-bg-hover); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+    }
+    .home-article-card.is-featured {
+      border-left: 3px solid var(--gold-primary);
+      background: linear-gradient(135deg, rgba(229, 192, 123, 0.04) 0%, var(--card-bg) 60%);
+    }
+    .article-card-header {
+      display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 12px;
+    }
+    .article-card-badge {
+      font-size: 10.5px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase;
+      color: var(--gold-primary); background: rgba(229, 192, 123, 0.08); padding: 3px 8px;
+      border-radius: 3px; border: 1px solid rgba(229, 192, 123, 0.2);
+    }
+    .article-card-time {
+      font-size: 11.5px; color: var(--text-muted); font-weight: 500;
+    }
+    .article-card-title {
+      font-family: 'Lora', 'Georgia', serif; font-size: 16.5px; font-weight: 600;
+      color: var(--text-color); line-height: 1.45; margin: 0 0 10px 0;
+      transition: color 0.15s ease;
+    }
+    .home-article-card:hover .article-card-title {
+      color: var(--gold-primary);
+    }
+    .article-card-desc {
+      font-size: 13px; line-height: 1.65; color: var(--text-muted);
+      margin: 0 0 16px 0; flex: 1; text-wrap: pretty;
+    }
+    .article-card-footer {
+      display: flex; align-items: center; justify-content: space-between;
+      padding-top: 12px; border-top: 1px solid var(--border-subtle);
+      font-size: 12px;
+    }
+    .article-card-author {
+      color: var(--text-muted); font-style: italic;
+    }
+    .article-card-action {
+      color: var(--gold-primary); font-weight: 600; display: inline-flex; align-items: center; gap: 4px;
+      transition: transform 0.15s ease;
+    }
+    .home-article-card:hover .article-card-action {
+      transform: translateX(3px);
+    }
+
+    /* Footer - Literary Editorial Colophon */
+    .site-footer {
+      margin-top: 64px; padding: 48px 20px 60px 20px; border-top: 1px solid var(--border-color);
+      background: rgba(0, 0, 0, 0.15); width: 100%; box-sizing: border-box;
+    }
+    .footer-top-grid {
+      max-width: 1100px; margin: 0 auto;
+      display: grid; grid-template-columns: 1.35fr 1fr 1fr 1fr;
+      gap: 32px; margin-bottom: 36px; text-align: left;
+    }
+    @media (max-width: 900px) {
+      .footer-top-grid { grid-template-columns: 1fr 1fr; gap: 28px; }
+    }
+    @media (max-width: 600px) {
+      .footer-top-grid { grid-template-columns: 1fr; gap: 24px; text-align: center; }
+    }
+    .footer-brand-header {
+      display: flex; align-items: center; gap: 12px; margin-bottom: 12px;
+    }
+    @media (max-width: 600px) {
+      .footer-brand-header { justify-content: center; }
+    }
+    .footer-logo {
+      width: 44px; height: 44px; border-radius: 50%; border: 1.5px solid var(--gold-primary);
+      object-fit: cover; flex-shrink: 0;
+    }
+    .footer-title {
+      font-family: 'Lora', 'Georgia', serif; font-size: 18px; font-weight: 700; color: var(--gold-primary); letter-spacing: 1px;
+    }
+    .footer-tagline {
+      font-size: 11.5px; color: var(--text-muted); letter-spacing: 0.5px; text-transform: uppercase;
+    }
+    .footer-summary {
+      font-size: 12.5px; line-height: 1.65; color: var(--text-muted); margin-bottom: 14px;
+    }
+    .footer-summary strong { color: var(--text-color); font-weight: 600; }
+    .footer-live-status {
+      display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px;
+      color: #34d399; font-weight: 500;
+    }
+    .footer-col-title {
+      font-size: 12px; font-weight: 700; letter-spacing: 1px; color: var(--gold-primary);
+      text-transform: uppercase; margin-bottom: 14px; padding-bottom: 6px; border-bottom: 1px solid var(--border-subtle);
+    }
+    .footer-links { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }
+    .footer-links li a {
+      font-size: 13px; color: var(--text-muted); text-decoration: none; transition: color 0.15s ease, transform 0.15s ease;
+      display: inline-block;
+    }
+    .footer-links li a:hover {
+      color: var(--gold-primary); transform: translateX(3px);
+    }
+    .footer-bottom-bar {
+      max-width: 1100px; margin: 0 auto; padding-top: 24px; border-top: 1px solid var(--border-subtle);
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+      font-size: 12px; color: var(--text-muted);
+    }
+    @media (max-width: 600px) {
+      .footer-bottom-bar { flex-direction: column; text-align: center; }
+    }
+    .footer-bottom-bar strong { color: var(--text-color); }
+    .footer-badge-note {
+      font-size: 11px; letter-spacing: 0.8px; color: var(--gold-primary);
+    }
+    .drawer-footer-nav {
+      padding: 12px 16px; border-top: 1px solid var(--border-color); background: rgba(0,0,0,0.1);
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .drawer-guide-link {
+      font-size: 12.5px; color: var(--gold-primary); text-decoration: none; font-weight: 600;
+      transition: transform 0.15s;
+    }
+    .drawer-guide-link:hover { transform: translateX(3px); }

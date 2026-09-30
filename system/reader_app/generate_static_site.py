@@ -859,6 +859,77 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
         """)
     static_grid_html = "".join(static_cards)
 
+    # Chuyên đề & Cẩm nang văn học (Editorial Guides & Lore Hub)
+    articles_data = [
+        {
+            "slug": "thap-nhi-tieu",
+            "badge": "ĐỊA TẦNG & TRẬN PHÁP",
+            "title": "Cẩm Nang 12 Cọc Tiêu Thủy Môn Phương Nam",
+            "desc": "Hệ thống 12 cọc tiêu viễn cổ nương theo địa tầng bazan và sông ngòi từ Sài Gòn tới Tây Nguyên, khóa rạn nứt đại địa và gắn liền chuỗi di vật khảo sát năm 1996.",
+            "read_mins": 8,
+            "highlight": True
+        },
+        {
+            "slug": "canh-gioi-the-dao",
+            "badge": "THỂ ĐẠO KHỔ TU",
+            "title": "Lộ Trình Tu Luyện Thể Đạo Phàm Nhân",
+            "desc": "Bốn nấc thang tôi luyện nhục thân: Khí Huyết Chu Thiên, Đoán Cốt Thập Nhị Thức, Hoán Huyết và Thần Tạng. Lấy thân xác làm đỉnh lô, nghịch mệnh không linh căn.",
+            "read_mins": 8,
+            "highlight": False
+        },
+        {
+            "slug": "bach-y-than-nu-lam-tich",
+            "badge": "HỒ SƠ NHÂN VẬT",
+            "title": "Bạch Y Thần Nữ Lâm Tịch — Kiếm Tiên Thức Hải",
+            "desc": "Thân thế nữ kiếm tiên ngự trên đài sen Lục Diệp Thanh Liên, Băng Phách Kiếm Ý cùng mối liên kết sinh mệnh slow-burn dãi dầu sương gió bên cạnh Minh An.",
+            "read_mins": 6,
+            "highlight": False
+        },
+        {
+            "slug": "nguyen-minh-an",
+            "badge": "HỒ SƠ NHÂN VẬT",
+            "title": "Kỹ Sư Địa Chất Nguyễn Minh An",
+            "desc": "Phàm nhân 25 tuổi mang theo búa địa chất, thanh Zil bát giác và gánh vác trách nhiệm đọc dấu vết trong lòng đá để giải mã cuộc khảo sát dang dở của người cha.",
+            "read_mins": 6,
+            "highlight": False
+        },
+        {
+            "slug": "the-dao",
+            "badge": "CỐT TỦY HỆ THỐNG",
+            "title": "Bản Chất Thể Đạo: Khổ Tu Phàm Nhân",
+            "desc": "Phân tích nguyên lý thể xác làm đỉnh lô, tinh huyết làm than lửa. Sự đối lập triệt để giữa khổ tu thực chiến và con đường tu chân linh căn truyền thống.",
+            "read_mins": 7,
+            "highlight": False
+        },
+        {
+            "slug": "phat-troi-la-truyen-gi",
+            "badge": "TỔNG QUAN TÁC PHẨM",
+            "title": "Phá Trời Là Truyện Gì? Cẩm Nang Toàn Diện",
+            "desc": "Tổng quan đại trường thiên đô thị tu chân Sài Gòn 2026: bối cảnh địa tầng non sông, phong cách Thể Đạo và triết lý sáng tác thuần túy khoa học thực nghiệm.",
+            "read_mins": 7,
+            "highlight": False
+        }
+    ]
+
+    articles_cards_list = []
+    for art in articles_data:
+        feat_cls = " is-featured" if art.get("highlight") else ""
+        articles_cards_list.append(f"""
+          <a href="/{art['slug']}/" class="home-article-card{feat_cls}">
+            <div class="article-card-header">
+              <span class="article-card-badge">{art['badge']}</span>
+              <span class="article-card-time">{art['read_mins']} phút đọc</span>
+            </div>
+            <h3 class="article-card-title">{art['title']}</h3>
+            <p class="article-card-desc">{art['desc']}</p>
+            <div class="article-card-footer">
+              <span class="article-card-author">Tác giả: An Bình</span>
+              <span class="article-card-action">Khám phá chuyên đề →</span>
+            </div>
+          </a>
+        """)
+    articles_cards_html = "".join(articles_cards_list)
+
     return f"""<!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -1003,6 +1074,9 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
         <span class="nav-brand-text">PHÁ TRỜI</span>
         <span class="nav-live-badge"><span class="dot-live"></span> {total_ch} CHƯƠNG</span>
       </a>
+      <a href="#sectionArticles" class="nav-header-pill" title="Cẩm Nang & Chuyên Đề">
+        <span>❖ CẨM NANG</span>
+      </a>
     </div>
 
     <div class="header-center">
@@ -1075,6 +1149,9 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
             </a>
             <a href="#sectionToc" class="btn-titlepage-toc" id="btnHeroTocScroll">
               <span>Mục Lục ({total_ch} Chương) ↓</span>
+            </a>
+            <a href="#sectionArticles" class="btn-titlepage-toc" id="btnHeroArticlesScroll" style="border-color: rgba(229, 192, 123, 0.45); color: var(--gold-primary);">
+              <span>Cẩm Nang & Hồ Sơ ❖</span>
             </a>
           </div>
         </div>
@@ -1157,6 +1234,25 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
         </div>
       </div>
 
+      <!-- SECTION 3.5: CẨM NANG & HỒ SƠ CHUYÊN ĐỀ (EDITORIAL GUIDES & LORE HUB) -->
+      <section id="sectionArticles" class="home-articles-section">
+        <div class="section-title-wrap">
+          <div>
+            <h2 class="section-title">CẨM NANG & HỒ SƠ CHUYÊN ĐỀ</h2>
+            <div style="font-size:12.5px; color:var(--text-muted); margin-top:4px;">
+              Khảo sát địa tầng non sông, cọc tiêu trấn thủy và ghi chép Thể Đạo phàm nhân do An Bình biên soạn.
+            </div>
+          </div>
+          <div class="articles-header-badge">
+            <span>❖ TƯ LIỆU ĐỘC BẢN</span>
+          </div>
+        </div>
+
+        <div class="home-articles-grid">
+          {articles_cards_html}
+        </div>
+      </section>
+
       <!-- SECTION 4: ENCYCLOPEDIA / CODEX PREVIEW (PHASE 6) -->
       <div id="sectionCodexPreview">
         <div class="section-title-wrap">
@@ -1176,18 +1272,73 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
         </div>
       </div>
 
-      <!-- SECTION 5: FOOTER -->
+      <!-- SECTION 5: FOOTER (LITERARY EDITORIAL COLOPHON) -->
       <footer class="site-footer">
-        <picture>
-          <source srcset="/assets/logo.webp" type="image/webp">
-          <img src="/assets/logo.jpg" class="footer-logo" alt="Phá Trời">
-        </picture>
-        <div class="footer-title">PHÁ TRỜI</div>
-        <div class="footer-sub">Đại trường thiên Thể Đạo phàm nhân & Địa chất non sông 2026 • Tác giả: An Bình</div>
-        <div class="footer-info-line" style="font-size:12px; color:var(--text-muted); margin-bottom:8px;">
-          Đã phát hành: <strong style="color:var(--gold-primary);">{total_ch} chương</strong> ({total_words:,} từ) • Tình trạng: <strong style="color:#34d399;">Đang sáng tác đều đặn</strong> • Đọc offline PWA 24/7
+        <div class="footer-top-grid">
+          <!-- Col 1: Brand & Premise -->
+          <div class="footer-col footer-col-brand">
+            <div class="footer-brand-header">
+              <picture>
+                <source srcset="/assets/logo.webp" type="image/webp">
+                <img src="/assets/logo.jpg" class="footer-logo" alt="Phá Trời">
+              </picture>
+              <div>
+                <div class="footer-title">PHÁ TRỜI</div>
+                <div class="footer-tagline">Đại Trường Thiên Thể Đạo Phàm Nhân</div>
+              </div>
+            </div>
+            <p class="footer-summary">
+              Tác phẩm văn học đô thị tu chân kết hợp khảo sát địa chất non sông Việt Nam của tác giả <strong>An Bình</strong>. Phàm nhân không hệ thống, lấy da thịt khổ tu phá vỡ xiềng xích càn khôn.
+            </p>
+            <div class="footer-live-status">
+              <span class="dot-live"></span> Đang sáng tác đều đặn · {total_ch} chương ({total_words:,} từ)
+            </div>
+          </div>
+
+          <!-- Col 2: Cẩm Nang Địa Tầng & Lore -->
+          <div class="footer-col">
+            <div class="footer-col-title">CẨM NANG & HỒ SƠ</div>
+            <ul class="footer-links">
+              <li><a href="/thap-nhi-tieu/">✦ Cẩm Nang 12 Cọc Tiêu Thủy Môn</a></li>
+              <li><a href="/canh-gioi-the-dao/">✦ Lộ Trình Tu Luyện Thể Đạo</a></li>
+              <li><a href="/bach-y-than-nu-lam-tich/">✦ Hồ Sơ Lâm Tịch (Bạch Y Thần Nữ)</a></li>
+              <li><a href="/nguyen-minh-an/">✦ Hồ Sơ Kỹ Sư Nguyễn Minh An</a></li>
+              <li><a href="/the-dao/">✦ Bản Chất Thể Đạo Phàm Nhân</a></li>
+            </ul>
+          </div>
+
+          <!-- Col 3: Khám Phá & Luận Đề -->
+          <div class="footer-col">
+            <div class="footer-col-title">TỔNG QUAN TÁC PHẨM</div>
+            <ul class="footer-links">
+              <li><a href="/phat-troi-la-truyen-gi/">✦ Phá Trời Là Truyện Gì?</a></li>
+              <li><a href="/truyen-tu-tien-viet-nam-sai-gon/">✦ Tiên Hiệp Bản Địa Sài Gòn</a></li>
+              <li><a href="/do-thi-tu-chan-la-gi/">✦ Giải Mã Thể Loại Đô Thị Tu Chân</a></li>
+              <li><a href="/chuong-1/">✦ Đọc Từ Đầu: Chương 1</a></li>
+              <li><a href="/chuong-{latest_num}/">✦ Chương Mới Nhất ({latest_num})</a></li>
+            </ul>
+          </div>
+
+          <!-- Col 4: Công Cụ & Đọc Truyện -->
+          <div class="footer-col">
+            <div class="footer-col-title">TIỆN ÍCH & KẾT NỐI</div>
+            <ul class="footer-links">
+              <li><a href="/feed.xml" target="_blank" rel="noopener">✦ Nguồn Tin RSS 2.0 Feed</a></li>
+              <li><a href="/sitemap.xml" target="_blank" rel="noopener">✦ Sơ Đồ Trang (Sitemap)</a></li>
+              <li><a href="#sectionToc">✦ Mục Lục {total_ch} Chương</a></li>
+              <li><span style="color:var(--text-muted); font-size:12px;">✦ Hỗ trợ PWA đọc Offline 24/7</span></li>
+            </ul>
+          </div>
         </div>
-        <div class="footer-copy">Phát hành độc quyền tại phatroi.com • Bản quyền nội dung thuộc về tác giả An Bình © 2026. Mọi quyền được bảo lưu.</div>
+
+        <div class="footer-bottom-bar">
+          <div class="footer-copy">
+            Phát hành độc quyền tại <strong>phatroi.com</strong> • Bản quyền nội dung thuộc về tác giả <strong>An Bình</strong> © 2026. Mọi quyền được bảo lưu.
+          </div>
+          <div class="footer-badge-note">
+            0% Linh Căn · 0% Hệ Thống · 100% Khổ Tu Phàm Nhân
+          </div>
+        </div>
       </footer>
     </div>
   </div>
@@ -1219,6 +1370,11 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
       <input type="text" id="inputTocSearch" class="search-input" placeholder="Tìm số chương, tiêu đề hoặc địa danh...">
     </div>
     <div class="drawer-body" id="tocDrawerList"></div>
+    <div class="drawer-footer-nav">
+      <a href="/thap-nhi-tieu/" class="drawer-guide-link">✦ 12 Cọc Tiêu Thủy Môn</a>
+      <a href="/canh-gioi-the-dao/" class="drawer-guide-link">✦ Lộ Trình Thể Đạo</a>
+      <a href="/feed.xml" class="drawer-guide-link" target="_blank" rel="noopener">✦ Nguồn Tin RSS Feed</a>
+    </div>
   </aside>
 
   <!-- CODEX DRAWER (PHASE 6) -->
@@ -1707,27 +1863,31 @@ def generate_chapter_html(ch_info, chapters_index, total_words, codex_items=None
       <!-- Chapter Related Lore CTA Block -->
       <section class="chapter-lore-cta">
         <div class="chapter-lore-cta-title">
-          <span>❖ KHÁM PHÁ THẾ GIỚI PHÁ TRỜI</span>
+          <span>❖ CẨM NANG & HỒ SƠ CHUYÊN ĐỀ</span>
         </div>
         <p class="chapter-lore-cta-desc">
-          Bạn muốn hiểu sâu hơn về bối cảnh địa chất và con đường Thể Đạo độc nhất của Phá Trời? Khám phá ngay các hồ sơ mở rộng:
+          Khám phá hệ thống cọc tiêu trấn thủy bazan, lộ trình Thể Đạo và ghi chép nhân vật trong Phá Trời:
         </p>
         <div class="chapter-lore-grid">
-          <a href="/the-dao/" class="lore-cta-link">
-            <div class="lore-cta-link-title">✦ Thể Đạo Là Gì?</div>
-            <div class="lore-cta-link-desc">Con đường tu luyện nhục thân của phàm nhân không linh căn giữa thời mạt pháp.</div>
+          <a href="/thap-nhi-tieu/" class="lore-cta-link">
+            <div class="lore-cta-link-title">✦ 12 Cọc Tiêu Thủy Môn</div>
+            <div class="lore-cta-link-desc">Hệ thống 12 cọc tiêu bazan viễn cổ từ Sài Gòn tới Tây Nguyên và chuỗi di vật 1996.</div>
+          </a>
+          <a href="/canh-gioi-the-dao/" class="lore-cta-link">
+            <div class="lore-cta-link-title">✦ Lộ Trình Thể Đạo</div>
+            <div class="lore-cta-link-desc">Bốn cảnh giới nhục thân: Chu Thiên, Đoán Cốt, Hoán Huyết và Thần Tạng.</div>
+          </a>
+          <a href="/bach-y-than-nu-lam-tich/" class="lore-cta-link">
+            <div class="lore-cta-link-title">✦ Kiếm Tiên Lâm Tịch</div>
+            <div class="lore-cta-link-desc">Bạch Y Thần Nữ ngự trên đài sen Lục Diệp Thanh Liên cùng Băng Phách Kiếm Ý.</div>
           </a>
           <a href="/nguyen-minh-an/" class="lore-cta-link">
-            <div class="lore-cta-link-title">✦ Hồ Sơ Nguyễn Minh An</div>
-            <div class="lore-cta-link-desc">Kỹ sư thực địa 25 tuổi của Viện Khảo sát Địa chất và hành trình Thể Đạo phàm nhân dãi dầu sương gió.</div>
-          </a>
-          <a href="/phat-troi-la-truyen-gi/" class="lore-cta-link">
-            <div class="lore-cta-link-title">✦ Cẩm Nang Phá Trời</div>
-            <div class="lore-cta-link-desc">Toàn cảnh cốt truyện, địa chất non sông và thế giới quan Thể Đạo.</div>
+            <div class="lore-cta-link-title">✦ Kỹ Sư Nguyễn Minh An</div>
+            <div class="lore-cta-link-desc">Phàm nhân 25 tuổi, chiếc búa địa chất và trách nhiệm đọc dấu vết trong lòng đá.</div>
           </a>
         </div>
         <div class="chapter-lore-footer">
-          <span>Đồng hành cùng tác giả An Bình trong hành trình sáng tác trường thiên.</span>
+          <span>Tác giả An Bình · Phát hành độc quyền tại phatroi.com</span>
           <button onclick="shareChapter()" style="background:transparent; border:1px solid var(--border-color); color:var(--gold-primary); padding:5px 12px; border-radius:4px; font-size:12px; cursor:pointer; font-weight:600;">
             🔗 Chia Sẻ Chương {ch_num}
           </button>
