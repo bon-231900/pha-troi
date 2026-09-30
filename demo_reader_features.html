@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="vi" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Phá Trời — Trải Nghiệm Đọc Thượng Hạng | Chương 96: Hải Yến</title>
+  
+  <!-- Typography Fonts matching phatroi.com canon -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Cinzel:wght@500;600;700;800&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet">
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    :root {
+      /* Canonical Saigon Night Tokens from reader.css */
+      --bg-base: #0b0f17;
+      --bg-gradient: radial-gradient(ellipse at 50% 0%, #111827 0%, #0b0f17 78%);
+      --card-bg: #111722;
+      --card-elevated: #162030;
+      --border-base: rgba(255, 255, 255, 0.08);
+      --border-subtle: rgba(255, 255, 255, 0.04);
+      
+      /* Pure Rain Blue & Antique Gold (NO ORANGE, NO AMBER) */
+      --rain-blue: #517a8f;
+      --rain-blue-hover: #638fa6;
+      --antique-gold: #e5c07b;
+      --antique-gold-hover: #f3d498;
+      --seal-red: #a82323;
+      --ice-cyan: #38bdf8;
+      
+      /* Typography */
+      --text-main: #e2e8f0;
+      --text-muted: #8492a6;
+      --text-subtle: #526173;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background: var(--bg-gradient);
+      background-color: var(--bg-base);
+      color: var(--text-main);
+      font-family: 'Be Vietnam Pro', -apple-system, sans-serif;
+      min-height: 100vh;
+      line-height: 1.85;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Subtle Film Grain */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.02'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 999;
+    }
+
+    .font-reading {
+      font-family: 'Lora', 'Georgia', serif;
+    }
+
+    .font-cinzel {
+      font-family: 'Cinzel', serif;
+    }
+
+    /* Paragraph Audio Highlight */
+    .para-node {
+      position: relative;
+      padding-left: 14px;
+      margin-left: -14px;
+      transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      border-left: 3px solid transparent;
+    }
+
+    .para-node.para-active {
+      border-left-color: var(--antique-gold);
+      color: #ffffff;
+      background: linear-gradient(90deg, rgba(229, 192, 123, 0.06) 0%, transparent 80%);
+      border-radius: 0 8px 8px 0;
+    }
+
+    /* Soundwave bars animation */
+    .soundwave-bar {
+      display: inline-block;
+      width: 2.5px;
+      background-color: var(--antique-gold);
+      border-radius: 2px;
+      animation: soundwaveAnim 1.2s ease-in-out infinite alternate;
+    }
+    .soundwave-bar:nth-child(1) { height: 6px; animation-delay: 0.1s; }
+    .soundwave-bar:nth-child(2) { height: 15px; animation-delay: 0.35s; }
+    .soundwave-bar:nth-child(3) { height: 9px; animation-delay: 0.2s; }
+    .soundwave-bar:nth-child(4) { height: 18px; animation-delay: 0.45s; }
+    .soundwave-bar:nth-child(5) { height: 7px; animation-delay: 0.15s; }
+
+    @keyframes soundwaveAnim {
+      0% { transform: scaleY(0.25); opacity: 0.5; }
+      100% { transform: scaleY(1); opacity: 1; }
+    }
+
+    /* Selection Tooltip Bubble */
+    #selectionTooltip {
+      position: absolute;
+      display: none;
+      z-index: 80;
+      transform: translate(-50%, -115%);
+      pointer-events: auto;
+      animation: tooltipPop 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes tooltipPop {
+      from { opacity: 0; transform: translate(-50%, -95%) scale(0.94); }
+      to { opacity: 1; transform: translate(-50%, -115%) scale(1); }
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg-base); }
+    ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.12); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--rain-blue); }
+  </style>
+</head>
+<body class="flex flex-col justify-between min-h-screen">
+
+  <!-- TOP HEADER (Mirroring phatroi.com) -->
+  <header class="sticky top-0 z-50 h-14 bg-[#0b0f17]/90 backdrop-blur-md border-b border-white/[0.08] px-4 sm:px-8 flex items-center justify-between">
+    <!-- Left: Brand -->
+    <div class="flex items-center gap-3">
+      <a href="/" class="flex items-center gap-2.5 group">
+        <span class="w-7 h-7 rounded-lg bg-[#162030] border border-white/10 flex items-center justify-center text-[#e5c07b] font-cinzel font-bold text-xs group-hover:border-[#517a8f] transition-all">
+          破
+        </span>
+        <span class="font-cinzel text-sm sm:text-base font-bold tracking-[0.2em] text-white">PHÁ TRỜI</span>
+        <span class="hidden sm:inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-medium bg-[#111722] text-[#8492a6] border border-white/[0.06]">
+          <span class="w-1.5 h-1.5 rounded-full bg-[#517a8f]"></span>
+          96 CHƯƠNG
+        </span>
+      </a>
+    </div>
+
+    <!-- Center: Chapter Title -->
+    <div class="text-center truncate px-2 max-w-[45%]">
+      <div class="text-xs sm:text-sm font-medium text-[#e5c07b] truncate">Chương 96: Hải Yến</div>
+      <div class="text-[10px] text-[#8492a6] hidden sm:block truncate">Quyển 1 · Hồi 2 · 4,816 từ</div>
+    </div>
+
+    <!-- Right: Quick actions -->
+    <div class="flex items-center gap-2">
+      <button onclick="triggerQuickAudio()" id="btnHeaderAudio" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#162030] hover:bg-[#1f2d42] border border-white/[0.08] text-xs font-medium text-[#e2e8f0] hover:text-white transition-all">
+        <svg id="headerAudioIcon" class="w-3.5 h-3.5 text-[#517a8f]" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path>
+        </svg>
+        <span class="hidden sm:inline">Nghe Đọc</span>
+      </button>
+
+      <button onclick="openStudioModal(SAMPLE_QUOTES[0])" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#162030] hover:bg-[#1f2d42] border border-white/[0.08] text-xs font-medium text-[#e5c07b] hover:text-[#f3d498] transition-all">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+        </svg>
+        <span class="hidden sm:inline">Thẻ Trích Dẫn</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- FLOATING SELECTION BUBBLE TOOLTIP -->
+  <div id="selectionTooltip">
+    <button id="btnQuoteFromSelection" class="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#111722]/95 backdrop-blur-xl border border-[#517a8f]/50 text-xs font-medium text-white shadow-2xl hover:border-[#e5c07b] hover:text-[#e5c07b] transition-all cursor-pointer">
+      <span class="w-1.5 h-1.5 rounded-full bg-[#e5c07b]"></span>
+      <span class="font-cinzel tracking-wider text-[11px] font-semibold">TẠO THẺ TRÍCH DẪN</span>
+      <svg class="w-3 h-3 text-[#517a8f]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+      </svg>
+    </button>
+  </div>
+
+  <!-- MAIN READING COLUMN -->
+  <main class="relative z-10 max-w-[740px] w-full mx-auto px-5 sm:px-8 py-10 sm:py-16">
+
+    <!-- CHAPTER HEADING -->
+    <header class="text-center mb-12 space-y-3">
+      <div class="inline-flex items-center gap-2 text-xs uppercase tracking-[0.25em] text-[#517a8f] font-cinzel font-semibold">
+        <span>Quyển I</span>
+        <span class="text-white/20">•</span>
+        <span>Hồi II: Duyên Hải & Biên Cương</span>
+      </div>
+      <h1 class="text-3xl sm:text-4xl lg:text-[2.75rem] font-reading font-semibold text-[#f8fafc] tracking-tight leading-tight">
+        Chương 96: Hải Yến
+      </h1>
+      <p class="text-xs sm:text-sm text-[#8492a6] flex items-center justify-center gap-2.5 pt-1">
+        <span>Vịnh Xuân Đài & Hòn Yến, Phú Yên</span>
+        <span class="text-white/20">•</span>
+        <span>POV: Nguyễn Minh An</span>
+      </p>
+      <div class="w-12 h-px bg-gradient-to-r from-transparent via-[#517a8f]/60 to-transparent mx-auto pt-2"></div>
+    </header>
+
+    <!-- EDITORIAL INTERACTION TIP -->
+    <div class="mb-10 p-3 sm:p-3.5 rounded-xl bg-[#111722]/80 border border-white/[0.06] flex items-center justify-between text-xs text-[#8492a6]">
+      <div class="flex items-center gap-2.5">
+        <span class="text-[#e5c07b] text-sm">✦</span>
+        <span>Bôi đen câu văn bất kỳ để tạo <strong>Thẻ Ảnh Trích Dẫn</strong>, hoặc bấm <strong>Nghe Đọc</strong> ở thanh dưới.</span>
+      </div>
+      <button onclick="openStudioModal(SAMPLE_QUOTES[0])" class="text-[#e5c07b] hover:text-[#f3d498] underline underline-offset-4 shrink-0 font-medium hidden sm:inline">
+        Xem thử mẫu thẻ
+      </button>
+    </div>
+
+    <!-- CHAPTER BODY NARRATIVE -->
+    <article id="chapterText" class="font-reading text-[#e2e8f0] text-lg sm:text-[1.2rem] leading-[2.1] space-y-8 select-text">
+      
+      <p class="para-node" data-index="0">
+        Chiếc xe bán tải hai cầu của Viện Khảo sát Địa chất gầm rú vượt qua những khúc cua tay áo cuối cùng của đèo Phượng Hoàng. Càng xuôi về phía đông, không khí trong cabin càng ẩm ướt, mang theo vị muối nồng gắt của gió biển miền Trung thốc qua khe kính hé mở.
+      </p>
+
+      <p class="para-node" data-index="1">
+        Phía xa ngoài cửa lạch, những khối núi đá bazan sừng sững nhô lên khỏi làn nước xanh biếc. Gió biển thổi lồng lộng, mang theo mùi muối nồng và tiếng sóng vỗ ì oạp vào chân cọc gỗ chiếc cầu tàu dã chiến.
+      </p>
+
+      <p class="para-node" data-index="2">
+        Rất thuần thục, cô gái đưa tay với chiếc kẹp cơ khí bằng thép giắt trên quai ngực, thoăn thoắt gom toàn bộ mái tóc ướt cuộn tròn rồi búi chặt thành búi củ tỏi cao vút sau gáy. Chiếc cổ thon dài trắng ngần cùng bờ vai rám nắng mật ong lộ ra hoàn toàn dưới nắng chiều. Thần thái nàng lập tức biến thành một nữ chỉ huy thực địa sắc sảo, đanh thép và đầy vẻ phong trần dạn dày.
+      </p>
+
+      <p class="para-node" data-index="3">
+        Trên cổ tay trái thon dài rám nắng của Hải Yến, nổi bật chiếc đồng hồ lặn cơ khí quân sự cổ của Liên Xô — dòng Vostok Amphibia vỏ thép bát giác cũ mòn theo năm tháng. Mặt kính mica chi chít vết xước dăm san hô, vòng bezel xoay viền răng cưa đã bạc màu. Và ngay chính giữa nắp lưng thép không gỉ, bên cạnh biểu tượng mỏ neo, có dòng chữ triện khắc chìm bằng mũi đục cơ khí sắc lẹm: V.H. - 1996 // KHOAN ĐỊA TẦNG BIỂN SÂU.
+      </p>
+
+      <p class="para-node" data-index="4">
+        — Người khắc dòng chữ V.H. - 1996 trên nắp lưng chiếc đồng hồ của ba cô... chính là cha tôi — Nguyễn Văn Hùng. Ba tôi tự tay dùng dao tiện ren vát lại nắp lưng chiếc đồng hồ này, đóng dấu triện tặng lại bác Cương làm vật kỷ niệm sinh tử ba mươi năm trước...
+      </p>
+
+      <p class="para-node" data-index="5">
+        — Khung xương của nha đầu đó vô cùng đặc biệt. — Tiếng Lâm Tịch trầm tĩnh vang lên từ đài sen Lục Diệp Thanh Liên trong thức hải: — Nàng ta sinh ra và lớn lên bên rãnh nứt của biển sâu, ngày đêm ngâm mình dưới áp lực hàng ngàn tấn nước mặn, nên toàn bộ gân mạc và kinh lạc đều mang thuộc tính Thuần Âm Nhu Thể của loài thủy tộc thời viễn cổ. Nhưng điều ta lấy làm lạ là lúc nàng ta tháo kẹp tóc buông xõa ngang lưng đưa trái dừa cho anh... nhịp tim của anh bỗng nhiên đập nhanh hơn bình thường ba nhịp.
+      </p>
+
+      <p class="para-node" data-index="6">
+        Nàng với lấy bộ đồ lặn và chiếc đồng hồ Vostok Amphibia đeo chặt vào cổ tay, cất giọng đanh gọn: — Anh An, chuẩn bị đi. Nửa đêm nay, tui lái ca-nô đưa anh và anh Tuấn ra rạn Hòn Yến.
+      </p>
+
+    </article>
+
+    <div class="h-28"></div>
+  </main>
+
+  <!-- STICKY BOTTOM AUDIO PLAYER DOCK -->
+  <aside class="fixed bottom-4 sm:bottom-6 left-0 right-0 z-40 max-w-[640px] w-[94%] sm:w-full mx-auto">
+    <div class="bg-[#0e1420]/92 backdrop-blur-2xl border border-white/[0.1] shadow-[0_20px_50px_rgba(0,0,0,0.8)] rounded-2xl p-3 sm:p-3.5 flex items-center justify-between gap-3">
+      
+      <!-- Left: Play/Pause Button & Track Info -->
+      <div class="flex items-center gap-3 min-w-0">
+        <button id="btnPlayMaster" class="w-11 h-11 rounded-xl bg-[#517a8f] hover:bg-[#638fa6] active:scale-95 text-white flex items-center justify-center shrink-0 shadow-lg shadow-[#517a8f]/20 transition-all" title="Bật / Tạm dừng đọc">
+          <svg id="iconPlay" class="w-5 h-5 ml-0.5" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path>
+          </svg>
+          <svg id="iconPause" class="w-5 h-5 hidden" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+          </svg>
+        </button>
+
+        <div class="min-w-0">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-semibold text-white tracking-wide truncate">Giọng Đọc Tự Nhiên (Web Speech)</span>
+            <div id="soundwaveContainer" class="hidden items-center gap-0.5 h-3">
+              <span class="soundwave-bar"></span>
+              <span class="soundwave-bar"></span>
+              <span class="soundwave-bar"></span>
+              <span class="soundwave-bar"></span>
+              <span class="soundwave-bar"></span>
+            </div>
+          </div>
+          <div id="audioStatusText" class="text-[11px] text-[#8492a6] truncate flex items-center gap-2">
+            <span>Sẵn sàng nghe chương 96</span>
+            <span id="audioParaCounter" class="text-[#e5c07b] font-mono text-[10px] hidden">• Đoạn 1/7</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Speed, Voice & Stop Controls -->
+      <div class="flex items-center gap-2 shrink-0">
+        
+        <!-- Voice selector dropdown -->
+        <select id="selectVoice" class="hidden md:block bg-[#162030] text-[#8492a6] hover:text-white border border-white/[0.08] text-[11px] rounded-lg px-2 py-1.5 outline-none max-w-[120px] truncate cursor-pointer transition-all">
+          <option value="">Giọng mặc định</option>
+        </select>
+
+        <!-- Speed cycle button -->
+        <button id="btnSpeed" class="px-2.5 py-1.5 rounded-lg bg-[#162030] hover:bg-[#1f2d42] border border-white/[0.08] text-xs font-mono font-semibold text-[#e5c07b] transition-all" title="Đổi tốc độ đọc">
+          1.0x
+        </button>
+
+        <!-- Stop button -->
+        <button id="btnStopMaster" class="w-8 h-8 rounded-lg bg-[#162030] hover:bg-[#1f2d42] text-[#8492a6] hover:text-white flex items-center justify-center transition-all" title="Dừng đọc hoàn toàn">
+          <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8 7a1 1 0 00-1 1v4a1 1 0 001 1h4a1 1 0 001-1V8a1 1 0 00-1-1H8z" clip-rule="evenodd"></path>
+          </svg>
+        </button>
+      </div>
+
+    </div>
+  </aside>
+
+  <!-- QUOTE CARD STUDIO MODAL -->
+  <div id="studioModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 sm:p-6 bg-[#070a0f]/85 backdrop-blur-xl animate-fade-in">
+    <div class="relative w-full max-w-4xl bg-[#0e1420] border border-white/[0.1] rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
+      
+      <!-- Modal Header -->
+      <div class="px-6 py-4 border-b border-white/[0.08] flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <span class="w-2 h-2 rounded-full bg-[#e5c07b]"></span>
+          <h2 class="font-cinzel text-sm sm:text-base font-bold tracking-widest text-white uppercase">THIẾT KẾ THẺ ẢNH TRÍCH DẪN</h2>
+          <span class="text-[11px] px-2 py-0.5 rounded bg-[#162030] text-[#517a8f] border border-white/[0.06] font-mono">Retina 2x</span>
+        </div>
+        <button onclick="closeStudioModal()" class="w-8 h-8 rounded-lg bg-[#162030] hover:bg-[#1f2d42] text-[#8492a6] hover:text-white flex items-center justify-center text-lg leading-none transition-all">
+          &times;
+        </button>
+      </div>
+
+      <!-- Modal Body (Two columns on desktop) -->
+      <div class="flex-1 overflow-y-auto p-5 sm:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+        
+        <!-- Left: Live Preview Canvas (Col 7) -->
+        <div class="lg:col-span-7 flex flex-col items-center justify-center">
+          <div class="relative p-2 rounded-xl bg-[#090d14] border border-white/[0.06] shadow-inner max-w-full flex items-center justify-center">
+            <!-- Actual Canvas element used for rendering & high-res download -->
+            <canvas id="quoteCanvas" class="max-h-[50vh] sm:max-h-[58vh] w-auto max-w-full rounded-lg shadow-2xl transition-all duration-300"></canvas>
+          </div>
+          <p class="text-[11px] text-[#526173] pt-2 text-center">
+            Tự động căn chỉnh bố cục & con dấu triện son theo tỷ lệ vàng
+          </p>
+        </div>
+
+        <!-- Right: Studio Controls (Col 5) -->
+        <div class="lg:col-span-5 space-y-5 text-xs">
+          
+          <!-- 1. Ratio Selector -->
+          <div>
+            <label class="block text-[11px] font-semibold text-[#8492a6] uppercase tracking-wider mb-2">Tỷ Lệ Khung Ảnh</label>
+            <div class="grid grid-cols-3 gap-2">
+              <button onclick="setCardRatio('1:1')" id="btnRatio1" class="ratio-btn py-2 px-3 rounded-lg border text-center font-medium transition-all bg-[#162030] border-[#517a8f] text-white">
+                <div class="font-bold text-xs">1 : 1</div>
+                <div class="text-[10px] text-[#8492a6]">Vuông / Feed</div>
+              </button>
+              <button onclick="setCardRatio('9:16')" id="btnRatio2" class="ratio-btn py-2 px-3 rounded-lg border text-center font-medium transition-all bg-[#111722] border-white/[0.08] text-[#8492a6] hover:text-white">
+                <div class="font-bold text-xs">9 : 16</div>
+                <div class="text-[10px] text-[#8492a6]">Story / Reels</div>
+              </button>
+              <button onclick="setCardRatio('16:9')" id="btnRatio3" class="ratio-btn py-2 px-3 rounded-lg border text-center font-medium transition-all bg-[#111722] border-white/[0.08] text-[#8492a6] hover:text-white">
+                <div class="font-bold text-xs">16 : 9</div>
+                <div class="text-[10px] text-[#8492a6]">Ngang / Twitter</div>
+              </button>
+            </div>
+          </div>
+
+          <!-- 2. Aesthetic Theme -->
+          <div>
+            <label class="block text-[11px] font-semibold text-[#8492a6] uppercase tracking-wider mb-2">Chủ Đề Nghệ Thuật</label>
+            <div class="space-y-1.5">
+              <button onclick="setCardTheme('saigon-night')" id="themeBtn1" class="theme-btn w-full p-2.5 rounded-lg border flex items-center justify-between transition-all bg-[#162030] border-[#517a8f] text-white">
+                <div class="flex items-center gap-2.5">
+                  <span class="w-3.5 h-3.5 rounded-full bg-[#0b0f17] border border-[#517a8f]"></span>
+                  <div class="text-left">
+                    <div class="font-medium text-xs">Đêm Sài Gòn (Saigon Night)</div>
+                    <div class="text-[10px] text-[#8492a6]">Huyền thiết than đá & Cổ kim trầm mặc</div>
+                  </div>
+                </div>
+                <span class="text-[#e5c07b] text-xs">✓</span>
+              </button>
+
+              <button onclick="setCardTheme('ice-cyan')" id="themeBtn2" class="theme-btn w-full p-2.5 rounded-lg border flex items-center justify-between transition-all bg-[#111722] border-white/[0.08] text-[#8492a6] hover:text-white">
+                <div class="flex items-center gap-2.5">
+                  <span class="w-3.5 h-3.5 rounded-full bg-[#07151e] border border-[#38bdf8]"></span>
+                  <div class="text-left">
+                    <div class="font-medium text-xs">Băng Phách Thần Nữ</div>
+                    <div class="text-[10px] text-[#8492a6]">Lam ngọc đáy sâu & Thanh Liên u tịch</div>
+                  </div>
+                </div>
+              </button>
+
+              <button onclick="setCardTheme('sepia-parchment')" id="themeBtn3" class="theme-btn w-full p-2.5 rounded-lg border flex items-center justify-between transition-all bg-[#111722] border-white/[0.08] text-[#8492a6] hover:text-white">
+                <div class="flex items-center gap-2.5">
+                  <span class="w-3.5 h-3.5 rounded-full bg-[#f4ede2] border border-[#8c5b1e]"></span>
+                  <div class="text-left">
+                    <div class="font-medium text-xs">Thư Tịch Cổ (Antique Paper)</div>
+                    <div class="text-[10px] text-[#8492a6]">Giấy dó cổ truyền & Mực nho thư pháp</div>
+                  </div>
+                </div>
+              </button>
+            </div>
+          </div>
+
+          <!-- 3. Edit quote content -->
+          <div>
+            <div class="flex items-center justify-between mb-1.5">
+              <label class="text-[11px] font-semibold text-[#8492a6] uppercase tracking-wider">Hiệu Chỉnh Câu Trích</label>
+              <span id="charCount" class="text-[10px] text-[#526173]">0 ký tự</span>
+            </div>
+            <textarea id="quoteTextInput" rows="3" class="w-full bg-[#090d14] border border-white/[0.1] rounded-lg p-2.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-[#517a8f] transition-all resize-none"></textarea>
+          </div>
+
+          <!-- 4. Download Action -->
+          <div class="pt-2">
+            <button onclick="downloadQuoteCard()" class="w-full py-3 px-4 rounded-xl bg-[#517a8f] hover:bg-[#638fa6] active:scale-98 text-white font-cinzel tracking-wider font-semibold text-xs flex items-center justify-center gap-2 shadow-lg shadow-[#517a8f]/20 transition-all cursor-pointer">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+              </svg>
+              <span>TẢI ẢNH VỀ MÁY (PNG CHẤT LƯỢNG CAO)</span>
+            </button>
+            <div class="text-[10px] text-center text-[#526173] pt-1.5">
+              Sẵn sàng chia sẻ lên Facebook, Instagram Story, Threads, Zalo
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SCRIPT ENGINE -->
+  <script>
+    // Sample Quotes for rapid testing
+    const SAMPLE_QUOTES = [
+      "Khung xương của nha đầu đó vô cùng đặc biệt. Nàng ta sinh ra và lớn lên bên rãnh nứt của biển sâu, ngày đêm ngâm mình dưới áp lực hàng ngàn tấn nước mặn, nên toàn bộ gân mạc và kinh lạc đều mang thuộc tính Thuần Âm Nhu Thể.",
+      "Người khắc dòng chữ V.H. - 1996 trên nắp lưng chiếc đồng hồ của ba cô... chính là cha tôi — Nguyễn Văn Hùng.",
+      "Xem ra Thể Đạo Hoán Huyết của anh rèn luyện gân cốt như sắt đá, nhưng quả tim phàm trần hai mươi lăm tuổi kia vẫn chưa thể nào đoạn tuyệt được thất tình lục dục của cõi nhân gian đâu..."
+    ];
+
+    // State
+    let currentQuote = SAMPLE_QUOTES[0];
+    let cardRatio = "1:1"; // "1:1", "9:16", "16:9"
+    let cardTheme = "saigon-night"; // "saigon-night", "ice-cyan", "sepia-parchment"
+
+    // Speech State
+    let isPlaying = false;
+    let isPaused = false;
+    let currentParaIdx = 0;
+    let speechRate = 1.0;
+    const rates = [1.0, 1.25, 1.5, 0.8];
+    let synth = window.speechSynthesis;
+    let currentUtterance = null;
+    let paragraphs = [];
+    let voices = [];
+
+    // DOM Elements
+    const selectionTooltip = document.getElementById('selectionTooltip');
+    const studioModal = document.getElementById('studioModal');
+    const quoteCanvas = document.getElementById('quoteCanvas');
+    const quoteTextInput = document.getElementById('quoteTextInput');
+    const charCount = document.getElementById('charCount');
+    const btnPlayMaster = document.getElementById('btnPlayMaster');
+    const iconPlay = document.getElementById('iconPlay');
+    const iconPause = document.getElementById('iconPause');
+    const soundwaveContainer = document.getElementById('soundwaveContainer');
+    const audioStatusText = document.getElementById('audioStatusText');
+    const audioParaCounter = document.getElementById('audioParaCounter');
+    const btnSpeed = document.getElementById('btnSpeed');
+    const btnStopMaster = document.getElementById('btnStopMaster');
+    const selectVoice = document.getElementById('selectVoice');
+
+    // INITIALIZATION
+    window.addEventListener('DOMContentLoaded', () => {
+      paragraphs = Array.from(document.querySelectorAll('.para-node'));
+      initSpeechVoices();
+      setupSelectionListener();
+      setupStudioInput();
+      drawCardOnCanvas();
+    });
+
+    // ----------------------------------------------------
+    // SELECTION LISTENER (QUOTE CARD HOOK)
+    // ----------------------------------------------------
+    function setupSelectionListener() {
+      document.addEventListener('selectionchange', () => {
+        const selection = window.getSelection();
+        if (!selection || selection.isCollapsed) {
+          selectionTooltip.style.display = 'none';
+          return;
+        }
+
+        const selectedText = selection.toString().trim();
+        if (selectedText.length < 15) {
+          selectionTooltip.style.display = 'none';
+          return;
+        }
+
+        const range = selection.getRangeAt(0);
+        const rect = range.getBoundingClientRect();
+
+        if (rect.width > 0 && rect.height > 0) {
+          selectionTooltip.style.left = `${rect.left + rect.width / 2 + window.scrollX}px`;
+          selectionTooltip.style.top = `${rect.top + window.scrollY}px`;
+          selectionTooltip.style.display = 'block';
+        }
+      });
+
+      document.getElementById('btnQuoteFromSelection').addEventListener('click', (e) => {
+        e.stopPropagation();
+        const selection = window.getSelection();
+        const text = selection ? selection.toString().trim() : '';
+        if (text) {
+          openStudioModal(text);
+          selection.removeAllRanges();
+          selectionTooltip.style.display = 'none';
+        }
+      });
+    }
+
+    // ----------------------------------------------------
+    // QUOTE STUDIO MODAL
+    // ----------------------------------------------------
+    function openStudioModal(quoteText) {
+      currentQuote = quoteText || SAMPLE_QUOTES[0];
+      quoteTextInput.value = currentQuote;
+      charCount.textContent = `${currentQuote.length} ký tự`;
+      studioModal.classList.remove('hidden');
+      studioModal.classList.add('flex');
+      drawCardOnCanvas();
+    }
+
+    function closeStudioModal() {
+      studioModal.classList.add('hidden');
+      studioModal.classList.remove('flex');
+    }
+
+    function setupStudioInput() {
+      quoteTextInput.addEventListener('input', (e) => {
+        currentQuote = e.target.value;
+        charCount.textContent = `${currentQuote.length} ký tự`;
+        drawCardOnCanvas();
+      });
+    }
+
+    function setCardRatio(ratio) {
+      cardRatio = ratio;
+      document.querySelectorAll('.ratio-btn').forEach(b => {
+        b.classList.remove('bg-[#162030]', 'border-[#517a8f]', 'text-white');
+        b.classList.add('bg-[#111722]', 'border-white/[0.08]', 'text-[#8492a6]');
+      });
+      const activeBtn = ratio === '1:1' ? document.getElementById('btnRatio1') :
+                        ratio === '9:16' ? document.getElementById('btnRatio2') : document.getElementById('btnRatio3');
+      activeBtn.classList.add('bg-[#162030]', 'border-[#517a8f]', 'text-white');
+      activeBtn.classList.remove('bg-[#111722]', 'border-white/[0.08]', 'text-[#8492a6]');
+      drawCardOnCanvas();
+    }
+
+    function setCardTheme(theme) {
+      cardTheme = theme;
+      document.querySelectorAll('.theme-btn').forEach(b => {
+        b.classList.remove('bg-[#162030]', 'border-[#517a8f]', 'text-white');
+        b.classList.add('bg-[#111722]', 'border-white/[0.08]', 'text-[#8492a6]');
+        const check = b.querySelector('.check-mark');
+        if (check) check.remove();
+      });
+
+      const activeBtn = theme === 'saigon-night' ? document.getElementById('themeBtn1') :
+                        theme === 'ice-cyan' ? document.getElementById('themeBtn2') : document.getElementById('themeBtn3');
+      activeBtn.classList.add('bg-[#162030]', 'border-[#517a8f]', 'text-white');
+      activeBtn.classList.remove('bg-[#111722]', 'border-white/[0.08]', 'text-[#8492a6]');
+      
+      const checkSpan = document.createElement('span');
+      checkSpan.className = 'text-[#e5c07b] text-xs check-mark';
+      checkSpan.textContent = '✓';
+      activeBtn.appendChild(checkSpan);
+
+      drawCardOnCanvas();
+    }
+
+    // ----------------------------------------------------
+    // HIGH RESOLUTION CANVAS RENDERER (RETINA 2X)
+    // ----------------------------------------------------
+    function drawCardOnCanvas() {
+      const canvas = quoteCanvas;
+      const ctx = canvas.getContext('2d');
+
+      // Set internal dimensions based on aspect ratio
+      let width = 1200;
+      let height = 1200;
+      if (cardRatio === '9:16') {
+        width = 1080;
+        height = 1920;
+      } else if (cardRatio === '16:9') {
+        width = 1920;
+        height = 1080;
+      }
+      canvas.width = width;
+      canvas.height = height;
+
+      // Theme Palettes
+      let bgColor = "#0b0f17";
+      let bgGradColor2 = "#111827";
+      let frameColor = "rgba(81, 122, 143, 0.4)";
+      let innerFrameColor = "rgba(229, 192, 123, 0.25)";
+      let headerColor = "#e5c07b";
+      let textColor = "#e2e8f0";
+      let subColor = "#8492a6";
+      let sealBg = "#a82323";
+      let sealBorder = "#ffffff";
+      let sealText = "#ffffff";
+
+      if (cardTheme === 'ice-cyan') {
+        bgColor = "#060f17";
+        bgGradColor2 = "#0c1d2e";
+        frameColor = "rgba(56, 189, 248, 0.4)";
+        innerFrameColor = "rgba(56, 189, 248, 0.2)";
+        headerColor = "#38bdf8";
+        textColor = "#e0f2fe";
+        subColor = "#7dd3fc";
+        sealBg = "#0369a1";
+      } else if (cardTheme === 'sepia-parchment') {
+        bgColor = "#f4ede2";
+        bgGradColor2 = "#e8dfcf";
+        frameColor = "rgba(140, 91, 30, 0.45)";
+        innerFrameColor = "rgba(140, 91, 30, 0.25)";
+        headerColor = "#8c5b1e";
+        textColor = "#2c231a";
+        subColor = "#6e5d4b";
+        sealBg = "#991b1b";
+      }
+
+      // 1. Draw Background Gradient
+      const bgGrad = ctx.createRadialGradient(width/2, height*0.35, 50, width/2, height/2, width*0.75);
+      bgGrad.addColorStop(0, bgGradColor2);
+      bgGrad.addColorStop(1, bgColor);
+      ctx.fillStyle = bgGrad;
+      ctx.fillRect(0, 0, width, height);
+
+      // 2. Draw Subtle Border Frame
+      const margin = width > 1200 ? 60 : 45;
+      ctx.strokeStyle = frameColor;
+      ctx.lineWidth = 2;
+      ctx.strokeRect(margin, margin, width - margin * 2, height - margin * 2);
+
+      // Inner hairline frame
+      const innerMargin = margin + 12;
+      ctx.strokeStyle = innerFrameColor;
+      ctx.lineWidth = 1;
+      ctx.strokeRect(innerMargin, innerMargin, width - innerMargin * 2, height - innerMargin * 2);
+
+      // Ornate Corner Accents
+      const cornerLen = 22;
+      ctx.strokeStyle = headerColor;
+      ctx.lineWidth = 2;
+      // Top-left
+      ctx.beginPath();
+      ctx.moveTo(innerMargin, innerMargin + cornerLen);
+      ctx.lineTo(innerMargin, innerMargin);
+      ctx.lineTo(innerMargin + cornerLen, innerMargin);
+      ctx.stroke();
+      // Top-right
+      ctx.beginPath();
+      ctx.moveTo(width - innerMargin - cornerLen, innerMargin);
+      ctx.lineTo(width - innerMargin, innerMargin);
+      ctx.lineTo(width - innerMargin, innerMargin + cornerLen);
+      ctx.stroke();
+      // Bottom-left
+      ctx.beginPath();
+      ctx.moveTo(innerMargin, height - innerMargin - cornerLen);
+      ctx.lineTo(innerMargin, height - innerMargin);
+      ctx.lineTo(innerMargin + cornerLen, height - innerMargin);
+      ctx.stroke();
+      // Bottom-right
+      ctx.beginPath();
+      ctx.moveTo(width - innerMargin - cornerLen, height - innerMargin);
+      ctx.lineTo(width - innerMargin, height - innerMargin);
+      ctx.lineTo(width - innerMargin, height - innerMargin - cornerLen);
+      ctx.stroke();
+
+      // 3. Header Emblem & Novel Title
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      
+      const topY = margin + 65;
+      ctx.font = "bold 20px 'Cinzel', serif";
+      ctx.fillStyle = headerColor;
+      ctx.letterSpacing = "6px";
+      ctx.fillText("❖  PHÁ TRỜI  ❖", width / 2, topY);
+
+      ctx.font = "14px 'Be Vietnam Pro', sans-serif";
+      ctx.fillStyle = subColor;
+      ctx.letterSpacing = "2px";
+      ctx.fillText("ĐẠI TRƯỜNG THIÊN TIỂU THUYẾT", width / 2, topY + 28);
+
+      // 4. Center Quote Block
+      const quoteBody = currentQuote.trim();
+      const quoteFontSize = calculateFontSize(quoteBody, width, height, cardRatio);
+      ctx.font = `italic ${quoteFontSize}px 'Lora', serif`;
+      ctx.fillStyle = textColor;
+      ctx.letterSpacing = "0.5px";
+
+      const maxLineWidth = width - (innerMargin * 2 + 100);
+      const lines = wrapText(ctx, `“ ${quoteBody} ”`, maxLineWidth);
+      const lineHeight = quoteFontSize * 1.7;
+      const totalBlockHeight = lines.length * lineHeight;
+      const startY = (height / 2) - (totalBlockHeight / 2) - 10;
+
+      for (let i = 0; i < lines.length; i++) {
+        ctx.fillText(lines[i], width / 2, startY + (i * lineHeight));
+      }
+
+      // 5. Footer Details
+      const bottomY = height - margin - 85;
+      
+      // Divider
+      ctx.strokeStyle = innerFrameColor;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(width / 2 - 80, bottomY - 30);
+      ctx.lineTo(width / 2 + 80, bottomY - 30);
+      ctx.stroke();
+
+      // Chapter context & Author
+      ctx.font = "bold 15px 'Be Vietnam Pro', sans-serif";
+      ctx.fillStyle = headerColor;
+      ctx.letterSpacing = "1.5px";
+      ctx.fillText("CHƯƠNG 96: HẢI YẾN", width / 2, bottomY);
+
+      ctx.font = "13px 'Be Vietnam Pro', sans-serif";
+      ctx.fillStyle = subColor;
+      ctx.letterSpacing = "1px";
+      ctx.fillText("Bản thảo chính thức • phatroi.com", width / 2, bottomY + 24);
+
+      // 6. Traditional Cinnabar Seal Stamp (Bottom-Right)
+      const sealSize = 58;
+      const sealX = width - innerMargin - sealSize - 20;
+      const sealY = height - innerMargin - sealSize - 20;
+
+      // Outer Red Square
+      ctx.fillStyle = sealBg;
+      ctx.fillRect(sealX, sealY, sealSize, sealSize);
+      
+      // Double white border for carved stone look
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.85)";
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(sealX + 3, sealY + 3, sealSize - 6, sealSize - 6);
+
+      // Carved Seal Characters "PHÁ TRỜI" in 2 rows
+      ctx.font = "bold 15px 'Cinzel', serif";
+      ctx.fillStyle = "#ffffff";
+      ctx.textAlign = "center";
+      ctx.letterSpacing = "1px";
+      ctx.fillText("PHÁ", sealX + (sealSize / 2), sealY + 20);
+      ctx.fillText("TRỜI", sealX + (sealSize / 2), sealY + 40);
+    }
+
+    // Helper: Smart Font Sizing
+    function calculateFontSize(text, width, height, ratio) {
+      const len = text.length;
+      if (ratio === '9:16') {
+        if (len < 80) return 40;
+        if (len < 160) return 34;
+        if (len < 260) return 28;
+        return 24;
+      } else if (ratio === '16:9') {
+        if (len < 80) return 36;
+        if (len < 160) return 30;
+        return 24;
+      } else { // 1:1
+        if (len < 80) return 36;
+        if (len < 160) return 30;
+        if (len < 260) return 26;
+        return 22;
+      }
+    }
+
+    // Helper: Wrap Text for Canvas
+    function wrapText(ctx, text, maxWidth) {
+      const words = text.split(' ');
+      const lines = [];
+      let currentLine = words[0];
+
+      for (let i = 1; i < words.length; i++) {
+        const word = words[i];
+        const width = ctx.measureText(currentLine + " " + word).width;
+        if (width < maxWidth) {
+          currentLine += " " + word;
+        } else {
+          lines.push(currentLine);
+          currentLine = word;
+        }
+      }
+      lines.push(currentLine);
+      return lines;
+    }
+
+    // Helper: Download High-Res PNG
+    function downloadQuoteCard() {
+      const link = document.createElement('a');
+      link.download = `pha-troi-trich-dan-chuong-96-${cardRatio.replace(':', 'x')}.png`;
+      link.href = quoteCanvas.toDataURL('image/png');
+      link.click();
+    }
+
+    // ----------------------------------------------------
+    // WEB SPEECH AUDIO ENGINE
+    // ----------------------------------------------------
+    function initSpeechVoices() {
+      if (!('speechSynthesis' in window)) {
+        audioStatusText.textContent = "Trình duyệt không hỗ trợ Web Speech";
+        return;
+      }
+
+      function populateVoices() {
+        voices = synth.getVoices();
+        selectVoice.innerHTML = '';
+        
+        const viVoices = voices.filter(v => v.lang.includes('vi') || v.lang.includes('VN'));
+        
+        if (viVoices.length > 0) {
+          viVoices.forEach((v) => {
+            const opt = document.createElement('option');
+            opt.value = v.name;
+            opt.textContent = `${v.name.replace(/Microsoft|Google/g, '').trim()} (${v.lang})`;
+            selectVoice.appendChild(opt);
+          });
+        } else {
+          const opt = document.createElement('option');
+          opt.value = "";
+          opt.textContent = "Giọng mặc định hệ thống";
+          selectVoice.appendChild(opt);
+        }
+      }
+
+      populateVoices();
+      if (speechSynthesis.onvoiceschanged !== undefined) {
+        speechSynthesis.onvoiceschanged = populateVoices;
+      }
+
+      btnPlayMaster.addEventListener('click', toggleAudioPlayback);
+      btnStopMaster.addEventListener('click', stopAudioPlayback);
+      btnSpeed.addEventListener('click', cycleSpeed);
+    }
+
+    function toggleAudioPlayback() {
+      if (isPlaying) {
+        if (isPaused) {
+          synth.resume();
+          isPaused = false;
+          updateAudioUI(true);
+        } else {
+          synth.pause();
+          isPaused = true;
+          updateAudioUI(false);
+          audioStatusText.textContent = "Đang tạm dừng";
+        }
+      } else {
+        startAudioPlayback(currentParaIdx);
+      }
+    }
+
+    function triggerQuickAudio() {
+      if (!isPlaying) {
+        startAudioPlayback(0);
+      } else {
+        toggleAudioPlayback();
+      }
+    }
+
+    function startAudioPlayback(startIndex = 0) {
+      if (paragraphs.length === 0) return;
+      currentParaIdx = startIndex;
+      isPlaying = true;
+      isPaused = false;
+      speakNextParagraph();
+    }
+
+    function speakNextParagraph() {
+      if (!isPlaying) return;
+
+      if (currentParaIdx >= paragraphs.length) {
+        stopAudioPlayback();
+        audioStatusText.textContent = "Đã đọc xong chương 96";
+        return;
+      }
+
+      // Highlight active paragraph
+      paragraphs.forEach((p, idx) => {
+        if (idx === currentParaIdx) {
+          p.classList.add('para-active');
+          p.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else {
+          p.classList.remove('para-active');
+        }
+      });
+
+      const paraText = paragraphs[currentParaIdx].textContent.trim();
+      currentUtterance = new SpeechSynthesisUtterance(paraText);
+      currentUtterance.rate = speechRate;
+      currentUtterance.lang = 'vi-VN';
+
+      // Assign selected voice if available
+      const selectedVoiceName = selectVoice.value;
+      if (selectedVoiceName) {
+        const found = voices.find(v => v.name === selectedVoiceName);
+        if (found) currentUtterance.voice = found;
+      }
+
+      currentUtterance.onstart = () => {
+        updateAudioUI(true);
+        audioParaCounter.classList.remove('hidden');
+        audioParaCounter.textContent = `• Đoạn ${currentParaIdx + 1}/${paragraphs.length}`;
+        audioStatusText.querySelector('span:first-child').textContent = "Đang đọc...";
+      };
+
+      currentUtterance.onend = () => {
+        currentParaIdx++;
+        speakNextParagraph();
+      };
+
+      currentUtterance.onerror = (e) => {
+        console.warn("Speech synthesis notice:", e);
+        currentParaIdx++;
+        speakNextParagraph();
+      };
+
+      synth.speak(currentUtterance);
+    }
+
+    function stopAudioPlayback() {
+      synth.cancel();
+      isPlaying = false;
+      isPaused = false;
+      currentParaIdx = 0;
+      paragraphs.forEach(p => p.classList.remove('para-active'));
+      updateAudioUI(false);
+      audioParaCounter.classList.add('hidden');
+      audioStatusText.querySelector('span:first-child').textContent = "Sẵn sàng nghe chương 96";
+    }
+
+    function cycleSpeed() {
+      const curIdx = rates.indexOf(speechRate);
+      const nextIdx = (curIdx + 1) % rates.length;
+      speechRate = rates[nextIdx];
+      btnSpeed.textContent = `${speechRate}x`;
+      
+      // If currently playing, restart current paragraph with new speed seamlessly
+      if (isPlaying && !isPaused) {
+        synth.cancel();
+        speakNextParagraph();
+      }
+    }
+
+    function updateAudioUI(playing) {
+      if (playing) {
+        iconPlay.classList.add('hidden');
+        iconPause.classList.remove('hidden');
+        soundwaveContainer.classList.remove('hidden');
+        soundwaveContainer.classList.add('flex');
+        document.getElementById('headerAudioIcon').classList.add('text-[#e5c07b]');
+      } else {
+        iconPlay.classList.remove('hidden');
+        iconPause.classList.add('hidden');
+        soundwaveContainer.classList.add('hidden');
+        soundwaveContainer.classList.remove('flex');
+        document.getElementById('headerAudioIcon').classList.remove('text-[#e5c07b]');
+      }
+    }
+  </script>
+</body>
+</html>

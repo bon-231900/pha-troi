@@ -695,6 +695,666 @@ async function loadCodexData() {
         .catch(() => {});
     })();
 
+    // ========================================================
+    // KILLER FEATURE 1: WEB SPEECH AUDIO PLAYER (DOCK)
+    // ========================================================
+    (function initSpeechAudioPlayer() {
+      if (!('speechSynthesis' in window)) return;
+      const synth = window.speechSynthesis;
+      let isPlaying = false;
+      let isPaused = false;
+      let currentParaIdx = 0;
+      let currentRate = 1.0;
+      const rates = [1.0, 1.25, 1.5, 0.8];
+      let currentUtterance = null;
+      let paragraphs = [];
+      let voices = [];
+
+      // Create Audio Dock DOM if not present
+      let dock = document.getElementById('speechAudioDock');
+      if (!dock) {
+        dock = document.createElement('div');
+        dock.id = 'speechAudioDock';
+        dock.className = 'speech-audio-dock';
+        dock.innerHTML = `
+          <div class="audio-dock-left">
+            <button type="button" id="btnAudioPlayMaster" class="btn-audio-play-master" aria-label="Bật hoặc tạm dừng đọc">
+              <svg id="iconAudioPlay" width="18" height="18" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path>
+              </svg>
+              <svg id="iconAudioPause" width="18" height="18" viewBox="0 0 20 20" fill="currentColor" style="display:none;">
+                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+              </svg>
+            </button>
+            <div class="audio-dock-info">
+              <div class="audio-dock-title-row">
+                <span class="audio-dock-title">Chương ${CH_NUM}: ${CLEAN_TITLE}</span>
+                <div id="audioSoundwave" class="audio-soundwave">
+                  <span class="soundwave-bar"></span>
+                  <span class="soundwave-bar"></span>
+                  <span class="soundwave-bar"></span>
+                  <span class="soundwave-bar"></span>
+                  <span class="soundwave-bar"></span>
+                </div>
+              </div>
+              <div class="audio-dock-sub">
+                <span id="audioDockStatus">Sẵn sàng nghe đọc</span>
+                <span id="audioParaCounter" class="audio-para-badge" style="display:none;"></span>
+              </div>
+            </div>
+          </div>
+          <div class="audio-dock-right">
+            <select id="selectAudioVoice" class="select-audio-voice" aria-label="Chọn giọng đọc"></select>
+            <button type="button" id="btnAudioSpeed" class="btn-audio-ctrl btn-audio-speed" title="Tốc độ đọc">1.0x</button>
+            <button type="button" id="btnAudioStop" class="btn-audio-ctrl" title="Dừng đọc hoàn toàn" aria-label="Dừng đọc">
+              <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8 7a1 1 0 00-1 1v4a1 1 0 001 1h4a1 1 0 001-1V8a1 1 0 00-1-1H8z" clip-rule="evenodd"></path>
+              </svg>
+            </button>
+            <button type="button" id="btnAudioCloseDock" class="btn-audio-ctrl" title="Đóng thanh nghe đọc" aria-label="Đóng">✕</button>
+          </div>
+        `;
+        document.body.appendChild(dock);
+      }
+
+      const btnPlay = document.getElementById('btnAudioPlayMaster');
+      const iconPlay = document.getElementById('iconAudioPlay');
+      const iconPause = document.getElementById('iconAudioPause');
+      const soundwave = document.getElementById('audioSoundwave');
+      const statusText = document.getElementById('audioDockStatus');
+      const counterText = document.getElementById('audioParaCounter');
+      const selectVoice = document.getElementById('selectAudioVoice');
+      const btnSpeed = document.getElementById('btnAudioSpeed');
+      const btnStop = document.getElementById('btnAudioStop');
+      const btnClose = document.getElementById('btnAudioCloseDock');
+
+      function loadVoices() {
+        voices = synth.getVoices();
+        selectVoice.innerHTML = '';
+        const viVoices = voices.filter(v => v.lang.includes('vi') || v.lang.includes('VN'));
+        if (viVoices.length > 0) {
+          viVoices.forEach(v => {
+            const opt = document.createElement('option');
+            opt.value = v.name;
+            opt.textContent = `${v.name.replace(/Microsoft|Google/g, '').trim()} (${v.lang})`;
+            selectVoice.appendChild(opt);
+          });
+        } else {
+          const opt = document.createElement('option');
+          opt.value = '';
+          opt.textContent = 'Giọng mặc định';
+          selectVoice.appendChild(opt);
+        }
+      }
+
+      loadVoices();
+      if (speechSynthesis.onvoiceschanged !== undefined) {
+        speechSynthesis.onvoiceschanged = loadVoices;
+      }
+
+      function updateUI(playing) {
+        if (playing) {
+          iconPlay.style.display = 'none';
+          iconPause.style.display = 'block';
+          soundwave.classList.add('active');
+          const headerBtn = document.getElementById('btnAudioReader');
+          if (headerBtn) headerBtn.style.color = 'var(--gold-primary)';
+        } else {
+          iconPlay.style.display = 'block';
+          iconPause.style.display = 'none';
+          soundwave.classList.remove('active');
+          const headerBtn = document.getElementById('btnAudioReader');
+          if (headerBtn) headerBtn.style.color = '';
+        }
+      }
+
+      function getParagraphs() {
+        const container = document.getElementById('novelContent') || document.querySelector('.novel-body');
+        if (!container) return [];
+        return Array.from(container.querySelectorAll('p')).filter(p => p.textContent.trim().length > 0);
+      }
+
+      function speakParagraph() {
+        if (!isPlaying) return;
+        if (currentParaIdx >= paragraphs.length) {
+          stopAudio();
+          statusText.textContent = 'Đã đọc xong chương ' + CH_NUM;
+          showToast('✓ Đã đọc xong toàn bộ chương ' + CH_NUM);
+          return;
+        }
+
+        paragraphs.forEach((p, idx) => {
+          if (idx === currentParaIdx) {
+            p.classList.add('para-active');
+            p.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          } else {
+            p.classList.remove('para-active');
+          }
+        });
+
+        const text = paragraphs[currentParaIdx].textContent.trim();
+        currentUtterance = new SpeechSynthesisUtterance(text);
+        currentUtterance.rate = currentRate;
+        currentUtterance.lang = 'vi-VN';
+
+        if (selectVoice.value) {
+          const found = voices.find(v => v.name === selectVoice.value);
+          if (found) currentUtterance.voice = found;
+        }
+
+        currentUtterance.onstart = () => {
+          updateUI(true);
+          counterText.style.display = 'inline';
+          counterText.textContent = `• Đoạn ${currentParaIdx + 1}/${paragraphs.length}`;
+          statusText.textContent = 'Đang đọc...';
+        };
+
+        currentUtterance.onend = () => {
+          currentParaIdx++;
+          speakParagraph();
+        };
+
+        currentUtterance.onerror = (e) => {
+          console.warn('Speech error notice:', e);
+          currentParaIdx++;
+          speakParagraph();
+        };
+
+        synth.speak(currentUtterance);
+      }
+
+      function startAudio(idx = 0) {
+        paragraphs = getParagraphs();
+        if (paragraphs.length === 0) {
+          showToast('Không tìm thấy nội dung văn bản để đọc');
+          return;
+        }
+        dock.classList.add('dock-visible');
+        currentParaIdx = idx;
+        isPlaying = true;
+        isPaused = false;
+        synth.cancel();
+        speakParagraph();
+      }
+
+      function toggleAudio() {
+        dock.classList.add('dock-visible');
+        if (isPlaying) {
+          if (isPaused) {
+            synth.resume();
+            isPaused = false;
+            updateUI(true);
+            statusText.textContent = 'Đang đọc...';
+          } else {
+            synth.pause();
+            isPaused = true;
+            updateUI(false);
+            statusText.textContent = 'Đang tạm dừng';
+          }
+        } else {
+          startAudio(currentParaIdx);
+        }
+      }
+
+      function stopAudio() {
+        synth.cancel();
+        isPlaying = false;
+        isPaused = false;
+        currentParaIdx = 0;
+        paragraphs.forEach(p => p.classList.remove('para-active'));
+        updateUI(false);
+        counterText.style.display = 'none';
+        statusText.textContent = 'Sẵn sàng nghe đọc';
+      }
+
+      function cycleSpeed() {
+        const curI = rates.indexOf(currentRate);
+        const nextI = (curI + 1) % rates.length;
+        currentRate = rates[nextI];
+        btnSpeed.textContent = currentRate + 'x';
+        if (isPlaying && !isPaused) {
+          synth.cancel();
+          speakParagraph();
+        }
+      }
+
+      // Event listeners
+      btnPlay.onclick = toggleAudio;
+      btnStop.onclick = stopAudio;
+      btnSpeed.onclick = cycleSpeed;
+      btnClose.onclick = () => {
+        stopAudio();
+        dock.classList.remove('dock-visible');
+      };
+
+      // Header button hook
+      const headerAudioBtn = document.getElementById('btnAudioReader');
+      if (headerAudioBtn) {
+        headerAudioBtn.onclick = () => {
+          toggleAudio();
+        };
+      }
+
+      // Editorial quick play button hook
+      const quickPlayBtn = document.getElementById('btnQuickPlayAudio');
+      if (quickPlayBtn) {
+        quickPlayBtn.onclick = () => {
+          startAudio(0);
+        };
+      }
+
+      // Expose to window for external control
+      window.toggleSpeechAudio = toggleAudio;
+    })();
+
+    // ========================================================
+    // KILLER FEATURE 2: SELECTION TOOLTIP & QUOTE STUDIO MODAL
+    // ========================================================
+    (function initQuoteCardStudio() {
+      // 1. Create Selection Bubble Tooltip
+      let tooltip = document.getElementById('selectionQuoteTooltip');
+      if (!tooltip) {
+        tooltip = document.createElement('div');
+        tooltip.id = 'selectionQuoteTooltip';
+        tooltip.className = 'selection-quote-tooltip';
+        tooltip.innerHTML = `
+          <button type="button" id="btnQuoteFromBubble" class="btn-quote-bubble">
+            <span class="quote-bubble-dot"></span>
+            <span>TẠO THẺ TRÍCH DẪN</span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+            </svg>
+          </button>
+        `;
+        document.body.appendChild(tooltip);
+      }
+
+      // 2. Create Quote Studio Modal DOM
+      let modal = document.getElementById('quoteStudioModal');
+      if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'quoteStudioModal';
+        modal.className = 'quote-modal-overlay';
+        modal.innerHTML = `
+          <div class="quote-modal-card">
+            <div class="quote-modal-header">
+              <div class="quote-modal-title">
+                <span class="quote-bubble-dot"></span>
+                <span>THIẾT KẾ THẺ ẢNH TRÍCH DẪN</span>
+              </div>
+              <button type="button" id="btnCloseQuoteModal" class="btn-icon" aria-label="Đóng">✕</button>
+            </div>
+            <div class="quote-modal-body">
+              <div class="quote-preview-wrap">
+                <canvas id="quoteModalCanvas"></canvas>
+                <div style="font-size:11px; color:var(--text-muted); margin-top:8px; text-align:center;">
+                  Độ phân giải Retina 2x • Tự động đóng dấu triện son PHÁ TRỜI
+                </div>
+              </div>
+              <div class="quote-controls">
+                <div>
+                  <label class="quote-control-label">Tỷ Lệ Khung Ảnh</label>
+                  <div class="quote-btn-grid">
+                    <button type="button" class="btn-quote-opt active" data-ratio="1:1">1:1 (Vuông)</button>
+                    <button type="button" class="btn-quote-opt" data-ratio="9:16">9:16 (Story)</button>
+                    <button type="button" class="btn-quote-opt" data-ratio="16:9">16:9 (Ngang)</button>
+                  </div>
+                </div>
+                <div>
+                  <label class="quote-control-label">Chủ Đề Nghệ Thuật</label>
+                  <div class="quote-theme-list">
+                    <button type="button" class="btn-theme-opt active" data-theme="saigon-night">
+                      <span>✦ Đêm Sài Gòn (Saigon Night)</span>
+                      <span style="color:var(--gold-primary);">✓</span>
+                    </button>
+                    <button type="button" class="btn-theme-opt" data-theme="ice-cyan">
+                      <span>✦ Băng Phách Thần Nữ</span>
+                    </button>
+                    <button type="button" class="btn-theme-opt" data-theme="sepia-parchment">
+                      <span>✦ Thư Tịch Cổ (Antique Paper)</span>
+                    </button>
+                  </div>
+                </div>
+                <div>
+                  <label class="quote-control-label">Nội Dung Trích Dẫn</label>
+                  <textarea id="quoteModalInput" class="quote-textarea" placeholder="Nhập câu trích..."></textarea>
+                </div>
+                <div>
+                  <button type="button" id="btnDownloadQuoteCard" class="btn-download-quote">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                    </svg>
+                    <span>TẢI ẢNH VỀ MÁY (PNG RETINA)</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(modal);
+      }
+
+      // Studio State
+      let currentQuoteText = '';
+      let currentRatio = '1:1';
+      let currentTheme = 'saigon-night';
+
+      const canvas = document.getElementById('quoteModalCanvas');
+      const textarea = document.getElementById('quoteModalInput');
+      const btnDownload = document.getElementById('btnDownloadQuoteCard');
+      const btnCloseModal = document.getElementById('btnCloseQuoteModal');
+
+      function openModal(text) {
+        if (!text) {
+          const container = document.getElementById('novelContent') || document.querySelector('.novel-body');
+          const firstP = container ? container.querySelector('p') : null;
+          text = firstP ? firstP.textContent.trim() : 'Phá Trời — Đại trường thiên Thể Đạo phàm nhân & Địa chất non sông 2026.';
+        }
+        currentQuoteText = text;
+        textarea.value = currentQuoteText;
+        modal.classList.add('open');
+        renderCanvas();
+      }
+
+      function closeModal() {
+        modal.classList.remove('open');
+      }
+
+      function renderCanvas() {
+        const ctx = canvas.getContext('2d');
+        let width = 1200;
+        let height = 1200;
+        if (currentRatio === '9:16') {
+          width = 1080;
+          height = 1920;
+        } else if (currentRatio === '16:9') {
+          width = 1920;
+          height = 1080;
+        }
+        canvas.width = width;
+        canvas.height = height;
+
+        let bgColor = '#0b0f17';
+        let bgGrad2 = '#111827';
+        let frameColor = 'rgba(81, 122, 143, 0.4)';
+        let innerFrameColor = 'rgba(229, 192, 123, 0.25)';
+        let headerColor = '#e5c07b';
+        let textColor = '#e2e8f0';
+        let subColor = '#8492a6';
+        let sealBg = '#a82323';
+
+        if (currentTheme === 'ice-cyan') {
+          bgColor = '#060f17';
+          bgGrad2 = '#0c1d2e';
+          frameColor = 'rgba(56, 189, 248, 0.4)';
+          innerFrameColor = 'rgba(56, 189, 248, 0.2)';
+          headerColor = '#38bdf8';
+          textColor = '#e0f2fe';
+          subColor = '#7dd3fc';
+          sealBg = '#0369a1';
+        } else if (currentTheme === 'sepia-parchment') {
+          bgColor = '#f4ede2';
+          bgGrad2 = '#e8dfcf';
+          frameColor = 'rgba(140, 91, 30, 0.45)';
+          innerFrameColor = 'rgba(140, 91, 30, 0.25)';
+          headerColor = '#8c5b1e';
+          textColor = '#2c231a';
+          subColor = '#6e5d4b';
+          sealBg = '#991b1b';
+        }
+
+        // 1. Background Gradient
+        const bgGrad = ctx.createRadialGradient(width/2, height*0.35, 50, width/2, height/2, width*0.75);
+        bgGrad.addColorStop(0, bgGrad2);
+        bgGrad.addColorStop(1, bgColor);
+        ctx.fillStyle = bgGrad;
+        ctx.fillRect(0, 0, width, height);
+
+        // 2. Borders & Corner Accents
+        const margin = width > 1200 ? 60 : 45;
+        ctx.strokeStyle = frameColor;
+        ctx.lineWidth = 2;
+        ctx.strokeRect(margin, margin, width - margin * 2, height - margin * 2);
+
+        const innerMargin = margin + 12;
+        ctx.strokeStyle = innerFrameColor;
+        ctx.lineWidth = 1;
+        ctx.strokeRect(innerMargin, innerMargin, width - innerMargin * 2, height - innerMargin * 2);
+
+        // Ornate Corner Accents
+        const cornerLen = 22;
+        ctx.strokeStyle = headerColor;
+        ctx.lineWidth = 2;
+        // TL
+        ctx.beginPath();
+        ctx.moveTo(innerMargin, innerMargin + cornerLen);
+        ctx.lineTo(innerMargin, innerMargin);
+        ctx.lineTo(innerMargin + cornerLen, innerMargin);
+        ctx.stroke();
+        // TR
+        ctx.beginPath();
+        ctx.moveTo(width - innerMargin - cornerLen, innerMargin);
+        ctx.lineTo(width - innerMargin, innerMargin);
+        ctx.lineTo(width - innerMargin, innerMargin + cornerLen);
+        ctx.stroke();
+        // BL
+        ctx.beginPath();
+        ctx.moveTo(innerMargin, height - innerMargin - cornerLen);
+        ctx.lineTo(innerMargin, height - innerMargin);
+        ctx.lineTo(innerMargin + cornerLen, height - innerMargin);
+        ctx.stroke();
+        // BR
+        ctx.beginPath();
+        ctx.moveTo(width - innerMargin - cornerLen, height - innerMargin);
+        ctx.lineTo(width - innerMargin, height - innerMargin);
+        ctx.lineTo(width - innerMargin, height - innerMargin - cornerLen);
+        ctx.stroke();
+
+        // 3. Header Emblem
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        const topY = margin + 65;
+        ctx.font = "bold 20px 'Cinzel', serif";
+        ctx.fillStyle = headerColor;
+        ctx.fillText('❖  PHÁ TRỜI  ❖', width / 2, topY);
+
+        ctx.font = "14px 'Be Vietnam Pro', sans-serif";
+        ctx.fillStyle = subColor;
+        ctx.fillText('ĐẠI TRƯỜNG THIÊN TIỂU THUYẾT', width / 2, topY + 28);
+
+        // 4. Center Quote Block
+        const quoteBody = currentQuoteText.trim();
+        const quoteFontSize = calculateFontSize(quoteBody, width, height, currentRatio);
+        ctx.font = `italic ${quoteFontSize}px 'Lora', serif`;
+        ctx.fillStyle = textColor;
+
+        const maxLineWidth = width - (innerMargin * 2 + 100);
+        const lines = wrapCanvasText(ctx, `“ ${quoteBody} ”`, maxLineWidth);
+        const lineHeight = quoteFontSize * 1.7;
+        const totalBlockHeight = lines.length * lineHeight;
+        const startY = (height / 2) - (totalBlockHeight / 2) - 10;
+
+        for (let i = 0; i < lines.length; i++) {
+          ctx.fillText(lines[i], width / 2, startY + (i * lineHeight));
+        }
+
+        // 5. Footer Details
+        const bottomY = height - margin - 85;
+        ctx.strokeStyle = innerFrameColor;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(width / 2 - 80, bottomY - 30);
+        ctx.lineTo(width / 2 + 80, bottomY - 30);
+        ctx.stroke();
+
+        ctx.font = "bold 15px 'Be Vietnam Pro', sans-serif";
+        ctx.fillStyle = headerColor;
+        ctx.fillText(`CHƯƠNG ${CH_NUM}: ${CLEAN_TITLE.toUpperCase()}`, width / 2, bottomY);
+
+        ctx.font = "13px 'Be Vietnam Pro', sans-serif";
+        ctx.fillStyle = subColor;
+        ctx.fillText('Bản thảo chính thức • phatroi.com', width / 2, bottomY + 24);
+
+        // 6. Cinnabar Seal Stamp (Bottom-Right)
+        const sealSize = 58;
+        const sealX = width - innerMargin - sealSize - 20;
+        const sealY = height - innerMargin - sealSize - 20;
+
+        ctx.fillStyle = sealBg;
+        ctx.fillRect(sealX, sealY, sealSize, sealSize);
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
+        ctx.lineWidth = 1.5;
+        ctx.strokeRect(sealX + 3, sealY + 3, sealSize - 6, sealSize - 6);
+
+        ctx.font = "bold 15px 'Cinzel', serif";
+        ctx.fillStyle = '#ffffff';
+        ctx.textAlign = 'center';
+        ctx.fillText('PHÁ', sealX + (sealSize / 2), sealY + 20);
+        ctx.fillText('TRỜI', sealX + (sealSize / 2), sealY + 40);
+      }
+
+      function calculateFontSize(text, width, height, ratio) {
+        const len = text.length;
+        if (ratio === '9:16') {
+          if (len < 80) return 40;
+          if (len < 160) return 34;
+          if (len < 260) return 28;
+          return 24;
+        } else if (ratio === '16:9') {
+          if (len < 80) return 36;
+          if (len < 160) return 30;
+          return 24;
+        } else {
+          if (len < 80) return 36;
+          if (len < 160) return 30;
+          if (len < 260) return 26;
+          return 22;
+        }
+      }
+
+      function wrapCanvasText(ctx, text, maxWidth) {
+        const words = text.split(' ');
+        const lines = [];
+        let currentLine = words[0];
+        for (let i = 1; i < words.length; i++) {
+          const word = words[i];
+          const width = ctx.measureText(currentLine + ' ' + word).width;
+          if (width < maxWidth) {
+            currentLine += ' ' + word;
+          } else {
+            lines.push(currentLine);
+            currentLine = word;
+          }
+        }
+        lines.push(currentLine);
+        return lines;
+      }
+
+      // Selection change listener on article
+      document.addEventListener('selectionchange', () => {
+        const selection = window.getSelection();
+        if (!selection || selection.isCollapsed) {
+          tooltip.style.display = 'none';
+          return;
+        }
+        const text = selection.toString().trim();
+        if (text.length < 15) {
+          tooltip.style.display = 'none';
+          return;
+        }
+        const range = selection.getRangeAt(0);
+        const container = document.getElementById('novelContent') || document.querySelector('.novel-body');
+        if (!container || !container.contains(range.commonAncestorContainer)) {
+          tooltip.style.display = 'none';
+          return;
+        }
+        const rect = range.getBoundingClientRect();
+        if (rect.width > 0 && rect.height > 0) {
+          tooltip.style.left = `${rect.left + rect.width / 2 + window.scrollX}px`;
+          tooltip.style.top = `${rect.top + window.scrollY}px`;
+          tooltip.style.display = 'block';
+        }
+      });
+
+      document.getElementById('btnQuoteFromBubble').onclick = (e) => {
+        e.stopPropagation();
+        const sel = window.getSelection();
+        const text = sel ? sel.toString().trim() : '';
+        if (text) {
+          openModal(text);
+          sel.removeAllRanges();
+          tooltip.style.display = 'none';
+        }
+      };
+
+      // Modal Controls
+      textarea.addEventListener('input', (e) => {
+        currentQuoteText = e.target.value;
+        renderCanvas();
+      });
+
+      modal.querySelectorAll('.btn-quote-opt').forEach(btn => {
+        btn.onclick = () => {
+          modal.querySelectorAll('.btn-quote-opt').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          currentRatio = btn.getAttribute('data-ratio');
+          renderCanvas();
+        };
+      });
+
+      modal.querySelectorAll('.btn-theme-opt').forEach(btn => {
+        btn.onclick = () => {
+          modal.querySelectorAll('.btn-theme-opt').forEach(b => {
+            b.classList.remove('active');
+            const mark = b.querySelector('span:last-child');
+            if (mark && mark.textContent === '✓') mark.remove();
+          });
+          btn.classList.add('active');
+          const check = document.createElement('span');
+          check.style.color = 'var(--gold-primary)';
+          check.textContent = '✓';
+          btn.appendChild(check);
+          currentTheme = btn.getAttribute('data-theme');
+          renderCanvas();
+        };
+      });
+
+      btnDownload.onclick = () => {
+        const link = document.createElement('a');
+        link.download = `pha-troi-chuong-${CH_NUM}-trich-dan.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        showToast('✓ Đã tải ảnh trích dẫn về thiết bị');
+      };
+
+      btnCloseModal.onclick = closeModal;
+      modal.onclick = (e) => {
+        if (e.target === modal) closeModal();
+      };
+
+      // Header button hook
+      const headerQuoteBtn = document.getElementById('btnQuoteStudio');
+      if (headerQuoteBtn) {
+        headerQuoteBtn.onclick = () => openModal();
+      }
+
+      // Editorial button hook
+      const quickQuoteBtn = document.getElementById('btnQuickQuoteStudio');
+      if (quickQuoteBtn) {
+        quickQuoteBtn.onclick = () => openModal();
+      }
+
+      // Global hotkeys
+      window.addEventListener('keydown', (e) => {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+        if (e.key.toLowerCase() === 'p') {
+          if (window.toggleSpeechAudio) window.toggleSpeechAudio();
+        } else if (e.key.toLowerCase() === 'q') {
+          openModal();
+        }
+      });
+    })();
+
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('/sw.js').then(reg => reg.update()).catch(() => {});
