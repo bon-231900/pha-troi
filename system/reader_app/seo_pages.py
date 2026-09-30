@@ -35,7 +35,7 @@ SEO_PAGES = [
       <tr><td><strong>Tác giả:</strong></td><td>An Bình</td></tr>
       <tr><td><strong>Thể loại:</strong></td><td>Thể Đạo phàm nhân, Phiêu lưu mạo hiểm, Địa chất, Huyền huyễn</td></tr>
       <tr><td><strong>Bối cảnh chính:</strong></td><td>TP. Hồ Chí Minh & Tây Nguyên, Việt Nam — Năm 2026</td></tr>
-      <tr><td><strong>Quy mô hiện tại:</strong></td><td>95+ chương (~291.000+ từ), đang phát hành liên tục</td></tr>
+      <tr><td><strong>Quy mô hiện tại:</strong></td><td>96 chương (~297.000+ từ), đang phát hành liên tục</td></tr>
       <tr><td><strong>Nền tảng đọc chính thức:</strong></td><td><a href="https://phatroi.com/">phatroi.com</a> (Đọc miễn phí, hỗ trợ PWA offline 24/7)</td></tr>
     </tbody>
   </table>
@@ -46,7 +46,7 @@ SEO_PAGES = [
   Khác biệt hoàn toàn với các tác phẩm tiên hiệp Trung Quốc mượn bối cảnh cổ trang xa lạ, <em>Phá Trời</em> đặt từng bước chân nhân vật ngay trên các địa danh quen thuộc của Sài Gòn đời thực:
 </p>
 <ul>
-  <li><strong>Ngã tư Hàng Xanh & Đường Ung Văn Khiêm (Bình Thạnh):</strong> Nơi bắt đầu câu chuyện với những cơn mưa rào tháng 10 đặc trưng, căn phòng trọ mái tôn ngột ngạt và tiếng còi xe máy giờ tan tầm.</li>
+  <li><strong>Ngã tư Hàng Xanh & Đường Ung Văn Khiêm (Bình Thạnh):</strong> Nơi bắt đầu câu chuyện với những cơn mưa dông tháng Chín đặc trưng, căn phòng trọ mái tôn ngột ngạt và tiếng còi xe máy giờ tan tầm.</li>
   <li><strong>Lòng sông Sài Gòn & Bán đảo Thanh Đa:</strong> Dưới lớp phù sa ngầm hàng trăm mét không chỉ là địa tầng địa chất thông thường, mà là một trận pháp phong ấn đại địa đã tồn tại hơn 2,5 triệu năm trước khi nhân loại hiện đại hình thành.</li>
   <li><strong>Bến Bạch Đằng, Cầu Ba Son & Hầm Thủ Thiêm:</strong> Những công trình biểu tượng của thế kỷ 21 trở thành ranh giới giao thoa mong manh giữa nhịp sống đô thị nhộn nhịp và các dòng chảy linh mạch cổ đang rạn nứt.</li>
   <li><strong>Khu phố cổ Quận 5 & Kênh Tàu Hủ:</strong> Những võ đường cổ truyền, tiệm thuốc bắc hàng trăm năm tuổi ẩn chứa các manh mối về những người tu đạo phàm trần đã âm thầm bảo vệ mảnh đất này qua nhiều thế kỷ.</li>
@@ -83,7 +83,7 @@ SEO_PAGES = [
 
 <h2>6. Hướng Dẫn Đọc & Theo Dõi Tác Phẩm</h2>
 <p>
-  Hiện tại, <em>Phá Trời</em> đã xuất bản trọn vẹn <strong>95 chương</strong> đầu tiên (tương đương Quyển I và trọn vẹn hai phân đoạn lớn). Tác phẩm được phát hành miễn phí và chính thức tại website:
+  Hiện tại, <em>Phá Trời</em> đã xuất bản trọn vẹn <strong>96 chương</strong> đầu tiên (tương đương Quyển I và trọn vẹn hai phân đoạn lớn). Tác phẩm được phát hành miễn phí và chính thức tại website:
 </p>
 <div class="cta-box">
   <h3>Bắt Đầu Đọc Phá Trời Ngay Hôm Nay</h3>
@@ -197,7 +197,7 @@ SEO_PAGES = [
 </p>
 <div class="cta-box">
   <h3>Trải Nghiệm Thể Loại Đô Thị Tu Chân Mới Nhất</h3>
-  <p>Đọc ngay 78 chương tiểu thuyết Phá Trời hoàn toàn miễn phí tại phatroi.com.</p>
+  <p>Đọc ngay 96 chương tiểu thuyết Phá Trời hoàn toàn miễn phí tại phatroi.com.</p>
   <div class="cta-actions">
     <a href="/chuong-1/" class="btn-cta-primary">Bắt Đầu Chương 1 →</a>
     <a href="/phat-troi-la-truyen-gi/" class="btn-cta-secondary">Tổng Quan Bộ Truyện</a>
@@ -230,16 +230,23 @@ SEO_PAGES = [
   “Trời đất không cho linh khí, thì phàm nhân tự tìm kiếm sức mạnh trong chính 60 ngàn tỷ tế bào của mình. Cơ thể con người chính là vũ trụ thu nhỏ hoàn hảo nhất.”
 </blockquote>
 
-<h2>2. Các Giai Đoạn Tiến Hóa Của Thể Đạo</h2>
-<ul>
-  <li><strong>Giai đoạn 1 — Khí Huyết Lạc Mạch:</strong> Đánh thức dòng chảy khí huyết ngủ sâu trong các mao mạch phụ, gia tăng mật độ xương và sức bền cơ bắp lên gấp 5–10 lần người bình thường.</li>
-  <li><strong>Giai đoạn 2 — Cốt Tủy Lôi Âm:</strong> Tiếng gầm của tủy xương như sấm rền khi vận chuyển huyết dịch, đào thải toàn bộ tạp chất tế bào, hình thành lớp màng bảo vệ vô hình trên bề mặt da.</li>
-  <li><strong>Giai đoạn 3 — Thể Hồn Hợp Nhất:</strong> Nhục thân đạt đến độ thuần khiết tuyệt đối, có khả năng khóa chặt sinh cơ và kháng lại các đòn xâm thực tinh thần từ thức hải.</li>
-</ul>
-
-<h2>3. Mối Quan Hệ Với Phong Ấn Sài Gòn</h2>
+<h2>2. Bốn Nấc Thang Tiến Hóa Của Thể Đạo</h2>
 <p>
-  Theo những phát hiện của Minh An tính đến Chương 78, đại phong ấn dưới đáy sông Sài Gòn được xây dựng bằng cùng một loại quy tắc với Thể Đạo cổ xưa. Điều này lý giải vì sao cơ thể hắn có thể cộng hưởng và mở khóa phong ấn mà không bị cắn trả tử vong.
+  Thay vì dựa vào linh căn ngoại giới, Thể Đạo phàm nhân nâng cấp nhục thân qua 4 tầng cơ học sinh học khép kín:
+</p>
+<ul>
+  <li><strong>Nấc 1 — Khí Huyết Chu Thiên:</strong> Đả thông 12 kinh lạc, biến cơ thể thành một chuỗi truyền lực hoàn chỉnh, bám đất hấp thu và dẫn truyền xung lực địa chấn.</li>
+  <li><strong>Nấc 2 — Đoán Cốt (12 Thức):</strong> Tôi luyện toàn bộ 206 mẩu xương qua Đoán Cốt Thập Nhị Thức, màng xương kết tinh xám thép, khung xương chịu được va đập cơ khí hạng nặng.</li>
+  <li><strong>Nấc 3 — Hoán Huyết (Hiện Tại của Minh An):</strong> Thay máu phàm bằng <em>Thuần Dương Cương Huyết</em> ánh kim ấm áp, 33 đốt sống tủy ngọc thấu quang, bộc phát <em>Cương Khí Ly Thể</em> và kháng linh tự nhiên.</li>
+  <li><strong>Nấc 4 — Thần Tạng:</strong> Khai mở 5 tạng phủ thành 5 lò Thuần Dương bất diệt, tự sinh mệnh lực trường sinh giữa thời mạt pháp.</li>
+</ul>
+<p>
+  Độc giả có thể tìm hiểu lộ trình chi tiết tại chuyên đề chuyên sâu <a href="/canh-gioi-the-dao/">Lộ Trình Tu Luyện Thể Đạo Phàm Nhân</a>.
+</p>
+
+<h2>3. Mối Quan Hệ Với Phong Ấn Đại Địa</h2>
+<p>
+  Xuyên suốt hành trình từ các mắt trận sông Sài Gòn đến đáy vạc Chư Yang Sin và duyên hải Hòn Yến (Chương 96), Minh An phát hiện đại phong ấn non sông được xây dựng bằng cùng một loại quy tắc với Thể Đạo viễn cổ. Điều này lý giải vì sao cơ thể hắn có thể cộng hưởng và mở khóa các cọc tiêu trấn thủy mà không bị cắn trả tử vong.
 </p>
 
 <div class="cta-box">
@@ -247,6 +254,7 @@ SEO_PAGES = [
   <p>Chứng kiến từng bước rèn luyện nhục thân đầy gian khổ nhưng phi thường trong Phá Trời.</p>
   <div class="cta-actions">
     <a href="/chuong-1/" class="btn-cta-primary">Đọc Từ Chương 1 →</a>
+    <a href="/canh-gioi-the-dao/" class="btn-cta-secondary">Cảnh Giới Thể Đạo</a>
     <a href="/nguyen-minh-an/" class="btn-cta-secondary">Hồ Sơ Minh An</a>
   </div>
 </div>
