@@ -229,22 +229,6 @@
         document.getElementById('sectionToc').scrollIntoView({ behavior: 'smooth' });
       };
     }
-    const btnHeroArticles = document.getElementById('btnHeroArticlesScroll');
-    if (btnHeroArticles) {
-      btnHeroArticles.onclick = (e) => {
-        e.preventDefault();
-        const sec = document.getElementById('sectionArticles');
-        if (sec) sec.scrollIntoView({ behavior: 'smooth' });
-      };
-    }
-    const navHeaderPill = document.querySelector('.nav-header-pill');
-    if (navHeaderPill) {
-      navHeaderPill.onclick = (e) => {
-        e.preventDefault();
-        const sec = document.getElementById('sectionArticles');
-        if (sec) sec.scrollIntoView({ behavior: 'smooth' });
-      };
-    }
     const btnMobileHeroToc = document.getElementById('btnMobileHeroTocScroll');
     if (btnMobileHeroToc) {
       btnMobileHeroToc.onclick = (e) => {

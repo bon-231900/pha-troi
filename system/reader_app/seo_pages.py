@@ -804,6 +804,9 @@ def render_seo_page_html(article, shared_css, site_url, ga_measurement_id, total
     </div>
 
     <div class="header-right">
+      <a href="/cam-nang/" class="btn-top-nav" style="text-decoration:none; padding:6px 14px; font-size:12.5px; margin-right:4px;">
+        <span>Cẩm Nang</span>
+      </a>
       <a href="/chuong-1/" class="btn-top-nav next" style="text-decoration:none; padding:6px 14px; font-size:12.5px;">
         <span>Đọc Chương 1 →</span>
       </a>
@@ -817,6 +820,8 @@ def render_seo_page_html(article, shared_css, site_url, ga_measurement_id, total
   <main class="seo-page-container">
     <nav class="breadcrumb-nav" aria-label="Breadcrumb">
       <a href="/">Trang Chủ</a>
+      <span class="breadcrumb-sep">/</span>
+      <a href="/cam-nang/">Cẩm Nang</a>
       <span class="breadcrumb-sep">/</span>
       <span>{category}</span>
       <span class="breadcrumb-sep">/</span>

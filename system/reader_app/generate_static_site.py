@@ -731,6 +731,12 @@ def generate_sitemap_xml(chapters_index):
         f'    <lastmod>{today_str}</lastmod>',
         '    <changefreq>daily</changefreq>',
         '    <priority>1.0</priority>',
+        '  </url>',
+        '  <url>',
+        f'    <loc>{SITE_URL}/cam-nang/</loc>',
+        f'    <lastmod>{today_str}</lastmod>',
+        '    <changefreq>daily</changefreq>',
+        '    <priority>0.95</priority>',
         '  </url>'
     ]
 
@@ -821,6 +827,314 @@ Allow: /
 Sitemap: {SITE_URL}/sitemap.xml
 """
 
+GLOBAL_CAM_NANG_ARTICLES = [
+    {
+        "slug": "thap-nhi-tieu",
+        "badge": "ĐỊA TẦNG & TRẬN PHÁP",
+        "title": "Cẩm Nang 12 Cọc Tiêu Thủy Môn Phương Nam",
+        "desc": "Hệ thống 12 cọc tiêu viễn cổ nương theo địa tầng bazan và sông ngòi từ Sài Gòn tới Tây Nguyên, khóa rạn nứt đại địa và gắn liền chuỗi di vật khảo sát năm 1996.",
+        "read_mins": 8,
+        "highlight": True
+    },
+    {
+        "slug": "canh-gioi-the-dao",
+        "badge": "THỂ ĐẠO KHỔ TU",
+        "title": "Lộ Trình Tu Luyện Thể Đạo Phàm Nhân",
+        "desc": "Bốn nấc thang tôi luyện nhục thân: Khí Huyết Chu Thiên, Đoán Cốt Thập Nhị Thức, Hoán Huyết và Thần Tạng. Lấy thân xác làm đỉnh lô, nghịch mệnh không linh căn.",
+        "read_mins": 8,
+        "highlight": False
+    },
+    {
+        "slug": "bach-y-than-nu-lam-tich",
+        "badge": "HỒ SƠ NHÂN VẬT",
+        "title": "Bạch Y Thần Nữ Lâm Tịch — Kiếm Tiên Thức Hải",
+        "desc": "Thân thế nữ kiếm tiên ngự trên đài sen Lục Diệp Thanh Liên, Băng Phách Kiếm Ý cùng mối liên kết sinh mệnh slow-burn dãi dầu sương gió bên cạnh Minh An.",
+        "read_mins": 6,
+        "highlight": False
+    },
+    {
+        "slug": "nguyen-minh-an",
+        "badge": "HỒ SƠ NHÂN VẬT",
+        "title": "Kỹ Sư Địa Chất Nguyễn Minh An",
+        "desc": "Phàm nhân 25 tuổi mang theo búa địa chất, thanh Zil bát giác và gánh vác trách nhiệm đọc dấu vết trong lòng đá để giải mã cuộc khảo sát dang dở của người cha.",
+        "read_mins": 6,
+        "highlight": False
+    },
+    {
+        "slug": "the-dao",
+        "badge": "CỐT TỦY HỆ THỐNG",
+        "title": "Bản Chất Thể Đạo: Khổ Tu Phàm Nhân",
+        "desc": "Phân tích nguyên lý thể xác làm đỉnh lô, tinh huyết làm than lửa. Sự đối lập triệt để giữa khổ tu thực chiến và con đường tu chân linh căn truyền thống.",
+        "read_mins": 7,
+        "highlight": False
+    },
+    {
+        "slug": "phat-troi-la-truyen-gi",
+        "badge": "TỔNG QUAN TÁC PHẨM",
+        "title": "Phá Trời Là Truyện Gì? Cẩm Nang Toàn Diện",
+        "desc": "Tổng quan đại trường thiên đô thị tu chân Sài Gòn 2026: bối cảnh địa tầng non sông, phong cách Thể Đạo và triết lý sáng tác thuần túy khoa học thực nghiệm.",
+        "read_mins": 7,
+        "highlight": False
+    },
+    {
+        "slug": "truyen-tu-tien-viet-nam-sai-gon",
+        "badge": "TIỂU LUẬN BẢN ĐỊA",
+        "title": "Tiên Hiệp Bản Địa Sài Gòn: Khi Cổ Giới Thức Giấc",
+        "desc": "Khám phá vì sao Phá Trời cắm rễ vào thực địa sông Sài Gòn, bán đảo Thanh Đa, kênh Nhiêu Lộc thay vì bối cảnh tiên hiệp cổ trang xa lạ.",
+        "read_mins": 8,
+        "highlight": False
+    },
+    {
+        "slug": "do-thi-tu-chan-la-gi",
+        "badge": "NGHIÊN CỨU THỂ LOẠI",
+        "title": "Giải Mã Thể Loại Đô Thị Tu Chân Hiện Đại",
+        "desc": "Phân tích sự va chạm giữa nhịp sống công nghiệp hiện đại thế kỷ 21 và sức mạnh tu hành cổ xưa ẩn giấu dưới lớp bê tông đô thị.",
+        "read_mins": 7,
+        "highlight": False
+    }
+]
+
+def generate_cam_nang_hub_html(chapters_index, total_words):
+    total_ch = len(chapters_index)
+    latest_ch = chapters_index[-1] if chapters_index else None
+    latest_num = latest_ch["chapter"] if latest_ch else total_ch
+
+    cards_html = []
+    for art in GLOBAL_CAM_NANG_ARTICLES:
+        feat_cls = " is-featured" if art.get("highlight") else ""
+        cards_html.append(f"""
+          <a href="/{art['slug']}/" class="home-article-card{feat_cls}">
+            <div class="article-card-header">
+              <span class="article-card-badge">{art['badge']}</span>
+              <span class="article-card-time">{art['read_mins']} phút đọc</span>
+            </div>
+            <h3 class="article-card-title">{art['title']}</h3>
+            <p class="article-card-desc">{art['desc']}</p>
+            <div class="article-card-footer">
+              <span class="article-card-author">Tác giả: An Bình</span>
+              <span class="article-card-action">Khám phá chuyên đề →</span>
+            </div>
+          </a>
+        """)
+    grid_html = "".join(cards_html)
+
+    return f"""<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+  <title>Cẩm Nang &amp; Hồ Sơ Chuyên Đề Tiểu Thuyết Phá Trời | An Bình</title>
+  
+  <meta name="title" content="Cẩm Nang &amp; Hồ Sơ Chuyên Đề Tiểu Thuyết Phá Trời | An Bình">
+  <meta name="description" content="Khám phá toàn bộ hồ sơ chuyên đề Phá Trời: cẩm nang 12 cọc tiêu thủy môn bazan, lộ trình Thể Đạo phàm nhân, hồ sơ Lâm Tịch, Nguyễn Minh An và địa chất non sông.">
+  <meta name="keywords" content="Phá Trời cẩm nang, 12 cọc tiêu thủy môn, lộ trình Thể Đạo, Lâm Tịch, Nguyễn Minh An, địa chất Việt Nam, An Bình">
+  <meta name="author" content="An Bình">
+  
+  <link rel="canonical" href="{SITE_URL}/cam-nang/">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="{SITE_URL}/cam-nang/">
+  <meta property="og:title" content="Cẩm Nang &amp; Hồ Sơ Chuyên Đề Tiểu Thuyết Phá Trời | An Bình">
+  <meta property="og:description" content="Hồ sơ 12 cọc tiêu thủy môn, lộ trình Thể Đạo và địa tầng non sông Việt Nam trong Phá Trời.">
+  <meta property="og:image" content="{SITE_URL}/assets/cover_vertical.jpg">
+
+  <link rel="alternate" type="application/rss+xml" title="Phá Trời — RSS Feed" href="{SITE_URL}/feed.xml">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" href="/assets/logo.webp" type="image/webp">
+  <link rel="apple-touch-icon" href="/assets/logo.webp">
+  <meta name="theme-color" content="#07090e">
+
+  <!-- Google Analytics 4 -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id={GA_MEASUREMENT_ID}"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){{dataLayer.push(arguments);}}
+    gtag('js', new Date());
+    gtag('config', '{GA_MEASUREMENT_ID}', {{
+      page_title: 'Cẩm Nang &amp; Hồ Sơ Chuyên Đề | Phá Trời',
+      page_path: '/cam-nang/'
+    }});
+  </script>
+
+  <!-- Anti-FOUC Theme -->
+  <script>
+    (function() {{
+      try {{
+        var t = localStorage.getItem('pha_troi_theme') || 'theme-peaceful-dark';
+        document.documentElement.className = t;
+      }} catch(e) {{}}
+    }})();
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="/assets/home.css?v={ASSET_VERSION}">
+  <link rel="stylesheet" href="/assets/seo.css?v={ASSET_VERSION}">
+</head>
+<body class="theme-peaceful-dark is-hub">
+
+  <div id="progressBarContainer"><div id="progressBar"></div></div>
+
+  <!-- HEADER -->
+  <header id="topHeader">
+    <div class="header-left">
+      <a href="/" class="btn-brand" title="Trang Chủ Phá Trời">
+        <picture>
+          <source srcset="/assets/logo.webp" type="image/webp">
+          <img src="/assets/logo.jpg" class="nav-logo" alt="Phá Trời">
+        </picture>
+        <span class="nav-brand-text">PHÁ TRỜI</span>
+        <span class="nav-live-badge"><span class="dot-live"></span> {total_ch} CHƯƠNG</span>
+      </a>
+    </div>
+
+    <div class="header-center">
+      <span class="header-title">Cẩm Nang &amp; Hồ Sơ</span>
+      <p class="header-sub">{total_ch} chương • An Bình</p>
+    </div>
+
+    <div class="header-right">
+      <a href="/" class="btn-top-nav" style="text-decoration:none; padding:6px 14px; font-size:12.5px;">
+        <span>Trang Chủ</span>
+      </a>
+      <a href="/chuong-1/" class="btn-top-nav next" style="text-decoration:none; padding:6px 14px; font-size:12.5px;">
+        <span>Đọc Chương 1 →</span>
+      </a>
+      <button class="btn-icon" id="btnQuickTheme" title="Chuyển Nhanh Sáng / Tối (T)" aria-label="Chuyển giao diện sáng tối">
+        <svg id="iconMoon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- HUB CONTENT -->
+  <main class="home-container" style="max-width: 1060px; padding-top: 28px;">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-nav" aria-label="Breadcrumb" style="margin-bottom: 24px; font-size: 13px; color: var(--text-muted); display: flex; align-items: center; gap: 8px;">
+      <a href="/" style="color: inherit; text-decoration: none;">Trang Chủ</a>
+      <span style="opacity: 0.4;">/</span>
+      <span style="color: var(--gold-primary); font-weight: 600;">Cẩm Nang &amp; Hồ Sơ Chuyên Đề</span>
+    </nav>
+
+    <!-- Hub Header -->
+    <header style="text-align: center; margin-bottom: 40px; padding: 20px 0 32px 0; border-bottom: 1px solid var(--border-color);">
+      <div style="font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--gold-primary); margin-bottom: 10px;">
+        ❖ BẢN NGUYÊN TƯ LIỆU &amp; KHẢO SÁT NON SÔNG
+      </div>
+      <h1 style="font-family: 'Lora', 'Georgia', serif; font-size: clamp(28px, 5vw, 42px); font-weight: 700; color: var(--gold-primary); margin-bottom: 14px; line-height: 1.25;">
+        CẨM NANG &amp; HỒ SƠ CHUYÊN ĐỀ
+      </h1>
+      <p style="max-width: 720px; margin: 0 auto 20px auto; font-size: 14.5px; line-height: 1.7; color: var(--text-muted);">
+        Tổng hợp toàn bộ hồ sơ địa tầng non sông, cọc tiêu trấn thủy viễn cổ, lộ trình tu luyện Thể Đạo phàm nhân và ghi chép nhân vật trong đại trường thiên <em>Phá Trời</em> do tác giả <strong>An Bình</strong> biên soạn.
+      </p>
+      <div style="display: inline-flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-muted); background: var(--card-bg); padding: 6px 18px; border-radius: 20px; border: 1px solid var(--border-color);">
+        <span class="dot-live"></span>
+        <span>8 Chuyên đề độc bản · Đồng bộ canon 100% · Cập nhật liên tục</span>
+      </div>
+    </header>
+
+    <!-- Articles Grid -->
+    <section>
+      <div class="home-articles-grid" style="grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));">
+        {grid_html}
+      </div>
+    </section>
+
+    <!-- Call To Action Box -->
+    <section class="cta-box" style="margin-top: 48px; text-align: center;">
+      <h3 style="font-family:'Lora', serif; font-size:20px; color:var(--gold-primary); margin-bottom:8px;">Dấn Thân Vào Đại Phong Ấn Non Sông</h3>
+      <p style="font-size:14px; color:var(--text-muted); margin-bottom:20px; max-width:620px; margin-left:auto; margin-right:auto;">
+        Đồng hành cùng kỹ sư địa chất Nguyễn Minh An trên con đường Thể Đạo phàm nhân dãi dầu sương gió, phá vỡ xiềng xích càn khôn.
+      </p>
+      <div style="display:flex; justify-content:center; gap:12px; flex-wrap:wrap;">
+        <a href="/chuong-1/" class="continue-btn" style="background:var(--gold-primary); color:#0b0f17; border-color:var(--gold-primary); font-weight:700;">Bắt Đầu Đọc — Chương 1 →</a>
+        <a href="/chuong-{latest_num}/" class="continue-btn">Đọc Chương Mới Nhất ({latest_num}) →</a>
+      </div>
+    </section>
+
+    <!-- Site Footer -->
+    <footer class="site-footer">
+      <div class="footer-top-grid">
+        <div class="footer-col footer-col-brand">
+          <div class="footer-brand-header">
+            <picture>
+              <source srcset="/assets/logo.webp" type="image/webp">
+              <img src="/assets/logo.jpg" class="footer-logo" alt="Phá Trời">
+            </picture>
+            <div>
+              <div class="footer-title">PHÁ TRỜI</div>
+              <div class="footer-tagline">Đại Trường Thiên Thể Đạo Phàm Nhân</div>
+            </div>
+          </div>
+          <p class="footer-summary">
+            Tác phẩm văn học đô thị tu chân kết hợp khảo sát địa chất non sông Việt Nam của tác giả <strong>An Bình</strong>. Phàm nhân không hệ thống, lấy da thịt khổ tu phá vỡ xiềng xích càn khôn.
+          </p>
+          <div class="footer-live-status">
+            <span class="dot-live"></span> Đang sáng tác đều đặn · {total_ch} chương ({total_words:,} từ)
+          </div>
+        </div>
+
+        <div class="footer-col">
+          <div class="footer-col-title">CẨM NANG &amp; HỒ SƠ</div>
+          <ul class="footer-links">
+            <li><a href="/cam-nang/" style="color:var(--gold-primary); font-weight:600;">✦ Xem Toàn Bộ Cẩm Nang (8) →</a></li>
+            <li><a href="/thap-nhi-tieu/">✦ Cẩm Nang 12 Cọc Tiêu Thủy Môn</a></li>
+            <li><a href="/canh-gioi-the-dao/">✦ Lộ Trình Tu Luyện Thể Đạo</a></li>
+            <li><a href="/bach-y-than-nu-lam-tich/">✦ Hồ Sơ Lâm Tịch (Bạch Y Thần Nữ)</a></li>
+            <li><a href="/nguyen-minh-an/">✦ Hồ Sơ Kỹ Sư Nguyễn Minh An</a></li>
+            <li><a href="/the-dao/">✦ Bản Chất Thể Đạo Phàm Nhân</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <div class="footer-col-title">TỔNG QUAN TÁC PHẨM</div>
+          <ul class="footer-links">
+            <li><a href="/phat-troi-la-truyen-gi/">✦ Phá Trời Là Truyện Gì?</a></li>
+            <li><a href="/truyen-tu-tien-viet-nam-sai-gon/">✦ Tiên Hiệp Bản Địa Sài Gòn</a></li>
+            <li><a href="/do-thi-tu-chan-la-gi/">✦ Giải Mã Thể Loại Đô Thị Tu Chân</a></li>
+            <li><a href="/chuong-1/">✦ Đọc Từ Đầu: Chương 1</a></li>
+            <li><a href="/chuong-{latest_num}/">✦ Chương Mới Nhất ({latest_num})</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <div class="footer-col-title">TIỆN ÍCH &amp; KẾT NỐI</div>
+          <ul class="footer-links">
+            <li><a href="/feed.xml" target="_blank" rel="noopener">✦ Nguồn Tin RSS 2.0 Feed</a></li>
+            <li><a href="/sitemap.xml" target="_blank" rel="noopener">✦ Sơ Đồ Trang (Sitemap)</a></li>
+            <li><a href="/#sectionToc">✦ Mục Lục {total_ch} Chương</a></li>
+            <li><span style="color:var(--text-muted); font-size:12px;">✦ Hỗ trợ PWA đọc Offline 24/7</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom-bar">
+        <div class="footer-copy">
+          Phát hành độc quyền tại <strong>phatroi.com</strong> • Bản quyền nội dung thuộc về tác giả <strong>An Bình</strong> © 2026. Mọi quyền được bảo lưu.
+        </div>
+        <div class="footer-badge-note">
+          0% Linh Căn · 0% Hệ Thống · 100% Khổ Tu Phàm Nhân
+        </div>
+      </div>
+    </footer>
+  </main>
+
+  <script>
+    const btnTheme = document.getElementById('btnQuickTheme');
+    if (btnTheme) {{
+      btnTheme.onclick = () => {{
+        const htmlEl = document.documentElement;
+        const cur = htmlEl.className;
+        const next = (cur === 'theme-peaceful-dark' || cur === 'theme-saigon-night' || !cur) ? 'theme-gentle-light' : 'theme-peaceful-dark';
+        htmlEl.className = next;
+        try {{ localStorage.setItem('pha_troi_theme', next); }} catch(e) {{}}
+      }};
+    }}
+  </script>
+</body>
+</html>"""
+
 def generate_home_html(chapters_index, total_words, codex_items=None):
     total_ch = len(chapters_index)
     shared_css = get_shared_css()
@@ -858,77 +1172,6 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
           </a>
         """)
     static_grid_html = "".join(static_cards)
-
-    # Chuyên đề & Cẩm nang văn học (Editorial Guides & Lore Hub)
-    articles_data = [
-        {
-            "slug": "thap-nhi-tieu",
-            "badge": "ĐỊA TẦNG & TRẬN PHÁP",
-            "title": "Cẩm Nang 12 Cọc Tiêu Thủy Môn Phương Nam",
-            "desc": "Hệ thống 12 cọc tiêu viễn cổ nương theo địa tầng bazan và sông ngòi từ Sài Gòn tới Tây Nguyên, khóa rạn nứt đại địa và gắn liền chuỗi di vật khảo sát năm 1996.",
-            "read_mins": 8,
-            "highlight": True
-        },
-        {
-            "slug": "canh-gioi-the-dao",
-            "badge": "THỂ ĐẠO KHỔ TU",
-            "title": "Lộ Trình Tu Luyện Thể Đạo Phàm Nhân",
-            "desc": "Bốn nấc thang tôi luyện nhục thân: Khí Huyết Chu Thiên, Đoán Cốt Thập Nhị Thức, Hoán Huyết và Thần Tạng. Lấy thân xác làm đỉnh lô, nghịch mệnh không linh căn.",
-            "read_mins": 8,
-            "highlight": False
-        },
-        {
-            "slug": "bach-y-than-nu-lam-tich",
-            "badge": "HỒ SƠ NHÂN VẬT",
-            "title": "Bạch Y Thần Nữ Lâm Tịch — Kiếm Tiên Thức Hải",
-            "desc": "Thân thế nữ kiếm tiên ngự trên đài sen Lục Diệp Thanh Liên, Băng Phách Kiếm Ý cùng mối liên kết sinh mệnh slow-burn dãi dầu sương gió bên cạnh Minh An.",
-            "read_mins": 6,
-            "highlight": False
-        },
-        {
-            "slug": "nguyen-minh-an",
-            "badge": "HỒ SƠ NHÂN VẬT",
-            "title": "Kỹ Sư Địa Chất Nguyễn Minh An",
-            "desc": "Phàm nhân 25 tuổi mang theo búa địa chất, thanh Zil bát giác và gánh vác trách nhiệm đọc dấu vết trong lòng đá để giải mã cuộc khảo sát dang dở của người cha.",
-            "read_mins": 6,
-            "highlight": False
-        },
-        {
-            "slug": "the-dao",
-            "badge": "CỐT TỦY HỆ THỐNG",
-            "title": "Bản Chất Thể Đạo: Khổ Tu Phàm Nhân",
-            "desc": "Phân tích nguyên lý thể xác làm đỉnh lô, tinh huyết làm than lửa. Sự đối lập triệt để giữa khổ tu thực chiến và con đường tu chân linh căn truyền thống.",
-            "read_mins": 7,
-            "highlight": False
-        },
-        {
-            "slug": "phat-troi-la-truyen-gi",
-            "badge": "TỔNG QUAN TÁC PHẨM",
-            "title": "Phá Trời Là Truyện Gì? Cẩm Nang Toàn Diện",
-            "desc": "Tổng quan đại trường thiên đô thị tu chân Sài Gòn 2026: bối cảnh địa tầng non sông, phong cách Thể Đạo và triết lý sáng tác thuần túy khoa học thực nghiệm.",
-            "read_mins": 7,
-            "highlight": False
-        }
-    ]
-
-    articles_cards_list = []
-    for art in articles_data:
-        feat_cls = " is-featured" if art.get("highlight") else ""
-        articles_cards_list.append(f"""
-          <a href="/{art['slug']}/" class="home-article-card{feat_cls}">
-            <div class="article-card-header">
-              <span class="article-card-badge">{art['badge']}</span>
-              <span class="article-card-time">{art['read_mins']} phút đọc</span>
-            </div>
-            <h3 class="article-card-title">{art['title']}</h3>
-            <p class="article-card-desc">{art['desc']}</p>
-            <div class="article-card-footer">
-              <span class="article-card-author">Tác giả: An Bình</span>
-              <span class="article-card-action">Khám phá chuyên đề →</span>
-            </div>
-          </a>
-        """)
-    articles_cards_html = "".join(articles_cards_list)
 
     return f"""<!DOCTYPE html>
 <html lang="vi">
@@ -1074,7 +1317,7 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
         <span class="nav-brand-text">PHÁ TRỜI</span>
         <span class="nav-live-badge"><span class="dot-live"></span> {total_ch} CHƯƠNG</span>
       </a>
-      <a href="#sectionArticles" class="nav-header-pill" title="Cẩm Nang & Chuyên Đề">
+      <a href="/cam-nang/" class="nav-header-pill" title="Cẩm Nang & Chuyên Đề">
         <span>❖ CẨM NANG</span>
       </a>
     </div>
@@ -1150,7 +1393,7 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
             <a href="#sectionToc" class="btn-titlepage-toc" id="btnHeroTocScroll">
               <span>Mục Lục ({total_ch} Chương) ↓</span>
             </a>
-            <a href="#sectionArticles" class="btn-titlepage-toc" id="btnHeroArticlesScroll" style="border-color: rgba(229, 192, 123, 0.45); color: var(--gold-primary);">
+            <a href="/cam-nang/" class="btn-titlepage-toc" style="border-color: rgba(229, 192, 123, 0.45); color: var(--gold-primary);">
               <span>Cẩm Nang & Hồ Sơ ❖</span>
             </a>
           </div>
@@ -1234,25 +1477,6 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
         </div>
       </div>
 
-      <!-- SECTION 3.5: CẨM NANG & HỒ SƠ CHUYÊN ĐỀ (EDITORIAL GUIDES & LORE HUB) -->
-      <section id="sectionArticles" class="home-articles-section">
-        <div class="section-title-wrap">
-          <div>
-            <h2 class="section-title">CẨM NANG & HỒ SƠ CHUYÊN ĐỀ</h2>
-            <div style="font-size:12.5px; color:var(--text-muted); margin-top:4px;">
-              Khảo sát địa tầng non sông, cọc tiêu trấn thủy và ghi chép Thể Đạo phàm nhân do An Bình biên soạn.
-            </div>
-          </div>
-          <div class="articles-header-badge">
-            <span>❖ TƯ LIỆU ĐỘC BẢN</span>
-          </div>
-        </div>
-
-        <div class="home-articles-grid">
-          {articles_cards_html}
-        </div>
-      </section>
-
       <!-- SECTION 4: ENCYCLOPEDIA / CODEX PREVIEW (PHASE 6) -->
       <div id="sectionCodexPreview">
         <div class="section-title-wrap">
@@ -1299,6 +1523,7 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
           <div class="footer-col">
             <div class="footer-col-title">CẨM NANG & HỒ SƠ</div>
             <ul class="footer-links">
+              <li><a href="/cam-nang/" style="color:var(--gold-primary); font-weight:600;">✦ Xem Toàn Bộ Cẩm Nang (8) →</a></li>
               <li><a href="/thap-nhi-tieu/">✦ Cẩm Nang 12 Cọc Tiêu Thủy Môn</a></li>
               <li><a href="/canh-gioi-the-dao/">✦ Lộ Trình Tu Luyện Thể Đạo</a></li>
               <li><a href="/bach-y-than-nu-lam-tich/">✦ Hồ Sơ Lâm Tịch (Bạch Y Thần Nữ)</a></li>
@@ -2202,6 +2427,13 @@ def build():
         with open(os.path.join(art_slug_dir, "index.html"), "w", encoding="utf-8") as out:
             out.write(art_html)
     print(f"  [+] Generated {len(SEO_PAGES)} SEO & Lore satellite pages: dist/<slug>/index.html")
+
+    # 4c. Generate /cam-nang/ Dedicated Hub Page (Clean Editorial Slug)
+    cam_nang_dir = os.path.join(DIST_DIR, "cam-nang")
+    os.makedirs(cam_nang_dir, exist_ok=True)
+    with open(os.path.join(cam_nang_dir, "index.html"), "w", encoding="utf-8") as out:
+        out.write(generate_cam_nang_hub_html(chapters_index, total_words))
+    print("  [+] Generated dist/cam-nang/index.html (Editorial Guides Hub)")
 
     # 5. Generate 404.html for smart redirection
     with open(os.path.join(DIST_DIR, "404.html"), "w", encoding="utf-8") as out:
