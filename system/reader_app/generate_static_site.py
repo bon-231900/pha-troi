@@ -734,13 +734,16 @@ def generate_sitemap_xml(chapters_index):
         '  </url>'
     ]
 
-    # 5 Trang SEO & Lore vệ tinh
+    # 8 Trang SEO & Lore vệ tinh
     seo_slugs = [
         "phat-troi-la-truyen-gi",
         "truyen-tu-tien-viet-nam-sai-gon",
         "do-thi-tu-chan-la-gi",
         "the-dao",
-        "nguyen-minh-an"
+        "nguyen-minh-an",
+        "thap-nhi-tieu",
+        "canh-gioi-the-dao",
+        "bach-y-than-nu-lam-tich"
     ]
     for slug in seo_slugs:
         lines.append('  <url>')
@@ -760,6 +763,57 @@ def generate_sitemap_xml(chapters_index):
         lines.append('  </url>')
     lines.append('</urlset>')
     return "\n".join(lines) + "\n"
+
+def generate_feed_xml(chapters_index, db_summaries=None):
+    """Sinh RSS 2.0 Feed chuan cho cac app doc tin (Feedly, NetNewsWire, Telegram Bot)."""
+    now_rfc822 = datetime.now().strftime("%a, %d %b %Y %H:%M:%S +0700")
+    recent_chapters = sorted(chapters_index, key=lambda x: x["chapter"], reverse=True)[:30]
+    
+    items_xml = []
+    for ch in recent_chapters:
+        ch_num = ch["chapter"]
+        clean_title = ch["title"].replace(f"Chương {ch_num}:", "").strip()
+        clean_title = re.sub(r"^Chương\s+\d+:\s*", "", clean_title, flags=re.IGNORECASE)
+        link = f"{SITE_URL}/chuong-{ch_num}/"
+        
+        summary = ""
+        if db_summaries and ch_num in db_summaries:
+            summary = db_summaries[ch_num]
+        if not summary:
+            summary = ch.get("excerpt", f"Đọc Phá Trời Chương {ch_num}: {clean_title} tại phatroi.com.")
+            
+        words = ch.get("word_count", 2500)
+        
+        items_xml.append(f"""    <item>
+      <title><![CDATA[Chương {ch_num}: {clean_title}]]></title>
+      <link>{link}</link>
+      <guid isPermaLink="true">{link}</guid>
+      <pubDate>{now_rfc822}</pubDate>
+      <description><![CDATA[{summary} (Độ dài: {words:,} từ)]]></description>
+      <author>nguyenminhan@phatroi.com (An Bình)</author>
+      <category><![CDATA[Thể Đạo phàm nhân]]></category>
+    </item>""")
+        
+    items_str = "\n".join(items_xml)
+    
+    return f"""<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Phá Trời — Đại Trường Thiên Thể Đạo Phàm Nhân &amp; Địa Chất Non Sông</title>
+    <link>{SITE_URL}/</link>
+    <description>Bản thảo chính thức của đại trường thiên tiểu thuyết Phá Trời (tác giả An Bình). Theo dõi chương mới nhất và hành trình Thể Đạo của Nguyễn Minh An.</description>
+    <language>vi</language>
+    <lastBuildDate>{now_rfc822}</lastBuildDate>
+    <atom:link href="{SITE_URL}/feed.xml" rel="self" type="application/rss+xml" />
+    <image>
+      <url>{SITE_URL}/assets/logo.jpg</url>
+      <title>Phá Trời</title>
+      <link>{SITE_URL}/</link>
+    </image>
+{items_str}
+  </channel>
+</rss>
+"""
 
 def generate_robots_txt():
     return f"""User-agent: *
@@ -833,6 +887,7 @@ def generate_home_html(chapters_index, total_words, codex_items=None):
   <meta name="twitter:description" content="Đọc tiểu thuyết Phá Trời của tác giả An Bình. Hành trình Thể Đạo phàm nhân dãi dầu sương gió, khám phá bí ẩn địa chất non sông và phong ấn cổ xưa nghìn năm của đất Việt. Đọc miễn phí 24/7.">
   <meta name="twitter:image" content="{SITE_URL}/assets/tieu-thuyet-pha-troi-do-thi-tu-chan-sai-gon-huyen-ao.jpg">
 
+  <link rel="alternate" type="application/rss+xml" title="Phá Trời — RSS Feed" href="{SITE_URL}/feed.xml">
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" href="/assets/logo.webp" type="image/webp">
   <link rel="apple-touch-icon" href="/assets/logo.webp">
@@ -1392,6 +1447,7 @@ def generate_chapter_html(ch_info, chapters_index, total_words, codex_items=None
   <meta name="twitter:description" content="{desc_seo}">
   <meta name="twitter:image" content="{SITE_URL}/assets/hero_horizontal.jpg">
 
+  <link rel="alternate" type="application/rss+xml" title="Phá Trời — RSS Feed" href="{SITE_URL}/feed.xml">
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" href="/assets/logo.webp" type="image/webp">
   <link rel="apple-touch-icon" href="/assets/logo.webp">
@@ -1992,12 +2048,14 @@ def build():
         out.write(generate_404_html())
     print("  [+] Generated dist/404.html")
 
-    # 5b. Generate sitemap.xml & robots.txt (SEO Architecture Phase 8)
+    # 5b. Generate sitemap.xml, feed.xml & robots.txt (SEO Architecture Phase 8)
     with open(os.path.join(DIST_DIR, "sitemap.xml"), "w", encoding="utf-8") as out:
         out.write(generate_sitemap_xml(chapters_index))
+    with open(os.path.join(DIST_DIR, "feed.xml"), "w", encoding="utf-8") as out:
+        out.write(generate_feed_xml(chapters_index, db_summaries))
     with open(os.path.join(DIST_DIR, "robots.txt"), "w", encoding="utf-8") as out:
         out.write(generate_robots_txt())
-    print("  [+] Generated dist/sitemap.xml and dist/robots.txt")
+    print("  [+] Generated dist/sitemap.xml, dist/feed.xml and dist/robots.txt")
 
     # 5c. Generate CNAME for custom domain
     with open(os.path.join(DIST_DIR, "CNAME"), "w", encoding="utf-8") as out:

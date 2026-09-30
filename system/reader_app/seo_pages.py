@@ -304,6 +304,339 @@ SEO_PAGES = [
   </div>
 </div>
 """
+    },
+    {
+        "slug": "thap-nhi-tieu",
+        "title": "Cẩm Nang 12 Cọc Tiêu Thủy Môn Phương Nam: Bản Đồ Trấn Nhãn Địa Chất Phá Trời",
+        "meta_title": "12 Cọc Tiêu Thủy Môn Phương Nam — Cẩm Nang Phá Trời | phatroi.com",
+        "meta_desc": "Hồ sơ toàn diện 12 cọc tiêu phong ấn thủy môn phương Nam trong tiểu thuyết Phá Trời. Tọa độ thực địa, linh vật trấn thủy, cổ vật và trạng thái kích hoạt.",
+        "keywords": "12 cọc tiêu Phá Trời, Thập Nhị Tiêu, cọc tiêu trấn thủy, thủy môn phương Nam, trận nhãn địa chất, bản đồ Phá Trời, Nguyễn Minh An",
+        "category": "BẢN ĐỒ & TRẬN NHÃN ĐỊA CHẤT",
+        "read_mins": 8,
+        "date": "2026-10-04",
+        "content_html": """
+<p class="lead-p">
+  Trong đại trường thiên tiểu thuyết <strong>Phá Trời</strong>, <strong>Thập Nhị Tiêu</strong> (12 Cọc Tiêu Thủy Môn Phương Nam) là hệ thống trận pháp phong ấn đại địa vĩ đại bậc nhất non sông Việt Nam, được thiết lập từ thời viễn cổ hơn 2,5 triệu năm trước. Hệ thống này nương theo mạng lưới địa tầng bazan và các dòng chảy sông ngòi then chốt để khóa chặt long mạch ngầm, ngăn chặn sự xâm thực của vực sâu và các vết nứt không gian thời mạt pháp.
+</p>
+
+<h2>1. Bảng Tổng Hợp Hồ Sơ 12 Cọc Tiêu Thủy Môn</h2>
+<div class="info-table-box">
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Tiêu</th>
+        <th>Tên Trận Nhãn</th>
+        <th>Vị Trí Thực Địa 2026</th>
+        <th>Linh Vật Trấn Thủy</th>
+        <th>Cổ Vật / Trận Khí</th>
+        <th>Trạng Thái</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Tiêu 1</strong></td>
+        <td>Bạch Đằng Thủy Khẩu</td>
+        <td>Chân cầu Ba Son, sông Sài Gòn (Q.1)</td>
+        <td>Thanh Long Trấn Sông</td>
+        <td>Trấn Thủy Đoản Đao</td>
+        <td><span style="color:#e5c07b;">Đã Kích Hoạt</span></td>
+      </tr>
+      <tr>
+        <td><strong>Tiêu 2</strong></td>
+        <td>Thanh Đa Cực Uyên</td>
+        <td>Vực nước sâu bán đảo Thanh Đa (Bình Thạnh)</td>
+        <td>Huyền Quy Phù Sa</td>
+        <td>Cọc Bazan Bát Giác</td>
+        <td><span style="color:#e5c07b;">Đã Kích Hoạt</span></td>
+      </tr>
+      <tr>
+        <td><strong>Tiêu 3</strong></td>
+        <td>Nhà Bè Hợp Lưu</td>
+        <td>Ngã ba sông Nhà Bè, Lòng Tàu & Soài Rạp</td>
+        <td>Giao Long Vùng Nước Lợ</td>
+        <td>Mảnh Đồng Triện Cổ</td>
+        <td><span style="color:#e5c07b;">Đã Kích Hoạt</span></td>
+      </tr>
+      <tr>
+        <td><strong>Tiêu 4</strong></td>
+        <td>Rừng Sác Thủy Môn</td>
+        <td>Cửa biển Cần Giờ, rạn nứt bazan mặn</td>
+        <td>Hải Xà Triều Tịch</td>
+        <td>Mũi Khoan Địa Tầng 1996</td>
+        <td><span style="color:#e5c07b;">Đã Kích Hoạt</span></td>
+      </tr>
+      <tr>
+        <td><strong>Tiêu 5</strong></td>
+        <td>Gò Đất Lò Gốm</td>
+        <td>Vùng trũng rạch Lò Gốm (Q.6 – Q.8)</td>
+        <td>Hỏa Thổ Linh Thú</td>
+        <td>Bình Gốm Cổ Sa Huỳnh</td>
+        <td><span style="color:#e5c07b;">Đã Kích Hoạt</span></td>
+      </tr>
+      <tr>
+        <td><strong>Tiêu 6</strong></td>
+        <td>Núi Chứa Chan</td>
+        <td>Khối magma granit Chứa Chan, Đồng Nai</td>
+        <td>Bạch Hổ Miền Đông</td>
+        <td>Bia Đá Hoa Cương Cổ</td>
+        <td><span style="color:#e5c07b;">Đã Kích Hoạt</span></td>
+      </tr>
+      <tr>
+        <td><strong>Tiêu 7</strong></td>
+        <td>Chư Yang Sin Đáy Vạc</td>
+        <td>Họng núi lửa cổ Vườn QG Chư Yang Sin (Đắk Lắk)</td>
+        <td>Cổ Mộc Thần Điêu</td>
+        <td>Mộc Tâm Ngàn Năm</td>
+        <td><span style="color:#34d399;">Hoàn Toàn Ổn Định</span></td>
+      </tr>
+      <tr>
+        <td><strong>Tiêu 8</strong></td>
+        <td>Hòn Yến Bazan San Hô</td>
+        <td>Sector 05, rạn san hô Hòn Yến, Vịnh Xuân Đài (Phú Yên)</td>
+        <td>Hải Yến Thuần Âm</td>
+        <td>Đồng hồ Vostok Amphibia 1996</td>
+        <td><span style="color:#38bdf8;">Đang Khảo Sát (Ch. 96+)</span></td>
+      </tr>
+      <tr>
+        <td><strong>Tiêu 9</strong></td>
+        <td>Vịnh Vân Phong Thủy Nhãn</td>
+        <td>Vực rạn nứt kiến tạo biển sâu Khánh Hòa</td>
+        <td>Kình Ngư Thủy Tộc</td>
+        <td>Thanh Đồng Móc Câu Cổ</td>
+        <td><span style="color:#8492a6;">Chưa Thức Tỉnh</span></td>
+      </tr>
+      <tr>
+        <td><strong>Tiêu 10</strong></td>
+        <td>Serepôk Dòng Ngược</td>
+        <td>Thác Đray Nur & Đray Sáp (Đắk Nông)</td>
+        <td>Thủy Thú Dòng Chảy Ngược</td>
+        <td>Khánh Đá Núi Lửa</td>
+        <td><span style="color:#8492a6;">Chưa Thức Tỉnh</span></td>
+      </tr>
+      <tr>
+        <td><strong>Tiêu 11</strong></td>
+        <td>Mũi Kê Gà Cực Đông</td>
+        <td>Rạn đá hoa cương nhô biển Bình Thuận</td>
+        <td>Kim Kê Trấn Hải</td>
+        <td>Mỏ Neo Đồng Cổ Chăm</td>
+        <td><span style="color:#8492a6;">Chưa Thức Tỉnh</span></td>
+      </tr>
+      <tr>
+        <td><strong>Tiêu 12</strong></td>
+        <td>Đỉnh Trời Langbiang</td>
+        <td>Đỉnh núi thiêng cao nhất Lâm Viên (Lâm Đồng)</td>
+        <td>Thiên Ưng Đỉnh Trời</td>
+        <td>Thạch Trận Vòm Trời</td>
+        <td><span style="color:#8492a6;">Chưa Thức Tỉnh</span></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<h2>2. Bốn Phân Vùng Kiến Tạo Trận Pháp</h2>
+<p>
+  Điểm độc nhất của hệ thống Thập Nhị Tiêu trong <em>Phá Trời</em> là 100% các cọc tiêu đều gắn chặt với các cấu trúc địa chất thực tế của miền Nam và Duyên hải Nam Trung Bộ Việt Nam:
+</p>
+<ul>
+  <li><strong>Cụm Đô Thị Sài Gòn (Tiêu 1 đến 5):</strong> Tạo thành một trận đồ "Ngũ Hành Thủy Môn" khóa chặt lưu vực sông Sài Gòn - Đồng Nai, bảo vệ hơn 10 triệu cư dân đô thị khỏi các biến động đứt gãy kiến tạo ngầm.</li>
+  <li><strong>Cột Mốc Biên Viễn Miền Đông (Tiêu 6):</strong> Đóng vai trò bản lề liên kết vùng phù sa châu thổ với vùng đá magma cổ xưa của thềm lục địa Đông Nam Bộ.</li>
+  <li><strong>Nóc Nhà Đại Địa Tây Nguyên (Tiêu 7, 10, 12):</strong> Tận dụng địa hình cao nguyên bazan đồi nón và họng núi lửa tắt để gom góp sinh khí, tạo thành mạch nguồn nuôi dưỡng cả đồng bằng.</li>
+  <li><strong>Hành Lang Rãnh Nứt Duyên Hải (Tiêu 8, 9, 11):</strong> Tuyến phòng thủ biển sâu cực kỳ hiểm hóc, nơi các dòng xoáy ngầm và rãnh nứt bazan tổ ong tiếp giáp trực diện với áp lực đại dương.</li>
+</ul>
+
+<h2>3. Vai Trò Của Đoạn Cáp Khoan 1996 & Di Vật Của Cha</h2>
+<p>
+  Mỗi cọc tiêu khi thức tỉnh đều để lại dấu ấn của những nhà địa chất phàm nhân thế hệ trước. Chiếc đồng hồ <strong>Vostok Amphibia 1996</strong> khắc chữ <em>V.H.</em> trên cổ tay nữ thợ lặn Hải Yến tại Hòn Yến (Chương 96) chính là bằng chứng sống động: khoa học thực địa và trách nhiệm bảo vệ cội nguồn dân tộc luôn song hành cùng con đường Thể Đạo.
+</p>
+
+<div class="cta-box">
+  <h3>Theo Dấu Hành Trình Mở Khóa Thập Nhị Tiêu</h3>
+  <p>Đọc ngay diễn biến khai mở Sector 05 Hòn Yến cùng Nguyễn Minh An và Hải Yến tại phatroi.com.</p>
+  <div class="cta-actions">
+    <a href="/chuong-96/" class="btn-cta-primary">Đọc Chương 96: Hải Yến →</a>
+    <a href="/the-dao/" class="btn-cta-secondary">Khám Phá Thể Đạo</a>
+  </div>
+</div>
+"""
+    },
+    {
+        "slug": "canh-gioi-the-dao",
+        "title": "Lộ Trình Tu Luyện Thể Đạo Phàm Nhân: 4 Nấc Thang Tôi Luyện Nhục Thân Thời Mạt Pháp",
+        "meta_title": "Cảnh Giới Thể Đạo Phàm Nhân — Lộ Trình Tu Luyện | phatroi.com",
+        "meta_desc": "Phân tích toàn diện 4 nấc thang Thể Đạo trong Phá Trời: Khí Huyết Chu Thiên, Đoán Cốt Thập Nhị Thức, Hoán Huyết và Thần Tạng. Khác biệt với tu chân linh căn.",
+        "keywords": "cảnh giới Thể Đạo, lộ trình tu luyện Thể Đạo, Thể Đạo phàm nhân, Hoán Huyết sơ kỳ, Đoán Cốt Thập Nhị Thức, Thần Tạng, Thuần Dương Cương Huyết, Phá Trời",
+        "category": "HỆ THỐNG CẢNH GIỚI TU LUYỆN",
+        "read_mins": 9,
+        "date": "2026-10-04",
+        "content_html": """
+<p class="lead-p">
+  Trong bối cảnh <strong>thời mạt pháp</strong> của tiểu thuyết <strong>Phá Trời</strong>, linh khí trong bầu khí quyển Trái Đất đã tiêu biến suốt hàng triệu năm. Những con đường tu tiên truyền thống — vốn dựa vào linh căn thượng phẩm để hấp thu linh khí và luyện đan kết đan — hoàn toàn bế tắc. Để bứt phá giới hạn phàm trần, con đường duy nhất còn tồn tại là <strong>Thể Đạo Phàm Nhân</strong>: lấy chính cơ thể phàm trần làm lò luyện, mượn trọng lực, áp lực địa tầng và đau đớn thể xác để khai mở kho báu sinh học của con người.
+</p>
+
+<h2>1. Bốn Nấc Thang Cảnh Giới Thể Đạo</h2>
+
+<div class="info-table-box">
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Nấc Thang</th>
+        <th>Tên Cảnh Giới</th>
+        <th>Biểu Hiện Sinh Học & Kình Lực</th>
+        <th>Khả Năng Thực Chiến</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Tầng 1</strong></td>
+        <td>Khí Huyết Chu Thiên</td>
+        <td>Khí huyết sôi sục, đã thông 12 kinh lạc chính, bàn chân bám đất hấp thu xung lực địa chấn.</td>
+        <td>Đấm vỡ đá bazan, di chuyển nhanh nhẹn gấp 3 lần phàm nhân, chịu đòn cơ học thông thường.</td>
+      </tr>
+      <tr>
+        <td><strong>Tầng 2</strong></td>
+        <td>Đoán Cốt (12 Thức)</td>
+        <td>Tôi luyện 206 mẩu xương qua Đoán Cốt Thập Nhị Thức, màng xương kết tinh xám thép, tủy cô đặc.</td>
+        <td>Khung xương cứng hơn hợp kim titan, chịu được va đập máy móc hạng nặng, bẻ gãy đao kiếm phàm trần.</td>
+      </tr>
+      <tr>
+        <td><strong>Tầng 3</strong></td>
+        <td>Hoán Huyết (Hiện Tại)</td>
+        <td>Thay máu phàm bằng <strong>Thuần Dương Cương Huyết</strong> ánh kim ấm áp, 33 đốt sống tủy ngọc thấu quang.</td>
+        <td><strong>Cương Khí Ly Thể</strong> (phóng kình xuyên không 3–5m), xé toang sóng siêu âm địa chấn, kháng linh tự nhiên.</td>
+      </tr>
+      <tr>
+        <td><strong>Tầng 4</strong></td>
+        <td>Thần Tạng</td>
+        <td>Khai mở 5 tạng phủ (Tâm, Can, Tỳ, Phế, Thận) thành 5 lò lửa Thuần Dương bất diệt.</td>
+        <td>Tự sinh sôi sinh mệnh lực vô tận, nhục thân bất hoại, tuổi thọ vượt qua trăm năm mạt pháp.</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<h2>2. So Sánh Triệt Để: Thể Đạo Phàm Nhân vs Tu Chân Linh Căn</h2>
+<p>
+  Bảng phân tích sự đối lập gay gắt giữa hai con đường tu luyện trong thế giới <em>Phá Trời</em>:
+</p>
+
+<div class="info-table-box">
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Tiêu Chí</th>
+        <th>Tu Chân Linh Căn (Truyền Thống)</th>
+        <th>Thể Đạo Phàm Nhân (Phá Trời)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Tư chất ban đầu</strong></td>
+        <td>Bắt buộc có linh căn (Thiên, Địa, Đơn linh căn). 99.9% người thường bị loại trừ.</td>
+        <td><strong>100% phàm nhân</strong> đều có cơ hội, chỉ cần có ý chí sắt đá và chịu đựng được đau đớn.</td>
+      </tr>
+      <tr>
+        <td><strong>Nguồn năng lượng</strong></td>
+        <td>Cầu xin linh khí thiên địa, phụ thuộc đan dược, linh thạch và pháp trận.</td>
+        <td>Tự khai mở sinh lực trong từng tế bào, hấp thu dưỡng chất phàm trần và áp lực địa chấn.</td>
+      </tr>
+      <tr>
+        <td><strong>Phản ứng với thời mạt pháp</strong></td>
+        <td>Linh khí cạn kiệt liền thoái hóa, tu vi tụt dốc, trở thành phế nhân.</td>
+        <td><strong>Càng mạt pháp càng mạnh</strong> — vì nhục thân tôi luyện trong áp lực khắc nghiệt của thế giới thực.</td>
+      </tr>
+      <tr>
+        <td><strong>Độ bền chiến đấu</strong></td>
+        <td>Cạn kiệt linh lực là bất lực; nhục thân yếu ớt dễ bị đâm thủng.</td>
+        <td>Chiến đấu bền bỉ theo thể lực và ý chí; máu càng nóng, cương khí phát ra càng mãnh liệt.</td>
+      </tr>
+      <tr>
+        <td><strong>Kháng linh tự nhiên</strong></td>
+        <td>Dễ bị khắc chế bởi thuộc tính ngũ hành pháp thuật đối nghịch.</td>
+        <td>Cương khí Thuần Dương đậm đặc tự động xé rách các đòn đánh tâm thức và pháp thuật tà đạo.</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<h2>3. Vị Trí Hiện Tại Của Nguyễn Minh An: Hoán Huyết Sơ Kỳ</h2>
+<p>
+  Trải qua các trận kịch chiến tại bán đảo Thanh Đa, hầm lò khai khoáng bazan và lòng chảo Chư Yang Sin, Minh An đã chính thức bước vào <strong>Hoán Huyết Sơ kỳ</strong>:
+</p>
+<ul>
+  <li>Toàn bộ dòng máu đen cặn bã của phàm nhân đã được gột rửa, thay thế bằng dòng <strong>Thuần Dương Cương Huyết</strong> óng ánh ánh kim, mang hơi ấm của lò rèn cổ xưa.</li>
+  <li>33 đốt xương sống đạt trạng thái <em>tủy ngọc thấu quang</em>, cho phép kình lực bộc phát dồn dập từ gót chân truyền thẳng lên đỉnh côn thép Zil mà không gây tổn hại cơ khớp.</li>
+  <li>Kình lực <strong>Cương Khí Ly Thể</strong> giúp hắn có thể vung thanh đoản côn tạo ra luồng phong áp bẻ cong thép tấm ở cự ly xa vài thước.</li>
+</ul>
+
+<div class="cta-box">
+  <h3>Khám Phá Sức Mạnh Hoán Huyết Trong Thực Chiến</h3>
+  <p>Chứng kiến Minh An thi triển Cương Khí Ly Thể đối đầu quái thú địa tầng tại phatroi.com.</p>
+  <div class="cta-actions">
+    <a href="/chuong-88/" class="btn-cta-primary">Đọc Màn Đột Phá Hoán Huyết →</a>
+    <a href="/nguyen-minh-an/" class="btn-cta-secondary">Hồ Sơ Minh An</a>
+  </div>
+</div>
+"""
+    },
+    {
+        "slug": "bach-y-than-nu-lam-tich",
+        "title": "Hồ Sơ Bạch Y Thần Nữ Lâm Tịch: Kiếm Tiên Viễn Cổ Và Mối Duyên Tri Kỷ Cùng Minh An",
+        "meta_title": "Hồ Sơ Bạch Y Thần Nữ Lâm Tịch — Phá Trời | phatroi.com",
+        "meta_desc": "Tìm hiểu về Bạch Y Thần Nữ Lâm Tịch: Kiếm tiên thời viễn cổ ngự trên đài sen Lục Diệp Thanh Liên trong thức hải Minh An, Băng Phách Kiếm Ý và duyên nợ slow-burn.",
+        "keywords": "Lâm Tịch, Bạch Y Thần Nữ Lâm Tịch, nhân vật Lâm Tịch Phá Trời, Lục Diệp Thanh Liên, Băng Phách Kiếm Ý, Minh An và Lâm Tịch, kiếm tiên viễn cổ",
+        "category": "HỒ SƠ NHÂN VẬT THẦN THOẠI",
+        "read_mins": 7,
+        "date": "2026-10-04",
+        "content_html": """
+<p class="lead-p">
+  <strong>Bạch Y Thần Nữ Lâm Tịch</strong> là nhân vật nữ trung tâm và cũng là linh hồn bí ẩn bậc nhất của tiểu thuyết <strong>Phá Trời</strong>. Từng là một nữ kiếm tiên tuyệt thế của thời kỳ viễn cổ hơn 2,5 triệu năm trước — người từng tham gia trận chiến phong ấn đại địa non sông đất Việt — Lâm Tịch thức tỉnh dưới dạng tàn hồn ngự trên đài sen <strong>Lục Diệp Thanh Liên</strong> bên trong thức hải của chàng kỹ sư địa chất Nguyễn Minh An.
+</p>
+
+<h2>1. Thông Tin Tổng Quan Nhân Vật</h2>
+<div class="info-table-box">
+  <table class="data-table">
+    <tbody>
+      <tr><td><strong>Danh xưng:</strong></td><td>Bạch Y Thần Nữ Lâm Tịch</td></tr>
+      <tr><td><strong>Thân thế:</strong></td><td>Nữ kiếm tiên viễn cổ, chủ nhân trận nhãn phong ấn Trái Đất</td></tr>
+      <tr><td><strong>Hình thái hiện tại:</strong></td><td>Tàn hồn ngưng tụ trên đài sen ngọc bích <em>Lục Diệp Thanh Liên</em></td></tr>
+      <tr><td><strong>Tiến độ hồi phục:</strong></td><td><strong>6/10 nguyên thần</strong> (Tính đến hồi Vực biển Hòn Yến, Chương 96)</td></tr>
+      <tr><td><strong>Binh khí & Kiếm ý:</strong></td><td><strong>Băng Phách Kiếm Ý</strong> (Hàn khí thanh khiết xé rách không gian)</td></tr>
+      <tr><td><strong>Nơi ngự trị:</strong></td><td>Thức Hải của Nguyễn Minh An</td></tr>
+      <tr><td><strong>Mối quan hệ với Minh An:</strong></td><td>Tri kỷ sinh mệnh, người dẫn dắt Thể Đạo (Tình cảm <em>Extremely Slow Burn</em>)</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<h2>2. Tuyệt Kỹ & Năng Lực Cốt Lõi</h2>
+<p>
+  Dù chỉ đang ngưng tụ ở mức 6/10 nguyên thần, Lâm Tịch sở hữu những khả năng thần bí hỗ trợ đắc lực cho Minh An trong các chuyến khảo sát sinh tử:
+</p>
+<ul>
+  <li><strong>Băng Phách Kiếm Ý:</strong> Kiếm ý sắc lạnh đến độ tuyệt đối, có khả năng đông cứng dao động địa chấn, dập tắt các ngọn lửa ma trọc và phong tỏa các luồng xung âm nguy hiểm.</li>
+  <li><strong>Cảm Ứng Địa Mạch Xuyên Tầng:</strong> Nàng có thể "nhìn" thấu các tầng địa chất sâu hàng trăm mét dưới lòng đất, định vị chuẩn xác họng đứt gãy kiến tạo và vị trí của các cọc tiêu Thập Nhị Tiêu cổ xưa.</li>
+  <li><strong>Thần Niệm Truyền Âm:</strong> Giao tiếp tức thì trong tâm thức với Minh An mà không một thiết bị radar hay giác quan phàm nhân nào có thể phát hiện.</li>
+</ul>
+
+<h2>3. Duyên Nợ Tri Kỷ "Slow Burn": Không Ngôn Tình Sến Súa</h2>
+<p>
+  Khác với những mô-típ tiên hiệp rập khuôn nơi nữ thần sa cơ lập tức say đắm nhân vật chính, mối liên kết giữa Minh An và Lâm Tịch được xây dựng theo phong cách <strong>Extremely Slow Burn</strong> (chậm rãi, bền vững, lắng sâu):
+</p>
+<blockquote>
+  “Nàng chứng kiến hắn từ một chàng kỹ sư lóng ngóng, da thịt rách toác trong những đêm đầu tôi luyện gân cốt, cho đến khi hắn vác búa đập đá đứng chắn trước sóng dữ bảo vệ mẹ già. Nàng không ban phát pháp bảo, mà dùng kiếm ý làm gương soi cho ý chí của hắn. Ngược lại, chính hơi ấm phàm trần mộc mạc và sự chân thành của Minh An đã đánh thức nhân tính ngủ vùi hàng triệu năm trong lòng Thần Nữ cô đơn.”
+</blockquote>
+<p>
+  Trong Chương 96 tại Hòn Yến, người đọc lần đầu tiên nhìn thấy một thoáng gợn sóng cảm xúc hiếm hoi của Thần Nữ khi nàng trêu chọc nhịp tim lỡ bước của Minh An trước nữ thợ lặn phàm trần. Tình cảm của họ là sự hòa quyện giữa sinh mệnh, niềm tin và trách nhiệm với đại địa non sông.
+</p>
+
+<div class="cta-box">
+  <h3>Khám Phá Giọng Nói Trầm Tĩnh Của Lâm Tịch Trong Thức Hải</h3>
+  <p>Đọc ngay những màn đối thoại tâm thức đầy chiều sâu giữa Minh An và Lâm Tịch tại phatroi.com.</p>
+  <div class="cta-actions">
+    <a href="/chuong-96/" class="btn-cta-primary">Đọc Chương 96: Hải Yến →</a>
+    <a href="/chuong-1/" class="btn-cta-secondary">Đọc Từ Chương 1</a>
+  </div>
+</div>
+"""
     }
 ]
 
@@ -347,6 +680,7 @@ def render_seo_page_html(article, shared_css, site_url, ga_measurement_id, total
   <meta name="twitter:description" content="{meta_desc}">
   <meta name="twitter:image" content="{site_url}/assets/hero_horizontal.jpg">
 
+  <link rel="alternate" type="application/rss+xml" title="Phá Trời — RSS Feed" href="{site_url}/feed.xml">
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" href="/assets/logo.webp" type="image/webp">
   <link rel="apple-touch-icon" href="/assets/logo.webp">
