@@ -1,0 +1,151 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {
+  judgeRhythmWave,
+  calculateStrikeOutcome,
+  TARGET_RIM_PROGRESS,
+  OVERDRIVE_MAX,
+  getUpgradeCost,
+  calculateBasePowerBillions,
+  INITIAL_UPGRADES,
+  INITIAL_SPIRIT_NODES,
+  canUnlockSpiritNode,
+  calculateSpiritMultiplier,
+  formatCountdown,
+  FORGE_BPM,
+  getBpmWaveSpeed,
+  computeHammerStrikeAngle,
+  HAMMER_IDLE_ANGLE_RAD,
+  HAMMER_DOWNSTROKE_SEC,
+  HAMMER_STANCES,
+  FORGE_SPARK_BUFFER_SIZE,
+  createForgeSparkBuffer,
+  spawnForgeSparkBurst,
+  computeSparkBallisticPosition,
+} from './rules';
+
+test('judgeRhythmWave returns PERFECT (x3.5) inside the golden anvil rim tolerance', () => {
+  const exact = judgeRhythmWave(TARGET_RIM_PROGRESS);
+  assert.equal(exact.grade, 'PERFECT');
+  assert.equal(exact.multiplier, 3.5);
+  assert.equal(exact.labelVn, 'HOÀNG KIM');
+
+  const slightEarly = judgeRhythmWave(TARGET_RIM_PROGRESS - 0.05);
+  assert.equal(slightEarly.grade, 'PERFECT');
+});
+
+test('judgeRhythmWave returns GREAT (x1.5) in warm zone and MISS (x0) outside', () => {
+  const warm = judgeRhythmWave(TARGET_RIM_PROGRESS - 0.12);
+  assert.equal(warm.grade, 'GREAT');
+  assert.equal(warm.multiplier, 1.5);
+  assert.equal(warm.labelVn, 'CHUẨN XÁC');
+
+  const missFar = judgeRhythmWave(0.2);
+  assert.equal(missFar.grade, 'MISS');
+  assert.equal(missFar.multiplier, 0);
+});
+
+test('calculateStrikeOutcome triggers Overdrive at 8/8 and scales x3.5 on Perfect', () => {
+  const outcome = calculateStrikeOutcome({
+    grade: 'PERFECT',
+    stance: 'W',
+    basePowerBillions: 1.0,
+    combo: 7,
+    overdriveCharge: 7,
+    overdriveActive: false,
+    bossShieldPct: 50,
+    spiritBonusMult: 1.2,
+    globalBurstActive: false,
+  });
+
+  assert.equal(outcome.nextCombo, 8);
+  assert.equal(outcome.nextOverdriveCharge, OVERDRIVE_MAX);
+  assert.equal(outcome.triggeredOverdrive, true);
+  assert.ok(outcome.damageBillions > 0);
+  assert.ok(outcome.linhThachEarned > 0);
+  assert.ok(outcome.tinhHoaEarned >= 1);
+});
+
+test('calculateStrikeOutcome resets combo to 0 on MISS', () => {
+  const missOutcome = calculateStrikeOutcome({
+    grade: 'MISS',
+    stance: 'Q',
+    basePowerBillions: 1.0,
+    combo: 14,
+    overdriveCharge: 5,
+    overdriveActive: false,
+    bossShieldPct: 50,
+    spiritBonusMult: 1.2,
+    globalBurstActive: false,
+  });
+
+  assert.equal(missOutcome.nextCombo, 0);
+  assert.equal(missOutcome.damageBillions, 0);
+  assert.equal(missOutcome.nextOverdriveCharge, 4);
+});
+
+test('upgrade cost, spirit constellation, and 0.08s Divine Hammer strike curve work deterministically', () => {
+  const firstUpgrade = INITIAL_UPGRADES[0];
+  const cost = getUpgradeCost(firstUpgrade);
+  assert.ok(cost > firstUpgrade.baseCost);
+
+  const basePower = calculateBasePowerBillions(INITIAL_UPGRADES);
+  assert.ok(basePower > 0.5);
+
+  assert.equal(canUnlockSpiritNode('node_thunder_eye', INITIAL_SPIRIT_NODES, 10), true);
+  assert.equal(canUnlockSpiritNode('node_sky_breaker', INITIAL_SPIRIT_NODES, 50), false);
+
+  const mult = calculateSpiritMultiplier(INITIAL_SPIRIT_NODES);
+  assert.equal(mult, 1.2);
+  assert.equal(formatCountdown(180), '03:00');
+  assert.equal(FORGE_BPM, 100);
+  assert.ok(Math.abs(getBpmWaveSpeed(100) - 100 / 120) < 0.001);
+
+  // Verify 4 stance skins mapping
+  assert.equal(HAMMER_STANCES.Q.stanceId, 'THUNDER');
+  assert.equal(HAMMER_STANCES.W.stanceId, 'FIRE');
+  assert.equal(HAMMER_STANCES.E.stanceId, 'GRAVITY');
+  assert.equal(HAMMER_STANCES.R.stanceId, 'MYSTIC');
+
+  // Verify 45-degree idle angle and 0.08s perpendicular impact (0 rad)
+  assert.ok(Math.abs(computeHammerStrikeAngle(-1, 0) - HAMMER_IDLE_ANGLE_RAD) < 0.0001);
+  assert.ok(Math.abs(computeHammerStrikeAngle(HAMMER_DOWNSTROKE_SEC, 0) - 0) < 0.0001);
+  assert.ok(Math.abs(computeHammerStrikeAngle(0.5, 0) - HAMMER_IDLE_ANGLE_RAD) < 0.0001);
+});
+
+test('3,000-particle Float32Array Spark Buffer differentiates Self Golden Sparks vs Peer Ghost Sparks and follows gravity', () => {
+  const buf = createForgeSparkBuffer();
+  assert.equal(buf.capacity, 3000);
+  assert.equal(FORGE_SPARK_BUFFER_SIZE, 3000);
+  assert.equal(buf.positions.length, 9000);
+  assert.equal(buf.velocities.length, 9000);
+  assert.equal(buf.colors.length, 9000);
+  assert.equal(buf.timings.length, 9000);
+  assert.equal(buf.alphas.length, 3000);
+
+  const selfBurst = spawnForgeSparkBurst(buf, {
+    origin: 'SELF',
+    quality: 'PERFECT',
+    currentTime: 2.5,
+  });
+
+  const peerBurst = spawnForgeSparkBurst(buf, {
+    origin: 'PEER',
+    quality: 'GREAT',
+    currentTime: 2.6,
+  });
+
+  // Self sparks must be larger and brighter than Peer Ghost Sparks
+  assert.ok(selfBurst.avgPointSize > peerBurst.avgPointSize * 1.8);
+  assert.ok(selfBurst.avgAlpha > peerBurst.avgAlpha * 1.8);
+
+  // Verify upward launch velocity vy > 0
+  assert.ok(buf.velocities[1] > 2.5);
+
+  // Verify ballistic arc: rises initially then falls under gravity
+  const [, yPeak] = computeSparkBallisticPosition(0, 0.38, 0, 1.0, 4.9, 0, 0.5, 9.8);
+  const [, yFall] = computeSparkBallisticPosition(0, 0.38, 0, 1.0, 4.9, 0, 1.2, 9.8);
+  assert.ok(yPeak > 0.38);
+  assert.ok(yFall < yPeak);
+});
+

@@ -1,0 +1,6 @@
+{
+  "name": "Phá Trời - The Celestial Forge",
+  "description": "Đại Công Trường Vạn Dân · Cửu Trọng Thiên Cẩm — Game Web Rhythm Action & Co-op Boss Raid phong cách Thiên Cổ Rực Lửa kết hợp Cyber-Mythology.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
