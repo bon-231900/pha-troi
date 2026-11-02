@@ -332,14 +332,14 @@ class CelestialForgeGame {
     }
 
     getIdleEfficiency() {
-        const lv = this.talents.tamPhap;
-        const bonus = 0.45 * (1 - Math.exp(-0.07 * lv));
-        let eff = 0.40 + bonus;
+        const lv = this.talents.tamPhap || 0;
+        const bonus = 0.50 * (1 - Math.exp(-0.07 * lv));
+        let eff = 0.35 + bonus;
         // Nếu kích hoạt Huyền Âm Chùy: +15% công suất gõ tự động (Auto-Forge / Idle)
         if (this.activeHammer === 4) {
             eff += 0.15;
         }
-        return eff;
+        return Math.min(1.0, eff);
     }
 
     calcHammerUpgradeCost(L) {
@@ -1666,6 +1666,35 @@ class CelestialForgeGame {
                 }
             });
         }
+
+        // Tự động lưu game khi ẩn hoặc đóng tab trình duyệt
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'hidden') {
+                this.saveGame();
+            }
+        });
+        window.addEventListener('beforeunload', () => {
+            this.saveGame();
+        });
+
+        // Báo Cáo Khôi Lỗi Rèn Đêm (Offline Progress Modal)
+        const btnClaimOffline = document.getElementById('btnClaimOffline');
+        const btnCloseOffline = document.getElementById('btnCloseOfflineModal');
+        const offlineModal = document.getElementById('offlineModal');
+
+        if (btnClaimOffline) {
+            btnClaimOffline.onclick = () => this.claimOfflineReward();
+        }
+        if (btnCloseOffline) {
+            btnCloseOffline.onclick = () => this.claimOfflineReward();
+        }
+        if (offlineModal) {
+            offlineModal.addEventListener('click', (e) => {
+                if (e.target === offlineModal) {
+                    this.claimOfflineReward();
+                }
+            });
+        }
     }
 
     openModal(title, body) {
@@ -1705,7 +1734,8 @@ class CelestialForgeGame {
             skipOnboarding: this.skipOnboarding,
             claimedFirstForgeLuck: this.claimedFirstForgeLuck,
             buyMultiplier: this.buyMultiplier,
-            lastSaveTime: Date.now()
+            lastSaveTime: Date.now(),
+            lastActiveTimestamp: Date.now()
         };
     }
 
@@ -1791,35 +1821,147 @@ class CelestialForgeGame {
         const raw = localStorage.getItem("phatroi_cforge_save_v2") || localStorage.getItem("phatroi_cforge_save");
         if (raw) {
             try {
-                this.applyLoadedState(JSON.parse(raw));
+                const s = JSON.parse(raw);
+                this.lastOfflineTime = s.lastActiveTimestamp || s.lastSaveTime || null;
+                this.applyLoadedState(s);
             } catch (e) {
                 console.error("Lỗi đọc save:", e);
             }
         }
     }
 
-    checkOfflineProgress() {
-        const raw = localStorage.getItem("phatroi_cforge_save_v2");
-        if (!raw) return;
-        try {
-            const s = JSON.parse(raw);
-            if (s.lastSaveTime) {
-                const diffSec = Math.floor((Date.now() - s.lastSaveTime) / 1000);
-                if (diffSec > 15) {
-                    const cappedSec = Math.min(86400, diffSec);
-                    const efficiency = this.getIdleEfficiency();
-                    const strikes = Math.floor(cappedSec / 2);
-                    const ironEarned = strikes * this.calcIronDrop(this.hammerLevel, 1.0) * efficiency;
-                    this.skyIron += ironEarned;
-                    this.lifetimeIron += ironEarned;
+    formatOfflineDuration(sec) {
+        if (sec < 60) return `${sec} giây`;
+        const hrs = Math.floor(sec / 3600);
+        const mins = Math.floor((sec % 3600) / 60);
+        const remainSec = sec % 60;
+        if (hrs > 0) {
+            return `${hrs.toString().padStart(2, '0')} giờ ${mins.toString().padStart(2, '0')} phút`;
+        }
+        return `${mins} phút ${remainSec.toString().padStart(2, '0')} giây`;
+    }
 
-                    this.openModal(
-                        "DƯ NHIỆT KHÔI LỖI",
-                        `Trong lúc bạn vắng mặt (${Math.floor(cappedSec / 60)} phút), Khôi Lỗi thợ rèn (hiệu suất <b>${(efficiency * 100).toFixed(0)}%</b>) đã gõ tự động <b>${strikes}</b> nhát búa và thu về <b>+${formatNum(ironEarned)} Vụn Thiên Thiết</b>!`
-                    );
-                }
+    checkOfflineProgress() {
+        if (!this.lastOfflineTime) return;
+        const now = Date.now();
+        const offlineSeconds = Math.floor((now - this.lastOfflineTime) / 1000);
+
+        // Chỉ kích hoạt khi vắng mặt từ 60 giây trở lên
+        if (offlineSeconds < 60) return;
+
+        // Giới hạn thời gian tích lũy tối đa 8 giờ (28.800 giây)
+        const MAX_OFFLINE_SECONDS = 8 * 3600;
+        const effectiveSec = Math.min(MAX_OFFLINE_SECONDS, offlineSeconds);
+        const isCapped = offlineSeconds >= MAX_OFFLINE_SECONDS;
+
+        const efficiency = this.getIdleEfficiency();
+        const strikes = Math.floor(effectiveSec / 2); // Khôi lỗi tự động rèn 1 nhát / 2 giây
+        if (strikes <= 0) return;
+
+        const baseIron = this.calcIronDrop(this.hammerLevel, 1.0);
+        const ironEarned = Math.max(1, Math.floor(strikes * baseIron * efficiency));
+
+        // Tinh Thể Thiên Cấm: rơi 1 viên cho mỗi 2 giờ ngoại tuyến
+        const shardsEarned = Math.floor(effectiveSec / 7200);
+
+        // Sát thương đóng góp phá vòm
+        const baseDmg = this.calcFinalDamage('normal', false);
+        const dmgEarned = Math.floor(strikes * baseDmg * efficiency * 0.15);
+
+        this.pendingOfflineReward = {
+            iron: ironEarned,
+            shards: shardsEarned,
+            dmg: dmgEarned,
+            strikes: strikes,
+            offlineSeconds: offlineSeconds,
+            effectiveSec: effectiveSec,
+            efficiency: efficiency,
+            isCapped: isCapped
+        };
+
+        // Render dữ liệu lên Offline Modal
+        const timeValEl = document.getElementById('offlineTimeVal');
+        const capNoteEl = document.getElementById('offlineCapNote');
+        const effValEl = document.getElementById('offlineEffVal');
+        const talentLvEl = document.getElementById('offlineTalentLevel');
+        const ironValEl = document.getElementById('offlineIronVal');
+        const strikesValEl = document.getElementById('offlineStrikesVal');
+        const shardsTagEl = document.getElementById('offlineShardsTag');
+        const shardsValEl = document.getElementById('offlineShardsVal');
+        const dmgTagEl = document.getElementById('offlineDmgTag');
+        const dmgValEl = document.getElementById('offlineDmgVal');
+        const hintTextEl = document.getElementById('offlineHintText');
+
+        if (timeValEl) timeValEl.innerText = this.formatOfflineDuration(offlineSeconds);
+        if (capNoteEl) {
+            capNoteEl.innerText = isCapped ? "⚠️ Đạt giới hạn tích lũy tối đa 8 giờ" : "Tích lũy tối đa 8 giờ";
+            capNoteEl.style.color = isCapped ? "#f59e0b" : "#94a3b8";
+        }
+        if (effValEl) effValEl.innerText = `${(efficiency * 100).toFixed(1)}%`;
+        if (talentLvEl) talentLvEl.innerText = `Cổ Ngữ Khôi Lỗi Cấp ${this.talents.tamPhap || 0}`;
+        if (ironValEl) ironValEl.innerText = `+${formatNum(ironEarned)}`;
+        if (strikesValEl) strikesValEl.innerText = strikes.toLocaleString();
+
+        if (shardsTagEl && shardsValEl) {
+            if (shardsEarned > 0) {
+                shardsValEl.innerText = `+${shardsEarned}`;
+                shardsTagEl.style.display = 'inline-flex';
+            } else {
+                shardsTagEl.style.display = 'none';
             }
-        } catch (e) {}
+        }
+
+        if (dmgTagEl && dmgValEl) {
+            if (dmgEarned > 0) {
+                dmgValEl.innerText = `+${formatNum(dmgEarned)}`;
+                dmgTagEl.style.display = 'inline-flex';
+            } else {
+                dmgTagEl.style.display = 'none';
+            }
+        }
+
+        if (hintTextEl) {
+            if (efficiency >= 0.85) {
+                hintTextEl.innerHTML = `✨ Khôi Lỗi Cơ Quan đã đạt <b>công suất tối đa 85%</b>! Bạn đang nhận năng suất ngoại tuyến cao nhất.`;
+            } else {
+                hintTextEl.innerHTML = `Nâng cấp Cổ Ngữ <b>"Khôi Lỗi Tâm Pháp"</b> tại tab <b>Thần Hồn</b> để tăng hiệu suất tối đa lên <b>85%</b>!`;
+            }
+        }
+
+        const modal = document.getElementById('offlineModal');
+        if (modal) {
+            modal.classList.add('open');
+            window.soundManager.playUpgrade();
+        }
+    }
+
+    claimOfflineReward() {
+        const modal = document.getElementById('offlineModal');
+        if (modal) modal.classList.remove('open');
+
+        if (!this.pendingOfflineReward) return;
+        const rew = this.pendingOfflineReward;
+        this.pendingOfflineReward = null;
+
+        // Cộng tài nguyên vào kho
+        this.skyIron += rew.iron;
+        this.lifetimeIron += rew.iron;
+        if (rew.shards > 0) {
+            this.domeShards += rew.shards;
+        }
+        if (rew.dmg > 0 && this.domeTargetHp > 1) {
+            this.domeTargetHp = Math.max(1, this.domeTargetHp - rew.dmg);
+        }
+
+        // Cập nhật UI & Lưu game ngay lập tức
+        this.renderWallets();
+        this.renderUpgradeCard();
+        this.renderDomeHp();
+        this.saveGame();
+
+        // Âm thanh chúc mừng & Log thông báo
+        window.soundManager.playUpgrade();
+        this.pushTicker(`🤖 [KHÔI LỖI RÈN ĐÊM] Đã thu nạp +${formatNum(rew.iron)} Vụn Thiên Thiết từ ${this.formatOfflineDuration(rew.offlineSeconds)} vắng mặt!`);
     }
 }
 

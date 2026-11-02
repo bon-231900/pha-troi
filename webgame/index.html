@@ -26,7 +26,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&family=Cinzel:wght@700;800;900&display=swap" rel="stylesheet">
 
     <!-- Stylesheet with Cache Buster -->
-    <link rel="stylesheet" href="style.css?v=4.3.3">
+    <link rel="stylesheet" href="style.css?v=4.4.0">
 </head>
 <body>
 
@@ -436,8 +436,89 @@
         </div>
     </div>
 
+    <!-- Modal: Báo Cáo Khôi Lỗi Rèn Đêm (Thu Nhập Ngoại Tuyến) -->
+    <div id="offlineModal" class="modal-overlay">
+        <div class="modal-box offline-modal-box">
+            <div class="offline-modal-header">
+                <div class="offline-header-title-box">
+                    <span class="offline-icon-glow">🤖</span>
+                    <div>
+                        <h3 class="offline-modal-title">BÁO CÁO KHÔI LỖI RÈN ĐÊM</h3>
+                        <div class="offline-modal-subtitle">Khôi Lỗi Cơ Quan miệt mài rèn giũa trong lúc bạn rời công trường</div>
+                    </div>
+                </div>
+                <button id="btnCloseOfflineModal" class="modal-close-btn" title="Đóng">&times;</button>
+            </div>
+
+            <div class="offline-modal-body">
+                <!-- Thống kê Thời gian & Hiệu suất -->
+                <div class="offline-stats-grid">
+                    <div class="offline-stat-card">
+                        <div class="offline-stat-icon">⏳</div>
+                        <div class="offline-stat-info">
+                            <span class="offline-stat-label">THỜI GIAN RỜI CÔNG TRƯỜNG</span>
+                            <span id="offlineTimeVal" class="offline-stat-val">00 phút</span>
+                            <span id="offlineCapNote" class="offline-stat-sub">Tích lũy tối đa 8 giờ</span>
+                        </div>
+                    </div>
+
+                    <div class="offline-stat-card">
+                        <div class="offline-stat-icon">⚙️</div>
+                        <div class="offline-stat-info">
+                            <span class="offline-stat-label">HIỆU SUẤT KHÔI LỖI</span>
+                            <span id="offlineEffVal" class="offline-stat-val">35.0%</span>
+                            <span id="offlineTalentLevel" class="offline-stat-sub">Cổ Ngữ Khôi Lỗi Cấp 0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gợi ý nâng cấp Khôi Lỗi Tâm Pháp -->
+                <div class="offline-hint-box" id="offlineHintBox">
+                    <span class="offline-hint-icon">💡</span>
+                    <span id="offlineHintText" class="offline-hint-text">
+                        Nâng cấp Cổ Ngữ <b>"Khôi Lỗi Tâm Pháp"</b> tại tab <b>Thần Hồn</b> để tăng hiệu suất tối đa lên <b>85%</b>!
+                    </span>
+                </div>
+
+                <!-- Khung hiển thị thành quả rèn đêm -->
+                <div class="offline-reward-banner">
+                    <div class="offline-reward-headline">THÀNH QUẢ KHÔI LỖI THU ĐƯỢC</div>
+                    <div class="offline-primary-reward">
+                        <span class="reward-currency-icon">⛏️</span>
+                        <span id="offlineIronVal" class="reward-currency-val">+0</span>
+                        <span class="reward-currency-unit">Vụn Thiên Thiết</span>
+                    </div>
+
+                    <div class="offline-sub-rewards-row">
+                        <div class="offline-sub-tag">
+                            <span class="tag-icon">🔨</span>
+                            <span><b id="offlineStrikesVal">0</b> nhát búa tự động</span>
+                        </div>
+                        <div class="offline-sub-tag" id="offlineShardsTag" style="display: none;">
+                            <span class="tag-icon">💎</span>
+                            <span><b id="offlineShardsVal">+0</b> Tinh Thể Thiên Cấm</span>
+                        </div>
+                        <div class="offline-sub-tag" id="offlineDmgTag" style="display: none;">
+                            <span class="tag-icon">💥</span>
+                            <span><b id="offlineDmgVal">+0</b> DMG Phá Vòm</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Nút bấm thu thập tài nguyên -->
+            <div class="offline-modal-actions">
+                <button id="btnClaimOffline" class="btn-claim-offline">
+                    <span class="claim-sparkle">✨</span>
+                    <span>THU THẬP TÀI NGUYÊN</span>
+                    <span class="claim-sparkle">✨</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Scripts with Cache Buster -->
-    <script src="audio.js?v=4.3.3"></script>
-    <script src="game.js?v=4.3.3"></script>
+    <script src="audio.js?v=4.4.0"></script>
+    <script src="game.js?v=4.4.0"></script>
 </body>
 </html>
