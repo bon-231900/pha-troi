@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  gateway:
+    build: .
+    container_name: phatroi-gateway
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:7-alpine
+    container_name: phatroi-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: phatroi-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: phatroi
+      POSTGRES_PASSWORD: phatroi_secure_pass
+      POSTGRES_DB: phatroi_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+
+volumes:
+  redis_data:
+  pg_data:

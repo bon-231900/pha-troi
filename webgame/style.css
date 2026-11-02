@@ -1,0 +1,1061 @@
+/* ==========================================================================
+   TOÀN DÂN PHÁ TRỜI: THE CELESTIAL FORGE - PHASE 2 ENHANCED UI
+   Phù hợp 100% PC & Mobile - Thiết kế Đại Công Trường Vạn Dân Cổ Thần
+   ========================================================================== */
+
+:root {
+    --bg-dark: #070a12;
+    --bg-surface: rgba(15, 23, 42, 0.88);
+    --bg-card: rgba(22, 32, 54, 0.92);
+    --bg-card-hover: rgba(30, 45, 75, 0.96);
+    --border: rgba(255, 255, 255, 0.08);
+    --border-glow: rgba(245, 158, 11, 0.35);
+
+    --gold-primary: #f59e0b;
+    --gold-light: #fef08a;
+    --gold-glow: rgba(245, 158, 11, 0.45);
+
+    --fire-red: #ef4444;
+    --fire-glow: rgba(239, 68, 68, 0.45);
+
+    --lightning-blue: #38bdf8;
+    --lightning-glow: rgba(56, 189, 248, 0.45);
+
+    --void-purple: #a855f7;
+    --void-glow: rgba(168, 85, 247, 0.45);
+
+    --night-cyan: #06b6d4;
+
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+
+    --font-heading: 'Cinzel', 'Be Vietnam Pro', serif;
+    --font-body: 'Be Vietnam Pro', system-ui, -apple-system, sans-serif;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+}
+
+body {
+    background-color: var(--bg-dark);
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+    background-image: 
+        radial-gradient(circle at 50% 10%, rgba(56, 189, 248, 0.09) 0%, transparent 55%),
+        radial-gradient(circle at 50% 90%, rgba(245, 158, 11, 0.08) 0%, transparent 60%);
+}
+
+/* Background FX Canvas (Tia sét, đốm lửa hậu cảnh) */
+#fxCanvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* Golden Shower Event Banner (15 Phút Mưa Thiên Lộc) */
+.golden-shower-banner {
+    display: none;
+    background: linear-gradient(90deg, #d97706, #fbbf24, #d97706);
+    color: #000;
+    font-weight: 900;
+    font-size: 0.85rem;
+    padding: 8px 14px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    text-align: center;
+    letter-spacing: 0.5px;
+    box-shadow: 0 0 25px rgba(245, 158, 11, 0.6);
+    animation: pulseShower 1s infinite alternate;
+}
+
+@keyframes pulseShower {
+    from { transform: scale(0.99); opacity: 0.9; }
+    to { transform: scale(1.01); opacity: 1; }
+}
+
+/* Layer Themes */
+.firmament-card.layer-2 {
+    background: linear-gradient(180deg, rgba(60, 20, 20, 0.95) 0%, rgba(20, 8, 8, 0.95) 100%);
+    border-color: rgba(239, 68, 68, 0.4);
+    box-shadow: 0 0 35px rgba(239, 68, 68, 0.2);
+}
+
+.firmament-card.layer-3 {
+    background: linear-gradient(180deg, rgba(15, 35, 60, 0.95) 0%, rgba(8, 16, 30, 0.95) 100%);
+    border-color: rgba(6, 182, 212, 0.4);
+    box-shadow: 0 0 35px rgba(6, 182, 212, 0.2);
+}
+
+.firmament-card.layer-4 {
+    background: linear-gradient(180deg, rgba(70, 25, 5, 0.95) 0%, rgba(30, 10, 5, 0.95) 100%);
+    border-color: rgba(249, 115, 22, 0.4);
+    box-shadow: 0 0 35px rgba(249, 115, 22, 0.25);
+}
+
+.firmament-card.layer-5 {
+    background: linear-gradient(180deg, rgba(10, 40, 50, 0.95) 0%, rgba(5, 20, 30, 0.95) 100%);
+    border-color: rgba(56, 189, 248, 0.4);
+    box-shadow: 0 0 35px rgba(56, 189, 248, 0.25);
+}
+
+.firmament-card.layer-6 {
+    background: linear-gradient(180deg, rgba(45, 15, 60, 0.95) 0%, rgba(20, 5, 30, 0.95) 100%);
+    border-color: rgba(168, 85, 247, 0.4);
+    box-shadow: 0 0 35px rgba(168, 85, 247, 0.25);
+}
+
+.firmament-card.layer-7 {
+    background: linear-gradient(180deg, rgba(50, 10, 40, 0.95) 0%, rgba(15, 5, 20, 0.95) 100%);
+    border-color: rgba(236, 72, 153, 0.4);
+    box-shadow: 0 0 35px rgba(236, 72, 153, 0.25);
+}
+
+.firmament-card.layer-8 {
+    background: linear-gradient(180deg, rgba(15, 50, 30, 0.95) 0%, rgba(5, 25, 15, 0.95) 100%);
+    border-color: rgba(16, 185, 129, 0.4);
+    box-shadow: 0 0 35px rgba(16, 185, 129, 0.25);
+}
+
+.firmament-card.layer-9 {
+    background: linear-gradient(180deg, rgba(65, 45, 10, 0.95) 0%, rgba(30, 20, 5, 0.95) 100%);
+    border-color: rgba(245, 158, 11, 0.6);
+    box-shadow: 0 0 45px rgba(245, 158, 11, 0.4);
+}
+.shatter-flash {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle, rgba(245, 158, 11, 0.8) 0%, rgba(239, 68, 68, 0.4) 60%, transparent 100%);
+    pointer-events: none;
+    z-index: 999;
+    opacity: 0;
+    transition: opacity 0.4s ease-out;
+}
+
+.shatter-flash.active {
+    opacity: 1;
+}
+
+/* Main Container */
+.app-container {
+    position: relative;
+    z-index: 2;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 12px 16px;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* Top Header */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 16px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    backdrop-filter: blur(12px);
+    margin-bottom: 12px;
+}
+
+.brand-section {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.brand-badge {
+    background: linear-gradient(135deg, #b45309, #f59e0b);
+    color: #000;
+    font-weight: 900;
+    font-size: 1.1rem;
+    padding: 4px 10px;
+    border-radius: 8px;
+    letter-spacing: 1px;
+    box-shadow: 0 0 15px var(--gold-glow);
+}
+
+.brand-title h1 {
+    font-size: 1.15rem;
+    font-weight: 900;
+    letter-spacing: 0.5px;
+    background: linear-gradient(to right, #ffffff, #fef08a);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.brand-title .subtext {
+    font-size: 0.72rem;
+    color: var(--text-secondary);
+}
+
+.server-stats-badge {
+    background: rgba(239, 68, 68, 0.12);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    color: #fca5a5;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.night-badge {
+    display: none;
+    background: rgba(6, 182, 212, 0.15);
+    border: 1px solid var(--night-cyan);
+    color: #a5f3fc;
+    font-size: 0.75rem;
+    font-weight: 800;
+    padding: 4px 10px;
+    border-radius: 20px;
+    align-items: center;
+    gap: 4px;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-icon {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    padding: 6px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.82rem;
+    font-weight: 600;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-icon:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+    border-color: var(--border-glow);
+}
+
+/* ==========================================================================
+   THE FIRMAMENT (MÁI VÒM THIÊN CẤM - TOP SECTION)
+   ========================================================================== */
+.firmament-card {
+    background: linear-gradient(180deg, rgba(20, 28, 48, 0.95) 0%, rgba(10, 15, 28, 0.95) 100%);
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    box-shadow: 0 0 30px rgba(56, 189, 248, 0.1);
+    border-radius: 16px;
+    padding: 16px 20px;
+    margin-bottom: 12px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s;
+}
+
+/* Giai đoạn 5% máu cuối: Hoàng Hôn Đỏ Rực */
+.firmament-card.final-phase {
+    background: linear-gradient(180deg, rgba(80, 20, 20, 0.95) 0%, rgba(30, 8, 8, 0.95) 100%);
+    border-color: #ef4444;
+    box-shadow: 0 0 45px var(--fire-glow);
+    animation: finalPhaseGlow 1.5s infinite alternate;
+}
+
+@keyframes finalPhaseGlow {
+    from { box-shadow: 0 0 30px rgba(239, 68, 68, 0.4); }
+    to { box-shadow: 0 0 60px rgba(239, 68, 68, 0.8); }
+}
+
+.firmament-card.shatter-mode {
+    border-color: var(--gold-primary);
+    box-shadow: 0 0 40px var(--gold-glow);
+    animation: pulseShatter 1.5s infinite alternate;
+}
+
+@keyframes pulseShatter {
+    from { border-color: rgba(245, 158, 11, 0.4); }
+    to { border-color: rgba(245, 158, 11, 0.9); }
+}
+
+.firmament-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.dome-name {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #e0f2fe;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.dome-layer-pill {
+    background: rgba(56, 189, 248, 0.15);
+    border: 1px solid rgba(56, 189, 248, 0.4);
+    color: #bae6fd;
+    font-size: 0.75rem;
+    font-weight: 800;
+    padding: 2px 8px;
+    border-radius: 12px;
+}
+
+.sub-seal-indicator {
+    font-size: 0.75rem;
+    color: #fef08a;
+    font-weight: 700;
+    margin-left: 8px;
+}
+
+.dome-status-pill {
+    font-size: 0.78rem;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.dome-status-pill.armored {
+    background: rgba(148, 163, 184, 0.15);
+    border: 1px solid rgba(148, 163, 184, 0.3);
+    color: #cbd5e1;
+}
+
+.dome-status-pill.shattered {
+    background: rgba(245, 158, 11, 0.2);
+    border: 1px solid var(--gold-primary);
+    color: #fef08a;
+    animation: pulseBadge 1s infinite alternate;
+}
+
+@keyframes pulseBadge {
+    from { transform: scale(0.98); }
+    to { transform: scale(1.02); }
+}
+
+/* Big HP Bar */
+.hp-bar-wrapper {
+    width: 100%;
+    height: 22px;
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+    margin-bottom: 10px;
+}
+
+.hp-bar-fill {
+    height: 100%;
+    width: 100%;
+    background: linear-gradient(90deg, #38bdf8, #818cf8, #c084fc);
+    border-radius: 12px;
+    transition: width 0.25s linear;
+}
+
+.hp-bar-fill.final {
+    background: linear-gradient(90deg, #ef4444, #f97316);
+}
+
+.hp-bar-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 0.8rem;
+    font-weight: 800;
+    color: #fff;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.9);
+    white-space: nowrap;
+}
+
+/* Resonance Stack Bar (Cộng Hưởng Vạn Dân) */
+.resonance-container {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.resonance-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.res-bar-wrapper {
+    width: 100%;
+    height: 8px;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.res-bar-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #f59e0b, #ef4444);
+    transition: width 0.2s linear;
+}
+
+/* Live Ticker Bar */
+.live-ticker-bar {
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 6px 12px;
+    margin-top: 10px;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.ticker-icon {
+    color: var(--gold-primary);
+    font-weight: 900;
+}
+
+.ticker-text {
+    color: #e2e8f0;
+    animation: fadeInText 0.3s ease-out;
+}
+
+@keyframes fadeInText {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ==========================================================================
+   MAIN 2-COLUMN LAYOUT
+   ========================================================================== */
+.main-workspace {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+    flex: 1;
+}
+
+@media (min-width: 960px) {
+    .main-workspace {
+        grid-template-columns: 1.15fr 1fr;
+    }
+}
+
+/* ==========================================================================
+   LEFT COLUMN: THE ANVIL & RHYTHM STRIKE
+   ========================================================================== */
+.anvil-column {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* Anvil Card */
+.anvil-arena {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    min-height: 310px;
+    overflow: hidden;
+}
+
+.anvil-arena.overdrive-mode {
+    border-color: var(--fire-red);
+    box-shadow: 0 0 50px var(--fire-glow), inset 0 0 30px rgba(239, 68, 68, 0.2);
+    animation: shakeArena 0.15s infinite;
+}
+
+@keyframes shakeArena {
+    0% { transform: translate(1px, 1px); }
+    50% { transform: translate(-1px, -1px); }
+    100% { transform: translate(1px, -1px); }
+}
+
+/* Central Anvil Graphics */
+.anvil-wrapper {
+    position: relative;
+    width: 220px;
+    height: 190px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.anvil-sprite {
+    font-size: 5rem;
+    filter: drop-shadow(0 0 15px rgba(245, 158, 11, 0.5));
+    transition: transform 0.05s ease-out;
+}
+
+.anvil-wrapper:active .anvil-sprite {
+    transform: scale(0.92) translateY(4px);
+}
+
+.anvil-glow {
+    position: absolute;
+    width: 140px;
+    height: 140px;
+    background: radial-gradient(circle, rgba(245, 158, 11, 0.25) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.anvil-hint {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--gold-light);
+    margin-top: 4px;
+    letter-spacing: 0.5px;
+}
+
+/* Floating Numbers */
+.floating-dmg {
+    position: absolute;
+    pointer-events: none;
+    font-weight: 900;
+    font-family: var(--font-heading);
+    animation: floatUpAnim 0.75s ease-out forwards;
+    z-index: 100;
+}
+
+.floating-dmg.normal {
+    font-size: 1.1rem;
+    color: #fef08a;
+    text-shadow: 0 0 8px rgba(245, 158, 11, 0.8);
+}
+
+.floating-dmg.golden {
+    font-size: 1.6rem;
+    color: #fbbf24;
+    text-shadow: 0 0 15px rgba(245, 158, 11, 1);
+}
+
+.floating-dmg.crit {
+    font-size: 2.1rem;
+    color: #ef4444;
+    text-shadow: 0 0 20px rgba(239, 68, 68, 1);
+}
+
+@keyframes floatUpAnim {
+    0% { opacity: 1; transform: translate(-50%, 0) scale(0.8); }
+    40% { transform: translate(-50%, -35px) scale(1.15); }
+    100% { opacity: 0; transform: translate(-50%, -75px) scale(1); }
+}
+
+/* ==========================================================================
+   FORGE RHYTHM BAR (THANH CANH NHỊP NHIỆT LƯỢNG)
+   ========================================================================== */
+.rhythm-section {
+    width: 100%;
+    max-width: 440px;
+    margin-top: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.rhythm-bar-track {
+    width: 100%;
+    height: 26px;
+    background: #0f172a;
+    border: 2px solid rgba(255, 255, 255, 0.15);
+    border-radius: 13px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.6);
+}
+
+/* Golden Sweet Spot */
+.golden-zone {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, rgba(245, 158, 11, 0.4), rgba(245, 158, 11, 0.9), rgba(245, 158, 11, 0.4));
+    border-left: 2px solid #fef08a;
+    border-right: 2px solid #fef08a;
+    box-shadow: 0 0 15px var(--gold-glow);
+    transition: left 0.25s ease-out, width 0.25s ease-out;
+}
+
+/* Moving Cursor */
+.rhythm-cursor {
+    position: absolute;
+    top: -2px;
+    bottom: -2px;
+    width: 8px;
+    background: #ffffff;
+    border-radius: 4px;
+    box-shadow: 0 0 10px #ffffff, 0 0 20px var(--lightning-blue);
+    transform: translateX(-50%);
+    pointer-events: none;
+}
+
+.rhythm-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.76rem;
+    color: var(--text-secondary);
+}
+
+.streak-badge {
+    color: #fbbf24;
+    font-weight: 800;
+}
+
+/* Overdrive Alert Banner */
+.overdrive-banner {
+    display: none;
+    width: 100%;
+    background: linear-gradient(90deg, #b91c1c, #ea580c);
+    color: #fff;
+    font-weight: 900;
+    font-size: 0.9rem;
+    padding: 8px 12px;
+    border-radius: 8px;
+    text-align: center;
+    letter-spacing: 1px;
+    box-shadow: 0 0 20px var(--fire-glow);
+    animation: flashOverdrive 0.5s infinite alternate;
+}
+
+@keyframes flashOverdrive {
+    from { opacity: 0.85; }
+    to { opacity: 1; }
+}
+
+/* ==========================================================================
+   ARSENAL: GIÁ TREO 4 THẦN CHÙY (QUICK SWITCH)
+   ========================================================================== */
+.arsenal-bar {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+}
+
+.hammer-btn {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 10px 6px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.2s;
+}
+
+.hammer-btn:hover {
+    background: var(--bg-card-hover);
+    border-color: var(--border-glow);
+    transform: translateY(-2px);
+}
+
+.hammer-btn.active {
+    background: rgba(245, 158, 11, 0.15);
+    border: 2px solid var(--gold-primary);
+    box-shadow: 0 0 15px var(--gold-glow);
+}
+
+.hammer-icon {
+    font-size: 1.5rem;
+}
+
+.hammer-name {
+    font-size: 0.72rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    white-space: nowrap;
+}
+
+.hammer-trait {
+    font-size: 0.62rem;
+    color: var(--text-muted);
+}
+
+/* ==========================================================================
+   RIGHT COLUMN: TAB SYSTEM (LÒ RÈN - THẦN HỒN - BẢNG VÀNG - CÀI ĐẶT)
+   ========================================================================== */
+.shop-column {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 16px;
+    backdrop-filter: blur(12px);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-height: 520px;
+}
+
+/* Tabs Bar */
+.tab-nav {
+    display: flex;
+    gap: 6px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 10px;
+    overflow-x: auto;
+}
+
+.tab-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.82rem;
+    font-weight: 700;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.tab-btn:hover {
+    color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.tab-btn.active {
+    color: #fbbf24;
+    background: rgba(245, 158, 11, 0.15);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+/* Wallet Grid */
+.wallet-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+}
+
+.wallet-item {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 8px 12px;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+}
+
+.wallet-label {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+}
+
+.wallet-val {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #fef08a;
+    font-family: var(--font-heading);
+}
+
+/* Tab Content Panes */
+.tab-pane {
+    display: none;
+    flex-direction: column;
+    gap: 10px;
+    flex: 1;
+}
+
+.tab-pane.active {
+    display: flex;
+}
+
+/* Upgrade List */
+.upgrade-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    overflow-y: auto;
+    max-height: 380px;
+    padding-right: 4px;
+}
+
+.upgrade-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.upgrade-card:hover:not(.disabled) {
+    background: var(--bg-card-hover);
+    border-color: var(--border-glow);
+    transform: translateX(2px);
+}
+
+.upgrade-card.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.upgrade-icon-box {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.upgrade-details {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.upgrade-top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.upgrade-title {
+    font-size: 0.88rem;
+    font-weight: 800;
+    color: var(--text-primary);
+}
+
+.upgrade-lvl {
+    font-size: 0.78rem;
+    font-weight: 800;
+    color: var(--gold-primary);
+}
+
+.upgrade-desc {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+}
+
+.upgrade-cost-row {
+    font-size: 0.78rem;
+    font-weight: 800;
+    color: var(--gold-light);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* Prestige Hero Box */
+.prestige-hero-card {
+    background: linear-gradient(135deg, rgba(168, 85, 247, 0.15) 0%, rgba(239, 68, 68, 0.15) 100%);
+    border: 1px solid rgba(168, 85, 247, 0.35);
+    border-radius: 14px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.prestige-title {
+    font-size: 1.05rem;
+    font-weight: 900;
+    color: #e9d5ff;
+    font-family: var(--font-heading);
+}
+
+.prestige-btn {
+    background: linear-gradient(135deg, #9333ea, #c026d3);
+    color: #fff;
+    font-weight: 900;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 16px;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(168, 85, 247, 0.4);
+    transition: transform 0.15s;
+}
+
+.prestige-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(168, 85, 247, 0.6);
+}
+
+.prestige-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Hall of Fame & Leaderboard List */
+.hof-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    overflow-y: auto;
+    max-height: 400px;
+}
+
+.hof-item {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.8rem;
+}
+
+.hof-rank {
+    font-weight: 800;
+    color: var(--gold-primary);
+    width: 24px;
+}
+
+.hof-name {
+    font-weight: 700;
+    color: var(--text-primary);
+    flex: 1;
+    margin-left: 8px;
+}
+
+.hof-dmg {
+    font-family: var(--font-heading);
+    font-weight: 800;
+    color: #fef08a;
+}
+
+/* Hall of Eternity (Đài Tưởng Niệm Vĩnh Hằng) */
+.eternity-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 6px;
+    max-height: 220px;
+    overflow-y: auto;
+}
+
+.eternity-card {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(0, 0, 0, 0.45) 100%);
+    border: 1px solid rgba(245, 158, 11, 0.25);
+    border-radius: 8px;
+    padding: 8px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    font-size: 0.76rem;
+}
+
+.eternity-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #fbbf24;
+    font-weight: 800;
+}
+
+.eternity-row {
+    display: flex;
+    justify-content: space-between;
+    color: #cbd5e1;
+}
+
+/* Modals */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+    padding: 16px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s;
+}
+
+.modal-overlay.open {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.modal-box {
+    background: #0f172a;
+    border: 1px solid rgba(245, 158, 11, 0.4);
+    box-shadow: 0 0 50px rgba(0, 0, 0, 0.9);
+    border-radius: 16px;
+    padding: 24px;
+    max-width: 480px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.modal-title {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #fef08a;
+    font-family: var(--font-heading);
+}
+
+.modal-body {
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+.modal-btn {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: #000;
+    font-weight: 800;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    align-self: flex-end;
+}
