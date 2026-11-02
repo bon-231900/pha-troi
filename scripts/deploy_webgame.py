@@ -50,11 +50,11 @@ def deploy():
         f"git remote add origin {repo_remote}",
         "git checkout -B gh-pages",
         "git add -A",
-        'git commit -m "Phase 4: Progressive Disclosure / Onboarding System (4 stages, smooth reveal, skip option)"',
+        'git commit -m "Phase 4: Early-Game Pacing (Level 5 Milestone, Khai Lò Đại Cát, Huyền Âm Solo Buff)"',
         "git push -u origin gh-pages --force"
     ]
     full_cmd = " && ".join(commands)
-    res = subprocess.run(full_cmd, shell=True, cwd=GAME_DIR, capture_output=True, text=True)
+    res = subprocess.run(full_cmd, shell=True, cwd=GAME_DIR, capture_output=True, text=True, encoding='utf-8', errors='replace')
 
     # Dọn dẹp .git trong webgame
     if os.path.exists(git_dir):
