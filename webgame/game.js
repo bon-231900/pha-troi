@@ -68,6 +68,7 @@ class CelestialForgeGame {
         this.onboardingStage = 0;      // 0: Khởi đầu, 1: Thanh Nhịp Điệu, 2: Cộng Hưởng & Vũ Khí, 3: Toàn Bộ
         this.skipOnboarding = false;   // Người chơi chủ động bấm Bỏ Qua Hướng Dẫn
         this.claimedFirstForgeLuck = false; // Thưởng Khởi Đầu "Khai Lò Đại Cát" (Chuỗi 3 Hoàng Kim)
+        this.buyMultiplier = '1';      // Hệ số mua nâng cấp: '1', '10', '25', 'next', 'max'
 
         // Trạng thái Thanh Nhịp Điệu (Forge Rhythm Bar)
         this.cursorPos = 0;            // 0 -> 100%
@@ -657,22 +658,141 @@ class CelestialForgeGame {
     }
 
     // =========================================================================
-    // NÂNG CẤP BÚA & TABS
+    // NÂNG CẤP BÚA, HỆ SỐ MUA NHANH & TABS
     // =========================================================================
-    upgradeHammer() {
-        const cost = this.calcHammerUpgradeCost(this.hammerLevel);
-        if (this.skyIron >= cost) {
-            this.skyIron -= cost;
-            this.hammerLevel++;
-            window.soundManager.playUpgrade();
+    getNextMilestone(L) {
+        const milestones = [5, 10, 25, 50, 75, 100, 125, 150, 175, 200, 250, 300];
+        for (const m of milestones) {
+            if (L < m) return m;
+        }
+        return Math.ceil((L + 1) / 50) * 50;
+    }
 
-            // Thông báo Đột Phá Cột Mốc
-            if (this.hammerLevel === 5) {
-                this.pushTicker(`⭐ [ĐỘT PHÁ CẤP 5] Thần Chùy đạt Cột Mốc Đột Phá Cấp 5! Nhận vĩnh viễn x1.5 Sát Thương & x1.5 Sản Lượng Quặng!`);
-            } else if (this.hammerLevel === 10) {
-                this.pushTicker(`⭐ [ĐỘT PHÁ CẤP 10] Thần Chùy đạt Cột Mốc Cấp 10: Nhân đôi x2 Sát Thương!`);
-            } else if (this.hammerLevel === 25) {
-                this.pushTicker(`⭐ [ĐỘT PHÁ CẤP 25] Thần Chùy đạt Cột Mốc Cấp 25: Nhân ba x3 Sát Thương!`);
+    getMilestoneRewardDesc(m) {
+        if (m === 5) return "x1.5 DMG & Quặng";
+        if (m === 10) return "x2 Sát Thương";
+        if (m === 25) return "x3 Sát Thương";
+        if (m === 50) return "x6 Sát Thương";
+        if (m === 75) return "x3 Sát Thương";
+        if (m === 100) return "x6 Sát Thương";
+        if (m % 50 === 0) return "x6 Sát Thương";
+        return "x3 Sát Thương";
+    }
+
+    checkPassedMilestones(oldLevel, newLevel) {
+        const milestones = [5, 10, 25, 50, 75, 100, 125, 150, 175, 200, 250, 300];
+        let highest = null;
+        for (const m of milestones) {
+            if (oldLevel < m && newLevel >= m) {
+                highest = m;
+            }
+        }
+        return highest;
+    }
+
+    getBulkUpgradeDetails() {
+        const L = this.hammerLevel;
+        let count = 1;
+        let totalCost = 0;
+        let canAfford = false;
+
+        if (this.buyMultiplier === '1') {
+            count = 1;
+            totalCost = this.calcHammerUpgradeCost(L);
+            canAfford = this.skyIron >= totalCost;
+        } else if (this.buyMultiplier === '10') {
+            count = 10;
+            for (let i = 0; i < 10; i++) {
+                totalCost += this.calcHammerUpgradeCost(L + i);
+            }
+            canAfford = this.skyIron >= totalCost;
+        } else if (this.buyMultiplier === '25') {
+            count = 25;
+            for (let i = 0; i < 25; i++) {
+                totalCost += this.calcHammerUpgradeCost(L + i);
+            }
+            canAfford = this.skyIron >= totalCost;
+        } else if (this.buyMultiplier === 'next') {
+            const targetM = this.getNextMilestone(L);
+            count = Math.max(1, targetM - L);
+            for (let i = 0; i < count; i++) {
+                totalCost += this.calcHammerUpgradeCost(L + i);
+            }
+            canAfford = this.skyIron >= totalCost;
+        } else if (this.buyMultiplier === 'max') {
+            let curL = L;
+            let affordableCount = 0;
+            let accumCost = 0;
+            while (true) {
+                const nextCost = this.calcHammerUpgradeCost(curL);
+                if (accumCost + nextCost > this.skyIron) break;
+                accumCost += nextCost;
+                affordableCount++;
+                curL++;
+                if (affordableCount >= 1000) break;
+            }
+            if (affordableCount === 0) {
+                count = 1;
+                totalCost = this.calcHammerUpgradeCost(L);
+                canAfford = false;
+            } else {
+                count = affordableCount;
+                totalCost = accumCost;
+                canAfford = true;
+            }
+        }
+
+        const curBaseDmg = this.calcBaseDamage(L);
+        const nextBaseDmg = this.calcBaseDamage(L + count);
+        const pctIncrease = curBaseDmg > 0 ? Math.round(((nextBaseDmg - curBaseDmg) / curBaseDmg) * 100) : 0;
+
+        return {
+            count,
+            totalCost,
+            canAfford,
+            curBaseDmg,
+            nextBaseDmg,
+            pctIncrease
+        };
+    }
+
+    setBuyMultiplier(mode) {
+        this.buyMultiplier = mode;
+        document.querySelectorAll('.buy-mult-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.getAttribute('data-mode') === mode);
+        });
+        this.renderUpgradeCard();
+        this.saveGame();
+    }
+
+    triggerMilestoneFlash() {
+        const card = document.getElementById('hammerUpgradeCard');
+        if (card) {
+            card.classList.remove('milestone-flash');
+            void card.offsetWidth;
+            card.classList.add('milestone-flash');
+            setTimeout(() => card.classList.remove('milestone-flash'), 950);
+        }
+    }
+
+    upgradeHammer() {
+        const details = this.getBulkUpgradeDetails();
+        if (details.canAfford) {
+            const oldLevel = this.hammerLevel;
+            const newLevel = oldLevel + details.count;
+
+            this.skyIron -= details.totalCost;
+            this.hammerLevel = newLevel;
+
+            // Kiểm tra và thông báo Đột Phá Cột Mốc
+            const hitMilestone = this.checkPassedMilestones(oldLevel, newLevel);
+            if (hitMilestone) {
+                const reward = this.getMilestoneRewardDesc(hitMilestone);
+                this.pushTicker(`⭐ [ĐỘT PHÁ CẤP ${hitMilestone}] Thần Chùy đã đạt Cột Mốc Cấp ${hitMilestone}! Nhận vĩnh viễn ${reward}!`);
+                window.soundManager.playUpgrade();
+                this.triggerMilestoneFlash();
+            } else {
+                window.soundManager.playUpgrade();
             }
 
             this.checkOnboardingProgression();
@@ -1218,21 +1338,49 @@ class CelestialForgeGame {
     }
 
     renderUpgradeCard() {
-        const cost = this.calcHammerUpgradeCost(this.hammerLevel);
-        const baseDmg = this.calcBaseDamage(this.hammerLevel);
-        const nextBaseDmg = this.calcBaseDamage(this.hammerLevel + 1);
-        const canAfford = this.skyIron >= cost;
-
-        const nextMilestone = this.hammerLevel < 5 ? 5 : (this.hammerLevel < 10 ? 10 : (this.hammerLevel < 25 ? 25 : Math.ceil((this.hammerLevel + 1) / 10) * 10));
-        const milestoneDesc = nextMilestone === 5 ? "Cấp 5 [x1.5 DMG & Quặng]" : (nextMilestone === 10 ? "Cấp 10 [x2 DMG]" : (nextMilestone === 25 ? "Cấp 25 [x3 DMG]" : `Cấp ${nextMilestone}`));
-
+        const details = this.getBulkUpgradeDetails();
         const card = document.getElementById('hammerUpgradeCard');
+        const lvlEl = document.getElementById('upgradeLvl');
+        const descEl = document.getElementById('upgradeDesc');
+        const costEl = document.getElementById('upgradeCost');
+
         if (card) {
-            card.className = `upgrade-card ${canAfford ? '' : 'disabled'}`;
-            document.getElementById('upgradeLvl').innerText = `Cấp ${this.hammerLevel}`;
-            document.getElementById('upgradeCost').innerText = `⚡ ${formatNum(cost)} Vụn Thiên Thiết`;
-            document.getElementById('upgradeDesc').innerText = `Sát thương cơ bản: ${formatNum(baseDmg)} ➔ ${formatNum(nextBaseDmg)} (Mốc tiếp theo: ${milestoneDesc})`;
+            card.className = `upgrade-card ${details.canAfford ? '' : 'disabled'}`;
         }
+
+        if (lvlEl) {
+            if (details.count === 1) {
+                lvlEl.innerText = `Cấp ${this.hammerLevel}`;
+            } else {
+                lvlEl.innerText = `Cấp ${this.hammerLevel} ➔ ${this.hammerLevel + details.count} (+${details.count})`;
+            }
+        }
+
+        if (descEl) {
+            const sign = details.pctIncrease >= 0 ? '+' : '';
+            if (this.buyMultiplier === 'next') {
+                descEl.innerText = `Đột phá mốc Cấp ${this.hammerLevel + details.count}: Sát thương ${formatNum(details.curBaseDmg)} ➔ ${formatNum(details.nextBaseDmg)} (${sign}${details.pctIncrease}%)`;
+            } else {
+                descEl.innerText = `Sát thương cơ bản: ${formatNum(details.curBaseDmg)} ➔ ${formatNum(details.nextBaseDmg)} (${sign}${details.pctIncrease}%)`;
+            }
+        }
+
+        if (costEl) {
+            costEl.innerText = `⚡ ${formatNum(details.totalCost)} Vụn Thiên Thiết`;
+        }
+
+        // Cập nhật Milestone Progress Bar
+        const nextM = this.getNextMilestone(this.hammerLevel);
+        const rewardDesc = this.getMilestoneRewardDesc(nextM);
+        const pctProgress = Math.min(100, Math.max(0, Math.floor((this.hammerLevel / nextM) * 100)));
+
+        const targetTextEl = document.getElementById('milestoneTargetText');
+        const progressPctEl = document.getElementById('milestoneProgressPct');
+        const fillEl = document.getElementById('milestoneProgressFill');
+
+        if (targetTextEl) targetTextEl.innerText = `Mốc Kế: Cấp ${nextM} (${rewardDesc})`;
+        if (progressPctEl) progressPctEl.innerText = `Cấp ${this.hammerLevel}/${nextM} (${pctProgress}%)`;
+        if (fillEl) fillEl.style.width = `${pctProgress}%`;
     }
 
     renderPrestigeTab() {
@@ -1386,6 +1534,11 @@ class CelestialForgeGame {
             btn.onclick = () => this.switchTab(btn.getAttribute('data-tab'));
         });
 
+        // Nút chọn hệ số mua (Bulk Buy Multipliers)
+        document.querySelectorAll('.buy-mult-btn').forEach(btn => {
+            btn.onclick = () => this.setBuyMultiplier(btn.getAttribute('data-mode'));
+        });
+
         const upCard = document.getElementById('hammerUpgradeCard');
         if (upCard) {
             upCard.onclick = () => this.upgradeHammer();
@@ -1505,6 +1658,7 @@ class CelestialForgeGame {
             onboardingStage: this.onboardingStage,
             skipOnboarding: this.skipOnboarding,
             claimedFirstForgeLuck: this.claimedFirstForgeLuck,
+            buyMultiplier: this.buyMultiplier,
             lastSaveTime: Date.now()
         };
     }
@@ -1529,6 +1683,12 @@ class CelestialForgeGame {
         this.totalStrikes = s.totalStrikes || 0;
         this.skipOnboarding = !!s.skipOnboarding;
         this.claimedFirstForgeLuck = typeof s.claimedFirstForgeLuck !== 'undefined' ? !!s.claimedFirstForgeLuck : (this.hammerLevel > 1);
+        if (s.buyMultiplier) {
+            this.buyMultiplier = s.buyMultiplier;
+            document.querySelectorAll('.buy-mult-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.getAttribute('data-mode') === this.buyMultiplier);
+            });
+        }
 
         // Tự động mở khóa 100% nếu là người chơi cũ
         const isVeteranPlayer = (

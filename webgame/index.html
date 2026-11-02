@@ -26,7 +26,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&family=Cinzel:wght@700;800;900&display=swap" rel="stylesheet">
 
     <!-- Stylesheet with Cache Buster -->
-    <link rel="stylesheet" href="style.css?v=4.3.1">
+    <link rel="stylesheet" href="style.css?v=4.3.2">
 </head>
 <body>
 
@@ -203,6 +203,18 @@
 
                 <!-- TAB PANE 1: LÒ RÈN (THE FORGE) -->
                 <div id="pane-forge" class="tab-pane active">
+                    <!-- Buy Multiplier Bar (Thanh chọn số lượng mua) -->
+                    <div class="buy-mult-bar" id="buyMultBar">
+                        <span class="buy-mult-label">HỆ SỐ MUA:</span>
+                        <div class="buy-mult-group">
+                            <button class="buy-mult-btn active" data-mode="1">x1</button>
+                            <button class="buy-mult-btn" data-mode="10">x10</button>
+                            <button class="buy-mult-btn" data-mode="25">x25</button>
+                            <button class="buy-mult-btn" data-mode="next">Mốc Kế</button>
+                            <button class="buy-mult-btn" data-mode="max">Tối Đa</button>
+                        </div>
+                    </div>
+
                     <div class="upgrade-list">
                         <!-- Hammer Level Upgrade -->
                         <div id="hammerUpgradeCard" class="upgrade-card">
@@ -212,7 +224,19 @@
                                     <span class="upgrade-title">RÈN CƯỜNG HÓA THẦN CHÙY</span>
                                     <span id="upgradeLvl" class="upgrade-lvl">Cấp 1</span>
                                 </div>
-                                <div id="upgradeDesc" class="upgrade-desc">Sát thương cơ bản: 10 ➔ 13 (Cột mốc tiếp theo: Cấp 5 [x1.5 DMG & Quặng])</div>
+
+                                <!-- Milestone Progress Indicator -->
+                                <div class="milestone-progress-container" id="milestoneProgressBox">
+                                    <div class="milestone-progress-header">
+                                        <span id="milestoneTargetText">Mốc Kế: Cấp 5 (x1.5 DMG & Quặng)</span>
+                                        <span id="milestoneProgressPct">1/5 (20%)</span>
+                                    </div>
+                                    <div class="milestone-progress-track">
+                                        <div id="milestoneProgressFill" class="milestone-progress-fill" style="width: 20%;"></div>
+                                    </div>
+                                </div>
+
+                                <div id="upgradeDesc" class="upgrade-desc">Sát thương cơ bản: 10 ➔ 13 (+30%)</div>
                                 <div id="upgradeCost" class="upgrade-cost-row">⚡ 10 Vụn Thiên Thiết</div>
                             </div>
                         </div>
@@ -346,7 +370,7 @@
     </div>
 
     <!-- Scripts with Cache Buster -->
-    <script src="audio.js?v=4.3.1"></script>
-    <script src="game.js?v=4.3.1"></script>
+    <script src="audio.js?v=4.3.2"></script>
+    <script src="game.js?v=4.3.2"></script>
 </body>
 </html>
