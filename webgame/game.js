@@ -32,7 +32,7 @@ const HAMMERS = {
     1: { id: 1, name: "Lôi Đình Chùy", icon: "⚡", trait: "+3 Cộng Hưởng", k_hammer: 0.85, res_bonus: 3, ore_bonus: 0 },
     2: { id: 2, name: "Viêm Dương Chùy", icon: "🔥", trait: "Thiêu Đốt & +30% Quặng", k_hammer: 1.0, res_bonus: 1, ore_bonus: 0.3 },
     3: { id: 3, name: "Trọng Lực Chùy", icon: "🌌", trait: "x12 Khi Trúng Hoàng Kim", k_hammer: 12.0, res_bonus: 1, ore_bonus: 0 },
-    4: { id: 4, name: "Huyền Âm Chùy", icon: "🎵", trait: "+15% Buff Cộng Đồng", k_hammer: 0.7, res_bonus: 1, ore_bonus: 0.1 }
+    4: { id: 4, name: "Huyền Âm Chùy", icon: "🎵", trait: "+15% Quặng & Tự Động (Solo) / +15% Đội", k_hammer: 0.7, res_bonus: 1, ore_bonus: 0.15 }
 };
 
 class CelestialForgeGame {
@@ -67,6 +67,7 @@ class CelestialForgeGame {
         this.totalStrikes = 0;         // Tổng số nhát búa đã nện
         this.onboardingStage = 0;      // 0: Khởi đầu, 1: Thanh Nhịp Điệu, 2: Cộng Hưởng & Vũ Khí, 3: Toàn Bộ
         this.skipOnboarding = false;   // Người chơi chủ động bấm Bỏ Qua Hướng Dẫn
+        this.claimedFirstForgeLuck = false; // Thưởng Khởi Đầu "Khai Lò Đại Cát" (Chuỗi 3 Hoàng Kim)
 
         // Trạng thái Thanh Nhịp Điệu (Forge Rhythm Bar)
         this.cursorPos = 0;            // 0 -> 100%
@@ -332,7 +333,12 @@ class CelestialForgeGame {
     getIdleEfficiency() {
         const lv = this.talents.tamPhap;
         const bonus = 0.45 * (1 - Math.exp(-0.07 * lv));
-        return 0.40 + bonus;
+        let eff = 0.40 + bonus;
+        // Nếu kích hoạt Huyền Âm Chùy: +15% công suất gõ tự động (Auto-Forge / Idle)
+        if (this.activeHammer === 4) {
+            eff += 0.15;
+        }
+        return eff;
     }
 
     calcHammerUpgradeCost(L) {
@@ -343,7 +349,9 @@ class CelestialForgeGame {
     calcIronDrop(L, m_rhythm) {
         const hammer = HAMMERS[this.activeHammer];
         const b_ore = hammer.ore_bonus + (this.talents.thanLuc * 0.15);
-        let drop = Math.floor(2 * Math.pow(1.11, L - 1) * m_rhythm * (1 + b_ore));
+        // Đột phá Cột mốc Cấp 5: x1.5 Sản Lượng Quặng
+        const oreMilestone = L >= 5 ? 1.5 : 1.0;
+        let drop = Math.floor(2 * Math.pow(1.11, L - 1) * m_rhythm * (1 + b_ore) * oreMilestone);
         
         // Phase 4: Sự kiện 15 Phút Mưa Thiên Lộc (x5 quặng toàn server)
         if (Date.now() < this.goldenShowerUntil) {
@@ -354,14 +362,18 @@ class CelestialForgeGame {
     }
 
     calcMilestoneMultiplier(L) {
+        // Cột mốc đột phá sớm Cấp 5: x1.5 Sát Thương & Quặng
+        const m5 = L >= 5 ? 1.5 : 1.0;
         const m10 = Math.floor(L / 10);
         const m25 = Math.floor(L / 25);
-        return Math.pow(2, m10) * Math.pow(3, m25);
+        return m5 * Math.pow(2, m10) * Math.pow(3, m25);
     }
 
     calcBaseDamage(L) {
         const milestone = this.calcMilestoneMultiplier(L);
-        return Math.floor(10 * Math.pow(1.11, L - 1) * milestone);
+        // Tăng nhẹ lượng tăng trưởng tuyệt đối ở 5 cấp đầu (+2 DMG/cấp cho L=2..5)
+        const earlyBonus = L <= 5 ? (L - 1) * 2 : 8;
+        return Math.floor(10 * Math.pow(1.11, L - 1) * milestone) + earlyBonus;
     }
 
     calcFinalDamage(zone, isCrit) {
@@ -532,6 +544,17 @@ class CelestialForgeGame {
 
         if (zone === 'golden') {
             this.shiftSweetSpot();
+
+            // Thưởng Khởi Đầu "Khai Lò Đại Cát": Đạt Chuỗi Hoàng Kim 3 nhát liên tiếp lần đầu
+            if (this.goldenStreak >= 3 && !this.claimedFirstForgeLuck) {
+                this.claimedFirstForgeLuck = true;
+                const luckReward = 88;
+                this.skyIron += luckReward;
+                this.lifetimeIron += luckReward;
+                window.soundManager.playUpgrade();
+                this.pushTicker(`🎉 [KHAI LÒ ĐẠI CÁT] Chuỗi 3 nhịp Hoàng Kim hoàn hảo! Nhận thưởng khởi đầu +${luckReward} Vụn Thiên Thiết để nâng cấp Búa!`);
+                this.showFloatingDamage(event, luckReward, 'golden', true);
+            }
         }
 
         if (this.goldenStreak >= 8) {
@@ -642,6 +665,16 @@ class CelestialForgeGame {
             this.skyIron -= cost;
             this.hammerLevel++;
             window.soundManager.playUpgrade();
+
+            // Thông báo Đột Phá Cột Mốc
+            if (this.hammerLevel === 5) {
+                this.pushTicker(`⭐ [ĐỘT PHÁ CẤP 5] Thần Chùy đạt Cột Mốc Đột Phá Cấp 5! Nhận vĩnh viễn x1.5 Sát Thương & x1.5 Sản Lượng Quặng!`);
+            } else if (this.hammerLevel === 10) {
+                this.pushTicker(`⭐ [ĐỘT PHÁ CẤP 10] Thần Chùy đạt Cột Mốc Cấp 10: Nhân đôi x2 Sát Thương!`);
+            } else if (this.hammerLevel === 25) {
+                this.pushTicker(`⭐ [ĐỘT PHÁ CẤP 25] Thần Chùy đạt Cột Mốc Cấp 25: Nhân ba x3 Sát Thương!`);
+            }
+
             this.checkOnboardingProgression();
             this.renderAll();
         }
@@ -652,6 +685,17 @@ class CelestialForgeGame {
         document.querySelectorAll('.hammer-btn').forEach(b => {
             b.classList.toggle('active', parseInt(b.getAttribute('data-id')) === this.activeHammer);
         });
+
+        if (this.activeHammer === 4) {
+            this.pushTicker(`🎵 [HUYỀN ÂM CHÙY] Đã trang bị! Nhận +15% Sản Lượng Quặng & +15% Tự Động Rèn (Solo) / +15% Toàn Đội!`);
+        } else if (this.activeHammer === 1) {
+            this.pushTicker(`⚡ [LÔI ĐÌNH CHÙY] Đã trang bị! +3 Điểm Cộng Hưởng mỗi nhát búa!`);
+        } else if (this.activeHammer === 2) {
+            this.pushTicker(`🔥 [VIÊM DƯƠNG CHÙY] Đã trang bị! Thiêu Đốt liên tục & +30% Quặng!`);
+        } else if (this.activeHammer === 3) {
+            this.pushTicker(`🌌 [TRỌNG LỰC CHÙY] Đã trang bị! x12 Sát Thương cực đại khi trúng Điểm Hoàng Kim!`);
+        }
+
         this.renderAll();
     }
 
@@ -1179,14 +1223,15 @@ class CelestialForgeGame {
         const nextBaseDmg = this.calcBaseDamage(this.hammerLevel + 1);
         const canAfford = this.skyIron >= cost;
 
-        const nextMilestone = this.hammerLevel < 10 ? 10 : (this.hammerLevel < 25 ? 25 : Math.ceil((this.hammerLevel + 1) / 10) * 10);
+        const nextMilestone = this.hammerLevel < 5 ? 5 : (this.hammerLevel < 10 ? 10 : (this.hammerLevel < 25 ? 25 : Math.ceil((this.hammerLevel + 1) / 10) * 10));
+        const milestoneDesc = nextMilestone === 5 ? "Cấp 5 [x1.5 DMG & Quặng]" : (nextMilestone === 10 ? "Cấp 10 [x2 DMG]" : (nextMilestone === 25 ? "Cấp 25 [x3 DMG]" : `Cấp ${nextMilestone}`));
 
         const card = document.getElementById('hammerUpgradeCard');
         if (card) {
             card.className = `upgrade-card ${canAfford ? '' : 'disabled'}`;
             document.getElementById('upgradeLvl').innerText = `Cấp ${this.hammerLevel}`;
             document.getElementById('upgradeCost').innerText = `⚡ ${formatNum(cost)} Vụn Thiên Thiết`;
-            document.getElementById('upgradeDesc').innerText = `Sát thương cơ bản: ${formatNum(baseDmg)} ➔ ${formatNum(nextBaseDmg)} (Mốc tiếp theo: Cấp ${nextMilestone})`;
+            document.getElementById('upgradeDesc').innerText = `Sát thương cơ bản: ${formatNum(baseDmg)} ➔ ${formatNum(nextBaseDmg)} (Mốc tiếp theo: ${milestoneDesc})`;
         }
     }
 
@@ -1459,6 +1504,7 @@ class CelestialForgeGame {
             totalStrikes: this.totalStrikes,
             onboardingStage: this.onboardingStage,
             skipOnboarding: this.skipOnboarding,
+            claimedFirstForgeLuck: this.claimedFirstForgeLuck,
             lastSaveTime: Date.now()
         };
     }
@@ -1482,6 +1528,7 @@ class CelestialForgeGame {
 
         this.totalStrikes = s.totalStrikes || 0;
         this.skipOnboarding = !!s.skipOnboarding;
+        this.claimedFirstForgeLuck = typeof s.claimedFirstForgeLuck !== 'undefined' ? !!s.claimedFirstForgeLuck : (this.hammerLevel > 1);
 
         // Tự động mở khóa 100% nếu là người chơi cũ
         const isVeteranPlayer = (
