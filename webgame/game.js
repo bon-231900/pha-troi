@@ -14,17 +14,17 @@ function formatNum(n) {
     return `${formatted} ${suffixes[i]}`;
 }
 
-// Cửu Trọng Thiên Cấm (9 Mái Vòm Thiên Giới)
+// Cửu Trọng Thiên Cấm (9 Mái Vòm Thiên Giới - Mức máu cân bằng trải nghiệm đơn & đa người chơi)
 const CELESTIAL_LAYERS = [
-    { layer: 1, name: "Thiết Vân Vòm (Vòm Mây Sắt)", baseHp: 1000000000 },
-    { layer: 2, name: "Đồng Lôi Vòm (Vòm Sấm Đồng)", baseHp: 3500000000 },
-    { layer: 3, name: "Ngân Cực Vòm (Vòm Cực Quang Bạc)", baseHp: 12000000000 },
-    { layer: 4, name: "Xích Diễm Vòm (Vòm Lửa Đỏ)", baseHp: 42000000000 },
-    { layer: 5, name: "Huyền Băng Vòm (Vòm Băng Đen)", baseHp: 147000000000 },
-    { layer: 6, name: "Tử Tiêu Vòm (Vòm Mây Tím)", baseHp: 515000000000 },
-    { layer: 7, name: "Hỗn Độn Vòm (Vòm Hỗn Độn)", baseHp: 1800000000000 },
-    { layer: 8, name: "Thái Cổ Vòm (Vòm Thái Cổ)", baseHp: 6300000000000 },
-    { layer: 9, name: "Vĩnh Hằng Vòm (Vòm Vĩnh Hằng)", baseHp: 22000000000000 }
+    { layer: 1, name: "Thiết Vân Vòm (Vòm Mây Sắt)", baseHp: 50000 },
+    { layer: 2, name: "Đồng Lôi Vòm (Vòm Sấm Đồng)", baseHp: 250000 },
+    { layer: 3, name: "Ngân Cực Vòm (Vòm Cực Quang Bạc)", baseHp: 1500000 },
+    { layer: 4, name: "Xích Diễm Vòm (Vòm Lửa Đỏ)", baseHp: 10000000 },
+    { layer: 5, name: "Huyền Băng Vòm (Vòm Băng Đen)", baseHp: 80000000 },
+    { layer: 6, name: "Tử Tiêu Vòm (Vòm Mây Tím)", baseHp: 500000000 },
+    { layer: 7, name: "Hỗn Độn Vòm (Vòm Hỗn Độn)", baseHp: 3000000000 },
+    { layer: 8, name: "Thái Cổ Vòm (Vòm Thái Cổ)", baseHp: 20000000000 },
+    { layer: 9, name: "Vĩnh Hằng Vòm (Vòm Vĩnh Hằng)", baseHp: 150000000000 }
 ];
 
 // 4 Loại Thần Chùy (Arsenal)
@@ -76,15 +76,15 @@ class CelestialForgeGame {
 
         // Trạng thái Mái Vòm Thiên Cấm (Client-Side Interpolation & 2Hz Sync)
         this.domeLayer = 1;
-        this.domeMaxHp = 1000000000;   // 1 Tỷ HP Tầng 1
-        this.domeCurrentHp = 1000000000;
-        this.domeTargetHp = 1000000000;
+        this.domeMaxHp = 50000;        // 50K HP Tầng 1 (Hợp lý cho chơi đơn & lên cấp)
+        this.domeCurrentHp = 50000;
+        this.domeTargetHp = 50000;
         this.resonance = 0;
-        this.resonanceReq = 10000;
+        this.resonanceReq = 100;       // Tích 100 nhát búa kích hoạt Phá Giáp
         this.goldenShowerUntil = 0;    // Timestamp kết thúc 15 Phút Mưa Thiên Lộc (Phase 4)
         this.domeName = "Thiết Vân Vòm (Vòm Mây Sắt)";
-        this.ccu = 1245;               // Số thợ rèn online
-        this.serverDps = 85400000;     // Sát thương server/giây
+        this.ccu = 1;                  // Số thợ rèn online (1 ở chế độ độc hành)
+        this.serverDps = 0;            // DPS server (0 khi độc hành, chỉ trừ máu khi người chơi nện!)
 
         // WebSocket State (Phase 3)
         this.ws = null;
@@ -128,6 +128,7 @@ class CelestialForgeGame {
         this.bindEvents();
         this.setupFxCanvas();
         this.updateNightWatchStatus();
+        this.updateNetworkBadge(false);
         this.fetchHallOfFame();
         this.connectWebSocket();
         this.renderAll();
@@ -254,33 +255,38 @@ class CelestialForgeGame {
     }
 
     handleWsDisconnect() {
-        if (this.isOnline) {
-            this.isOnline = false;
-            this.updateNetworkBadge(false);
-            this.pushTicker(`🟡 [CHẾ ĐỘ NGOẠI TUYẾN] Chuyển sang mô phỏng nhịp tim công trường cục bộ.`);
-        }
-        // Tự động thử kết nối lại sau 10 giây
+        this.isOnline = false;
+        this.updateNetworkBadge(false);
+        // Tự động thử kết nối lại sau 15 giây
         if (!this.wsReconnectTimer) {
             this.wsReconnectTimer = setTimeout(() => {
                 this.wsReconnectTimer = null;
                 this.connectWebSocket();
-            }, 10000);
+            }, 15000);
         }
     }
 
     updateNetworkBadge(online) {
         const badge = document.getElementById('netStatusBadge');
+        const ccuEl = document.getElementById('ccuText');
+        const dpsEl = document.getElementById('dpsText');
+
         if (badge) {
             if (online) {
                 badge.style.background = 'rgba(16, 185, 129, 0.15)';
                 badge.style.borderColor = '#10b981';
                 badge.style.color = '#6ee7b7';
                 badge.innerText = '🟢 ĐỒNG BỘ TRỰC TUYẾN';
+                if (ccuEl) ccuEl.innerText = `🔥 ${this.ccu} Thợ Rèn Online`;
+                if (dpsEl) dpsEl.innerText = `${formatNum(this.serverDps)} DMG/s`;
             } else {
                 badge.style.background = 'rgba(245, 158, 11, 0.15)';
                 badge.style.borderColor = 'rgba(245, 158, 11, 0.4)';
                 badge.style.color = '#fef08a';
-                badge.innerText = '🟡 ĐẠI CÔNG TRƯỜNG (NGOẠI TUYẾN)';
+                badge.innerText = '🟡 CHẾ ĐỘ ĐỘC HÀNH (NGOẠI TUYẾN)';
+                if (ccuEl) ccuEl.innerText = `👤 1 Thợ Rèn (Độc Hành)`;
+                const currentDmg = this.calcFinalDamage('normal', false);
+                if (dpsEl) dpsEl.innerText = `Sức đập: ${formatNum(currentDmg)} DMG`;
             }
         }
     }
@@ -692,32 +698,10 @@ class CelestialForgeGame {
     // MÔ PHỎNG CỤC BỘ KHI NGOẠI TUYẾN (OFFLINE STANDBY SIMULATION)
     // =========================================================================
     serverTick2HzSimulation() {
-        const serverDamageTick = (this.serverDps / 2);
-        this.domeTargetHp = Math.max(0, this.domeTargetHp - serverDamageTick);
-
-        if (Date.now() > this.shatterUntil) {
-            this.addResonance(Math.floor(this.ccu * 0.04));
-        }
-
-        const fxCounts = [
-            Math.floor(Math.random() * 4 + 2),
-            Math.floor(Math.random() * 3 + 1),
-            Math.floor(Math.random() * 2),
-            Math.floor(Math.random() * 2)
-        ];
-
-        fxCounts.forEach((count, hammerIdx) => {
-            for (let i = 0; i < count; i++) {
-                const delay = Math.random() * 480;
-                setTimeout(() => this.spawnStrikeFx(hammerIdx + 1, false), delay);
-            }
-        });
-
-        if (Math.random() < 0.12) {
-            const fakeNames = ["Sơn Lâm", "Hắc Báo", "Thiên Kình", "Ngọc Kiếm", "Thiết Cốt", "Quang Khải", "Bạch Sa"];
-            const rName = fakeNames[Math.floor(Math.random() * fakeNames.length)];
-            const rDmg = formatNum(Math.floor(Math.random() * 5000000 + 100000));
-            this.pushTicker(`⚔️ Thợ rèn ${rName} vừa nện bạo kích ${rDmg} sát thương vào Mái Vòm!`);
+        // Tuyệt đối không tự trừ máu khi chơi đơn/ngoại tuyến (Máu chỉ giảm khi người chơi nện búa!)
+        if (this.isOnline && this.serverDps > 0) {
+            const serverDamageTick = (this.serverDps / 2);
+            this.domeTargetHp = Math.max(0, this.domeTargetHp - serverDamageTick);
         }
 
         const hpPct = this.domeTargetHp / this.domeMaxHp;
@@ -1231,6 +1215,8 @@ class CelestialForgeGame {
             talents: this.talents,
             domeLayer: this.domeLayer,
             domeName: this.domeName,
+            domeCurrentHp: this.domeCurrentHp,
+            domeMaxHp: this.domeMaxHp,
             hallOfFame: this.hallOfFame,
             goldenShowerUntil: this.goldenShowerUntil,
             lastSaveTime: Date.now()
@@ -1253,6 +1239,22 @@ class CelestialForgeGame {
         if (s.domeName) this.domeName = s.domeName;
         if (Array.isArray(s.hallOfFame) && s.hallOfFame.length > 0) this.hallOfFame = s.hallOfFame;
         if (s.goldenShowerUntil) this.goldenShowerUntil = s.goldenShowerUntil;
+
+        // Auto-fix cân bằng lại nếu save cũ lưu mức máu 1 tỷ của giai đoạn test
+        const targetBaseHp = CELESTIAL_LAYERS[this.domeLayer - 1]?.baseHp || 50000;
+        if (s.domeMaxHp && s.domeMaxHp >= 1000000000 && targetBaseHp < 1000000000) {
+            this.domeMaxHp = targetBaseHp;
+            this.domeCurrentHp = targetBaseHp;
+            this.domeTargetHp = targetBaseHp;
+        } else if (s.domeCurrentHp && s.domeMaxHp) {
+            this.domeMaxHp = s.domeMaxHp;
+            this.domeCurrentHp = Math.min(s.domeCurrentHp, s.domeMaxHp);
+            this.domeTargetHp = this.domeCurrentHp;
+        } else {
+            this.domeMaxHp = targetBaseHp;
+            this.domeCurrentHp = targetBaseHp;
+            this.domeTargetHp = targetBaseHp;
+        }
     }
 
     saveGame() {

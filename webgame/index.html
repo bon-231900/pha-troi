@@ -42,15 +42,15 @@
                 </div>
             </div>
 
-            <div class="server-stats-badge">
-                <span>🔥 1.245 Thợ Rèn Online</span>
+            <div id="serverStatsBadge" class="server-stats-badge">
+                <span id="ccuText">👤 1 Thợ Rèn (Độc Hành)</span>
                 <span>|</span>
-                <span>85.4M DMG/s</span>
+                <span id="dpsText">Sức đập: 10 DMG</span>
             </div>
 
-            <!-- Network Status Badge (Phase 3) -->
-            <div id="netStatusBadge" class="server-stats-badge" style="background: rgba(16, 185, 129, 0.15); border-color: #10b981; color: #6ee7b7;">
-                🟢 ĐỒNG BỘ TRỰC TUYẾN
+            <!-- Network Status Badge -->
+            <div id="netStatusBadge" class="server-stats-badge" style="background: rgba(245, 158, 11, 0.15); border-color: rgba(245, 158, 11, 0.4); color: #fef08a;">
+                🟡 CHẾ ĐỘ ĐỘC HÀNH (NGOẠI TUYẾN)
             </div>
 
             <!-- Night Watch Badge (00:00 - 06:00) -->
@@ -85,14 +85,14 @@
             <!-- Big HP Bar -->
             <div class="hp-bar-wrapper">
                 <div id="domeHpFill" class="hp-bar-fill"></div>
-                <div id="domeHpText" class="hp-bar-text">1.0B / 1.0B (100.00%)</div>
+                <div id="domeHpText" class="hp-bar-text">50.00 K / 50.00 K (100.00%)</div>
             </div>
 
             <!-- Resonance Stack Bar (Cộng Hưởng Vạn Dân) -->
             <div class="resonance-container">
                 <div class="resonance-header">
-                    <span>⚡ Thanh Cộng Hưởng Vạn Dân (Tích 10.000 nhát búa ➔ Phá Giáp x3 DMG trong 60s)</span>
-                    <span id="resText">0 / 10,000</span>
+                    <span>⚡ Thanh Cộng Hưởng (Tích 100 nhát búa ➔ Phá Giáp x3 DMG trong 60s)</span>
+                    <span id="resText">0 / 100</span>
                 </div>
                 <div class="res-bar-wrapper">
                     <div id="resFill" class="res-bar-fill"></div>
