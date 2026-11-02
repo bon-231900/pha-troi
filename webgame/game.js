@@ -543,6 +543,12 @@ class CelestialForgeGame {
         this.triggerAnvilBounce();
         this.spawnStrikeFx(this.activeHammer, true);
 
+        // Micro-shake rung chấn nếu tầng phong ấn dưới 50% HP khi trúng Hoàng Kim hoặc Bạo Kích
+        const hpPct = this.domeCurrentHp / this.domeMaxHp;
+        if (hpPct <= 0.50 && (zone === 'golden' || isCrit)) {
+            this.triggerFirmamentShake();
+        }
+
         if (zone === 'golden') {
             this.shiftSweetSpot();
 
@@ -589,6 +595,12 @@ class CelestialForgeGame {
         this.showFloatingDamage(event, damage, 'crit', isCrit);
         this.spawnStrikeFx(this.activeHammer, true);
         this.triggerAnvilBounce();
+
+        // Micro-shake khi nện Overdrive nếu dưới 50% HP
+        const hpPct = this.domeCurrentHp / this.domeMaxHp;
+        if (hpPct <= 0.50) {
+            this.triggerFirmamentShake();
+        }
     }
 
     shiftSweetSpot() {
@@ -892,6 +904,13 @@ class CelestialForgeGame {
             if (showerBanner) showerBanner.style.display = 'none';
         }
 
+        // Đếm ngược 60 FPS trạng thái Phá Giáp (Armor Break Countdown)
+        if (this.shatterUntil > Date.now() || this.wasShattered) {
+            this.renderResonanceBar();
+            this.renderFirmamentStatus();
+            this.wasShattered = this.shatterUntil > Date.now();
+        }
+
         requestAnimationFrame((t) => this.animationLoop(t));
     }
 
@@ -1078,17 +1097,45 @@ class CelestialForgeGame {
         if (!arena) return;
 
         const el = document.createElement('div');
-        el.className = `floating-dmg ${isCrit ? 'crit' : (zone === 'golden' ? 'golden' : 'normal')}`;
-        el.innerText = isCrit ? `BẠO KÍCH! +${formatNum(dmg)}` : `+${formatNum(dmg)}`;
+        const kRhythm = this.activeHammer === 3 ? 12 : 3.5;
+        const isShattered = Date.now() < this.shatterUntil;
 
-        let x = arena.clientWidth / 2 + (Math.random() * 60 - 30);
-        let y = arena.clientHeight / 2 - 20;
+        if (isCrit && zone === 'golden') {
+            el.className = 'floating-dmg golden-crit';
+            el.innerHTML = `HOÀNG KIM BẠO KÍCH! &times;${kRhythm}<br><span class="fct-num">+${formatNum(dmg)}</span>`;
+        } else if (zone === 'golden') {
+            el.className = 'floating-dmg golden';
+            el.innerHTML = `HOÀNG KIM! &times;${kRhythm}<br><span class="fct-num">+${formatNum(dmg)}</span>`;
+        } else if (isCrit) {
+            el.className = 'floating-dmg crit';
+            el.innerHTML = `BẠO KÍCH!<br><span class="fct-num">+${formatNum(dmg)}</span>`;
+        } else {
+            el.className = 'floating-dmg normal';
+            el.innerText = `+${formatNum(dmg)}`;
+        }
+
+        if (isShattered) {
+            el.classList.add('shattered-boost');
+        }
+
+        let x = arena.clientWidth / 2 + (Math.random() * 80 - 40);
+        let y = arena.clientHeight / 2 - 25 + (Math.random() * 20 - 10);
 
         el.style.left = `${x}px`;
         el.style.top = `${y}px`;
         arena.appendChild(el);
 
-        setTimeout(() => el.remove(), 750);
+        setTimeout(() => el.remove(), 850);
+    }
+
+    triggerFirmamentShake() {
+        const card = document.getElementById('firmamentCard');
+        if (card) {
+            card.classList.remove('shake-firmament');
+            void card.offsetWidth;
+            card.classList.add('shake-firmament');
+            setTimeout(() => card.classList.remove('shake-firmament'), 180);
+        }
     }
 
     triggerAnvilBounce() {
@@ -1295,11 +1342,27 @@ class CelestialForgeGame {
     renderDomeHp() {
         const fill = document.getElementById('domeHpFill');
         const text = document.getElementById('domeHpText');
+        const card = document.getElementById('firmamentCard');
+
         if (fill && text) {
             const pct = Math.max(0, Math.min(100, (this.domeCurrentHp / this.domeMaxHp) * 100));
             fill.style.width = `${pct}%`;
             fill.classList.toggle('final', pct <= 5);
             text.innerText = `${formatNum(this.domeCurrentHp)} / ${formatNum(this.domeMaxHp)} (${pct.toFixed(2)}%)`;
+
+            // Cập nhật 4 cấp độ biến đổi thị giác theo % HP của tầng phong ấn
+            if (card) {
+                card.classList.remove('hp-stage-1', 'hp-stage-2', 'hp-stage-3', 'hp-stage-4');
+                if (pct > 75) {
+                    card.classList.add('hp-stage-1');
+                } else if (pct > 50) {
+                    card.classList.add('hp-stage-2');
+                } else if (pct > 25) {
+                    card.classList.add('hp-stage-3');
+                } else {
+                    card.classList.add('hp-stage-4');
+                }
+            }
 
             const sealEl = document.getElementById('subSealText');
             if (sealEl) {
@@ -1314,12 +1377,52 @@ class CelestialForgeGame {
             }
         }
 
+        this.renderResonanceBar();
+    }
+
+    renderResonanceBar() {
+        const resContainer = document.getElementById('resonanceContainer');
+        const resTitle = document.getElementById('resTitle');
         const resFill = document.getElementById('resFill');
         const resText = document.getElementById('resText');
-        if (resFill && resText) {
-            const resPct = Math.min(100, (this.resonance / this.resonanceReq) * 100);
-            resFill.style.width = `${resPct}%`;
-            resText.innerText = `${formatNum(this.resonance)} / ${formatNum(this.resonanceReq)}`;
+        const anvil = document.getElementById('anvilWrapper');
+
+        const isShattered = Date.now() < this.shatterUntil;
+
+        if (isShattered) {
+            const shatterSec = Math.max(0, (this.shatterUntil - Date.now()) / 1000);
+            const shatterPct = Math.min(100, (shatterSec / 60) * 100);
+
+            if (resContainer) resContainer.classList.add('shatter-active');
+            if (resFill) {
+                resFill.classList.add('shatter-active');
+                resFill.style.width = `${shatterPct}%`;
+            }
+            if (resTitle) {
+                resTitle.innerText = `🔥 PHÁ GIÁP ĐANG KÍCH HOẠT: x3 SÁT THƯƠNG (60s)!`;
+            }
+            if (resText) {
+                resText.innerText = `${shatterSec.toFixed(1)}s / 60.0s`;
+            }
+            if (anvil) {
+                anvil.classList.add('shatter-aura');
+            }
+        } else {
+            if (resContainer) resContainer.classList.remove('shatter-active');
+            if (resFill) {
+                resFill.classList.remove('shatter-active');
+                const resPct = Math.min(100, (this.resonance / this.resonanceReq) * 100);
+                resFill.style.width = `${resPct}%`;
+            }
+            if (resTitle) {
+                resTitle.innerText = `⚡ Thanh Cộng Hưởng (Tích 100 nhát búa ➔ Phá Giáp x3 DMG trong 60s)`;
+            }
+            if (resText) {
+                resText.innerText = `${formatNum(this.resonance)} / ${formatNum(this.resonanceReq)}`;
+            }
+            if (anvil) {
+                anvil.classList.remove('shatter-aura');
+            }
         }
     }
 
@@ -1331,7 +1434,8 @@ class CelestialForgeGame {
         const isFinalPhase = hpPct <= 0.05;
 
         if (card) {
-            card.className = `firmament-card layer-${this.domeLayer} ${isShattered ? 'shatter-mode' : ''} ${isFinalPhase ? 'final-phase' : ''}`;
+            card.classList.toggle('shatter-mode', isShattered);
+            card.classList.toggle('final-phase', isFinalPhase);
         }
 
         const nameEl = document.getElementById('domeNameText');
@@ -1346,7 +1450,8 @@ class CelestialForgeGame {
                 pill.innerText = `🔥 PHÁ GIÁP VẠN DÂN x3 SÁT THƯƠNG (${remainSec}s)`;
             } else {
                 pill.className = 'dome-status-pill armored';
-                pill.innerText = `🛡️ GIÁP THẦN LỰC (GIẢM 90% DMG)`;
+                const armorName = this.domeLayer === 1 ? "THIẾT VÂN" : this.domeName.split(' ')[0].toUpperCase();
+                pill.innerText = `🛡️ GIÁP ${armorName} (GIẢM 90% DMG)`;
             }
         }
     }
