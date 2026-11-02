@@ -178,7 +178,10 @@ class AntiCheatGate {
         }
 
         const elapsed = nowMs - s.lastStrikeMs;
-        if (s.lastStrikeMs > 0 && elapsed < 1350) {
+        // Cho phép Overdrive / phím SPACE liên thanh: cooldown tối thiểu 70ms (~14 CPS)
+        // Nhát thường: cooldown tối thiểu 800ms
+        const minCooldown = (offsetMs === 0 || elapsed < 500) ? 70 : 800;
+        if (s.lastStrikeMs > 0 && elapsed < minCooldown) {
             return { valid: false, reason: "COOLDOWN_VIOLATION" };
         }
         s.lastStrikeMs = nowMs;

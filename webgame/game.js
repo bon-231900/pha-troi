@@ -35,6 +35,106 @@ const HAMMERS = {
     4: { id: 4, name: "Huyền Âm Chùy", icon: "🎵", trait: "+15% Quặng & Tự Động (Solo) / +15% Đội", k_hammer: 0.7, res_bonus: 1, ore_bonus: 0.15 }
 };
 
+// ============================================================================
+// HỆ THỐNG THÀNH TỰU CÔNG TRƯỜNG (ACHIEVEMENTS DEFINITIONS)
+// ============================================================================
+const ACHIEVEMENTS_DEF = [
+    {
+        id: 'first_10_strikes',
+        icon: '🔨',
+        title: 'Nhát Búa Khai Thiên',
+        desc: 'Thực hiện 10 nhát búa rèn đầu tiên vào Mái Vòm.',
+        rewardDesc: '+88 Vụn Thiên Thiết',
+        check: (g) => g.totalStrikes >= 10,
+        progress: (g) => ({ cur: Math.min(10, g.totalStrikes), max: 10 }),
+        reward: (g) => {
+            g.skyIron += 88;
+            g.lifetimeIron += 88;
+        }
+    },
+    {
+        id: 'streak_4',
+        icon: '🎯',
+        title: 'Nhịp Điệu Chuẩn Xác',
+        desc: 'Đạt Chuỗi Hoàng Kim 4 nhát búa liên tiếp.',
+        rewardDesc: '+188 Vụn Thiên Thiết',
+        check: (g) => (g.goldenStreak >= 4 || (g.maxGoldenStreak || 0) >= 4),
+        progress: (g) => ({ cur: Math.min(4, Math.max(g.goldenStreak, g.maxGoldenStreak || 0)), max: 4 }),
+        reward: (g) => {
+            g.skyIron += 188;
+            g.lifetimeIron += 188;
+        }
+    },
+    {
+        id: 'streak_8',
+        icon: '⚡',
+        title: 'Cực Cảnh Hoàng Kim',
+        desc: 'Đạt tối đa Chuỗi Hoàng Kim (8/8 nhát) và kích hoạt Overdrive.',
+        rewardDesc: '+388 Vụn Thiên Thiết & +10 Điểm Cộng Hưởng',
+        check: (g) => (g.goldenStreak >= 8 || (g.maxGoldenStreak || 0) >= 8),
+        progress: (g) => ({ cur: Math.min(8, Math.max(g.goldenStreak, g.maxGoldenStreak || 0)), max: 8 }),
+        reward: (g) => {
+            g.skyIron += 388;
+            g.lifetimeIron += 388;
+            g.addResonance(10);
+        }
+    },
+    {
+        id: 'first_shatter',
+        icon: '💥',
+        title: 'Chấn Động Thiên Cấm',
+        desc: 'Kích hoạt trạng thái Phá Giáp (100/100 Cộng Hưởng) lần đầu tiên.',
+        rewardDesc: '+5 Tinh Thể Thiên Cấm & +500 Vụn Thiên Thiết',
+        check: (g) => (g.hasTriggeredShatter || Date.now() < g.shatterUntil),
+        progress: (g) => ({ cur: (g.hasTriggeredShatter || Date.now() < g.shatterUntil) ? 1 : 0, max: 1 }),
+        reward: (g) => {
+            g.domeShards += 5;
+            g.skyIron += 500;
+            g.lifetimeIron += 500;
+        }
+    },
+    {
+        id: 'hammer_lvl_10',
+        icon: '⚒️',
+        title: 'Thần Chùy Đột Phá I',
+        desc: 'Nâng cấp Rèn Cường Hóa Thần Chùy chạm mốc Cấp 10.',
+        rewardDesc: '+688 Vụn Thiên Thiết',
+        check: (g) => g.hammerLevel >= 10,
+        progress: (g) => ({ cur: Math.min(10, g.hammerLevel), max: 10 }),
+        reward: (g) => {
+            g.skyIron += 688;
+            g.lifetimeIron += 688;
+        }
+    },
+    {
+        id: 'hammer_lvl_25',
+        icon: '⭐',
+        title: 'Thần Chùy Đột Phá II',
+        desc: 'Nâng cấp Rèn Cường Hóa Thần Chùy chạm mốc Cấp 25.',
+        rewardDesc: '+10 Tinh Thể Thiên Cấm & +1.50 K Vụn Thiên Thiết',
+        check: (g) => g.hammerLevel >= 25,
+        progress: (g) => ({ cur: Math.min(25, g.hammerLevel), max: 25 }),
+        reward: (g) => {
+            g.domeShards += 10;
+            g.skyIron += 1500;
+            g.lifetimeIron += 1500;
+        }
+    },
+    {
+        id: 'first_prestige',
+        icon: '🌀',
+        title: 'Tôi Luyện Thần Hồn',
+        desc: 'Thực hiện Tái sinh lần đầu tiên tại tab Thần Hồn.',
+        rewardDesc: '+1 SP Thần Hồn & +1 Thiên Hỏa Tâm',
+        check: (g) => g.spiritPointsClaimed > 0,
+        progress: (g) => ({ cur: g.spiritPointsClaimed > 0 ? 1 : 0, max: 1 }),
+        reward: (g) => {
+            g.spiritPoints += 1;
+            g.celestialCores += 1;
+        }
+    }
+];
+
 class CelestialForgeGame {
     constructor() {
         // Tài nguyên người chơi
@@ -69,6 +169,12 @@ class CelestialForgeGame {
         this.skipOnboarding = false;   // Người chơi chủ động bấm Bỏ Qua Hướng Dẫn
         this.claimedFirstForgeLuck = false; // Thưởng Khởi Đầu "Khai Lò Đại Cát" (Chuỗi 3 Hoàng Kim)
         this.buyMultiplier = '1';      // Hệ số mua nâng cấp: '1', '10', '25', 'next', 'max'
+
+        // Hệ thống Thành Tựu Công Trường (Achievements & Milestones)
+        this.unlockedAchievements = [];
+        this.claimedAchievements = [];
+        this.maxGoldenStreak = 0;
+        this.hasTriggeredShatter = false;
 
         // Trạng thái Thanh Nhịp Điệu (Forge Rhythm Bar)
         this.cursorPos = 0;            // 0 -> 100%
@@ -431,6 +537,7 @@ class CelestialForgeGame {
         this.hammerLevel = 1;
         this.goldenStreak = 0;
 
+        this.checkAchievements();
         window.soundManager.playRebirthGong();
         this.saveGame();
         this.renderAll();
@@ -500,6 +607,7 @@ class CelestialForgeGame {
             zone = 'golden';
             m_rhythm = 2.5;
             this.goldenStreak++;
+            this.maxGoldenStreak = Math.max(this.maxGoldenStreak || 0, this.goldenStreak);
         } else if (diff <= halfWidth * 2.5) {
             zone = 'warm';
             m_rhythm = 1.0;
@@ -568,6 +676,7 @@ class CelestialForgeGame {
             this.triggerOverdrive();
         }
 
+        this.checkAchievements();
         this.renderAll();
     }
 
@@ -601,6 +710,8 @@ class CelestialForgeGame {
         if (hpPct <= 0.50) {
             this.triggerFirmamentShake();
         }
+
+        this.checkAchievements();
     }
 
     shiftSweetSpot() {
@@ -657,6 +768,8 @@ class CelestialForgeGame {
         if (this.resonance >= this.resonanceReq) {
             this.resonance = 0;
             this.shatterUntil = Date.now() + 60000;
+            this.hasTriggeredShatter = true;
+            this.checkAchievements();
             window.soundManager.playFirmamentShatter();
             this.triggerShatterFlash();
             this.pushTicker(`⚡ [CỘNG HƯỞNG VẠN DÂN] Phá vỡ Giáp Thần Lực! Toàn server x3 Sát Thương trong 60 giây!`);
@@ -810,6 +923,7 @@ class CelestialForgeGame {
             }
 
             this.checkOnboardingProgression();
+            this.checkAchievements();
             this.renderAll();
         }
     }
@@ -1319,7 +1433,9 @@ class CelestialForgeGame {
         this.renderUpgradeCard();
         this.renderPrestigeTab();
         this.renderLeaderboardTab();
+        this.renderAchievementsTab();
         this.renderOnboarding();
+        this.updateAchievementBadge();
     }
 
     renderWallets() {
@@ -1535,6 +1651,134 @@ class CelestialForgeGame {
         });
     }
 
+    // =========================================================================
+    // THÀNH TỰU & MILESTONES
+    // =========================================================================
+    checkAchievements(silent = false) {
+        let newlyUnlocked = false;
+        ACHIEVEMENTS_DEF.forEach(ach => {
+            if (!this.unlockedAchievements.includes(ach.id)) {
+                if (ach.check(this)) {
+                    this.unlockedAchievements.push(ach.id);
+                    newlyUnlocked = true;
+                    if (!silent) {
+                        this.showAchievementToast(ach);
+                        this.pushTicker(`🏆 [THÀNH TỰU] Đột phá: ${ach.title}! Hãy vào tab Thành Tựu nhận quà!`);
+                        window.soundManager.playUpgrade();
+                    }
+                }
+            }
+        });
+
+        if (newlyUnlocked) {
+            this.updateAchievementBadge();
+            this.renderAchievementsTab();
+        }
+    }
+
+    showAchievementToast(def) {
+        const container = document.getElementById('toastContainer');
+        if (!container) return;
+
+        const toast = document.createElement('div');
+        toast.className = 'ach-toast';
+        toast.innerHTML = `
+            <div class="ach-toast-icon">${def.icon}</div>
+            <div class="ach-toast-body">
+                <div class="ach-toast-tag">🏆 THÀNH TỰU MỞ KHÓA!</div>
+                <div class="ach-toast-title">${def.title}</div>
+                <div class="ach-toast-desc">Thưởng: <span style="color:#fbbf24;font-weight:700;">${def.rewardDesc}</span></div>
+            </div>
+        `;
+
+        toast.onclick = () => {
+            this.switchTab('achievements');
+            toast.remove();
+        };
+
+        container.appendChild(toast);
+
+        setTimeout(() => {
+            toast.classList.add('fade-out');
+            setTimeout(() => toast.remove(), 400);
+        }, 4500);
+    }
+
+    updateAchievementBadge() {
+        const badge = document.getElementById('achBadge');
+        if (!badge) return;
+        const claimableCount = this.unlockedAchievements.filter(id => !this.claimedAchievements.includes(id)).length;
+        if (claimableCount > 0) {
+            badge.style.display = 'inline-block';
+            badge.innerText = claimableCount;
+        } else {
+            badge.style.display = 'none';
+        }
+    }
+
+    renderAchievementsTab() {
+        const textEl = document.getElementById('achProgressText');
+        if (textEl) {
+            textEl.innerText = `${this.unlockedAchievements.length} / ${ACHIEVEMENTS_DEF.length} ĐÃ ĐẠT`;
+        }
+
+        const container = document.getElementById('achievementsList');
+        if (!container) return;
+
+        container.innerHTML = ACHIEVEMENTS_DEF.map(def => {
+            const isUnlocked = this.unlockedAchievements.includes(def.id);
+            const isClaimed = this.claimedAchievements.includes(def.id);
+            const prog = def.progress(this);
+            const pct = Math.min(100, Math.round((prog.cur / prog.max) * 100));
+
+            let btnHtml = '';
+            if (isClaimed) {
+                btnHtml = `<button class="ach-btn claimed" disabled>✓ ĐÃ NHẬN</button>`;
+            } else if (isUnlocked) {
+                btnHtml = `<button class="ach-btn claimable" onclick="window.game.claimAchievement('${def.id}')">NHẬN THƯỞNG</button>`;
+            } else {
+                btnHtml = `<button class="ach-btn locked" disabled>${prog.cur}/${prog.max}</button>`;
+            }
+
+            return `
+                <div class="ach-card ${isUnlocked ? 'unlocked' : ''} ${isClaimed ? 'claimed' : ''}">
+                    <div class="ach-icon-box">${def.icon}</div>
+                    <div class="ach-info">
+                        <div class="ach-top-row">
+                            <span class="ach-title">${def.title}</span>
+                        </div>
+                        <div class="ach-desc">${def.desc}</div>
+                        <div class="ach-reward-tag">🎁 ${def.rewardDesc}</div>
+                        ${!isUnlocked ? `
+                            <div style="margin-top: 4px;">
+                                <div class="ach-progress-bar-track">
+                                    <div class="ach-progress-bar-fill" style="width: ${pct}%"></div>
+                                </div>
+                            </div>
+                        ` : ''}
+                    </div>
+                    <div>
+                        ${btnHtml}
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    claimAchievement(id) {
+        const def = ACHIEVEMENTS_DEF.find(a => a.id === id);
+        if (!def) return;
+        if (!this.unlockedAchievements.includes(id)) return;
+        if (this.claimedAchievements.includes(id)) return;
+
+        this.claimedAchievements.push(id);
+        def.reward(this);
+        window.soundManager.playUpgrade();
+        this.pushTicker(`🎉 [NHẬN THƯỞNG] Đã nhận ${def.rewardDesc} từ thành tựu: ${def.title}!`);
+        this.saveGame();
+        this.renderAll();
+    }
+
     renderLeaderboardTab() {
         const titleEl = document.getElementById('currentDomeHofTitle');
         if (titleEl) {
@@ -1722,14 +1966,22 @@ class CelestialForgeGame {
         if (importBtn) {
             importBtn.onclick = () => {
                 const data = prompt("Dán mã lưu trữ dữ liệu vào đây:");
-                if (!data) return;
+                if (!data || !data.trim()) return;
                 try {
-                    const parsed = JSON.parse(atob(data));
-                    if (parsed && typeof parsed.skyIron !== 'undefined') {
+                    let parsed = null;
+                    const trimmed = data.trim();
+                    try {
+                        parsed = JSON.parse(atob(trimmed));
+                    } catch (e) {
+                        parsed = JSON.parse(trimmed);
+                    }
+                    if (parsed && (typeof parsed.skyIron !== 'undefined' || typeof parsed.hammerLevel !== 'undefined' || typeof parsed.lifetimeIron !== 'undefined')) {
                         this.applyLoadedState(parsed);
                         this.saveGame();
                         this.renderAll();
-                        alert("Đã khôi phục dữ liệu thành công!");
+                        alert("Đã khôi phục dữ liệu thành công! Tiến trình cũ đã được tích hợp an toàn.");
+                    } else {
+                        alert("Mã lưu trữ không chứa dữ liệu hợp lệ!");
                     }
                 } catch (e) {
                     alert("Mã lưu trữ không hợp lệ!");
@@ -1839,6 +2091,11 @@ class CelestialForgeGame {
             skipOnboarding: this.skipOnboarding,
             claimedFirstForgeLuck: this.claimedFirstForgeLuck,
             buyMultiplier: this.buyMultiplier,
+            unlockedAchievements: this.unlockedAchievements,
+            claimedAchievements: this.claimedAchievements,
+            maxGoldenStreak: this.maxGoldenStreak,
+            hasTriggeredShatter: this.hasTriggeredShatter,
+            pityCoresCounter: this.pityCoresCounter,
             lastSaveTime: Date.now(),
             lastActiveTimestamp: Date.now()
         };
@@ -1864,6 +2121,11 @@ class CelestialForgeGame {
         this.totalStrikes = s.totalStrikes || 0;
         this.skipOnboarding = !!s.skipOnboarding;
         this.claimedFirstForgeLuck = typeof s.claimedFirstForgeLuck !== 'undefined' ? !!s.claimedFirstForgeLuck : (this.hammerLevel > 1);
+        this.unlockedAchievements = Array.isArray(s.unlockedAchievements) ? s.unlockedAchievements : [];
+        this.claimedAchievements = Array.isArray(s.claimedAchievements) ? s.claimedAchievements : [];
+        this.maxGoldenStreak = s.maxGoldenStreak || 0;
+        this.hasTriggeredShatter = !!s.hasTriggeredShatter;
+        this.pityCoresCounter = typeof s.pityCoresCounter === 'number' ? s.pityCoresCounter : 0;
         if (s.buyMultiplier) {
             this.buyMultiplier = s.buyMultiplier;
             document.querySelectorAll('.buy-mult-btn').forEach(btn => {
@@ -1916,6 +2178,9 @@ class CelestialForgeGame {
             this.domeCurrentHp = targetBaseHp;
             this.domeTargetHp = targetBaseHp;
         }
+
+        // Kiểm tra hồi tố thành tựu cho save cũ
+        this.checkAchievements(true);
     }
 
     saveGame() {
