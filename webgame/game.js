@@ -199,10 +199,19 @@ class CelestialForgeGame {
         this.ccu = 1;                  // Số thợ rèn online (1 ở chế độ độc hành)
         this.serverDps = 0;            // DPS server (0 khi độc hành, chỉ trừ máu khi người chơi nện!)
 
-        // WebSocket State (Phase 3)
+        // WebSocket State (Phase 3 & 4: Multiplayer Batched Ticks, District Sharding & Global Beat Pulse)
         this.ws = null;
         this.isOnline = false;
         this.wsReconnectTimer = null;
+        this.districtId = "D-1";
+        this.pendingBatchHits = [];
+        this.globalPulse = {
+            phase: 'countdown',
+            timeRemaining: 180,
+            perfectRatio: 0.0,
+            buffActive: false,
+            buffMultiplier: 1.0
+        };
 
         // Định danh & Tabs
         this.username = localStorage.getItem("phatroi_user") || `Thợ Rèn #${Math.floor(Math.random() * 8999 + 1000)}`;
@@ -264,6 +273,9 @@ class CelestialForgeGame {
 
         // Kiểm tra thưởng offline khi mở lại
         this.checkOfflineProgress();
+
+        // Khởi động chu kỳ gom đòn đánh Client-Side Batched Ticks 1.0s (Task 2)
+        setInterval(() => this.flushBatchedStrikes(), 1000);
     }
 
     // =========================================================================
@@ -309,6 +321,7 @@ class CelestialForgeGame {
                 try {
                     const data = JSON.parse(event.data);
                     if (data.type === 'init') {
+                        if (data.districtId) this.districtId = data.districtId;
                         if (data.layer) this.domeLayer = Number(data.layer);
                         if (data.name) this.domeName = data.name;
                         if (data.hp) this.domeTargetHp = Number(data.hp);
@@ -317,8 +330,10 @@ class CelestialForgeGame {
                         if (data.resReq) this.resonanceReq = Number(data.resReq);
                         if (data.shatterUntil) this.shatterUntil = Number(data.shatterUntil) * 1000;
                         if (data.goldenShowerUntil) this.goldenShowerUntil = Number(data.goldenShowerUntil);
+                        if (data.globalPulse) this.globalPulse = data.globalPulse;
                     } else if (data.hp) {
                         // Nhận Broadcast 2Hz từ Server
+                        if (data.districtId) this.districtId = data.districtId;
                         if (data.layer) this.domeLayer = Number(data.layer);
                         if (data.name) this.domeName = data.name;
                         this.domeTargetHp = Number(data.hp);
@@ -338,8 +353,28 @@ class CelestialForgeGame {
                             }
                         }
 
-                        // Lên lịch render các đòn đánh FX của cộng đồng từ mảng fx: [Lôi, Hỏa, Trọng Lực, Huyền Âm]
-                        if (Array.isArray(data.fx)) {
+                        // Đại Hợp Âm State (Global Beat Pulse - Task 2)
+                        if (data.globalPulse) {
+                            const prevPulse = this.globalPulse || {};
+                            this.globalPulse = data.globalPulse;
+                            if (prevPulse.phase !== data.globalPulse.phase) {
+                                if (data.globalPulse.phase === 'pulse_window') {
+                                    this.pushTicker(`🎶 [ĐẠI HỢP ÂM] Bắt đầu 30s hòa nhịp toàn server! Gõ trúng Hoàng Kim để kích hoạt Buff x5!`);
+                                    window.soundManager.playUpgrade();
+                                } else if (data.globalPulse.phase === 'buff_active') {
+                                    this.pushTicker(`⚡ [VẠN DÂN HỢP NHẤT] Kích hoạt thành công Buff x5 Quặng & Sát Thương 45 giây toàn server!`);
+                                    window.soundManager.playFirmamentShatter();
+                                }
+                            }
+                        }
+
+                        // Ghost Sparks từ Khu Rèn hiện tại
+                        if (Array.isArray(data.districtSparks) && data.districtSparks.length > 0) {
+                            data.districtSparks.forEach(sp => {
+                                const hIdx = sp.stance === 'SOLAR_FLAME' ? 2 : (sp.stance === 'GRAVITY_BURST' ? 3 : (sp.stance === 'MYSTIC_RESONANCE' ? 4 : 1));
+                                this.spawnStrikeFx(hIdx, false);
+                            });
+                        } else if (Array.isArray(data.fx)) {
                             data.fx.forEach((count, hIdx) => {
                                 for (let i = 0; i < Math.min(6, count); i++) {
                                     const delay = Math.random() * 450;
@@ -632,10 +667,18 @@ class CelestialForgeGame {
         // Kiểm tra tiến trình mở khóa Onboarding
         this.checkOnboardingProgression();
 
-        // GỬI GÓI TIN HÀNH ĐỘNG LÊN WEBSOCKET GATEWAY (~24 BYTES)
-        if (this.isOnline && this.ws && this.ws.readyState === WebSocket.OPEN) {
-            const offsetMs = Math.round(diff * 15); // Ước lượng độ lệch ms
-            this.ws.send(JSON.stringify([1, offsetMs, this.activeHammer]));
+        // GỬI GÓI TIN HÀNH ĐỘNG VÀO BỘ ĐỆM BATCHED TICKS (Task 2)
+        const hitStanceKey = ['THUNDER_PEAK', 'SOLAR_FLAME', 'GRAVITY_BURST', 'MYSTIC_RESONANCE'][this.activeHammer - 1] || 'THUNDER_PEAK';
+        this.pendingBatchHits.push({
+            stance: hitStanceKey,
+            quality: zone,
+            damage: damage,
+            resonance: resAdd,
+            offsetMs: Math.round(diff * 15),
+            isCrit: isCrit
+        });
+        if (this.pendingBatchHits.length >= 15) {
+            this.flushBatchedStrikes();
         }
 
         window.soundManager.playAnvilStrike(zone, isCrit);
@@ -693,8 +736,18 @@ class CelestialForgeGame {
         this.renderWallets();
         this.renderUpgradeCard();
 
-        if (this.isOnline && this.ws && this.ws.readyState === WebSocket.OPEN) {
-            this.ws.send(JSON.stringify([1, 0, this.activeHammer]));
+        // Gửi đòn đánh Overdrive vào bộ đệm Batched Ticks (Task 2)
+        const hitStanceKey = ['THUNDER_PEAK', 'SOLAR_FLAME', 'GRAVITY_BURST', 'MYSTIC_RESONANCE'][this.activeHammer - 1] || 'THUNDER_PEAK';
+        this.pendingBatchHits.push({
+            stance: hitStanceKey,
+            quality: 'golden',
+            damage: damage,
+            resonance: 2,
+            offsetMs: 0,
+            isCrit: isCrit
+        });
+        if (this.pendingBatchHits.length >= 15) {
+            this.flushBatchedStrikes();
         }
 
         window.soundManager.playOverdriveStrike();
@@ -712,6 +765,21 @@ class CelestialForgeGame {
         }
 
         this.checkAchievements();
+    }
+
+    flushBatchedStrikes() {
+        if (!this.isOnline || !this.ws || this.ws.readyState !== WebSocket.OPEN) return;
+        if (!this.pendingBatchHits || this.pendingBatchHits.length === 0) return;
+
+        const packet = {
+            type: 'batch_strike',
+            playerId: this.username,
+            districtId: this.districtId || "D-1",
+            timestamp: Date.now(),
+            hits: this.pendingBatchHits
+        };
+        this.ws.send(JSON.stringify(packet));
+        this.pendingBatchHits = [];
     }
 
     shiftSweetSpot() {
