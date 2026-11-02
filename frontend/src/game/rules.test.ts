@@ -22,6 +22,15 @@ import {
   createForgeSparkBuffer,
   spawnForgeSparkBurst,
   computeSparkBallisticPosition,
+  SKY_SHATTER_FRAGMENT_COUNT,
+  SKY_SHATTER_DURATION_SEC,
+  computeCrackProgress,
+  createSkyShatterFragments,
+  evaluateSkyShardTransform,
+  CRACK_INCREMENT_PER_STRIKE,
+  LIGHTNING_PILLAR_ASCENT_SEC,
+  GRAND_SHATTER_SHARD_COUNT,
+  advanceVaultCrack,
 } from './rules';
 
 test('judgeRhythmWave returns PERFECT (x3.5) inside the golden anvil rim tolerance', () => {
@@ -148,4 +157,44 @@ test('3,000-particle Float32Array Spark Buffer differentiates Self Golden Sparks
   assert.ok(yPeak > 0.38);
   assert.ok(yFall < yPeak);
 });
+
+test('Shatterable Sky Dome uCrackProgress and 1,500 Voronoi fragments scale to 0 and blast past camera', () => {
+  assert.equal(computeCrackProgress(1000, 1000), 0.0);
+  assert.equal(computeCrackProgress(650, 1000), 0.35);
+  assert.equal(computeCrackProgress(150, 1000), 0.85);
+  assert.equal(computeCrackProgress(0, 1000), 1.0);
+
+  const shatter = createSkyShatterFragments();
+  assert.equal(shatter.count, 1500);
+  assert.equal(SKY_SHATTER_FRAGMENT_COUNT, 1500);
+
+  const t0 = evaluateSkyShardTransform(shatter, 0, 0);
+  const tMid = evaluateSkyShardTransform(shatter, 0, 1.0);
+  const tEnd = evaluateSkyShardTransform(shatter, 0, SKY_SHATTER_DURATION_SEC);
+
+  // Fragments blast backward toward/past camera (+Z) and shrink scale down to 0
+  assert.ok(tMid.z > t0.z);
+  assert.ok(tMid.scale < t0.scale);
+  assert.equal(tEnd.scale, 0);
+});
+
+test('Celestial Vault uCrack increments by +0.05 per strike and triggers 420-shard high-shader Grand Shatter at 1.0', () => {
+  assert.equal(CRACK_INCREMENT_PER_STRIKE, 0.05);
+  assert.equal(LIGHTNING_PILLAR_ASCENT_SEC, 0.1);
+  assert.equal(GRAND_SHATTER_SHARD_COUNT, 420);
+
+  const s1 = advanceVaultCrack(0.0);
+  assert.equal(s1.nextCrack, 0.05);
+  assert.equal(s1.triggeredGrandShatter, false);
+
+  const s20 = advanceVaultCrack(0.95);
+  assert.equal(s20.nextCrack, 1.0);
+  assert.equal(s20.triggeredGrandShatter, true);
+  assert.equal(s20.strikeCount, 20);
+
+  const shardSet = createSkyShatterFragments(GRAND_SHATTER_SHARD_COUNT);
+  assert.equal(shardSet.count, 420);
+});
+
+
 

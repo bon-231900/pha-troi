@@ -13,24 +13,19 @@ import {
   canUnlockSpiritNode,
   HAMMER_STANCES,
   TARGET_RIM_PROGRESS,
-  FORGE_BPM,
-  getBpmWaveSpeed,
+  OVERDRIVE_MAX,
+  computeCrackProgress,
+  CRACK_INCREMENT_PER_STRIKE,
 } from './game/rules';
 import { soundEngine } from './game/audio';
 import { TitleScreenModal } from './components/TitleScreenModal';
 import { TopBossHeader } from './components/TopBossHeader';
-import { RadialForgeCenter, FloatingFeedback } from './components/RadialForgeCenter';
-import {
-  LeftTacticalPanel,
-  CombatLogEntry,
-  ChatMessage,
-} from './components/LeftTacticalPanel';
-import {
-  RightProgressionPanel,
-  LeaderboardEntry,
-} from './components/RightProgressionPanel';
+import { LeftTacticalPanel, CombatLogEntry, ChatMessage } from './components/LeftTacticalPanel';
+import { RightProgressionPanel, LeaderboardEntry } from './components/RightProgressionPanel';
 import { StatusModal } from './components/StatusModal';
 import { MultiplayerClient } from './game/multiplayer';
+import { CelestialVaultStage3D, CelestialVaultStage3DHandle } from './components/CelestialVaultStage3D';
+import { Shield, Hammer, X, Zap, Flame, Sparkles } from 'lucide-react';
 
 type GameState = 'title' | 'playing' | 'paused' | 'gameover';
 
@@ -100,6 +95,10 @@ export default function App() {
   const [overdriveActive, setOverdriveActive] = useState<boolean>(false);
   const [overdriveTimeLeft, setOverdriveTimeLeft] = useState<number>(0);
 
+  // Side Panels Collapsed State (Default closed for maximum 3D immersion)
+  const [leftPanelOpen, setLeftPanelOpen] = useState<boolean>(false);
+  const [rightPanelOpen, setRightPanelOpen] = useState<boolean>(false);
+
   // Resources & Progression (Hydrated from localStorage)
   const [linhThach, setLinhThach] = useState<number>(() => {
     try {
@@ -153,10 +152,14 @@ export default function App() {
   });
 
   // UI & Feedback State
-  const [lastFeedback, setLastFeedback] = useState<FloatingFeedback | null>(null);
-  const [shakeClass, setShakeClass] = useState<string>('');
+  const [lastFeedback, setLastFeedback] = useState<{
+    id: number;
+    grade: string;
+    labelVn: string;
+    multiplier: number;
+    damageBillions: number;
+  } | null>(null);
   const [muted, setMuted] = useState<boolean>(false);
-  const [mobileDrawerOpen, setMobileDrawerOpen] = useState<boolean>(false);
 
   const [combatLogs, setCombatLogs] = useState<CombatLogEntry[]>([
     {
@@ -174,12 +177,30 @@ export default function App() {
   ]);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>(INITIAL_CHAT);
 
-  // High-frequency Rhythm Wave progress ref (0 = outer ring, 1 = center)
-  // Advanced in lockstep with the Three.js 100 BPM shader loop in CelestialAnvil3D
+  // 3D Celestial Vault Stage Ref & Rhythm progress
+  const vaultStageRef = useRef<CelestialVaultStage3DHandle | null>(null);
   const waveProgressRef = useRef<number>(TARGET_RIM_PROGRESS - 0.04);
   const feedbackCounterRef = useRef<number>(1);
   const logCounterRef = useRef<number>(10);
   const mpClientRef = useRef<MultiplayerClient | null>(null);
+
+  // Callback declared first to prevent TDZ (Temporal Dead Zone)
+  const appendCombatLog = useCallback(
+    (text: string, tone: CombatLogEntry['tone'] = 'neutral') => {
+      logCounterRef.current += 1;
+      const nextId = logCounterRef.current;
+      setCombatLogs((prev) => [
+        { id: nextId, timestamp: getTimeString(), text, tone },
+        ...prev.slice(0, 24),
+      ]);
+    },
+    []
+  );
+
+  // Sync document.body.dataset.state for Ultra Mode verification
+  useEffect(() => {
+    document.body.dataset.state = gameState;
+  }, [gameState]);
 
   // Auto-save progression to localStorage
   useEffect(() => {
@@ -240,9 +261,7 @@ export default function App() {
           }
         }
       },
-      onPeerSparks: (sparkCount) => {
-        // Peer sparks visual feedback
-      },
+      onPeerSparks: () => {},
     });
 
     mp.connect();
@@ -252,23 +271,6 @@ export default function App() {
       mp.disconnect();
     };
   }, [appendCombatLog]);
-
-  // Sync document.body.dataset.state for Ultra Mode verification
-  useEffect(() => {
-    document.body.dataset.state = gameState;
-  }, [gameState]);
-
-  const appendCombatLog = useCallback(
-    (text: string, tone: CombatLogEntry['tone'] = 'neutral') => {
-      logCounterRef.current += 1;
-      const nextId = logCounterRef.current;
-      setCombatLogs((prev) => [
-        { id: nextId, timestamp: getTimeString(), text, tone },
-        ...prev.slice(0, 24),
-      ]);
-    },
-    []
-  );
 
   const startGame = useCallback(() => {
     if (document.activeElement instanceof HTMLElement) {
@@ -294,17 +296,17 @@ export default function App() {
     setOverdriveActive(false);
     setOverdriveTimeLeft(0);
     waveProgressRef.current = TARGET_RIM_PROGRESS - 0.04;
+    vaultStageRef.current?.reset();
     document.body.dataset.state = 'playing';
     setGameState('playing');
     appendCombatLog('Lò rèn tái khởi động! Vạn dân đồng loạt giáng búa!', 'gold');
   }, [appendCombatLog]);
 
-  // 1-second interval for Global Beat Bar countdown, Overdrive duration, and Server Co-op DPS
+  // 1-second interval for Global Beat Bar, Overdrive countdown, and Allied DPS
   useEffect(() => {
     if (gameState !== 'playing') return;
 
     const timer = setInterval(() => {
-      // Update Overdrive remaining time
       setOverdriveTimeLeft((prev) => {
         if (prev <= 0) return 0;
         const next = Math.max(0, prev - 0.5);
@@ -315,21 +317,12 @@ export default function App() {
         return next;
       });
 
-      // Global countdown & server co-op damage tick
-      setGlobalCountdownSec((prev) => {
-        if (prev <= 1) {
-          return 180;
-        }
-        return prev - 0.5;
-      });
+      setGlobalCountdownSec((prev) => (prev <= 1 ? 180 : prev - 0.5));
 
-      // Allied Vạn Dân Forgers continuous chip damage & synergy
       setBossHpBillions((prevHp) => {
         const alliedChip = 0.24;
         const nextHp = Math.max(1.0, Number((prevHp - alliedChip).toFixed(3)));
-        setBossTrailHpBillions((prevTrail) =>
-          Math.max(nextHp, Number((prevTrail - 0.45).toFixed(3)))
-        );
+        setBossTrailHpBillions((prevTrail) => Math.max(nextHp, Number((prevTrail - 0.45).toFixed(3))));
         return nextHp;
       });
 
@@ -345,7 +338,10 @@ export default function App() {
   const basePowerBillions = calculateBasePowerBillions(upgrades);
   const spiritBonusMult = calculateSpiritMultiplier(spiritNodes);
 
-  // Handle Player Anvil Strike (Space or Click/Touch)
+  // Crack progress calculated from Boss HP
+  const crackProgress = computeCrackProgress(bossHpBillions, BOSS_MAX_HP);
+
+  // Player Strike Handler
   const handleStrike = useCallback(() => {
     if (gameState !== 'playing') return;
 
@@ -364,11 +360,8 @@ export default function App() {
       globalBurstActive,
     });
 
-    soundEngine.playAnvilStrike(
-      judgment.grade,
-      activeStance,
-      overdriveActive || outcome.triggeredOverdrive
-    );
+    // Trigger 3D Stage Lightning Pillar, Shockwave, and Shader advance
+    vaultStageRef.current?.strike(judgment.grade, activeStance);
 
     // Send strike to Multiplayer Gateway batch queue
     mpClientRef.current?.recordStrike({
@@ -380,7 +373,6 @@ export default function App() {
       isCrit: outcome.triggeredOverdrive || overdriveActive || judgment.grade === 'PERFECT',
     });
 
-    // Reset wave to 0.62 so a ~0.3s rhythm interval hits TARGET_RIM_PROGRESS (0.78) cleanly
     waveProgressRef.current = 0.62;
 
     setCombo(outcome.nextCombo);
@@ -393,10 +385,7 @@ export default function App() {
     if (outcome.triggeredOverdrive) {
       setOverdriveActive(true);
       setOverdriveTimeLeft(8.0);
-      appendCombatLog(
-        'LÔI ĐÌNH QUÁ TẢI 8/8! Toàn bộ Đe Thần rực sáng bão điện, Sát Thương x2.0!',
-        'cyan'
-      );
+      appendCombatLog('LÔI ĐÌNH QUÁ TẢI 8/8! Toàn bộ Đe Thần rực sáng bão điện, Sát Thương x2.0!', 'cyan');
     }
 
     if (outcome.damageBillions > 0) {
@@ -404,51 +393,35 @@ export default function App() {
       if (outcome.tinhHoaEarned > 0) {
         setTinhHoa((prev) => prev + outcome.tinhHoaEarned);
       }
-      setPlayerTotalDamageBillions((prev) =>
-        Number((prev + outcome.damageBillions).toFixed(3))
-      );
+      setPlayerTotalDamageBillions((prev) => Number((prev + outcome.damageBillions).toFixed(3)));
 
       setBossShieldPct((prevShield) => {
         const nextShield = Math.max(0, Number((prevShield - outcome.shieldDepletion).toFixed(2)));
         if (prevShield > 0 && nextShield === 0) {
-          appendCombatLog(
-            'GIÁP NĂNG LƯỢNG TAN VỠ! Sát thương toàn server lên Boss tăng x1.5!',
-            'gold'
-          );
+          appendCombatLog('GIÁP NĂNG LƯỢNG TAN VỠ! Sát thương toàn server lên Boss tăng x1.5!', 'gold');
         }
         return nextShield;
       });
 
-      setGlobalSynergyPct((prevSyn) =>
-        Math.min(100, Number((prevSyn + outcome.synergyGain).toFixed(1)))
-      );
+      setGlobalSynergyPct((prevSyn) => Math.min(100, Number((prevSyn + outcome.synergyGain).toFixed(1))));
 
       setBossHpBillions((prevHp) => {
         const nextHp = Math.max(0, Number((prevHp - outcome.damageBillions).toFixed(3)));
         if (nextHp <= 0) {
+          vaultStageRef.current?.triggerGrandShatter();
           setGameState('gameover');
         }
         return nextHp;
       });
     }
 
-    // Visual Screen Shake on PERFECT or Overdrive
     if (judgment.grade === 'PERFECT') {
-      setShakeClass(
-        overdriveActive || outcome.triggeredOverdrive
-          ? 'animate-shake-heavy'
-          : 'animate-shake-light'
-      );
-      setTimeout(() => setShakeClass(''), 240);
       appendCombatLog(
         `Nhịp Hoàng Kim [${activeStance}]! Giáng -${outcome.damageBillions.toFixed(2)}B HP (x${outcome.displayMultiplier.toFixed(1)})`,
         'gold'
       );
     } else if (judgment.grade === 'GREAT') {
-      appendCombatLog(
-        `Nhịp Chuẩn Xác [${activeStance}]! Giáng -${outcome.damageBillions.toFixed(2)}B HP`,
-        'neutral'
-      );
+      appendCombatLog(`Nhịp Chuẩn Xác [${activeStance}]! Giáng -${outcome.damageBillions.toFixed(2)}B HP`, 'neutral');
     } else {
       appendCombatLog('Trượt nhịp! Búa xì khói đen, đứt chuỗi Combo.', 'red');
     }
@@ -460,8 +433,6 @@ export default function App() {
       labelVn: judgment.labelVn,
       multiplier: outcome.displayMultiplier,
       damageBillions: outcome.damageBillions,
-      stance: activeStance,
-      overdrive: overdriveActive || outcome.triggeredOverdrive,
     });
   }, [
     gameState,
@@ -499,9 +470,7 @@ export default function App() {
       'ĐẠI CỘNG HƯỞNG VẠN DÂN BÙNG NỔ! Giáng thiên lôi -18.50B HP & cường hóa toàn server x2.5!',
       'gold'
     );
-    setTimeout(() => {
-      setGlobalBurstActive(false);
-    }, 8000);
+    setTimeout(() => setGlobalBurstActive(false), 8000);
   }, [globalSynergyPct, globalBurstActive, appendCombatLog]);
 
   const handleBuyUpgrade = useCallback(
@@ -527,9 +496,7 @@ export default function App() {
       const target = spiritNodes.find((n) => n.id === nodeId);
       if (!target) return;
       setTinhHoa((th) => th - target.costTinhHoa);
-      setSpiritNodes((prev) =>
-        prev.map((n) => (n.id === nodeId ? { ...n, unlocked: true } : n))
-      );
+      setSpiritNodes((prev) => prev.map((n) => (n.id === nodeId ? { ...n, unlocked: true } : n)));
       soundEngine.playGlobalBurstFanfare();
       appendCombatLog(
         `Khai mở Chòm Sao Thần Hồn: ${target.name} (+${Math.round(target.bonusMult * 100)}% Công Lực)!`,
@@ -552,14 +519,10 @@ export default function App() {
     ]);
   }, []);
 
-  // Global Keyboard Shortcuts (Space, Q/W/E/R, P/Esc, M)
+  // Keyboard Shortcuts (Space, Q/W/E/R, P/Esc, M, [ and ] for Side Panels)
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
-      // Ignore shortcuts when typing inside chat input
-      if (
-        e.target instanceof HTMLInputElement ||
-        e.target instanceof HTMLTextAreaElement
-      ) {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
         return;
       }
 
@@ -587,11 +550,22 @@ export default function App() {
         return;
       }
 
+      // Hotkeys for toggling UX/UI Side Panels
+      if (e.code === 'BracketLeft') {
+        e.preventDefault();
+        setLeftPanelOpen((prev) => !prev);
+        return;
+      }
+      if (e.code === 'BracketRight') {
+        e.preventDefault();
+        setRightPanelOpen((prev) => !prev);
+        return;
+      }
+
       if (gameState !== 'playing') return;
 
       if (e.code === 'Space') {
         e.preventDefault();
-        // Snap wave close to Golden Rim when pressing Space near the beat or evaluate current wave
         handleStrike();
       } else if (e.code === 'KeyQ') {
         e.preventDefault();
@@ -612,7 +586,7 @@ export default function App() {
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [gameState, startGame, handleStrike, handleSelectStance]);
 
-  // Build Live Sorted Leaderboard including Player
+  // Live Sorted Leaderboard
   const leaderboard: LeaderboardEntry[] = [
     ...INITIAL_RIVALS,
     {
@@ -624,89 +598,286 @@ export default function App() {
     },
   ].sort((a, b) => b.damageBillions - a.damageBillions);
 
+  const stanceKeys: StanceKey[] = ['Q', 'W', 'E', 'R'];
+
   return (
     <div
-      className="min-h-screen h-screen w-full bg-[#080A10] text-slate-100 flex flex-col overflow-hidden"
+      className="relative min-h-screen h-screen w-screen overflow-hidden bg-[#04060C] text-slate-100 select-none"
       data-stance={activeStance}
       data-overdrive={overdriveActive ? 'true' : 'false'}
-      data-target-rim={TARGET_RIM_PROGRESS}
     >
+      {/* 1. THE MAIN 3D PLAYABLE SCENE: Colossal Cracking Sky Vault + Minimalist Forged Anvil */}
+      <div className="fixed inset-0 w-full h-full z-0 pointer-events-auto">
+        <CelestialVaultStage3D
+          ref={vaultStageRef}
+          crackProgress={crackProgress}
+          activeStance={activeStance}
+          overdriveActive={overdriveActive}
+          onStrike={() => {}}
+        />
+      </div>
+
       {/* Title Screen Overlay */}
       {gameState === 'title' && <TitleScreenModal onStart={startGame} />}
 
-      {/* Top Multiplayer Boss Raid Header */}
-      <TopBossHeader
-        bossName="Cửu U Thiên Ma Đế · Hắc Diên Cự Thần"
-        bossRealm="Cửu Trọng Thiên · Tầng Đỉnh Phong"
-        bossHpBillions={bossHpBillions}
-        bossMaxHpBillions={BOSS_MAX_HP}
-        bossTrailHpBillions={bossTrailHpBillions}
-        bossShieldPct={bossShieldPct}
-        globalCountdownSec={globalCountdownSec}
-        globalSynergyPct={globalSynergyPct}
-        globalBurstActive={globalBurstActive}
-        activeForgersCount={activeForgersCount}
-        muted={muted}
-        onToggleMute={() => {
-          setMuted((prev) => {
-            const next = !prev;
-            soundEngine.muted = next;
-            return next;
-          });
-        }}
-        onPause={() =>
-          setGameState((prev) => (prev === 'playing' ? 'paused' : 'playing'))
-        }
-        onRestart={resetGame}
-        onTriggerGlobalBurst={handleTriggerGlobalBurst}
-      />
-
-      {/* Ergonomic 3-Column Desktop / One-Thumb Mobile Main Workspace */}
-      <div className="flex-1 flex overflow-hidden max-w-[1440px] w-full mx-auto">
-        {/* Column 1 (Left): Thế Trận, Boss Log & Mini-Chat */}
-        <LeftTacticalPanel
-          activeStance={activeStance}
-          playerTotalDamageBillions={playerTotalDamageBillions}
-          perfectCount={perfectCount}
-          maxCombo={maxCombo}
-          serverDpsBillions={4.85 + basePowerBillions}
-          combatLogs={combatLogs}
-          chatMessages={chatMessages}
-          onSendChat={handleSendChat}
-        />
-
-        {/* Column 2 (Center): Lò Rèn Trung Tâm, Bão Lửa Vạn Dân Canvas & Vòng Tròn Nhịp Điệu */}
-        <RadialForgeCenter
-          waveProgressRef={waveProgressRef}
-          activeStance={activeStance}
-          combo={combo}
-          overdriveCharge={overdriveCharge}
-          overdriveActive={overdriveActive}
-          overdriveTimeLeft={overdriveTimeLeft}
+      {/* Top Translucent Boss Raid Header */}
+      <div className="fixed top-0 inset-x-0 z-20 pointer-events-auto">
+        <TopBossHeader
+          bossName="Cửu U Thiên Ma Đế · Hắc Diên Cự Thần"
+          bossRealm="Cửu Trọng Thiên · Tầng Đỉnh Phong"
+          bossHpBillions={bossHpBillions}
+          bossMaxHpBillions={BOSS_MAX_HP}
+          bossTrailHpBillions={bossTrailHpBillions}
+          bossShieldPct={bossShieldPct}
+          globalCountdownSec={globalCountdownSec}
+          globalSynergyPct={globalSynergyPct}
           globalBurstActive={globalBurstActive}
-          lastFeedback={lastFeedback}
-          shakeClass={shakeClass}
-          linhThach={linhThach}
-          tinhHoa={tinhHoa}
-          basePowerBillions={basePowerBillions}
-          onStrike={handleStrike}
-          onSelectStance={handleSelectStance}
-          onOpenMobileDrawer={() => setMobileDrawerOpen(true)}
-        />
-
-        {/* Column 3 (Right + Mobile Bottom Sheet Drawer): Nâng Cấp, Cây Thần Hồn, Bảng Vàng */}
-        <RightProgressionPanel
-          upgrades={upgrades}
-          spiritNodes={spiritNodes}
-          linhThach={linhThach}
-          tinhHoa={tinhHoa}
-          leaderboard={leaderboard}
-          mobileDrawerOpen={mobileDrawerOpen}
-          onCloseMobileDrawer={() => setMobileDrawerOpen(false)}
-          onBuyUpgrade={handleBuyUpgrade}
-          onUnlockSpiritNode={handleUnlockSpiritNode}
+          activeForgersCount={activeForgersCount}
+          muted={muted}
+          onToggleMute={() => {
+            setMuted((prev) => {
+              const next = !prev;
+              soundEngine.muted = next;
+              return next;
+            });
+          }}
+          onPause={() => setGameState((prev) => (prev === 'playing' ? 'paused' : 'playing'))}
+          onRestart={resetGame}
+          onTriggerGlobalBurst={handleTriggerGlobalBurst}
         />
       </div>
+
+      {/* 2. FLOATING TOGGLE ICONS FOR LEFT & RIGHT PANELS */}
+      {/* Left Toggle Button (Thế Trận & Chat) */}
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          setLeftPanelOpen((prev) => !prev);
+        }}
+        className={`fixed left-3 top-20 z-50 flex items-center gap-1.5 px-3 py-2 rounded-xl backdrop-blur-md border text-xs font-tech font-bold tracking-wider cursor-pointer transition-all shadow-lg ${
+          leftPanelOpen
+            ? 'bg-amber-400 text-slate-950 border-amber-300 shadow-amber-500/25'
+            : 'bg-slate-950/80 hover:bg-slate-900 border-amber-500/30 text-amber-300 hover:text-amber-200'
+        }`}
+        title="Bật/Tắt Thế Trận & Chat [Phím [ ]"
+      >
+        <Shield className="w-4 h-4 text-cyan-400" />
+        <span className="hidden sm:inline">Thế Trận & Chat</span>
+      </button>
+
+      {/* Right Toggle Button (Lò Rèn, Nâng Cấp, Thần Hồn) */}
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          setRightPanelOpen((prev) => !prev);
+        }}
+        className={`fixed right-3 top-20 z-50 flex items-center gap-1.5 px-3 py-2 rounded-xl backdrop-blur-md border text-xs font-tech font-bold tracking-wider cursor-pointer transition-all shadow-lg ${
+          rightPanelOpen
+            ? 'bg-amber-400 text-slate-950 border-amber-300 shadow-amber-500/25'
+            : 'bg-slate-950/80 hover:bg-slate-900 border-amber-500/30 text-amber-300 hover:text-amber-200'
+        }`}
+        title="Bật/Tắt Lò Rèn & Thần Hồn [Phím ] ]"
+      >
+        <Hammer className="w-4 h-4 text-amber-400" />
+        <span className="hidden sm:inline">Lò Rèn & Thần Hồn</span>
+      </button>
+
+      {/* 3. CENTER-BOTTOM ERGONOMIC HUD: Strike Feedback, 4 Stances, Overdrive, Strike Button */}
+      <div className="fixed bottom-3 inset-x-0 z-20 flex flex-col items-center gap-2 pointer-events-none px-4">
+        {/* Floating Strike Grade Feedback */}
+        {lastFeedback && (
+          <div className="animate-feedback pointer-events-none text-center">
+            <div
+              className={`font-display text-base md:text-xl font-extrabold tracking-wider ${
+                lastFeedback.grade === 'PERFECT'
+                  ? 'text-amber-300 drop-shadow-[0_0_12px_rgba(255,160,0,0.8)]'
+                  : lastFeedback.grade === 'GREAT'
+                  ? 'text-cyan-300'
+                  : 'text-slate-400'
+              }`}
+            >
+              {lastFeedback.labelVn}{' '}
+              {lastFeedback.multiplier > 0 ? `· x${lastFeedback.multiplier.toFixed(1)}` : ''}
+            </div>
+            {lastFeedback.damageBillions > 0 && (
+              <div className="font-tech text-xs md:text-sm font-bold text-red-400">
+                -{lastFeedback.damageBillions.toFixed(3)}B HP
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* 4 Hammer Stances Bar (Q - W - E - R) */}
+        <div
+          role="group"
+          aria-label="4 Thế Búa Q W E R"
+          className="pointer-events-auto w-full max-w-[480px] grid grid-cols-4 gap-1.5 sm:gap-2"
+        >
+          {stanceKeys.map((k) => {
+            const st = HAMMER_STANCES[k];
+            const isSelected = activeStance === k;
+            return (
+              <button
+                key={k}
+                type="button"
+                onClick={() => handleSelectStance(k)}
+                className={`relative flex flex-col items-center p-1.5 sm:p-2 rounded-xl border transition-all cursor-pointer ${
+                  isSelected
+                    ? 'bg-slate-900/90 border-amber-400 shadow-md shadow-amber-500/25 scale-[1.03]'
+                    : 'bg-slate-950/70 border-slate-800 hover:border-slate-700 text-slate-400'
+                }`}
+              >
+                <div className="flex items-center gap-1 mb-0.5">
+                  <span
+                    className="w-4 h-4 sm:w-5 sm:h-5 rounded text-[10px] sm:text-xs font-tech font-bold flex items-center justify-center text-slate-950"
+                    style={{ backgroundColor: st.color }}
+                  >
+                    {k}
+                  </span>
+                  {k === 'Q' && <Zap className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-cyan-400" />}
+                  {k === 'W' && <Flame className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-red-400" />}
+                  {k === 'E' && <Shield className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-purple-400" />}
+                  {k === 'R' && <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-emerald-400" />}
+                </div>
+                <div className="text-[10px] sm:text-[11px] font-semibold text-slate-100 whitespace-nowrap truncate max-w-full">
+                  {st.name}
+                </div>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Overdrive 8/8 Bar */}
+        <div
+          className={`pointer-events-auto w-full max-w-[480px] rounded-xl px-3 py-1.5 border backdrop-blur-md transition-colors ${
+            overdriveActive ? 'bg-cyan-500/20 border-cyan-400 shadow-lg shadow-cyan-400/20' : 'bg-slate-950/75 border-slate-800/80'
+          }`}
+        >
+          <div className="flex items-center justify-between text-[11px] font-tech mb-1">
+            <span className={overdriveActive ? 'text-cyan-300 font-bold' : 'text-slate-300'}>
+              {overdriveActive
+                ? `LÔI ĐÌNH QUÁ TẢI (${overdriveTimeLeft.toFixed(1)}s)`
+                : 'Thanh Overdrive · Tích 8/8 Chuỗi'}
+            </span>
+            <span className="font-bold text-amber-300">
+              {overdriveActive ? 'SÁT THƯƠNG x2.0' : `${overdriveCharge.toFixed(1)} / ${OVERDRIVE_MAX}`}
+            </span>
+          </div>
+
+          <div className="grid grid-cols-8 gap-1">
+            {Array.from({ length: OVERDRIVE_MAX }).map((_, idx) => {
+              const filled = overdriveActive || overdriveCharge >= idx + 1;
+              const half = !filled && overdriveCharge >= idx + 0.5;
+              return (
+                <div
+                  key={idx}
+                  className={`h-2 rounded-sm transition-all ${
+                    overdriveActive
+                      ? 'bg-cyan-400 shadow-sm shadow-cyan-400/60'
+                      : filled
+                      ? 'bg-amber-400'
+                      : half
+                      ? 'bg-amber-400/50'
+                      : 'bg-slate-800'
+                  }`}
+                />
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Central Spacebar / Tap Interaction Trigger */}
+        <div className="pointer-events-auto flex items-center justify-center">
+          <button
+            type="button"
+            onClick={handleStrike}
+            className="px-5 py-2.5 rounded-full bg-slate-950/80 hover:bg-slate-900 border border-amber-500/40 text-xs sm:text-sm font-tech text-slate-100 tracking-wider shadow-lg hover:border-amber-400 transition-all cursor-pointer"
+          >
+            Nhấn <span className="text-cyan-300 font-bold">SPACEBAR</span> hoặc{' '}
+            <span className="text-amber-300 font-bold">CHẠM ĐE</span> để Phóng Sét (+0.05 uCrack)
+          </button>
+        </div>
+      </div>
+
+      {/* 4. SLIDE-OUT DRAWER 1 (LEFT): THẾ TRẬN, NHẬT KÝ CHIẾN TRƯỜNG & CHAT */}
+      <div
+        className={`fixed inset-y-0 left-0 z-40 w-full sm:w-[380px] md:w-[420px] bg-slate-950/92 border-r border-amber-500/30 backdrop-blur-xl shadow-2xl transform transition-transform duration-300 ease-in-out flex flex-col ${
+          leftPanelOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
+        <div className="flex items-center justify-between px-4 py-3 border-b border-slate-800 bg-slate-900/80">
+          <div className="flex items-center gap-2 text-amber-300 font-tech font-bold text-sm">
+            <Shield className="w-4 h-4 text-cyan-400" />
+            <span>THẾ TRẬN & TRUYỀN ÂM VẠN DÂN</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setLeftPanelOpen(false)}
+            className="p-1 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-slate-100 cursor-pointer"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        <div className="flex-1 overflow-y-auto">
+          <LeftTacticalPanel
+            activeStance={activeStance}
+            playerTotalDamageBillions={playerTotalDamageBillions}
+            perfectCount={perfectCount}
+            maxCombo={maxCombo}
+            serverDpsBillions={5.70 + basePowerBillions}
+            combatLogs={combatLogs}
+            chatMessages={chatMessages}
+            onSendChat={handleSendChat}
+          />
+        </div>
+      </div>
+
+      {/* 5. SLIDE-OUT DRAWER 2 (RIGHT): NÂNG CẤP, THẦN HỒN & BẢNG VÀNG */}
+      <div
+        className={`fixed inset-y-0 right-0 z-40 w-full sm:w-[400px] md:w-[440px] bg-slate-950/92 border-l border-amber-500/30 backdrop-blur-xl shadow-2xl transform transition-transform duration-300 ease-in-out flex flex-col ${
+          rightPanelOpen ? 'translate-x-0' : 'translate-x-full'
+        }`}
+      >
+        <div className="flex items-center justify-between px-4 py-3 border-b border-slate-800 bg-slate-900/80">
+          <div className="flex items-center gap-2 text-amber-300 font-tech font-bold text-sm">
+            <Hammer className="w-4 h-4 text-amber-400" />
+            <span>LÒ RÈN & THẦN HỒN</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setRightPanelOpen(false)}
+            className="p-1 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-slate-100 cursor-pointer"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        <div className="flex-1 overflow-y-auto">
+          <RightProgressionPanel
+            upgrades={upgrades}
+            spiritNodes={spiritNodes}
+            linhThach={linhThach}
+            tinhHoa={tinhHoa}
+            leaderboard={leaderboard}
+            mobileDrawerOpen={rightPanelOpen}
+            onCloseMobileDrawer={() => setRightPanelOpen(false)}
+            onBuyUpgrade={handleBuyUpgrade}
+            onUnlockSpiritNode={handleUnlockSpiritNode}
+          />
+        </div>
+      </div>
+
+      {/* Backdrop Dimmer when either side drawer is open */}
+      {(leftPanelOpen || rightPanelOpen) && (
+        <div
+          className="fixed inset-0 z-35 bg-black/40 backdrop-blur-[2px] transition-opacity cursor-pointer"
+          onClick={() => {
+            setLeftPanelOpen(false);
+            setRightPanelOpen(false);
+          }}
+        />
+      )}
 
       {/* Pause & Victory Status Modal */}
       {(gameState === 'paused' || gameState === 'gameover') && (

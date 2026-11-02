@@ -19,16 +19,20 @@ import {
   createForgeSparkBuffer,
   spawnForgeSparkBurst,
 } from '../game/rules';
+import { createShatterableSkyDome, ShatterableSkyDomeController } from './ShatterableSkyDome';
 
 export interface CelestialAnvil3DHandle {
   strike: () => void;
   onPeerStrike: (quality?: PeerStrikeQuality) => void;
+  triggerSkyShatter: () => void;
+  setCrackProgress: (progress: number) => void;
 }
 
 interface CelestialAnvil3DProps {
   waveProgressRef: React.MutableRefObject<number>;
   currentStance: DivineStanceId;
   activeStance?: StanceKey;
+  crackProgress?: number;
   overdriveActive: boolean;
   globalBurstActive: boolean;
   lastStrikeId: number;
@@ -397,6 +401,7 @@ export const CelestialAnvil3D = forwardRef<CelestialAnvil3DHandle, CelestialAnvi
     {
       waveProgressRef,
       currentStance,
+      crackProgress = 0,
       overdriveActive,
       globalBurstActive,
       lastStrikeId,
@@ -408,8 +413,10 @@ export const CelestialAnvil3D = forwardRef<CelestialAnvil3DHandle, CelestialAnvi
     const mountRef = useRef<HTMLDivElement | null>(null);
     const imperativeStrikeTriggerRef = useRef<number>(0);
     const peerStrikeQueueRef = useRef<PeerStrikeQuality[]>([]);
+    const skyDomeControllerRef = useRef<ShatterableSkyDomeController | null>(null);
+    const manualCrackOverrideRef = useRef<number | null>(null);
 
-    // Expose imperative strike() and onPeerStrike(quality) methods
+    // Expose imperative strike(), onPeerStrike(quality), and triggerSkyShatter() methods
     useImperativeHandle(ref, () => ({
       strike: () => {
         imperativeStrikeTriggerRef.current += 1;
@@ -418,10 +425,20 @@ export const CelestialAnvil3D = forwardRef<CelestialAnvil3DHandle, CelestialAnvi
       onPeerStrike: (quality: PeerStrikeQuality = 'GREAT') => {
         peerStrikeQueueRef.current.push(quality);
       },
+      triggerSkyShatter: () => {
+        skyDomeControllerRef.current?.triggerSkyShatter();
+      },
+      setCrackProgress: (progress: number) => {
+        manualCrackOverrideRef.current = Math.max(0, Math.min(1, progress));
+        if (progress < 1) {
+          skyDomeControllerRef.current?.resetSkyDome();
+        }
+      },
     }));
 
     const livePropsRef = useRef({
       currentStance,
+      crackProgress,
       overdriveActive,
       globalBurstActive,
       lastStrikeId,
@@ -431,12 +448,20 @@ export const CelestialAnvil3D = forwardRef<CelestialAnvil3DHandle, CelestialAnvi
     useEffect(() => {
       livePropsRef.current = {
         currentStance,
+        crackProgress,
         overdriveActive,
         globalBurstActive,
         lastStrikeId,
         lastStrikeGrade,
       };
-    }, [currentStance, overdriveActive, globalBurstActive, lastStrikeId, lastStrikeGrade]);
+    }, [
+      currentStance,
+      crackProgress,
+      overdriveActive,
+      globalBurstActive,
+      lastStrikeId,
+      lastStrikeGrade,
+    ]);
 
     useEffect(() => {
       const container = mountRef.current;
@@ -465,9 +490,10 @@ export const CelestialAnvil3D = forwardRef<CelestialAnvil3DHandle, CelestialAnvi
       const width = Math.max(300, container.clientWidth || 520);
       const height = Math.max(300, container.clientHeight || 420);
 
-      const camera = new THREE.PerspectiveCamera(40, width / height, 0.1, 60);
-      const baseCamPos = new THREE.Vector3(0, 4.35, 5.25);
-      const baseLookAt = new THREE.Vector3(0, 0.12, 0);
+      // Heroic forge camera framing both the overarching VÒM TRỜI NỨT VỠ (Shatterable Sky Dome) and the Thần Đe & Thần Chùy
+      const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 60);
+      const baseCamPos = new THREE.Vector3(0, 2.75, 5.45);
+      const baseLookAt = new THREE.Vector3(0, 0.48, 0);
       camera.position.copy(baseCamPos);
       camera.lookAt(baseLookAt);
 
@@ -1019,7 +1045,14 @@ export const CelestialAnvil3D = forwardRef<CelestialAnvil3DHandle, CelestialAnvi
       }
       markSparkAttributesDirty();
 
-      // Expose global helper for automated verification & external peer event hooks
+      // ============================================================================
+      // VÒM TRỜI NỨT VỠ (SHATTERABLE SKY DOME) + 1,500 VORONOI FRAGMENTS INSTANCED MESH
+      // ============================================================================
+      const skyDome = createShatterableSkyDome();
+      skyDomeControllerRef.current = skyDome;
+      scene.add(skyDome.group);
+
+      // Expose global helper for automated verification & external peer/sky event hooks
       (window as unknown as Record<string, unknown>).__celestialForge = {
         onPeerStrike: (quality: PeerStrikeQuality = 'GREAT') => {
           peerStrikeQueueRef.current.push(quality);
@@ -1028,10 +1061,21 @@ export const CelestialAnvil3D = forwardRef<CelestialAnvil3DHandle, CelestialAnvi
           imperativeStrikeTriggerRef.current += 1;
           onStrike();
         },
+        setCrackProgress: (progress: number) => {
+          manualCrackOverrideRef.current = Math.max(0, Math.min(1, progress));
+          if (progress < 1) {
+            skyDome.resetSkyDome();
+          }
+        },
+        triggerSkyShatter: () => {
+          skyDome.triggerSkyShatter();
+        },
         getSparkStats: () => ({
           bufferCapacity: sparkBuffer.capacity,
           cursor: sparkBuffer.cursor,
           totalSpawned: sparkBuffer.totalSpawned,
+          skyFragmentCount: skyDome.getFragmentCount(),
+          isSkyShattered: skyDome.isShattered(),
         }),
       };
 
@@ -1228,6 +1272,13 @@ export const CelestialAnvil3D = forwardRef<CelestialAnvil3DHandle, CelestialAnvi
         const rimProximity = Math.max(0, 1 - rimDist / (PERFECT_TOLERANCE * 1.15));
         const rimFlash = Math.pow(rimProximity, 1.5);
 
+        // Update VÒM TRỜI NỨT VỠ (Shatterable Sky Dome) uniform uCrackProgress & 1,500-shard InstancedMesh
+        const effectiveCrackProgress =
+          manualCrackOverrideRef.current !== null
+            ? manualCrackOverrideRef.current
+            : props.crackProgress;
+        skyDome.update(elapsed, dt, effectiveCrackProgress);
+
         // Update Custom GLSL Shader Uniforms (Rhythm Ring + 3,000-Particle GPU Vertex Shader)
         rhythmUniforms.uTime.value = elapsed;
         rhythmUniforms.uWaveProgress.value = waveProg;
@@ -1245,7 +1296,12 @@ export const CelestialAnvil3D = forwardRef<CelestialAnvil3DHandle, CelestialAnvi
         const bpmBeatPulse = 0.5 + 0.5 * Math.sin(elapsed * ((FORGE_BPM / 60) * Math.PI * 2));
         fireUnderLight.intensity = 20.0 + bpmBeatPulse * 6.5;
 
-        // Camera tremor (amplified when GRAVITY stance strikes)
+        // Camera tremor (amplified when GRAVITY stance strikes or when Sky Dome uCrackProgress > 0.8)
+        if (effectiveCrackProgress > 0.8 && !skyDome.isShattered()) {
+          const skyTremor = ((effectiveCrackProgress - 0.8) / 0.2) * 0.04;
+          cameraTrauma = Math.max(cameraTrauma, skyTremor);
+        }
+
         if (cameraTrauma > 0) {
           cameraTrauma = Math.max(0, cameraTrauma - dt * 1.75);
           const shake = cameraTrauma * cameraTrauma * 0.28;
@@ -1283,6 +1339,7 @@ export const CelestialAnvil3D = forwardRef<CelestialAnvil3DHandle, CelestialAnvi
         rhythmShaderMat.dispose();
         sparkGeo.dispose();
         sparkMat.dispose();
+        skyDome.dispose();
         renderer.dispose();
       };
     }, [waveProgressRef]);
@@ -1292,6 +1349,7 @@ export const CelestialAnvil3D = forwardRef<CelestialAnvil3DHandle, CelestialAnvi
         className="relative w-full h-64 sm:h-72 md:h-80 flex items-center justify-center"
         data-current-stance={currentStance}
         data-spark-buffer={FORGE_SPARK_BUFFER_SIZE}
+        data-crack-progress={crackProgress.toFixed(2)}
       >
         <div
           ref={mountRef}

@@ -633,3 +633,173 @@ export function computeSparkBallisticPosition(
   ];
 }
 
+// ============================================================================
+// VÒM TRỜI NỨT VỠ (SHATTERABLE SKY DOME) & 1,500 VORONOI FRAGMENTS SYSTEM
+// ============================================================================
+export const SKY_SHATTER_FRAGMENT_COUNT = 1500;
+export const SKY_SHATTER_DURATION_SEC = 2.4;
+
+/**
+ * Calculates uCrackProgress (0.0 to 1.0) from current Boss HP and Max HP:
+ * - 0.0: Intact dark metallic clouds
+ * - > 0.3: Golden-orange Voronoi cracks spreading from zenith
+ * - > 0.8: Maximum magma/lightning fissures + vertex displacement tremor
+ * - 1.0 (HP = 0): Triggers 1,500-fragment InstancedMesh sky shatter
+ */
+export function computeCrackProgress(
+  bossHpBillions: number,
+  bossMaxHpBillions: number
+): number {
+  if (bossMaxHpBillions <= 0) return 1.0;
+  const ratio = 1.0 - bossHpBillions / bossMaxHpBillions;
+  return Math.max(0.0, Math.min(1.0, Number(ratio.toFixed(4))));
+}
+
+export interface SkyShatterState {
+  count: number;
+  origins: Float32Array; // 1500 * 3 (x, y, z on hemisphere)
+  velocities: Float32Array; // 1500 * 3 (vx, vy, vz blasting outward & behind camera)
+  rotations: Float32Array; // 1500 * 3 (rx, ry, rz initial Euler)
+  angularVelocities: Float32Array; // 1500 * 3 (wx, wy, wz tumbling)
+  initialScales: Float32Array; // 1500 (base shard size)
+}
+
+/**
+ * Generates 1,500 Voronoi-like triangular shard states distributed across the inverted hemisphere dome,
+ * configured to blast outward and toward/behind the camera (+Z) when triggerSkyShatter() is invoked.
+ */
+export function createSkyShatterFragments(
+  count: number = SKY_SHATTER_FRAGMENT_COUNT,
+  domeRadius: number = 6.5
+): SkyShatterState {
+  const origins = new Float32Array(count * 3);
+  const velocities = new Float32Array(count * 3);
+  const rotations = new Float32Array(count * 3);
+  const angularVelocities = new Float32Array(count * 3);
+  const initialScales = new Float32Array(count);
+
+  const goldenRatio = (1 + Math.sqrt(5)) / 2;
+
+  for (let i = 0; i < count; i++) {
+    const i3 = i * 3;
+    // Fibonacci disk/dome distribution across the full camera sky frustum behind the anvil
+    const u = (i + 0.5) / count;
+    const r = Math.sqrt(u);
+    const phi = (2 * Math.PI * i) / goldenRatio;
+
+    const nx = r * Math.cos(phi);
+    const ny = r * Math.sin(phi);
+    const nz = -Math.sqrt(Math.max(0.05, 1.0 - r * r * 0.75));
+
+    origins[i3] = nx * domeRadius * 0.95;
+    origins[i3 + 1] = 0.25 + ny * (domeRadius * 0.52);
+    origins[i3 + 2] = nz * 4.5 - 1.5;
+
+    // Explosive velocity blasting radially outward and rushing toward/behind the camera (+Z)
+    const speed = 4.0 + (i % 17) * 0.42;
+    velocities[i3] = nx * speed * 1.25;
+    velocities[i3 + 1] = ny * speed * 0.95 + 0.6;
+    velocities[i3 + 2] = 5.8 + (i % 13) * 0.65; // Rush toward and behind camera (+Z)
+
+    rotations[i3] = (i * 1.3) % (Math.PI * 2);
+    rotations[i3 + 1] = (i * 2.1) % (Math.PI * 2);
+    rotations[i3 + 2] = (i * 0.7) % (Math.PI * 2);
+
+    angularVelocities[i3] = ((i % 7) - 3) * 2.8;
+    angularVelocities[i3 + 1] = ((i % 9) - 4) * 2.5;
+    angularVelocities[i3 + 2] = ((i % 5) - 2) * 3.2;
+
+    initialScales[i] = 0.26 + (i % 9) * 0.042;
+  }
+
+  return {
+    count,
+    origins,
+    velocities,
+    rotations,
+    angularVelocities,
+    initialScales,
+  };
+}
+
+export interface SkyShardTransform {
+  x: number;
+  y: number;
+  z: number;
+  rx: number;
+  ry: number;
+  rz: number;
+  scale: number;
+}
+
+/**
+ * Computes the position, rotation, and scale-to-0 of a single sky fragment at time elapsedSec.
+ */
+export function evaluateSkyShardTransform(
+  state: SkyShatterState,
+  index: number,
+  elapsedSec: number,
+  durationSec: number = SKY_SHATTER_DURATION_SEC
+): SkyShardTransform {
+  const i3 = index * 3;
+  const clampedElapsed = Math.max(0, elapsedSec);
+  const progress = Math.min(1.0, clampedElapsed / Math.max(0.05, durationSec));
+
+  // Scale shrinks smoothly down to 0 as fragments fly past the camera
+  const scaleFactor = Math.max(0, 1.0 - progress * progress);
+  const scale = state.initialScales[index] * scaleFactor;
+
+  return {
+    x: state.origins[i3] + state.velocities[i3] * clampedElapsed,
+    y:
+      state.origins[i3 + 1] +
+      state.velocities[i3 + 1] * clampedElapsed -
+      0.5 * 3.2 * clampedElapsed * clampedElapsed,
+    z: state.origins[i3 + 2] + state.velocities[i3 + 2] * clampedElapsed,
+    rx: state.rotations[i3] + state.angularVelocities[i3] * clampedElapsed,
+    ry: state.rotations[i3 + 1] + state.angularVelocities[i3 + 1] * clampedElapsed,
+    rz: state.rotations[i3 + 2] + state.angularVelocities[i3 + 2] * clampedElapsed,
+    scale,
+  };
+}
+
+// ============================================================================
+// MÁI VÒM THIÊN GIỚI NỨT VỠ (THE CELESTIAL SHATTERABLE SKY DOME)
+// - uCrack increments by +0.05 per strike (0.0 -> 1.0)
+// - 0.1s cyan lightning pillar ascent + radial shockwave
+// - Grand Shatter Event at uCrack >= 1.0: 2,500 3D fragments + swirling nebula galaxy
+// ============================================================================
+export const CRACK_INCREMENT_PER_STRIKE = 0.05;
+export const LIGHTNING_PILLAR_ASCENT_SEC = 0.1;
+export const GRAND_SHATTER_SHARD_COUNT = 420;
+export const FALLING_DEBRIS_BUFFER_SIZE = 280;
+
+export interface VaultStrikeAdvanceResult {
+  previousCrack: number;
+  nextCrack: number;
+  triggeredGrandShatter: boolean;
+  strikeCount: number;
+}
+
+/**
+ * Advances uCrack by +0.05 on each strike and flags when The Grand Shatter Event (uCrack >= 1.0) triggers.
+ */
+export function advanceVaultCrack(
+  currentCrack: number,
+  increment: number = CRACK_INCREMENT_PER_STRIKE
+): VaultStrikeAdvanceResult {
+  const clampedPrev = Math.max(0.0, Math.min(1.0, currentCrack));
+  const rawNext = Number((clampedPrev + increment).toFixed(4));
+  const nextCrack = Math.max(0.0, Math.min(1.0, rawNext));
+  const triggeredGrandShatter = clampedPrev < 1.0 && nextCrack >= 1.0;
+
+  return {
+    previousCrack: clampedPrev,
+    nextCrack,
+    triggeredGrandShatter,
+    strikeCount: Math.round(nextCrack / CRACK_INCREMENT_PER_STRIKE),
+  };
+}
+
+
+
