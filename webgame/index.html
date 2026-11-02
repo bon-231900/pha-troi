@@ -12,6 +12,11 @@
     <meta property="og:url" content="https://phatroi.com/">
     <meta property="og:type" content="website">
 
+    <!-- Cache Control (Tránh trình duyệt cache phiên bản JS cũ) -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="icon.svg">
 
@@ -20,8 +25,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&family=Cinzel:wght@700;800;900&display=swap" rel="stylesheet">
 
-    <!-- Stylesheet -->
-    <link rel="stylesheet" href="style.css">
+    <!-- Stylesheet with Cache Buster -->
+    <link rel="stylesheet" href="style.css?v=4.2.2">
 </head>
 <body>
 
@@ -337,8 +342,8 @@
         </div>
     </div>
 
-    <!-- Scripts -->
-    <script src="audio.js"></script>
-    <script src="game.js"></script>
+    <!-- Scripts with Cache Buster -->
+    <script src="audio.js?v=4.2.2"></script>
+    <script src="game.js?v=4.2.2"></script>
 </body>
 </html>

@@ -671,8 +671,11 @@ class CelestialForgeGame {
         }
 
         // Nội suy tuyến tính (Lerp) 60 FPS mượt mà
-        if (this.domeCurrentHp !== this.domeTargetHp) {
+        if (Math.abs(this.domeCurrentHp - this.domeTargetHp) > 0.5) {
             this.domeCurrentHp += (this.domeTargetHp - this.domeCurrentHp) * 0.15;
+            this.renderDomeHp();
+        } else if (this.domeCurrentHp !== this.domeTargetHp) {
+            this.domeCurrentHp = this.domeTargetHp;
             this.renderDomeHp();
         }
 
@@ -1242,7 +1245,7 @@ class CelestialForgeGame {
 
         // Auto-fix cân bằng lại nếu save cũ lưu mức máu 1 tỷ của giai đoạn test
         const targetBaseHp = CELESTIAL_LAYERS[this.domeLayer - 1]?.baseHp || 50000;
-        if (s.domeMaxHp && s.domeMaxHp >= 1000000000 && targetBaseHp < 1000000000) {
+        if (!s.domeMaxHp || s.domeMaxHp >= 1000000000 || (s.domeCurrentHp && s.domeCurrentHp >= 1000000000)) {
             this.domeMaxHp = targetBaseHp;
             this.domeCurrentHp = targetBaseHp;
             this.domeTargetHp = targetBaseHp;
