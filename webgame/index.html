@@ -26,7 +26,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&family=Cinzel:wght@700;800;900&display=swap" rel="stylesheet">
 
     <!-- Stylesheet with Cache Buster -->
-    <link rel="stylesheet" href="style.css?v=4.3.2">
+    <link rel="stylesheet" href="style.css?v=4.3.3">
 </head>
 <body>
 
@@ -181,11 +181,15 @@
                     <button class="tab-btn" data-tab="settings">⚙️ CÀI ĐẶT</button>
                 </div>
 
-                <!-- 4 Currencies Wallet -->
-                <div id="walletGrid" class="wallet-grid">
+                <!-- 5 Currencies Sticky Wallet -->
+                <div id="walletGrid" class="wallet-grid sticky-wallet-header">
                     <div id="walletIronItem" class="wallet-item">
                         <span class="wallet-label">⛏️ Vụn Thiên Thiết</span>
                         <span id="valSkyIron" class="wallet-val">0</span>
+                    </div>
+                    <div id="walletSpItem" class="wallet-item">
+                        <span class="wallet-label">🌀 SP Thần Hồn</span>
+                        <span id="valWalletSp" class="wallet-val" style="color: #e9d5ff;">0 SP</span>
                     </div>
                     <div id="walletShardsItem" class="wallet-item">
                         <span class="wallet-label">💎 Tinh Thể Thiên Cấm</span>
@@ -203,9 +207,14 @@
 
                 <!-- TAB PANE 1: LÒ RÈN (THE FORGE) -->
                 <div id="pane-forge" class="tab-pane active">
-                    <!-- Buy Multiplier Bar (Thanh chọn số lượng mua) -->
+                    <!-- Buy Multiplier Bar (Thanh chọn số lượng mua & nút mở Modal) -->
                     <div class="buy-mult-bar" id="buyMultBar">
-                        <span class="buy-mult-label">HỆ SỐ MUA:</span>
+                        <div style="display: flex; align-items: center; justify-content: space-between; width: 100%; margin-bottom: 2px;">
+                            <span class="buy-mult-label">HỆ SỐ MUA:</span>
+                            <button id="btnOpenMathModal" class="btn-info-popover" title="Xem giải thích nguyên lý toán học, soft wall & cơ chế game">
+                                📐 Cơ Chế & Nguyên Lý
+                            </button>
+                        </div>
                         <div class="buy-mult-group">
                             <button class="buy-mult-btn active" data-mode="1">x1</button>
                             <button class="buy-mult-btn" data-mode="10">x10</button>
@@ -240,14 +249,6 @@
                                 <div id="upgradeCost" class="upgrade-cost-row">⚡ 10 Vụn Thiên Thiết</div>
                             </div>
                         </div>
-                    </div>
-
-                    <!-- Mathematical Info Panel -->
-                    <div style="background: rgba(0,0,0,0.25); padding: 12px; border-radius: 10px; font-size: 0.72rem; color: #94a3b8; line-height: 1.5; border: 1px solid rgba(255,255,255,0.05); margin-top: auto;">
-                        <b style="color: #fbbf24;">📐 NGUYÊN LÝ TOÁN HỌC:</b><br>
-                        • Chi phí cơ số <b>1.18</b>, sản lượng quặng cơ số <b>1.11</b> (Soft Wall tự nhiên ở Cấp 75–100).<br>
-                        • Đột phá cột mốc: <b>Cấp 5 (x1.5 Sát Thương & Quặng)</b>, <b>Cấp 10 (x2)</b>, <b>Cấp 25 (x3)</b>, <b>Cấp 50 (x2)</b>...<br>
-                        • Canh chuẩn Điểm Hoàng Kim nhận <b>x3.5 Sát Thương</b> và <b>x2.5 Sản Lượng Quặng</b>!
                     </div>
                 </div>
 
@@ -369,8 +370,74 @@
         </div>
     </div>
 
+    <!-- Modal: Nguyên Lý Toán Học & Cơ Chế Hoạt Động -->
+    <div id="mathModal" class="modal-overlay">
+        <div class="modal-box math-modal-box">
+            <div class="math-modal-header">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 1.4rem;">📐</span>
+                    <div>
+                        <h3 style="font-family: var(--font-heading); color: #fef08a; font-size: 1.05rem; font-weight: 900;">NGUYÊN LÝ TOÁN HỌC & CƠ CHẾ PHÁ TRỜI</h3>
+                        <div style="font-size: 0.7rem; color: #94a3b8;">Hệ thống cân bằng kinh tế tiệm cận & quy chuẩn sát thương</div>
+                    </div>
+                </div>
+                <button id="btnCloseMathModal" class="modal-close-btn" title="Đóng">&times;</button>
+            </div>
+
+            <div class="math-modal-body">
+                <!-- Phần 1: Quy luật Tăng trưởng & Soft Wall -->
+                <div class="math-card">
+                    <div class="math-card-title">
+                        <span>1. QUY LUẬT TĂNG TRƯỞNG & BỨC TƯỜNG MỀM (SOFT WALL)</span>
+                        <span class="math-badge">CƠ SỐ 1.18 vs 1.11</span>
+                    </div>
+                    <div class="math-card-content">
+                        <p>• <b>Chi phí nâng cấp Búa (Cost)</b>: Tăng theo hàm mũ cơ số <b>1.18</b> mỗi cấp: <code>Cost(L) = 10 &times; (1.18)<sup>L-1</sup> &times; (1 - GiảmGiá)</code>.</p>
+                        <p>• <b>Sản lượng quặng rèn (Iron)</b>: Tăng theo hàm mũ cơ số <b>1.11</b>: <code>Iron(L) = 2 &times; (1.11)<sup>L-1</sup> &times; HệSốNhịp</code>.</p>
+                        <p>• <b>Rào cản tự nhiên (Soft Wall ở Cấp 75–100)</b>: Tỷ lệ giãn cách <code>1.18 / 1.11 &asymp; 1.063</code> (mỗi cấp cần thêm ~6.3% số nhát búa). Khi đến Cấp 75–100, số nhát búa cần để thăng cấp trở nên rất lớn &rarr; <i>Đây là thời điểm người chơi cần <b>Tôi Luyện Thần Hồn (Prestige)</b> để chuyển sinh nhận Điểm Thần Hồn (SP) mở khóa buff vĩnh viễn.</i></p>
+                        <p>• <b>Đột phá cột mốc Thần Chùy</b>: <b>Cấp 5 (&times;1.5)</b>, <b>Cấp 10 (&times;2)</b>, <b>Cấp 25 (&times;3)</b>, <b>Cấp 50 (&times;6)</b>, <b>Cấp 75 (&times;3)</b>, <b>Cấp 100 (&times;6)</b>...</p>
+                    </div>
+                </div>
+
+                <!-- Phần 2: Bảng Tóm Tắt Hệ Số Nhịp & Cộng Hưởng -->
+                <div class="math-card">
+                    <div class="math-card-title">
+                        <span>2. HỆ SỐ THANH NHỊP ĐIỆU & CỘNG HƯỞNG PHÁ GIÁP</span>
+                        <span class="math-badge">x3.5 SÁT THƯƠNG</span>
+                    </div>
+                    <div class="math-card-content">
+                        <div class="math-table-grid">
+                            <div class="math-table-cell"><b>🟡 Điểm Hoàng Kim</b>: &times;3.5 Sát Thương • &times;2.5 Quặng • +15% Crit • Tích chuỗi Overdrive.</div>
+                            <div class="math-table-cell"><b>🟠 Gõ Ấm / Treo máy</b>: &times;1.0 Sát Thương • &times;1.0 Quặng cơ bản.</div>
+                            <div class="math-table-cell"><b>⚪ Gõ Lạnh (Trượt nhịp)</b>: 0.5 Sát Thương • 0.3 Quặng.</div>
+                            <div class="math-table-cell"><b>🔥 Cuồng Nhiệt (Overdrive)</b>: Chuỗi 8 Hoàng Kim liên tiếp kích hoạt xả búa bão điện 10 giây!</div>
+                        </div>
+                        <p style="margin-top: 6px;">• <b>Thanh Cộng Hưởng Vạn Dân</b>: Tích đủ 100 nhát búa (Lôi Đình Chùy +3 điểm/nhát) &rarr; Phá vỡ Giáp Thần Lực, toàn server nhận <b>&times;3.0 Sát Thương trong 60 giây</b>!</p>
+                    </div>
+                </div>
+
+                <!-- Phần 3: Tài Nguyên Hiếm & Bảo Hiểm Pity -->
+                <div class="math-card">
+                    <div class="math-card-title">
+                        <span>3. RƠI TÀI NGUYÊN HIẾM & BẢO HIỂM NHÂN PHẨM (PITY)</span>
+                        <span class="math-badge">PITY 0/149</span>
+                    </div>
+                    <div class="math-card-content">
+                        <p>• <b>💎 Tinh Thể Thiên Cấm</b>: Rơi khi nện trúng Điểm Hoàng Kim (Tỉ lệ 8% &ndash; 35% theo độ dài chuỗi combo Hoàng Kim).</p>
+                        <p>• <b>⭐ Thiên Hỏa Tâm & Bảo Hiểm Pity</b>: Tỉ lệ cơ bản 0.5%. Sau <b>120 nhát (Soft Pity)</b> tỉ lệ tăng mạnh +3.5%/nhát. Chắc chắn 100% nhận được ở <b>nhát thứ 149 (Hard Pity)</b>!</p>
+                        <p>• <b>🌙 Tinh Hoa Nguyệt Thực</b>: Rơi trong ca trực đêm (00:00 &ndash; 06:00) với 100% bạo kích!</p>
+                    </div>
+                </div>
+            </div>
+
+            <div style="text-align: right; margin-top: 14px;">
+                <button id="btnConfirmMathModal" class="modal-btn" style="width: auto; padding: 8px 24px;">ĐÃ HIỂU</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Scripts with Cache Buster -->
-    <script src="audio.js?v=4.3.2"></script>
-    <script src="game.js?v=4.3.2"></script>
+    <script src="audio.js?v=4.3.3"></script>
+    <script src="game.js?v=4.3.3"></script>
 </body>
 </html>

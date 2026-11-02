@@ -772,33 +772,78 @@ header {
     border: 1px solid rgba(245, 158, 11, 0.3);
 }
 
-/* Wallet Grid */
+/* 5-Currencies Sticky Wallet */
 .wallet-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid var(--border);
+    grid-template-columns: repeat(6, 1fr);
+    gap: 6px;
+    padding: 8px 10px;
+    background: rgba(0, 0, 0, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    backdrop-filter: blur(14px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.35);
+}
+
+#walletIronItem {
+    grid-column: span 3;
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.14) 0%, rgba(0, 0, 0, 0.4) 100%);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+#walletSpItem {
+    grid-column: span 3;
+    background: linear-gradient(135deg, rgba(168, 85, 247, 0.14) 0%, rgba(0, 0, 0, 0.4) 100%);
+    border: 1px solid rgba(168, 85, 247, 0.3);
+}
+
+#walletShardsItem {
+    grid-column: span 2;
+    background: rgba(0, 0, 0, 0.35);
+}
+
+#walletCoresItem {
+    grid-column: span 2;
+    background: rgba(0, 0, 0, 0.35);
+}
+
+#walletEclipseItem {
+    grid-column: span 2;
+    background: rgba(0, 0, 0, 0.35);
 }
 
 .wallet-item {
     background: rgba(0, 0, 0, 0.3);
-    padding: 8px 12px;
-    border-radius: 10px;
+    padding: 6px 10px;
+    border-radius: 8px;
     display: flex;
     flex-direction: column;
 }
 
 .wallet-label {
-    font-size: 0.7rem;
+    font-size: 0.68rem;
     color: var(--text-muted);
 }
 
 .wallet-val {
-    font-size: 1.15rem;
+    font-size: 1.05rem;
     font-weight: 800;
     color: #fef08a;
     font-family: var(--font-heading);
+}
+
+@media (max-width: 640px) {
+    .wallet-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+    #walletIronItem { grid-column: span 1; }
+    #walletSpItem { grid-column: span 1; }
+    #walletShardsItem { grid-column: span 1; }
+    #walletCoresItem { grid-column: span 1; }
+    #walletEclipseItem { grid-column: span 2; }
 }
 
 /* Tab Content Panes */
@@ -872,7 +917,8 @@ header {
     flex-direction: column;
     gap: 8px;
     overflow-y: auto;
-    max-height: 380px;
+    max-height: 520px;
+    flex: 1;
     padding-right: 4px;
 }
 
@@ -1177,6 +1223,140 @@ header {
     border-radius: 8px;
     cursor: pointer;
     align-self: flex-end;
+}
+
+/* Math Popover & Modal */
+.btn-info-popover {
+    background: rgba(245, 158, 11, 0.12);
+    border: 1px solid rgba(245, 158, 11, 0.35);
+    color: #fef08a;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.btn-info-popover:hover {
+    background: rgba(245, 158, 11, 0.28);
+    border-color: #fbbf24;
+    color: #fff;
+    transform: translateY(-1px);
+    box-shadow: 0 0 10px rgba(245, 158, 11, 0.4);
+}
+
+.math-modal-box {
+    max-width: 640px;
+    width: 95%;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    background: linear-gradient(180deg, rgba(20, 28, 48, 0.98) 0%, rgba(10, 15, 28, 0.98) 100%);
+    border: 1px solid rgba(245, 158, 11, 0.4);
+    box-shadow: 0 0 50px rgba(0, 0, 0, 0.9), 0 0 25px rgba(245, 158, 11, 0.25);
+    border-radius: 16px;
+    padding: 18px 20px;
+}
+
+.math-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 12px;
+    margin-bottom: 12px;
+}
+
+.modal-close-btn {
+    background: rgba(255, 255, 255, 0.08);
+    border: none;
+    color: #94a3b8;
+    font-size: 1.4rem;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.modal-close-btn:hover {
+    background: rgba(239, 68, 68, 0.3);
+    color: #fff;
+}
+
+.math-modal-body {
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding-right: 4px;
+}
+
+.math-card {
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 10px;
+    padding: 12px 14px;
+}
+
+.math-card-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.78rem;
+    font-weight: 800;
+    color: #fef08a;
+    margin-bottom: 6px;
+    font-family: var(--font-heading);
+}
+
+.math-badge {
+    background: rgba(245, 158, 11, 0.2);
+    border: 1px solid rgba(245, 158, 11, 0.4);
+    color: #fbbf24;
+    font-size: 0.65rem;
+    font-weight: 800;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.math-card-content {
+    font-size: 0.75rem;
+    color: #cbd5e1;
+    line-height: 1.55;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.math-card-content code {
+    background: rgba(255, 255, 255, 0.08);
+    padding: 1px 5px;
+    border-radius: 4px;
+    color: #38bdf8;
+    font-family: monospace;
+}
+
+.math-table-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    margin: 4px 0;
+}
+
+.math-table-cell {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 6px;
+    padding: 6px 8px;
+    font-size: 0.72rem;
 }
 
 /* ==========================================================================

@@ -575,6 +575,8 @@ class CelestialForgeGame {
         this.lifetimeIron += ironEarned;
         this.playerDamageDealt += damage;
         this.checkOnboardingProgression();
+        this.renderWallets();
+        this.renderUpgradeCard();
 
         if (this.isOnline && this.ws && this.ws.readyState === WebSocket.OPEN) {
             this.ws.send(JSON.stringify([1, 0, this.activeHammer]));
@@ -1155,9 +1157,14 @@ class CelestialForgeGame {
             this.pushTicker(`💎 [MỞ KHÓA TOÀN BỘ] Đầy đủ 4 Kho Tài Nguyên Cấp Cao & Con Đường Tu Luyện Thần Hồn đã khai mở!`);
             const walletGrid = document.getElementById('walletGrid');
             const prestigeTab = document.getElementById('tabBtnPrestige');
+            const spItem = document.getElementById('walletSpItem');
             if (walletGrid) {
                 walletGrid.classList.add('unlock-reveal');
                 setTimeout(() => walletGrid.classList.remove('unlock-reveal'), 1000);
+            }
+            if (spItem) {
+                spItem.classList.add('unlock-reveal');
+                setTimeout(() => spItem.classList.remove('unlock-reveal'), 1000);
             }
             if (prestigeTab) {
                 prestigeTab.classList.add('unlock-reveal');
@@ -1175,6 +1182,7 @@ class CelestialForgeGame {
         const arsenalBar = document.getElementById('arsenalBar');
         const resContainer = document.getElementById('resonanceContainer');
         const walletGrid = document.getElementById('walletGrid');
+        const spItem = document.getElementById('walletSpItem');
         const shardsItem = document.getElementById('walletShardsItem');
         const coresItem = document.getElementById('walletCoresItem');
         const eclipseItem = document.getElementById('walletEclipseItem');
@@ -1186,6 +1194,7 @@ class CelestialForgeGame {
             if (arsenalBar) arsenalBar.classList.add('onboarding-hidden');
             if (resContainer) resContainer.classList.add('onboarding-hidden');
             if (walletGrid) walletGrid.classList.add('stage-compact');
+            if (spItem) spItem.classList.add('onboarding-hidden');
             if (shardsItem) shardsItem.classList.add('onboarding-hidden');
             if (coresItem) coresItem.classList.add('onboarding-hidden');
             if (eclipseItem) eclipseItem.classList.add('onboarding-hidden');
@@ -1200,6 +1209,7 @@ class CelestialForgeGame {
             if (arsenalBar) arsenalBar.classList.add('onboarding-hidden');
             if (resContainer) resContainer.classList.add('onboarding-hidden');
             if (walletGrid) walletGrid.classList.add('stage-compact');
+            if (spItem) spItem.classList.add('onboarding-hidden');
             if (shardsItem) shardsItem.classList.add('onboarding-hidden');
             if (coresItem) coresItem.classList.add('onboarding-hidden');
             if (eclipseItem) eclipseItem.classList.add('onboarding-hidden');
@@ -1214,6 +1224,7 @@ class CelestialForgeGame {
             if (arsenalBar) arsenalBar.classList.remove('onboarding-hidden');
             if (resContainer) resContainer.classList.remove('onboarding-hidden');
             if (walletGrid) walletGrid.classList.add('stage-compact');
+            if (spItem) spItem.classList.add('onboarding-hidden');
             if (shardsItem) shardsItem.classList.add('onboarding-hidden');
             if (coresItem) coresItem.classList.add('onboarding-hidden');
             if (eclipseItem) eclipseItem.classList.add('onboarding-hidden');
@@ -1229,6 +1240,7 @@ class CelestialForgeGame {
             if (arsenalBar) arsenalBar.classList.remove('onboarding-hidden');
             if (resContainer) resContainer.classList.remove('onboarding-hidden');
             if (walletGrid) walletGrid.classList.remove('stage-compact');
+            if (spItem) spItem.classList.remove('onboarding-hidden');
             if (shardsItem) shardsItem.classList.remove('onboarding-hidden');
             if (coresItem) coresItem.classList.remove('onboarding-hidden');
             if (eclipseItem) eclipseItem.classList.remove('onboarding-hidden');
@@ -1268,11 +1280,13 @@ class CelestialForgeGame {
         const shardEl = document.getElementById('valDomeShards');
         const coreEl = document.getElementById('valCelestialCores');
         const eclipseEl = document.getElementById('valEclipse');
+        const spEl = document.getElementById('valWalletSp');
 
         if (ironEl) ironEl.innerText = formatNum(this.skyIron);
         if (shardEl) shardEl.innerText = formatNum(this.domeShards);
         if (coreEl) coreEl.innerText = `${this.celestialCores} (Pity: ${this.pityCoresCounter}/149)`;
         if (eclipseEl) eclipseEl.innerText = formatNum(this.eclipseEssence);
+        if (spEl) spEl.innerText = `${this.spiritPoints} SP`;
 
         const streakEl = document.getElementById('streakVal');
         if (streakEl) streakEl.innerText = `${this.goldenStreak}/8`;
@@ -1620,6 +1634,38 @@ class CelestialForgeGame {
 
         const modalBtn = document.getElementById('modalBtn');
         if (modalBtn) modalBtn.onclick = () => this.closeModal();
+
+        // Math & Mechanisms Popover Modal
+        const btnOpenMath = document.getElementById('btnOpenMathModal');
+        const btnCloseMath = document.getElementById('btnCloseMathModal');
+        const btnConfirmMath = document.getElementById('btnConfirmMathModal');
+        const mathModal = document.getElementById('mathModal');
+
+        if (btnOpenMath && mathModal) {
+            btnOpenMath.onclick = () => {
+                mathModal.classList.add('open');
+                window.soundManager.playClick();
+            };
+        }
+        if (btnCloseMath && mathModal) {
+            btnCloseMath.onclick = () => {
+                mathModal.classList.remove('open');
+                window.soundManager.playClick();
+            };
+        }
+        if (btnConfirmMath && mathModal) {
+            btnConfirmMath.onclick = () => {
+                mathModal.classList.remove('open');
+                window.soundManager.playClick();
+            };
+        }
+        if (mathModal) {
+            mathModal.addEventListener('click', (e) => {
+                if (e.target === mathModal) {
+                    mathModal.classList.remove('open');
+                }
+            });
+        }
     }
 
     openModal(title, body) {
