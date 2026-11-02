@@ -442,8 +442,18 @@ header {
 }
 
 .ticker-icon {
-    color: var(--gold-primary);
     font-weight: 900;
+    white-space: nowrap;
+    color: var(--gold-primary);
+    transition: color 0.3s;
+}
+
+.ticker-icon.connected {
+    color: #10b981;
+}
+
+.ticker-icon.offline {
+    color: #94a3b8;
 }
 
 .ticker-text {
@@ -526,8 +536,10 @@ header {
     transition: transform 0.05s ease-out;
 }
 
-.anvil-wrapper:active .anvil-sprite {
-    transform: scale(0.92) translateY(4px);
+.anvil-wrapper:active .anvil-sprite,
+.anvil-wrapper.pressed .anvil-sprite {
+    transform: scale(0.88) translateY(6px);
+    filter: drop-shadow(0 0 25px rgba(245, 158, 11, 0.9));
 }
 
 .anvil-glow {

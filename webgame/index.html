@@ -26,7 +26,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&family=Cinzel:wght@700;800;900&display=swap" rel="stylesheet">
 
     <!-- Stylesheet with Cache Buster -->
-    <link rel="stylesheet" href="style.css?v=4.2.2">
+    <link rel="stylesheet" href="style.css?v=4.2.3">
 </head>
 <body>
 
@@ -47,15 +47,16 @@
                 </div>
             </div>
 
-            <div id="serverStatsBadge" class="server-stats-badge">
-                <span id="ccuText">👤 1 Thợ Rèn (Độc Hành)</span>
-                <span>|</span>
-                <span id="dpsText">Sức đập: 10 DMG</span>
+            <!-- Gameplay Mode Badge (Tách riêng Chế độ chơi) -->
+            <div id="gameModeBadge" class="server-stats-badge" style="background: rgba(168, 85, 247, 0.15); border-color: rgba(168, 85, 247, 0.4); color: #d8b4fe;">
+                🎮 CHẾ ĐỘ: ĐỘC HÀNH (SOLO)
             </div>
 
-            <!-- Network Status Badge -->
-            <div id="netStatusBadge" class="server-stats-badge" style="background: rgba(245, 158, 11, 0.15); border-color: rgba(245, 158, 11, 0.4); color: #fef08a;">
-                🟡 CHẾ ĐỘ ĐỘC HÀNH (NGOẠI TUYẾN)
+            <!-- Stats Badge -->
+            <div id="serverStatsBadge" class="server-stats-badge">
+                <span id="ccuText">👤 1 Thợ Rèn</span>
+                <span>|</span>
+                <span id="dpsText">Sức đập: 10 DMG</span>
             </div>
 
             <!-- Night Watch Badge (00:00 - 06:00) -->
@@ -104,9 +105,9 @@
                 </div>
             </div>
 
-            <!-- Live Ticker Bar (Tin Nhắn Nhịp Tim Công Trường) -->
+            <!-- Live Ticker Bar (Tách riêng Trạng thái Kết nối Server) -->
             <div class="live-ticker-bar">
-                <span class="ticker-icon">⚡ LIVE:</span>
+                <span id="liveNetBadge" class="ticker-icon offline">⚪ NGOẠI TUYẾN (OFFLINE):</span>
                 <span id="tickerText" class="ticker-text">Chào mừng bạn đến với Đại Công Trường Phá Trời! Nhấn phím SPACE hoặc click đe để nện búa.</span>
             </div>
         </section>
@@ -207,7 +208,7 @@
                             <div class="upgrade-icon-box">🔨</div>
                             <div class="upgrade-details">
                                 <div class="upgrade-top-row">
-                                    <span class="upgrade-title">Rèn Cường Hóa Thần Chùy</span>
+                                    <span class="upgrade-title">RÈN CƯỜNG HÓA THẦN CHÙY</span>
                                     <span id="upgradeLvl" class="upgrade-lvl">Cấp 1</span>
                                 </div>
                                 <div id="upgradeDesc" class="upgrade-desc">Sát thương cơ bản: 10 ➔ 11 (Cột mốc tiếp theo: Cấp 10)</div>
@@ -343,7 +344,7 @@
     </div>
 
     <!-- Scripts with Cache Buster -->
-    <script src="audio.js?v=4.2.2"></script>
-    <script src="game.js?v=4.2.2"></script>
+    <script src="audio.js?v=4.2.3"></script>
+    <script src="game.js?v=4.2.3"></script>
 </body>
 </html>

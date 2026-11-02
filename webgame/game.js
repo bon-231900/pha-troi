@@ -267,27 +267,38 @@ class CelestialForgeGame {
     }
 
     updateNetworkBadge(online) {
-        const badge = document.getElementById('netStatusBadge');
+        const modeBadge = document.getElementById('gameModeBadge');
+        const liveNetBadge = document.getElementById('liveNetBadge');
         const ccuEl = document.getElementById('ccuText');
         const dpsEl = document.getElementById('dpsText');
 
-        if (badge) {
-            if (online) {
-                badge.style.background = 'rgba(16, 185, 129, 0.15)';
-                badge.style.borderColor = '#10b981';
-                badge.style.color = '#6ee7b7';
-                badge.innerText = '🟢 ĐỒNG BỘ TRỰC TUYẾN';
-                if (ccuEl) ccuEl.innerText = `🔥 ${this.ccu} Thợ Rèn Online`;
-                if (dpsEl) dpsEl.innerText = `${formatNum(this.serverDps)} DMG/s`;
-            } else {
-                badge.style.background = 'rgba(245, 158, 11, 0.15)';
-                badge.style.borderColor = 'rgba(245, 158, 11, 0.4)';
-                badge.style.color = '#fef08a';
-                badge.innerText = '🟡 CHẾ ĐỘ ĐỘC HÀNH (NGOẠI TUYẾN)';
-                if (ccuEl) ccuEl.innerText = `👤 1 Thợ Rèn (Độc Hành)`;
-                const currentDmg = this.calcFinalDamage('normal', false);
-                if (dpsEl) dpsEl.innerText = `Sức đập: ${formatNum(currentDmg)} DMG`;
+        if (online) {
+            if (modeBadge) {
+                modeBadge.style.background = 'rgba(16, 185, 129, 0.15)';
+                modeBadge.style.borderColor = 'rgba(16, 185, 129, 0.4)';
+                modeBadge.style.color = '#6ee7b7';
+                modeBadge.innerText = '🌐 CHẾ ĐỘ: VẠN DÂN (CO-OP)';
             }
+            if (liveNetBadge) {
+                liveNetBadge.className = 'ticker-icon connected';
+                liveNetBadge.innerText = '🟢 LIVE · ĐỒNG BỘ SERVER:';
+            }
+            if (ccuEl) ccuEl.innerText = `🔥 ${this.ccu} Thợ Rèn`;
+            if (dpsEl) dpsEl.innerText = `${formatNum(this.serverDps)} DMG/s`;
+        } else {
+            if (modeBadge) {
+                modeBadge.style.background = 'rgba(168, 85, 247, 0.15)';
+                modeBadge.style.borderColor = 'rgba(168, 85, 247, 0.4)';
+                modeBadge.style.color = '#d8b4fe';
+                modeBadge.innerText = '🎮 CHẾ ĐỘ: ĐỘC HÀNH (SOLO)';
+            }
+            if (liveNetBadge) {
+                liveNetBadge.className = 'ticker-icon offline';
+                liveNetBadge.innerText = '⚪ NGOẠI TUYẾN (OFFLINE):';
+            }
+            if (ccuEl) ccuEl.innerText = `👤 1 Thợ Rèn`;
+            const currentDmg = this.calcFinalDamage('normal', false);
+            if (dpsEl) dpsEl.innerText = `Sức đập: ${formatNum(currentDmg)} DMG`;
         }
     }
 
@@ -1105,10 +1116,50 @@ class CelestialForgeGame {
             anvil.addEventListener('pointerdown', (e) => this.handleStrike(e));
         }
 
+        // Global Spacebar Handler (Bắt phím SPACE toàn cục)
         window.addEventListener('keydown', (e) => {
-            if (e.code === 'Space' && !e.repeat) {
+            if (e.code === 'Space' || e.key === ' ' || e.keyCode === 32) {
+                const active = document.activeElement;
+                const isTyping = active && (
+                    active.tagName === 'INPUT' ||
+                    active.tagName === 'TEXTAREA' ||
+                    active.isContentEditable
+                );
+
+                if (isTyping) return; // Cho phép gõ khoảng trắng trong ô nhập liệu (ví dụ ô dán Save)
+
+                // Chặn hành vi mặc định (cuộn trang hoặc kích hoạt lại button đang focus)
                 e.preventDefault();
-                this.handleStrike();
+
+                // Blur nút đang focus để tránh nhấp nháy hoặc bấm nhầm
+                if (active && (active.tagName === 'BUTTON' || active.tagName === 'A' || active.getAttribute('role') === 'button')) {
+                    active.blur();
+                }
+
+                if (!e.repeat) {
+                    const anvilWrapper = document.getElementById('anvilWrapper');
+                    if (anvilWrapper) anvilWrapper.classList.add('pressed');
+
+                    // Kích hoạt nhát búa
+                    this.handleStrike();
+                }
+            }
+        }, { capture: true });
+
+        window.addEventListener('keyup', (e) => {
+            if (e.code === 'Space' || e.key === ' ' || e.keyCode === 32) {
+                const anvilWrapper = document.getElementById('anvilWrapper');
+                if (anvilWrapper) anvilWrapper.classList.remove('pressed');
+            }
+        }, { capture: true });
+
+        // Tự động giải phóng focus sau khi click nút bất kỳ để phím SPACE luôn sẵn sàng
+        document.addEventListener('pointerup', (e) => {
+            if (e.target && (e.target.tagName === 'BUTTON' || e.target.closest('button'))) {
+                const btn = e.target.tagName === 'BUTTON' ? e.target : e.target.closest('button');
+                setTimeout(() => {
+                    if (document.activeElement === btn) btn.blur();
+                }, 50);
             }
         });
 

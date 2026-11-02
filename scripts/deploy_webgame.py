@@ -50,7 +50,7 @@ def deploy():
         f"git remote add origin {repo_remote}",
         "git checkout -B gh-pages",
         "git add -A",
-        'git commit -m "Phase 4: Full Launch - PostgreSQL Persistence, Hall of Eternity, Golden Shower and 9 Celestial Layers"',
+        'git commit -m "Hotfix: Global Spacebar Handler, Vietnamese UI Spelling, Game Mode vs Live Network Badges"',
         "git push -u origin gh-pages --force"
     ]
     full_cmd = " && ".join(commands)
