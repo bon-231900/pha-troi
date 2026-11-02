@@ -26,7 +26,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&family=Cinzel:wght@700;800;900&display=swap" rel="stylesheet">
 
     <!-- Stylesheet with Cache Buster -->
-    <link rel="stylesheet" href="style.css?v=4.2.3">
+    <link rel="stylesheet" href="style.css?v=4.3.0">
 </head>
 <body>
 
@@ -65,6 +65,7 @@
             </div>
 
             <div class="header-right">
+                <button id="btnQuickSkipOnboarding" class="onboarding-skip-pill" style="display: none;" title="Hiển thị tất cả tính năng ngay lập tức">⚡ Hiện tất cả</button>
                 <button id="btnName" class="btn-icon">👤 Thợ Rèn</button>
                 <button id="btnAudio" class="btn-icon">🔊 BẬT ÂM</button>
             </div>
@@ -95,7 +96,7 @@
             </div>
 
             <!-- Resonance Stack Bar (Cộng Hưởng Vạn Dân) -->
-            <div class="resonance-container">
+            <div id="resonanceContainer" class="resonance-container">
                 <div class="resonance-header">
                     <span>⚡ Thanh Cộng Hưởng (Tích 100 nhát búa ➔ Phá Giáp x3 DMG trong 60s)</span>
                     <span id="resText">0 / 100</span>
@@ -131,7 +132,7 @@
                     </div>
 
                     <!-- Forge Rhythm Bar (Thanh Canh Nhịp) -->
-                    <div class="rhythm-section">
+                    <div id="rhythmSection" class="rhythm-section">
                         <div class="rhythm-info">
                             <span>Thanh Nhịp Điệu (Canh vùng Vàng = Sát thương x3.5 & x2.5 Quặng)</span>
                             <span>Chuỗi Hoàng Kim: <span id="streakVal" class="streak-badge">0/8</span></span>
@@ -146,7 +147,7 @@
                 </div>
 
                 <!-- Arsenal: Giá Treo 4 Thần Chùy -->
-                <div class="arsenal-bar">
+                <div id="arsenalBar" class="arsenal-bar">
                     <button class="hammer-btn active" data-id="1">
                         <span class="hammer-icon">⚡</span>
                         <span class="hammer-name">Lôi Đình</span>
@@ -175,26 +176,26 @@
                 <!-- Navigation Tabs -->
                 <div class="tab-nav">
                     <button class="tab-btn active" data-tab="forge">🔨 LÒ RÈN</button>
-                    <button class="tab-btn" data-tab="prestige">🌀 THẦN HỒN</button>
+                    <button id="tabBtnPrestige" class="tab-btn" data-tab="prestige">🌀 THẦN HỒN</button>
                     <button class="tab-btn" data-tab="leaderboard">📜 BẢNG VÀNG</button>
                     <button class="tab-btn" data-tab="settings">⚙️ CÀI ĐẶT</button>
                 </div>
 
                 <!-- 4 Currencies Wallet -->
-                <div class="wallet-grid">
-                    <div class="wallet-item">
+                <div id="walletGrid" class="wallet-grid">
+                    <div id="walletIronItem" class="wallet-item">
                         <span class="wallet-label">⛏️ Vụn Thiên Thiết</span>
                         <span id="valSkyIron" class="wallet-val">0</span>
                     </div>
-                    <div class="wallet-item">
+                    <div id="walletShardsItem" class="wallet-item">
                         <span class="wallet-label">💎 Tinh Thể Thiên Cấm</span>
                         <span id="valDomeShards" class="wallet-val">0</span>
                     </div>
-                    <div class="wallet-item">
+                    <div id="walletCoresItem" class="wallet-item">
                         <span class="wallet-label">⭐ Thiên Hỏa Tâm</span>
                         <span id="valCelestialCores" class="wallet-val">0 (Pity 0/149)</span>
                     </div>
-                    <div class="wallet-item">
+                    <div id="walletEclipseItem" class="wallet-item">
                         <span class="wallet-label">🌙 Tinh Hoa Nguyệt Thực</span>
                         <span id="valEclipse" class="wallet-val">0</span>
                     </div>
@@ -319,12 +320,13 @@
                 <div id="pane-settings" class="tab-pane">
                     <div style="display: flex; flex-direction: column; gap: 10px; font-size: 0.82rem; color: #cbd5e1;">
                         <p>Tiến trình chơi game tự động lưu trữ trên trình duyệt của bạn (localStorage). Bạn có thể sao lưu hoặc chuyển đổi thiết bị:</p>
+                        <button id="btnSkipOnboarding" class="btn-icon" style="justify-content: center; padding: 10px; background: rgba(168, 85, 247, 0.2); border-color: #a855f7; color: #e9d5ff;">⚡ Mở Khóa Toàn Bộ Giao Diện (Bỏ qua Hướng dẫn)</button>
                         <button id="btnExportSave" class="btn-icon" style="justify-content: center; padding: 10px;">📤 Xuất Dữ Liệu Save (Copy Code)</button>
                         <button id="btnImportSave" class="btn-icon" style="justify-content: center; padding: 10px;">📥 Nhập Dữ Liệu Save (Paste Code)</button>
                         
                         <div style="margin-top: 14px; padding: 12px; background: rgba(0,0,0,0.3); border-radius: 10px; font-size: 0.75rem; color: #94a3b8; line-height: 1.5;">
                             <b>TOÀN DÂN PHÁ TRỜI: THE CELESTIAL FORGE</b><br>
-                            • Phiên bản: <b>Phase 4 (Full Launch · Server Persistence · Hall of Eternity)</b><br>
+                            • Phiên bản: <b>Phase 4 (Full Launch · Progressive Disclosure)</b><br>
                             • Phát hành chính thức tại: <a href="https://phatroi.com" style="color: #fbbf24; text-decoration: none;">phatroi.com</a><br>
                             • Server Tick: <b>2Hz</b> · Anti-Cheat: <b>4-Layer In-Memory Gate</b>
                         </div>
@@ -344,7 +346,7 @@
     </div>
 
     <!-- Scripts with Cache Buster -->
-    <script src="audio.js?v=4.2.3"></script>
-    <script src="game.js?v=4.2.3"></script>
+    <script src="audio.js?v=4.3.0"></script>
+    <script src="game.js?v=4.3.0"></script>
 </body>
 </html>

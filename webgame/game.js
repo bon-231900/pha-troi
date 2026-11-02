@@ -63,6 +63,11 @@ class CelestialForgeGame {
         this.pityCoresCounter = 0;     // Soft Pity: 120, Hard Pity: 149
         this.goldenStreak = 0;         // Chuỗi gõ Hoàng Kim liên tiếp
 
+        // Mở khóa tính năng theo tiến độ (Progressive Disclosure / Onboarding)
+        this.totalStrikes = 0;         // Tổng số nhát búa đã nện
+        this.onboardingStage = 0;      // 0: Khởi đầu, 1: Thanh Nhịp Điệu, 2: Cộng Hưởng & Vũ Khí, 3: Toàn Bộ
+        this.skipOnboarding = false;   // Người chơi chủ động bấm Bỏ Qua Hướng Dẫn
+
         // Trạng thái Thanh Nhịp Điệu (Forge Rhythm Bar)
         this.cursorPos = 0;            // 0 -> 100%
         this.cursorDirection = 1;      // 1: tới, -1: lùi
@@ -457,6 +462,7 @@ class CelestialForgeGame {
 
     handleStrike(event = null) {
         window.soundManager.ensureContext();
+        this.totalStrikes++;
 
         // 1. Chế độ Overdrive Fever
         if (this.overdriveActive) {
@@ -472,7 +478,12 @@ class CelestialForgeGame {
         let zone = 'cold';
         let m_rhythm = 0.3;
 
-        if (diff <= halfWidth) {
+        // Nếu đang ở Giai đoạn 0 (chưa mở khóa Thanh Nhịp Điệu), luôn tính chuẩn Warm để người mới không bị phạt
+        if (this.onboardingStage === 0 && !this.skipOnboarding) {
+            zone = 'warm';
+            m_rhythm = 1.0;
+            this.goldenStreak = 0;
+        } else if (diff <= halfWidth) {
             zone = 'golden';
             m_rhythm = 2.5;
             this.goldenStreak++;
@@ -496,6 +507,9 @@ class CelestialForgeGame {
         this.skyIron += ironEarned;
         this.lifetimeIron += ironEarned;
         this.playerDamageDealt += damage;
+
+        // Kiểm tra tiến trình mở khóa Onboarding
+        this.checkOnboardingProgression();
 
         // GỬI GÓI TIN HÀNH ĐỘNG LÊN WEBSOCKET GATEWAY (~24 BYTES)
         if (this.isOnline && this.ws && this.ws.readyState === WebSocket.OPEN) {
@@ -528,6 +542,7 @@ class CelestialForgeGame {
     }
 
     executeOverdriveStrike(event) {
+        this.totalStrikes++;
         const isCrit = Math.random() < 0.25;
         const damage = this.calcFinalDamage('golden', isCrit);
         const ironEarned = this.calcIronDrop(this.hammerLevel, 1.8);
@@ -535,6 +550,7 @@ class CelestialForgeGame {
         this.skyIron += ironEarned;
         this.lifetimeIron += ironEarned;
         this.playerDamageDealt += damage;
+        this.checkOnboardingProgression();
 
         if (this.isOnline && this.ws && this.ws.readyState === WebSocket.OPEN) {
             this.ws.send(JSON.stringify([1, 0, this.activeHammer]));
@@ -626,6 +642,7 @@ class CelestialForgeGame {
             this.skyIron -= cost;
             this.hammerLevel++;
             window.soundManager.playUpgrade();
+            this.checkOnboardingProgression();
             this.renderAll();
         }
     }
@@ -639,6 +656,10 @@ class CelestialForgeGame {
     }
 
     switchTab(tabKey) {
+        if (tabKey === 'prestige' && this.onboardingStage < 3 && !this.skipOnboarding) {
+            this.pushTicker("🔒 Tính năng Thần Hồn sẽ mở khóa khi bạn đạt Cấp búa 15 hoặc 100 nhát búa!");
+            return;
+        }
         this.activeTab = tabKey;
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.classList.toggle('active', btn.getAttribute('data-tab') === tabKey);
@@ -918,6 +939,154 @@ class CelestialForgeGame {
     }
 
     // =========================================================================
+    // PROGRESSIVE DISCLOSURE (MỞ KHÓA TÍNH NĂNG THEO TIẾN ĐỘ)
+    // =========================================================================
+    checkOnboardingProgression() {
+        if (this.skipOnboarding || this.onboardingStage >= 3) return;
+
+        let targetStage = 0;
+
+        // Giai đoạn 3: Cấp búa >= 15 HOẶC nhát búa >= 100 HOẶC có tài nguyên hiếm HOẶC đã có SP
+        if (this.hammerLevel >= 15 || this.totalStrikes >= 100 || this.domeShards > 0 || this.celestialCores > 0 || this.spiritPointsClaimed > 0) {
+            targetStage = 3;
+        }
+        // Giai đoạn 2: Nhát búa >= 40 HOẶC cấp búa >= 5
+        else if (this.totalStrikes >= 40 || this.hammerLevel >= 5) {
+            targetStage = 2;
+        }
+        // Giai đoạn 1: Nhát búa >= 15 HOẶC cấp búa >= 2
+        else if (this.totalStrikes >= 15 || this.hammerLevel >= 2) {
+            targetStage = 1;
+        }
+
+        if (targetStage > this.onboardingStage) {
+            const unlockedStage = targetStage;
+            this.onboardingStage = targetStage;
+            this.handleOnboardingUnlock(unlockedStage);
+        }
+    }
+
+    handleOnboardingUnlock(stage) {
+        window.soundManager.playUpgrade();
+        if (stage === 1) {
+            this.pushTicker(`✨ [MỚI MỞ KHÓA] Thanh Canh Nhịp Điệu! Canh vạch sáng vào vùng Hoàng Kim (Vàng) khi nện búa để nhận x3.5 Sát Thương & x2.5 Quặng!`);
+            const rhythm = document.getElementById('rhythmSection');
+            if (rhythm) {
+                rhythm.classList.add('unlock-reveal');
+                setTimeout(() => rhythm.classList.remove('unlock-reveal'), 1000);
+            }
+        } else if (stage === 2) {
+            this.pushTicker(`⚡ [MỚI MỞ KHÓA] Thanh Cộng Hưởng & Giá Treo 4 Thần Chùy (Lôi Đình, Viêm Dương, Trọng Lực, Huyền Âm)! Chuyển đổi linh hoạt theo chiến thuật!`);
+            const res = document.getElementById('resonanceContainer');
+            const arsenal = document.getElementById('arsenalBar');
+            if (res) {
+                res.classList.add('unlock-reveal');
+                setTimeout(() => res.classList.remove('unlock-reveal'), 1000);
+            }
+            if (arsenal) {
+                arsenal.classList.add('unlock-reveal');
+                setTimeout(() => arsenal.classList.remove('unlock-reveal'), 1000);
+            }
+        } else if (stage >= 3) {
+            this.pushTicker(`💎 [MỞ KHÓA TOÀN BỘ] Đầy đủ 4 Kho Tài Nguyên Cấp Cao & Con Đường Tu Luyện Thần Hồn đã khai mở!`);
+            const walletGrid = document.getElementById('walletGrid');
+            const prestigeTab = document.getElementById('tabBtnPrestige');
+            if (walletGrid) {
+                walletGrid.classList.add('unlock-reveal');
+                setTimeout(() => walletGrid.classList.remove('unlock-reveal'), 1000);
+            }
+            if (prestigeTab) {
+                prestigeTab.classList.add('unlock-reveal');
+                setTimeout(() => prestigeTab.classList.remove('unlock-reveal'), 1000);
+            }
+        }
+        this.renderOnboarding();
+    }
+
+    renderOnboarding() {
+        const isFull = this.skipOnboarding || this.onboardingStage >= 3;
+        const stage = isFull ? 3 : this.onboardingStage;
+
+        const rhythmSection = document.getElementById('rhythmSection');
+        const arsenalBar = document.getElementById('arsenalBar');
+        const resContainer = document.getElementById('resonanceContainer');
+        const walletGrid = document.getElementById('walletGrid');
+        const shardsItem = document.getElementById('walletShardsItem');
+        const coresItem = document.getElementById('walletCoresItem');
+        const eclipseItem = document.getElementById('walletEclipseItem');
+        const quickSkipBtn = document.getElementById('btnQuickSkipOnboarding');
+        const prestigeTab = document.getElementById('tabBtnPrestige');
+
+        if (stage === 0) {
+            if (rhythmSection) rhythmSection.classList.add('onboarding-hidden');
+            if (arsenalBar) arsenalBar.classList.add('onboarding-hidden');
+            if (resContainer) resContainer.classList.add('onboarding-hidden');
+            if (walletGrid) walletGrid.classList.add('stage-compact');
+            if (shardsItem) shardsItem.classList.add('onboarding-hidden');
+            if (coresItem) coresItem.classList.add('onboarding-hidden');
+            if (eclipseItem) eclipseItem.classList.add('onboarding-hidden');
+            if (quickSkipBtn) quickSkipBtn.style.display = 'inline-flex';
+            if (prestigeTab) {
+                prestigeTab.classList.add('locked');
+                prestigeTab.title = "Mở khóa ở Cấp búa 15 hoặc 100 nhát búa";
+                prestigeTab.innerHTML = "🔒 THẦN HỒN";
+            }
+        } else if (stage === 1) {
+            if (rhythmSection) rhythmSection.classList.remove('onboarding-hidden');
+            if (arsenalBar) arsenalBar.classList.add('onboarding-hidden');
+            if (resContainer) resContainer.classList.add('onboarding-hidden');
+            if (walletGrid) walletGrid.classList.add('stage-compact');
+            if (shardsItem) shardsItem.classList.add('onboarding-hidden');
+            if (coresItem) coresItem.classList.add('onboarding-hidden');
+            if (eclipseItem) eclipseItem.classList.add('onboarding-hidden');
+            if (quickSkipBtn) quickSkipBtn.style.display = 'inline-flex';
+            if (prestigeTab) {
+                prestigeTab.classList.add('locked');
+                prestigeTab.title = "Mở khóa ở Cấp búa 15 hoặc 100 nhát búa";
+                prestigeTab.innerHTML = "🔒 THẦN HỒN";
+            }
+        } else if (stage === 2) {
+            if (rhythmSection) rhythmSection.classList.remove('onboarding-hidden');
+            if (arsenalBar) arsenalBar.classList.remove('onboarding-hidden');
+            if (resContainer) resContainer.classList.remove('onboarding-hidden');
+            if (walletGrid) walletGrid.classList.add('stage-compact');
+            if (shardsItem) shardsItem.classList.add('onboarding-hidden');
+            if (coresItem) coresItem.classList.add('onboarding-hidden');
+            if (eclipseItem) eclipseItem.classList.add('onboarding-hidden');
+            if (quickSkipBtn) quickSkipBtn.style.display = 'inline-flex';
+            if (prestigeTab) {
+                prestigeTab.classList.add('locked');
+                prestigeTab.title = "Mở khóa ở Cấp búa 15 hoặc 100 nhát búa";
+                prestigeTab.innerHTML = "🔒 THẦN HỒN";
+            }
+        } else {
+            // Stage 3 (hoặc Bỏ qua): Mở toàn bộ
+            if (rhythmSection) rhythmSection.classList.remove('onboarding-hidden');
+            if (arsenalBar) arsenalBar.classList.remove('onboarding-hidden');
+            if (resContainer) resContainer.classList.remove('onboarding-hidden');
+            if (walletGrid) walletGrid.classList.remove('stage-compact');
+            if (shardsItem) shardsItem.classList.remove('onboarding-hidden');
+            if (coresItem) coresItem.classList.remove('onboarding-hidden');
+            if (eclipseItem) eclipseItem.classList.remove('onboarding-hidden');
+            if (quickSkipBtn) quickSkipBtn.style.display = 'none';
+            if (prestigeTab) {
+                prestigeTab.classList.remove('locked');
+                prestigeTab.title = "Tôi Luyện Thần Hồn (Prestige)";
+                prestigeTab.innerHTML = "🌀 THẦN HỒN";
+            }
+        }
+    }
+
+    skipTutorial() {
+        this.skipOnboarding = true;
+        this.onboardingStage = 3;
+        this.renderOnboarding();
+        this.saveGame();
+        this.pushTicker(`⚡ [GIAO DIỆN] Đã mở khóa hiển thị toàn bộ tính năng trò chơi!`);
+        window.soundManager.playUpgrade();
+    }
+
+    // =========================================================================
     // UI RENDERING
     // =========================================================================
     renderAll() {
@@ -927,6 +1096,7 @@ class CelestialForgeGame {
         this.renderUpgradeCard();
         this.renderPrestigeTab();
         this.renderLeaderboardTab();
+        this.renderOnboarding();
     }
 
     renderWallets() {
@@ -1218,6 +1388,19 @@ class CelestialForgeGame {
             };
         }
 
+        const quickSkip = document.getElementById('btnQuickSkipOnboarding');
+        if (quickSkip) {
+            quickSkip.onclick = () => this.skipTutorial();
+        }
+
+        const skipBtn = document.getElementById('btnSkipOnboarding');
+        if (skipBtn) {
+            skipBtn.onclick = () => {
+                this.skipTutorial();
+                alert("Đã mở khóa toàn bộ giao diện trò chơi!");
+            };
+        }
+
         const importBtn = document.getElementById('btnImportSave');
         if (importBtn) {
             importBtn.onclick = () => {
@@ -1273,6 +1456,9 @@ class CelestialForgeGame {
             domeMaxHp: this.domeMaxHp,
             hallOfFame: this.hallOfFame,
             goldenShowerUntil: this.goldenShowerUntil,
+            totalStrikes: this.totalStrikes,
+            onboardingStage: this.onboardingStage,
+            skipOnboarding: this.skipOnboarding,
             lastSaveTime: Date.now()
         };
     }
@@ -1293,6 +1479,39 @@ class CelestialForgeGame {
         if (s.domeName) this.domeName = s.domeName;
         if (Array.isArray(s.hallOfFame) && s.hallOfFame.length > 0) this.hallOfFame = s.hallOfFame;
         if (s.goldenShowerUntil) this.goldenShowerUntil = s.goldenShowerUntil;
+
+        this.totalStrikes = s.totalStrikes || 0;
+        this.skipOnboarding = !!s.skipOnboarding;
+
+        // Tự động mở khóa 100% nếu là người chơi cũ
+        const isVeteranPlayer = (
+            this.hammerLevel > 10 ||
+            this.spiritPointsClaimed > 0 ||
+            this.totalStrikes >= 100 ||
+            this.lifetimeIron > 10000 ||
+            this.playerDamageDealt > 10000 ||
+            this.domeLayer > 1 ||
+            this.domeShards > 0 ||
+            this.celestialCores > 0 ||
+            this.skipOnboarding
+        );
+
+        if (isVeteranPlayer) {
+            this.onboardingStage = 3;
+        } else if (typeof s.onboardingStage !== 'undefined') {
+            this.onboardingStage = s.onboardingStage;
+        } else {
+            // Xác định stage dựa trên chỉ số hiện có
+            if (this.hammerLevel >= 15 || this.totalStrikes >= 100) {
+                this.onboardingStage = 3;
+            } else if (this.hammerLevel >= 5 || this.totalStrikes >= 40) {
+                this.onboardingStage = 2;
+            } else if (this.hammerLevel >= 2 || this.totalStrikes >= 15) {
+                this.onboardingStage = 1;
+            } else {
+                this.onboardingStage = 0;
+            }
+        }
 
         // Auto-fix cân bằng lại nếu save cũ lưu mức máu 1 tỷ của giai đoạn test
         const targetBaseHp = CELESTIAL_LAYERS[this.domeLayer - 1]?.baseHp || 50000;
