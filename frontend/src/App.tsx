@@ -18,11 +18,13 @@ import {
   CRACK_INCREMENT_PER_STRIKE,
 } from './game/rules';
 import { soundEngine } from './game/audio';
+import { safeStorage } from './game/storage';
 import { TitleScreenModal } from './components/TitleScreenModal';
 import { TopBossHeader } from './components/TopBossHeader';
 import { LeftTacticalPanel, CombatLogEntry, ChatMessage } from './components/LeftTacticalPanel';
 import { RightProgressionPanel, LeaderboardEntry } from './components/RightProgressionPanel';
 import { StatusModal } from './components/StatusModal';
+import { LoadingScreen } from './components/LoadingScreen';
 import { MultiplayerClient } from './game/multiplayer';
 import { CelestialVaultStage3D, CelestialVaultStage3DHandle } from './components/CelestialVaultStage3D';
 import { Shield, Hammer, X, Zap, Flame, Sparkles } from 'lucide-react';
@@ -99,10 +101,14 @@ export default function App() {
   const [leftPanelOpen, setLeftPanelOpen] = useState<boolean>(false);
   const [rightPanelOpen, setRightPanelOpen] = useState<boolean>(false);
 
-  // Resources & Progression (Hydrated from localStorage)
+  // Network & Loading State
+  const [isOffline, setIsOffline] = useState<boolean>(true);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+
+  // Resources & Progression (Hydrated safely from storage)
   const [linhThach, setLinhThach] = useState<number>(() => {
     try {
-      const s = localStorage.getItem('phatroi_save_v5');
+      const s = safeStorage.getItem('phatroi_save_v5');
       if (s) {
         const parsed = JSON.parse(s);
         if (typeof parsed.linhThach === 'number') return parsed.linhThach;
@@ -112,7 +118,7 @@ export default function App() {
   });
   const [tinhHoa, setTinhHoa] = useState<number>(() => {
     try {
-      const s = localStorage.getItem('phatroi_save_v5');
+      const s = safeStorage.getItem('phatroi_save_v5');
       if (s) {
         const parsed = JSON.parse(s);
         if (typeof parsed.tinhHoa === 'number') return parsed.tinhHoa;
@@ -122,7 +128,7 @@ export default function App() {
   });
   const [upgrades, setUpgrades] = useState<ForgeUpgrade[]>(() => {
     try {
-      const s = localStorage.getItem('phatroi_save_v5');
+      const s = safeStorage.getItem('phatroi_save_v5');
       if (s) {
         const parsed = JSON.parse(s);
         if (Array.isArray(parsed.upgrades)) return parsed.upgrades;
@@ -132,7 +138,7 @@ export default function App() {
   });
   const [spiritNodes, setSpiritNodes] = useState<SpiritNode[]>(() => {
     try {
-      const s = localStorage.getItem('phatroi_save_v5');
+      const s = safeStorage.getItem('phatroi_save_v5');
       if (s) {
         const parsed = JSON.parse(s);
         if (Array.isArray(parsed.spiritNodes)) return parsed.spiritNodes;
@@ -142,7 +148,7 @@ export default function App() {
   });
   const [playerTotalDamageBillions, setPlayerTotalDamageBillions] = useState<number>(() => {
     try {
-      const s = localStorage.getItem('phatroi_save_v5');
+      const s = safeStorage.getItem('phatroi_save_v5');
       if (s) {
         const parsed = JSON.parse(s);
         if (typeof parsed.playerTotalDamageBillions === 'number') return parsed.playerTotalDamageBillions;
@@ -202,7 +208,7 @@ export default function App() {
     document.body.dataset.state = gameState;
   }, [gameState]);
 
-  // Auto-save progression to localStorage
+  // Auto-save progression to safeStorage
   useEffect(() => {
     const saveState = () => {
       try {
@@ -214,7 +220,7 @@ export default function App() {
           playerTotalDamageBillions,
           lastActiveTimestamp: Date.now(),
         };
-        localStorage.setItem('phatroi_save_v5', JSON.stringify(payload));
+        safeStorage.setItem('phatroi_save_v5', JSON.stringify(payload));
       } catch {}
     };
 
@@ -230,7 +236,14 @@ export default function App() {
   useEffect(() => {
     const mp = new MultiplayerClient({
       onConnected: (districtId) => {
+        setIsOffline(false);
         appendCombatLog(`Đã kết nối vào Phân Khu Vạn Dân [${districtId}]!`, 'cyan');
+      },
+      onDisconnected: () => {
+        setIsOffline(true);
+      },
+      onOfflineMode: (offline) => {
+        setIsOffline(offline);
       },
       onHeartbeat: (hb) => {
         if (hb.ccu) {
@@ -606,6 +619,9 @@ export default function App() {
       data-stance={activeStance}
       data-overdrive={overdriveActive ? 'true' : 'false'}
     >
+      {/* 0. Forge Atmospheric Loading Screen */}
+      {isLoading && <LoadingScreen onLoaded={() => setIsLoading(false)} />}
+
       {/* 1. THE MAIN 3D PLAYABLE SCENE: Colossal Cracking Sky Vault + Minimalist Forged Anvil */}
       <div className="fixed inset-0 w-full h-full z-0 pointer-events-auto">
         <CelestialVaultStage3D
@@ -633,6 +649,7 @@ export default function App() {
           globalSynergyPct={globalSynergyPct}
           globalBurstActive={globalBurstActive}
           activeForgersCount={activeForgersCount}
+          isOffline={isOffline}
           muted={muted}
           onToggleMute={() => {
             setMuted((prev) => {

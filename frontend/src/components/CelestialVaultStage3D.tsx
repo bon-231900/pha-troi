@@ -624,6 +624,7 @@ export const CelestialVaultStage3D = forwardRef<
   CelestialVaultStage3DProps
 >(({ crackProgress, activeStance = 'Q', overdriveActive = false, onStrike, onGrandShatter, onResetVault }, ref) => {
   const mountRef = useRef<HTMLDivElement | null>(null);
+  const [webglError, setWebglError] = React.useState<string | null>(null);
 
   const crackRef = useRef<number>(crackProgress);
   const shatteredRef = useRef<boolean>(false);
@@ -666,20 +667,18 @@ export const CelestialVaultStage3D = forwardRef<
     const container = mountRef.current;
     if (!container) return;
 
-    const isSoftwareGl = (() => {
-      try {
-        const probe = document.createElement('canvas');
-        const gl = probe.getContext('webgl2') || probe.getContext('webgl');
-        if (!gl) return true;
-        const ext = gl.getExtension('WEBGL_debug_renderer_info');
-        const param = ext ? ext.UNMASKED_RENDERER_WEBGL : gl.RENDERER;
-        const gpu = String(gl.getParameter(param));
-        gl.getExtension('WEBGL_lose_context')?.loseContext();
-        return /SwiftShader|llvmpipe|softpipe|Software|Basic Render/i.test(gpu);
-      } catch {
-        return true;
-      }
-    })();
+    // Safety probe: verify WebGL support before instantiating Three.js
+    const probe = document.createElement('canvas');
+    const gl =
+      probe.getContext('webgl2') ||
+      probe.getContext('webgl') ||
+      probe.getContext('experimental-webgl');
+    if (!gl) {
+      setWebglError(
+        'Thiết bị hoặc trình duyệt chưa hỗ trợ WebGL. Vui lòng bật Tăng tốc phần cứng (Hardware Acceleration) trong Cài đặt.'
+      );
+      return;
+    }
 
     // 1. Scene, Camera & Renderer
     const scene = new THREE.Scene();
@@ -694,25 +693,47 @@ export const CelestialVaultStage3D = forwardRef<
     camera.position.copy(baseCamPos);
     camera.lookAt(baseLookAt);
 
-    const renderer = new THREE.WebGLRenderer({
-      antialias: !isSoftwareGl,
-      powerPreference: 'high-performance',
-    });
-    renderer.outputColorSpace = THREE.SRGBColorSpace;
-    renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.22;
-    renderer.setPixelRatio(isSoftwareGl ? 1 : Math.min(window.devicePixelRatio, 2));
-    renderer.setSize(width, height);
-    renderer.domElement.style.width = '100%';
-    renderer.domElement.style.height = '100%';
-    renderer.domElement.style.display = 'block';
-    container.innerHTML = '';
-    container.appendChild(renderer.domElement);
+    let renderer: THREE.WebGLRenderer;
+    let envTarget: THREE.WebGLRenderTarget | null = null;
 
-    const pmremGenerator = new THREE.PMREMGenerator(renderer);
-    const envTarget = pmremGenerator.fromScene(new RoomEnvironment(), 0.04);
-    scene.environment = envTarget.texture;
-    pmremGenerator.dispose();
+    try {
+      const isSoftwareGl = (() => {
+        try {
+          const ext = (gl as WebGLRenderingContext).getExtension('WEBGL_debug_renderer_info');
+          const param = ext ? ext.UNMASKED_RENDERER_WEBGL : (gl as WebGLRenderingContext).RENDERER;
+          const gpu = String((gl as WebGLRenderingContext).getParameter(param));
+          return /SwiftShader|llvmpipe|softpipe|Software|Basic Render/i.test(gpu);
+        } catch {
+          return true;
+        }
+      })();
+
+      renderer = new THREE.WebGLRenderer({
+        antialias: !isSoftwareGl && typeof window !== 'undefined' && window.devicePixelRatio < 2,
+        powerPreference: 'default',
+      });
+      renderer.outputColorSpace = THREE.SRGBColorSpace;
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.22;
+      renderer.setPixelRatio(isSoftwareGl ? 1 : Math.min(window.devicePixelRatio || 1, 1.5));
+      renderer.setSize(width, height);
+      renderer.domElement.style.width = '100%';
+      renderer.domElement.style.height = '100%';
+      renderer.domElement.style.display = 'block';
+      container.innerHTML = '';
+      container.appendChild(renderer.domElement);
+
+      const pmremGenerator = new THREE.PMREMGenerator(renderer);
+      envTarget = pmremGenerator.fromScene(new RoomEnvironment(), 0.04);
+      scene.environment = envTarget.texture;
+      pmremGenerator.dispose();
+    } catch (err) {
+      console.warn('[CelestialVaultStage3D] WebGLRenderer creation failed:', err);
+      setWebglError(
+        'Không thể khởi tạo môi trường đồ họa WebGL. Vui lòng bật Tăng tốc phần cứng trong cài đặt trình duyệt để tiếp tục.'
+      );
+      return;
+    }
 
     // 2. Lighting
     const ambientAbyssLight = new THREE.HemisphereLight(0x162038, 0x04060c, 0.55);
@@ -1255,6 +1276,7 @@ export const CelestialVaultStage3D = forwardRef<
     let shockwaveTimer = -1;
     let strikeFlash = 0;
     let cameraShake = 0;
+    let isLastHitPerfect = false;
     let shatterElapsed = -1;
 
     const executeGrandShatter = () => {
@@ -1286,10 +1308,12 @@ export const CelestialVaultStage3D = forwardRef<
       lightningTimer = 0;
       lightningGroup.visible = true;
 
-      // 2. Trigger Radial Shockwave
+      // 2. Trigger Radial Shockwave & Camera Micro-Shake
       shockwaveTimer = 0;
       strikeFlash = 1.0;
-      cameraShake = 0.28 + result.nextCrack * 0.25;
+      isLastHitPerfect = grade === 'PERFECT';
+      // 0.15s micro-shake on PERFECT strikes, proportional for others
+      cameraShake = isLastHitPerfect ? 0.38 : 0.22 + result.nextCrack * 0.22;
 
       // 3. Play strike audio
       soundEngine.playAnvilStrike(grade as any, stance, result.nextCrack >= 0.75 || overdriveActive);
@@ -1519,12 +1543,14 @@ export const CelestialVaultStage3D = forwardRef<
       }
 
       if (cameraShake > 0) {
-        cameraShake = Math.max(0, cameraShake - dt * 1.6);
+        // Rapid 0.15s decay on PERFECT strike, 0.25s on others
+        const decayRate = isLastHitPerfect ? 2.6 : 1.8;
+        cameraShake = Math.max(0, cameraShake - dt * decayRate);
         const s = cameraShake * cameraShake * 0.35;
         camera.position.set(
-          baseCamPos.x + (Math.random() - 0.5) * s,
-          baseCamPos.y + (Math.random() - 0.5) * s,
-          baseCamPos.z + (Math.random() - 0.5) * s * 0.5
+          baseCamPos.x + (Math.random() - 0.5) * s * 0.3,
+          baseCamPos.y + (Math.random() - 0.5) * s * 1.35, // Y-axis micro-shake emphasis
+          baseCamPos.z + (Math.random() - 0.5) * s * 0.25
         );
       } else {
         camera.position.copy(baseCamPos);
@@ -1552,10 +1578,50 @@ export const CelestialVaultStage3D = forwardRef<
       galaxyMat.dispose();
       grandShardGeo.dispose();
       grandShardMat.dispose();
-      envTarget.dispose();
+      envTarget?.dispose();
       renderer.dispose();
     };
   }, []);
+
+  if (webglError) {
+    return (
+      <div className="w-full h-full flex flex-col items-center justify-center bg-[#070b14] text-slate-200 p-6 text-center select-none relative overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,158,0,0.12)_0%,transparent_70%)] pointer-events-none" />
+        <div className="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 mb-4 shadow-[0_0_24px_rgba(255,158,0,0.2)]">
+          <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+            />
+          </svg>
+        </div>
+        <h3 className="text-xl font-bold text-amber-300 font-cinzel mb-2 tracking-wide">
+          CẦN BẬT TĂNG TỐC PHẦN CỨNG (WEBGL)
+        </h3>
+        <p className="max-w-md text-xs text-slate-400 leading-relaxed mb-6 font-mono">
+          {webglError}
+        </p>
+        <div className="text-left bg-black/40 border border-slate-800 rounded-lg p-3.5 max-w-sm w-full mb-6 text-[11px] text-slate-400 font-mono space-y-1.5">
+          <p className="text-amber-400 font-bold mb-1">Hướng dẫn kích hoạt nhanh:</p>
+          <p>
+            • <span className="text-slate-200">Chrome/Edge:</span> Cài đặt → Hệ thống → Bật "Sử dụng tính năng tăng tốc đồ họa khi có sẵn" (Hardware acceleration).
+          </p>
+          <p>
+            • <span className="text-slate-200">Zalo/FB/TikTok WebView:</span> Nhấn nút (...) ở góc và chọn "Mở bằng trình duyệt ngoài" (Safari / Chrome).
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => window.location.reload()}
+          className="px-6 py-2.5 bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-black font-bold text-xs uppercase tracking-widest rounded-lg shadow-[0_0_20px_rgba(255,158,0,0.4)] transition-all cursor-pointer active:scale-95"
+        >
+          Tải Lại Trang
+        </button>
+      </div>
+    );
+  }
 
   return <div ref={mountRef} className="w-full h-full" />;
 });

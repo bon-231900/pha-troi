@@ -13,6 +13,7 @@ interface TopBossHeaderProps {
   globalSynergyPct: number;
   globalBurstActive: boolean;
   activeForgersCount: number;
+  isOffline?: boolean;
   muted: boolean;
   onToggleMute: () => void;
   onPause: () => void;
@@ -31,6 +32,7 @@ export const TopBossHeader: React.FC<TopBossHeaderProps> = ({
   globalSynergyPct,
   globalBurstActive,
   activeForgersCount,
+  isOffline = false,
   muted,
   onToggleMute,
   onPause,
@@ -58,6 +60,21 @@ export const TopBossHeader: React.FC<TopBossHeaderProps> = ({
                 <span className="hidden sm:inline text-xs text-slate-400">·</span>
                 <span className="hidden sm:inline text-xs text-slate-300 font-tech">
                   {bossRealm}
+                </span>
+                <span
+                  className={`px-1.5 py-0.5 rounded text-[10px] font-mono font-bold flex items-center gap-1 border ${
+                    isOffline
+                      ? 'bg-amber-500/15 text-amber-300 border-amber-500/30'
+                      : 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
+                  }`}
+                  title={isOffline ? 'Chế độ Ngoại Tuyến (Chơi Đơn / Tự động đồng bộ)' : 'Đã kết nối Phân Khu Vạn Dân'}
+                >
+                  <span
+                    className={`w-1.5 h-1.5 rounded-full ${
+                      isOffline ? 'bg-amber-400' : 'bg-emerald-400 animate-pulse'
+                    }`}
+                  />
+                  {isOffline ? 'ĐỘC HÀNH' : 'VẠN DÂN'}
                 </span>
               </div>
               <div className="text-[11px] text-slate-400 font-tech flex items-center gap-2">

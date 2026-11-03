@@ -1,7 +1,9 @@
 // ============================================================================
 // DỰ ÁN WEBGAME "PHÁ TRỜI" - THE CELESTIAL FORGE (phatroi.com)
-// REAL-TIME MULTIPLAYER WEBSOCKET SYNC CLIENT (Task 2 & Anti-Cheat Batched Ticks)
+// REAL-TIME MULTIPLAYER WEBSOCKET SYNC CLIENT & ROBUST OFFLINE FALLBACK
 // ============================================================================
+
+import { safeStorage } from './storage';
 
 export interface BatchedHit {
   stance: string;
@@ -41,30 +43,37 @@ export interface MultiplayerCallbacks {
   onDisconnected?: () => void;
   onHeartbeat?: (heartbeat: ServerHeartbeat) => void;
   onPeerSparks?: (count: number) => void;
+  onOfflineMode?: (isOffline: boolean) => void;
 }
 
 export class MultiplayerClient {
   private ws: WebSocket | null = null;
   private serverUrl: string;
   private playerId: string;
-  private districtId: string = "D-1";
+  private districtId: string = 'D-1';
   private isConnected: boolean = false;
+  private isOffline: boolean = true;
   private pendingHits: BatchedHit[] = [];
   private batchTimer: ReturnType<typeof setInterval> | null = null;
   private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+  private reconnectIntervalMs: number = 30000; // Start backoff at 30s
   private callbacks: MultiplayerCallbacks;
 
   constructor(callbacks: MultiplayerCallbacks = {}) {
     this.callbacks = callbacks;
-    const isLocal = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
-    const protocol = typeof window !== 'undefined' && window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const isLocal =
+      typeof window !== 'undefined' &&
+      (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+    const protocol =
+      typeof window !== 'undefined' && window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     this.serverUrl = isLocal ? 'ws://localhost:8080' : `${protocol}//api.phatroi.com`;
-    this.playerId = typeof localStorage !== 'undefined' && localStorage.getItem('phatroi_user')
-      ? localStorage.getItem('phatroi_user')!
-      : `Thợ_Rèn_${Math.floor(Math.random() * 89999 + 10000)}`;
 
-    if (typeof localStorage !== 'undefined' && !localStorage.getItem('phatroi_user')) {
-      localStorage.setItem('phatroi_user', this.playerId);
+    const storedUser = safeStorage.getItem('phatroi_user');
+    if (storedUser) {
+      this.playerId = storedUser;
+    } else {
+      this.playerId = `Thợ_Rèn_${Math.floor(Math.random() * 89999 + 10000)}`;
+      safeStorage.setItem('phatroi_user', this.playerId);
     }
   }
 
@@ -76,11 +85,17 @@ export class MultiplayerClient {
 
       this.ws.onopen = () => {
         this.isConnected = true;
-        this.ws?.send(JSON.stringify({
-          type: 'join_district',
-          playerId: this.playerId,
-          districtId: this.districtId
-        }));
+        this.isOffline = false;
+        this.reconnectIntervalMs = 30000; // Reset backoff on success
+        this.callbacks.onOfflineMode?.(false);
+
+        this.ws?.send(
+          JSON.stringify({
+            type: 'join_district',
+            playerId: this.playerId,
+            districtId: this.districtId,
+          })
+        );
         this.startBatchLoop();
         this.callbacks.onConnected?.(this.districtId);
       };
@@ -108,6 +123,7 @@ export class MultiplayerClient {
       };
 
       this.ws.onerror = () => {
+        // Suppress uncaught exception and trigger gentle offline mode
         this.handleDisconnect();
       };
     } catch {
@@ -117,22 +133,30 @@ export class MultiplayerClient {
 
   private handleDisconnect() {
     this.isConnected = false;
+    this.isOffline = true;
     this.stopBatchLoop();
     this.callbacks.onDisconnected?.();
+    this.callbacks.onOfflineMode?.(true);
     this.scheduleReconnect();
   }
 
   private scheduleReconnect() {
     if (this.reconnectTimer) return;
+    // Exponential backoff capped at 120 seconds to prevent console pollution
     this.reconnectTimer = setTimeout(() => {
       this.reconnectTimer = null;
+      this.reconnectIntervalMs = Math.min(120000, this.reconnectIntervalMs * 1.5);
       this.connect();
-    }, 12000);
+    }, this.reconnectIntervalMs);
   }
 
   public recordStrike(hit: BatchedHit) {
     this.pendingHits.push(hit);
-    if (this.pendingHits.length >= 15) {
+    // When offline, keep queue limited to 30 strikes to prevent memory leak
+    if (this.isOffline && this.pendingHits.length > 30) {
+      this.pendingHits = this.pendingHits.slice(-15);
+    }
+    if (this.isConnected && this.pendingHits.length >= 15) {
       this.flushBatch();
     }
   }
@@ -158,7 +182,7 @@ export class MultiplayerClient {
       playerId: this.playerId,
       districtId: this.districtId,
       timestamp: Date.now(),
-      hits: this.pendingHits
+      hits: this.pendingHits,
     };
 
     try {
@@ -173,14 +197,21 @@ export class MultiplayerClient {
     this.stopBatchLoop();
     if (this.reconnectTimer) clearTimeout(this.reconnectTimer);
     if (this.ws) {
-      this.ws.close();
+      try {
+        this.ws.close();
+      } catch {}
       this.ws = null;
     }
     this.isConnected = false;
+    this.isOffline = true;
   }
 
   public getOnlineStatus(): boolean {
     return this.isConnected;
+  }
+
+  public getIsOffline(): boolean {
+    return this.isOffline;
   }
 
   public getPlayerId(): string {
