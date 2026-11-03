@@ -734,72 +734,35 @@ export default function App() {
       {/* Title Screen Overlay */}
       {gameState === 'title' && <TitleScreenModal onStart={startGame} />}
 
-      {/* Top Boss Raid Header */}
-      <div className="fixed top-0 inset-x-0 z-20 pointer-events-auto">
-        <TopBossHeader
-          bossName="Cửu U Thiên Ma Đế · Hắc Diên Cự Thần"
-          bossRealm="Cửu Trọng Thiên · Tầng Đỉnh Phong"
-          bossHpBillions={bossHpBillions}
-          bossMaxHpBillions={BOSS_MAX_HP}
-          bossTrailHpBillions={bossTrailHpBillions}
-          bossShieldPct={bossShieldPct}
-          globalCountdownSec={globalCountdownSec}
-          globalSynergyPct={globalSynergyPct}
-          globalBurstActive={globalBurstActive}
-          activeForgersCount={activeForgersCount}
-          isOffline={isOffline}
-          muted={muted}
-          onToggleMute={() => {
-            setMuted((prev) => {
-              const next = !prev;
-              soundEngine.muted = next;
-              return next;
-            });
-          }}
-          onPause={() =>
-            setGameState((prev) => (prev === 'playing' ? 'paused' : 'playing'))
-          }
-          onRestart={resetGame}
-          onTriggerGlobalBurst={handleTriggerGlobalBurst}
-        />
-      </div>
-
-      {/* 2. FLOATING TOGGLE ICONS FOR LEFT & RIGHT PANELS */}
-      {/* Left Toggle Button (Thế Trận & Chat) */}
-      <button
-        type="button"
-        onClick={(e) => {
-          e.stopPropagation();
-          setLeftPanelOpen((prev) => !prev);
+      {/* Top Floating Diegetic Sky Health Header (Sleek, Translucent, Zero Sky Obstruction) */}
+      <TopBossHeader
+        bossHpBillions={bossHpBillions}
+        bossMaxHpBillions={BOSS_MAX_HP}
+        bossTrailHpBillions={bossTrailHpBillions}
+        bossShieldPct={bossShieldPct}
+        globalCountdownSec={globalCountdownSec}
+        globalSynergyPct={globalSynergyPct}
+        globalBurstActive={globalBurstActive}
+        activeForgersCount={activeForgersCount}
+        isOffline={isOffline}
+        muted={muted}
+        onToggleMute={() => {
+          setMuted((prev) => {
+            const next = !prev;
+            soundEngine.muted = next;
+            return next;
+          });
         }}
-        className={`fixed left-3 top-20 z-30 flex items-center gap-1.5 px-3 py-2 rounded-xl backdrop-blur-md border text-xs font-tech font-bold tracking-wider cursor-pointer transition-all shadow-lg ${
-          leftPanelOpen
-            ? 'bg-amber-400 text-slate-950 border-amber-300 shadow-amber-500/25'
-            : 'bg-slate-950/80 hover:bg-slate-900 border-amber-500/30 text-amber-300 hover:text-amber-200'
-        }`}
-        title="Bật/Tắt Thế Trận & Chat [Phím [ ]"
-      >
-        <Shield className="w-4 h-4 text-cyan-400" />
-        <span className="hidden sm:inline">Thế Trận & Chat</span>
-      </button>
-
-      {/* Right Toggle Button (Lò Rèn, Nâng Cấp, Thần Hồn) */}
-      <button
-        type="button"
-        onClick={(e) => {
-          e.stopPropagation();
-          setRightPanelOpen((prev) => !prev);
-        }}
-        className={`fixed right-3 top-20 z-30 flex items-center gap-1.5 px-3 py-2 rounded-xl backdrop-blur-md border text-xs font-tech font-bold tracking-wider cursor-pointer transition-all shadow-lg ${
-          rightPanelOpen
-            ? 'bg-amber-400 text-slate-950 border-amber-300 shadow-amber-500/25'
-            : 'bg-slate-950/80 hover:bg-slate-900 border-amber-500/30 text-amber-300 hover:text-amber-200'
-        }`}
-        title="Bật/Tắt Lò Rèn & Thần Hồn [Phím ] ]"
-      >
-        <Hammer className="w-4 h-4 text-amber-400" />
-        <span className="hidden sm:inline">Lò Rèn & Thần Hồn</span>
-      </button>
+        onPause={() =>
+          setGameState((prev) => (prev === 'playing' ? 'paused' : 'playing'))
+        }
+        onRestart={resetGame}
+        onTriggerGlobalBurst={handleTriggerGlobalBurst}
+        leftPanelOpen={leftPanelOpen}
+        onToggleLeftPanel={() => setLeftPanelOpen((prev) => !prev)}
+        rightPanelOpen={rightPanelOpen}
+        onToggleRightPanel={() => setRightPanelOpen((prev) => !prev)}
+      />
 
       {/* 3. CORNER HUD DOCKS (Positioned at corners to leave the Center Hero & Anvil 100% Unobstructed) */}
       {/* 3A. Bottom-Left Dock: 4 Hammer Stances + Overdrive 8/8 Bar */}

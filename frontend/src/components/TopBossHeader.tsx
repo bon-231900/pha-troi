@@ -1,10 +1,10 @@
 import React from 'react';
-import { Volume2, VolumeX, Pause, RotateCcw, Zap, ShieldAlert } from 'lucide-react';
-import { formatBillionsHP, formatCountdown } from '../game/rules';
+import { Volume2, VolumeX, Pause, RotateCcw, Shield, Hammer } from 'lucide-react';
+import { formatCountdown } from '../game/rules';
 
-interface TopBossHeaderProps {
-  bossName: string;
-  bossRealm: string;
+export interface TopBossHeaderProps {
+  bossName?: string;
+  bossRealm?: string;
   bossHpBillions: number;
   bossMaxHpBillions: number;
   bossTrailHpBillions: number;
@@ -19,11 +19,13 @@ interface TopBossHeaderProps {
   onPause: () => void;
   onRestart: () => void;
   onTriggerGlobalBurst: () => void;
+  leftPanelOpen?: boolean;
+  onToggleLeftPanel?: () => void;
+  rightPanelOpen?: boolean;
+  onToggleRightPanel?: () => void;
 }
 
 export const TopBossHeader: React.FC<TopBossHeaderProps> = ({
-  bossName,
-  bossRealm,
   bossHpBillions,
   bossMaxHpBillions,
   bossTrailHpBillions,
@@ -38,205 +40,167 @@ export const TopBossHeader: React.FC<TopBossHeaderProps> = ({
   onPause,
   onRestart,
   onTriggerGlobalBurst,
+  leftPanelOpen = false,
+  onToggleLeftPanel,
+  rightPanelOpen = false,
+  onToggleRightPanel,
 }) => {
-  const hpPct = Math.max(0, Math.min(100, (bossHpBillions / bossMaxHpBillions) * 100));
-  const trailPct = Math.max(hpPct, Math.min(100, (bossTrailHpBillions / bossMaxHpBillions) * 100));
+  const safeMax = Math.max(1, bossMaxHpBillions);
+  const hpPct = Math.max(0, Math.min(100, (bossHpBillions / safeMax) * 100));
+  const trailPct = Math.max(hpPct, Math.min(100, (bossTrailHpBillions / safeMax) * 100));
+  const crackPct = Math.max(0, Math.min(100, 100 - hpPct));
   const shieldBroken = bossShieldPct <= 0;
 
   return (
-    <section
-      aria-label="Trạng thái Trùm và Cực Nhịp Toàn Cầu"
-      className="w-full bg-[#111625] border-b border-slate-800/90 px-3 py-2.5 md:px-6 md:py-3 shrink-0"
+    <header
+      aria-label="Trạng thái Vòm Trời Thiên Cấm"
+      className="pointer-events-none fixed top-2.5 sm:top-3 inset-x-0 z-20 px-3 sm:px-6 flex items-center justify-between gap-2.5 sm:gap-4 select-none"
     >
-      <div className="max-w-[1440px] mx-auto flex flex-col gap-2">
-        {/* Top Row: Boss Identity + HP Readout + Utility Controls */}
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="flex flex-col">
-              <div className="flex items-center gap-2">
-                <h2 className="font-display font-bold text-sm sm:text-base md:text-lg text-amber-300 tracking-wide truncate">
-                  {bossName}
-                </h2>
-                <span className="hidden sm:inline text-xs text-slate-400">·</span>
-                <span className="hidden sm:inline text-xs text-slate-300 font-tech">
-                  {bossRealm}
-                </span>
-                <span
-                  className={`px-1.5 py-0.5 rounded text-[10px] font-mono font-bold flex items-center gap-1 border ${
-                    isOffline
-                      ? 'bg-amber-500/15 text-amber-300 border-amber-500/30'
-                      : 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
-                  }`}
-                  title={isOffline ? 'Chế độ Ngoại Tuyến (Chơi Đơn / Tự động đồng bộ)' : 'Đã kết nối Phân Khu Vạn Dân'}
-                >
-                  <span
-                    className={`w-1.5 h-1.5 rounded-full ${
-                      isOffline ? 'bg-amber-400' : 'bg-emerald-400 animate-pulse'
-                    }`}
-                  />
-                  {isOffline ? 'ĐỘC HÀNH' : 'VẠN DÂN'}
-                </span>
-              </div>
-              <div className="text-[11px] text-slate-400 font-tech flex items-center gap-2">
-                <span>{activeForgersCount.toLocaleString('en-US')} Thợ Rèn Hợp Lực</span>
-                <span>·</span>
-                <span className={shieldBroken ? 'text-cyan-300 font-semibold' : 'text-amber-300'}>
-                  {shieldBroken
-                    ? 'GIÁP VỠ · SÁT THƯƠNG x1.5'
-                    : `Giáp Năng Lượng: ${bossShieldPct.toFixed(1)}%`}
-                </span>
-              </div>
-            </div>
+      {/* 1. Left Floating Capsule: Toggle Thế Trận & Online Counter */}
+      <div className="pointer-events-auto flex items-center gap-2">
+        {onToggleLeftPanel && (
+          <button
+            type="button"
+            onClick={onToggleLeftPanel}
+            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl backdrop-blur-md border text-xs font-tech font-bold tracking-wider cursor-pointer transition-all shadow-md ${
+              leftPanelOpen
+                ? 'bg-amber-400 text-slate-950 border-amber-300 shadow-amber-500/25'
+                : 'bg-[#070B16]/85 hover:bg-slate-900 border-amber-500/30 text-amber-300 hover:text-amber-200'
+            }`}
+            title="Bật/Tắt Thế Trận & Chat [Phím [ ]"
+          >
+            <Shield className="w-3.5 h-3.5 text-cyan-400" />
+            <span className="hidden sm:inline">Thế Trận & Chat</span>
+          </button>
+        )}
+
+        <div className="hidden md:flex items-center gap-2 bg-[#070B16]/85 backdrop-blur-md border border-slate-800/90 px-2.5 py-1.5 rounded-xl font-tech text-xs text-slate-300 shadow-md">
+          <span
+            className={`w-2 h-2 rounded-full ${
+              isOffline ? 'bg-amber-400' : 'bg-emerald-400 animate-pulse'
+            }`}
+          />
+          <span className="font-bold text-amber-300">
+            {activeForgersCount.toLocaleString('en-US')}
+          </span>
+          <span className="text-slate-400 text-[11px]">
+            {isOffline ? 'Độc Hành' : 'Vạn Dân'}
+          </span>
+        </div>
+      </div>
+
+      {/* 2. Center Capsule: VÒM TRỜI THIÊN CẤM (Ultra-Compact, Sleek & Floating - Zero Sky Obstruction) */}
+      <div
+        aria-label="Thanh máu Vòm Trời Thiên Cấm"
+        className="pointer-events-auto flex-1 max-w-sm sm:max-w-md mx-auto bg-[#070A14]/85 border border-amber-500/40 px-3.5 py-1.5 rounded-xl shadow-[0_8px_25px_rgba(0,0,0,0.7)] backdrop-blur-md"
+      >
+        <div className="flex items-center justify-between gap-2 mb-1">
+          <div className="flex items-center gap-1.5 min-w-0">
+            <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse shrink-0" />
+            <span className="font-display text-[11px] sm:text-xs font-bold tracking-wider text-amber-300 uppercase truncate">
+              Vòm Trời Thiên Cấm
+            </span>
           </div>
-
-          {/* Right: Colossal HP Numeric Telemetry + Utility Buttons */}
-          <div className="flex items-center gap-3 ml-auto">
-            <div className="text-right font-tech">
-              <div className="text-sm sm:text-base md:text-xl font-bold text-slate-100 leading-none">
-                <span className="text-red-400">{formatBillionsHP(bossHpBillions)}</span>
-                <span className="text-slate-500 text-xs md:text-sm">
-                  {' '}
-                  / {formatBillionsHP(bossMaxHpBillions)} HP
-                </span>
-              </div>
-              <div className="text-[11px] text-amber-300 font-semibold">
-                {hpPct.toFixed(2)}% Sinh Mệnh Còn Lại
-              </div>
-            </div>
-
-            {/* Utility Controls */}
-            <div className="flex items-center gap-1.5">
-              <button
-                type="button"
-                tabIndex={-1}
-                aria-label={muted ? 'Bật âm thanh [M]' : 'Tắt âm thanh [M]'}
-                onClick={(e) => {
-                  e.currentTarget.blur();
-                  onToggleMute();
-                }}
-                className="w-9 h-9 md:w-10 md:h-10 rounded-lg bg-[#080A10] border border-slate-800 hover:border-amber-400/60 flex items-center justify-center text-slate-300 hover:text-amber-300 transition-colors cursor-pointer"
-              >
-                {muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-              </button>
-              <button
-                type="button"
-                tabIndex={-1}
-                aria-label="Tạm dừng [P]"
-                onClick={(e) => {
-                  e.currentTarget.blur();
-                  onPause();
-                }}
-                className="w-9 h-9 md:w-10 md:h-10 rounded-lg bg-[#080A10] border border-slate-800 hover:border-amber-400/60 flex items-center justify-center text-slate-300 hover:text-amber-300 transition-colors cursor-pointer"
-              >
-                <Pause className="w-4 h-4" />
-              </button>
-              <button
-                type="button"
-                tabIndex={-1}
-                aria-label="Rèn lại từ đầu [R]"
-                onClick={(e) => {
-                  e.currentTarget.blur();
-                  onRestart();
-                }}
-                className="w-9 h-9 md:w-10 md:h-10 rounded-lg bg-[#080A10] border border-slate-800 hover:border-amber-400/60 flex items-center justify-center text-slate-300 hover:text-amber-300 transition-colors cursor-pointer"
-              >
-                <RotateCcw className="w-4 h-4" />
-              </button>
-            </div>
+          <div className="font-tech text-[10px] sm:text-xs font-bold tabular-nums text-slate-200 whitespace-nowrap shrink-0">
+            <span className="text-red-400 font-extrabold">{bossHpBillions.toFixed(1)}B</span>
+            <span className="text-slate-400 font-normal"> / {bossMaxHpBillions.toFixed(0)}B</span>
+            <span className="ml-1 text-orange-400 font-semibold">(Nứt {crackPct.toFixed(0)}%)</span>
           </div>
         </div>
 
-        {/* Colossal Dual-Layer Boss Health Bar & Energy Shield Resonance */}
-        <div className="flex flex-col gap-1.5">
-          {/* Primary Boss HP Bar with 10% segment dividers */}
-          <div className="relative h-4 md:h-5 w-full rounded-md bg-[#080A10] border border-slate-800 overflow-hidden">
-            {/* Delayed Damage Ghost Bar */}
-            <div
-              className="absolute inset-y-0 left-0 bg-amber-300/40 transition-all duration-300"
-              style={{ width: `${trailPct}%` }}
-            />
-            {/* Active Crimson Thiên Hỏa HP Bar */}
-            <div
-              className="
-                absolute inset-y-0 left-0 transition-all duration-100
-                bg-gradient-to-r from-[#FF3B30] via-[#FF6B00] to-[#FFD23F]
-              "
-              style={{ width: `${hpPct}%` }}
-            />
-            {/* 10% Segment Notches */}
-            <div className="absolute inset-0 grid grid-cols-10 pointer-events-none">
-              {Array.from({ length: 9 }).map((_, idx) => (
-                <div key={idx} className="border-r border-slate-950/60 h-full" />
-              ))}
-            </div>
+        {/* Sleek 5px HP Track with Delayed Ghost Bar */}
+        <div className="relative h-2 w-full bg-[#0D1322] border border-amber-500/30 rounded-full overflow-hidden">
+          <div
+            className="absolute inset-y-0 left-0 bg-amber-300/50 transition-all duration-300"
+            style={{ width: `${trailPct}%` }}
+          />
+          <div
+            className="absolute inset-y-0 left-0 bg-gradient-to-r from-red-600 via-orange-500 to-amber-400 transition-all duration-150"
+            style={{ width: `${hpPct}%` }}
+          />
+        </div>
+
+        {/* Micro Sub-indicators: Shield & Synergy in 1 compact row */}
+        <div className="flex items-center justify-between text-[9px] sm:text-[10px] font-tech text-slate-400 mt-1 tabular-nums">
+          <div className="flex items-center gap-1">
+            <span className={shieldBroken ? 'text-cyan-300 font-bold' : 'text-slate-400'}>
+              {shieldBroken ? 'Giáp vỡ (x1.5 dmg)' : `Giáp: ${bossShieldPct.toFixed(0)}%`}
+            </span>
           </div>
-
-          {/* Energy Shield Resonance Bar + Global Beat Bar in one compact ergonomic strip */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 items-center">
-            {/* Energy Shield Bar */}
-            <div className="flex items-center gap-2.5 bg-[#080A10] border border-slate-800/80 rounded-lg px-3 py-1.5">
-              <ShieldAlert className="w-4 h-4 text-cyan-400 shrink-0" />
-              <div className="text-xs font-tech text-slate-300 whitespace-nowrap shrink-0">
-                Giáp Năng Lượng
-              </div>
-              <div className="relative flex-1 h-2 bg-slate-900 rounded-full overflow-hidden">
-                <div
-                  className="absolute inset-y-0 left-0 bg-gradient-to-r from-[#0099FF] to-[#00F0FF] transition-all duration-150"
-                  style={{ width: `${bossShieldPct}%` }}
-                />
-              </div>
-              <div className="text-xs font-tech font-semibold text-cyan-300 whitespace-nowrap shrink-0">
-                {shieldBroken ? 'PHÁ VỠ!' : `${bossShieldPct.toFixed(0)}%`}
-              </div>
-            </div>
-
-            {/* Global Beat Bar (Thanh Cực Nhịp Toàn Cầu 3-min Countdown + Synergy) */}
-            <div
-              className={`flex items-center gap-2.5 rounded-lg px-3 py-1.5 border transition-colors ${
-                globalBurstActive
-                  ? 'bg-amber-500/15 border-amber-400 text-amber-200'
-                  : 'bg-[#080A10] border-slate-800/80 text-slate-300'
-              }`}
-            >
-              <Zap
-                className={`w-4 h-4 shrink-0 ${
-                  globalBurstActive ? 'text-amber-300' : 'text-amber-400'
-                }`}
-              />
-              <div className="text-xs font-tech whitespace-nowrap shrink-0">
-                Cực Nhịp Toàn Cầu ·{' '}
-                <span className="text-amber-300 font-bold">
-                  {formatCountdown(globalCountdownSec)}
-                </span>
-              </div>
-              <div className="relative flex-1 h-2 bg-slate-900 rounded-full overflow-hidden">
-                <div
-                  className="absolute inset-y-0 left-0 bg-gradient-to-r from-[#FFA000] to-[#FFD23F] transition-all duration-150"
-                  style={{ width: `${Math.min(100, globalSynergyPct)}%` }}
-                />
-              </div>
+          <div className="flex items-center gap-1.5">
+            <span>Cực nhịp: {formatCountdown(globalCountdownSec)}</span>
+            {globalSynergyPct >= 100 || globalBurstActive ? (
               <button
                 type="button"
                 onClick={onTriggerGlobalBurst}
-                disabled={globalSynergyPct < 100 && !globalBurstActive}
-                className={`px-2.5 py-0.5 rounded text-[11px] font-tech font-bold whitespace-nowrap shrink-0 transition-all ${
-                  globalBurstActive
-                    ? 'bg-amber-400 text-slate-950'
-                    : globalSynergyPct >= 100
-                    ? 'bg-amber-400 hover:bg-amber-300 text-slate-950 cursor-pointer shadow-sm shadow-amber-400/40'
-                    : 'bg-slate-800 text-slate-400'
-                }`}
+                className="px-1.5 py-0.2 rounded bg-amber-400 text-slate-950 font-bold text-[9px] cursor-pointer animate-pulse"
               >
-                {globalBurstActive
-                  ? 'BÙNG NỔ x2.5!'
-                  : globalSynergyPct >= 100
-                  ? 'HỢP LỰC NGAY'
-                  : `${globalSynergyPct.toFixed(0)}%`}
+                {globalBurstActive ? 'BÙNG NỔ!' : 'KÍCH HOẠT'}
               </button>
-            </div>
+            ) : (
+              <span className="text-amber-400/80">({globalSynergyPct.toFixed(0)}%)</span>
+            )}
           </div>
         </div>
       </div>
-    </section>
+
+      {/* 3. Right Floating Capsule: Utilities + Toggle Lò Rèn */}
+      <div className="pointer-events-auto flex items-center gap-1.5">
+        <div className="flex items-center gap-0.5 sm:gap-1 bg-[#070B16]/85 backdrop-blur-md border border-slate-800/90 p-1 rounded-xl shadow-md">
+          <button
+            type="button"
+            tabIndex={-1}
+            aria-label={muted ? 'Bật âm thanh [M]' : 'Tắt âm thanh [M]'}
+            onClick={(e) => {
+              e.currentTarget.blur();
+              onToggleMute();
+            }}
+            className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg hover:bg-slate-800 flex items-center justify-center text-slate-300 hover:text-amber-300 transition-colors cursor-pointer"
+          >
+            {muted ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
+          </button>
+          <button
+            type="button"
+            tabIndex={-1}
+            aria-label="Tạm dừng [P]"
+            onClick={(e) => {
+              e.currentTarget.blur();
+              onPause();
+            }}
+            className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg hover:bg-slate-800 flex items-center justify-center text-slate-300 hover:text-amber-300 transition-colors cursor-pointer"
+          >
+            <Pause className="w-3.5 h-3.5" />
+          </button>
+          <button
+            type="button"
+            tabIndex={-1}
+            aria-label="Rèn lại từ đầu [R]"
+            onClick={(e) => {
+              e.currentTarget.blur();
+              onRestart();
+            }}
+            className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg hover:bg-slate-800 flex items-center justify-center text-slate-300 hover:text-amber-300 transition-colors cursor-pointer"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+          </button>
+        </div>
+
+        {onToggleRightPanel && (
+          <button
+            type="button"
+            onClick={onToggleRightPanel}
+            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl backdrop-blur-md border text-xs font-tech font-bold tracking-wider cursor-pointer transition-all shadow-md ${
+              rightPanelOpen
+                ? 'bg-amber-400 text-slate-950 border-amber-300 shadow-amber-500/25'
+                : 'bg-[#070B16]/85 hover:bg-slate-900 border-amber-500/30 text-amber-300 hover:text-amber-200'
+            }`}
+            title="Bật/Tắt Lò Rèn & Thần Hồn [Phím ] ]"
+          >
+            <Hammer className="w-3.5 h-3.5 text-amber-400" />
+            <span className="hidden sm:inline">Lò Rèn</span>
+          </button>
+        )}
+      </div>
+    </header>
   );
 };
