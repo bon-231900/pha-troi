@@ -1,4 +1,12 @@
+// Release build: silhouette-live-1793696800
+const APP_BUILD_VER = '20261103-multiplayer-p2p-v5';
+console.log('App build version:', APP_BUILD_VER);
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import {
+  RealtimeRoomClient,
+  PeerPresence,
+  RemoteStrikeMessage,
+} from './game/realtimeRoom';
 import {
   StanceKey,
   INITIAL_UPGRADES,
@@ -41,6 +49,14 @@ import {
   INITIAL_STANCE_SKILLS,
   canUnlockStanceSkill,
   calculateStanceSkillBonuses,
+  CelestialVault,
+  CELESTIAL_VAULTS,
+  getCelestialVault,
+  BlacksmithGuild,
+  BLACKSMITH_GUILDS,
+  getGuild,
+  QuenchType,
+  QUENCH_OPTIONS,
 } from './game/rules';
 import { soundEngine } from './game/audio';
 import { safeStorage } from './game/storage';
@@ -111,9 +127,12 @@ export default function App() {
       const s = safeStorage.getItem('phatroi_save_v6');
       if (s) {
         const parsed = JSON.parse(s);
-        if (typeof parsed.bossHp === 'number' && parsed.bossHp > 0 && parsed.bossHp <= BOSS_FLOOR_1_MAX_HP) {
+        const vaultId = typeof parsed.currentVaultId === 'number' && parsed.currentVaultId >= 1 && parsed.currentVaultId <= 9 ? parsed.currentVaultId : 1;
+        const vault = getCelestialVault(vaultId);
+        if (typeof parsed.bossHp === 'number' && parsed.bossHp >= 10_000_000 && parsed.bossHp <= vault.maxHp) {
           return parsed.bossHp;
         }
+        return vault.maxHp;
       }
     } catch {}
     return BOSS_FLOOR_1_MAX_HP;
@@ -272,6 +291,51 @@ export default function App() {
   const [burnStacks, setBurnStacks] = useState<number>(0);
   const goldenStreakRef = useRef<number>(0);
 
+  // Phase 3: Cửu Trọng Thiên & Phường Rèn Vạn Dân & Đại Hỏa Lò
+  const [currentVaultId, setCurrentVaultId] = useState<number>(() => {
+    try {
+      const s = safeStorage.getItem('phatroi_save_v6');
+      if (s) {
+        const parsed = JSON.parse(s);
+        if (typeof parsed.currentVaultId === 'number' && parsed.currentVaultId >= 1 && parsed.currentVaultId <= 9) {
+          return parsed.currentVaultId;
+        }
+      }
+    } catch {}
+    return 1;
+  });
+
+  const [userGuildId, setUserGuildId] = useState<string>(() => {
+    try {
+      const s = safeStorage.getItem('phatroi_save_v6');
+      if (s) {
+        const parsed = JSON.parse(s);
+        if (typeof parsed.userGuildId === 'string' && BLACKSMITH_GUILDS.some((g) => g.id === parsed.userGuildId)) {
+          return parsed.userGuildId;
+        }
+      }
+    } catch {}
+    return 'guild_thien_thai';
+  });
+
+  const [guildHearths, setGuildHearths] = useState<Record<string, { level: number; exp: number }>>(() => {
+    try {
+      const s = safeStorage.getItem('phatroi_save_v6');
+      if (s) {
+        const parsed = JSON.parse(s);
+        if (parsed.guildHearths && typeof parsed.guildHearths === 'object') {
+          return parsed.guildHearths;
+        }
+      }
+    } catch {}
+    return {
+      guild_thien_thai: { level: 1, exp: 0 },
+      guild_phan_thien: { level: 1, exp: 0 },
+      guild_van_kiem: { level: 1, exp: 0 },
+      guild_doan_hon: { level: 1, exp: 0 },
+    };
+  });
+
   // UI & Feedback State
   const [lastFeedback, setLastFeedback] = useState<{
     id: number;
@@ -319,6 +383,8 @@ export default function App() {
   const feedbackCounterRef = useRef<number>(1);
   const logCounterRef = useRef<number>(10);
   const mpClientRef = useRef<MultiplayerClient | null>(null);
+  const realtimeRoomRef = useRef<RealtimeRoomClient | null>(null);
+  const [onlinePeers, setOnlinePeers] = useState<PeerPresence[]>([]);
 
   const appendCombatLog = useCallback(
     (text: string, tone: CombatLogEntry['tone'] = 'neutral') => {
@@ -352,6 +418,9 @@ export default function App() {
           inventory,
           playerTotalDamage,
           claimedMilestones,
+          currentVaultId,
+          userGuildId,
+          guildHearths,
           lastActiveTimestamp: Date.now(),
         };
         safeStorage.setItem('phatroi_save_v6', JSON.stringify(payload));
@@ -364,7 +433,7 @@ export default function App() {
       clearInterval(timer);
       window.removeEventListener('beforeunload', saveState);
     };
-  }, [bossHp, linhThach, tinhHoa, upgrades, spiritNodes, stanceSkills, equippedItems, inventory, playerTotalDamage, claimedMilestones]);
+  }, [bossHp, linhThach, tinhHoa, upgrades, spiritNodes, stanceSkills, equippedItems, inventory, playerTotalDamage, claimedMilestones, currentVaultId, userGuildId, guildHearths]);
 
   // Connect to Multiplayer Gateway (Offline Fallback if server unreachable)
   useEffect(() => {
@@ -401,10 +470,56 @@ export default function App() {
     mp.connect();
     mpClientRef.current = mp;
 
+    // Real-time P2P & BroadcastChannel Room for instant cross-browser and cross-device sync
+    const room = new RealtimeRoomClient({
+      onPeerJoined: (peer) => {
+        setIsOffline(false);
+        appendCombatLog(
+          `⚡ [VẠN DÂN HỢP LỰC] Đồng môn [${peer.name}] vừa bước vào Đại Công Trường!`,
+          'gold'
+        );
+        soundEngine.playComboStreakSound?.(4);
+      },
+      onPeerLeft: (peerId) => {
+        appendCombatLog('🍂 Một đồng môn vừa tạm lui về hậu phương nghỉ ngơi.', 'slate');
+      },
+      onRemoteStrike: (strike) => {
+        canvasHandleRef.current?.triggerRemotePeerStrike(strike);
+        soundEngine.playAnvilStrike(strike.isGolden ? 'PERFECT' : 'GREAT', strike.stance, false);
+
+        setBossHp((prev) => Math.max(0, prev - strike.damage));
+        setBossTrailHp((prev) => Math.max(0, prev - strike.damage));
+
+        appendCombatLog(`🔨 [ĐỒNG MÔN LIÊN THỦ] ${strike.name} nện búa gây -${strike.damage} DMG!`, 'cyan');
+      },
+      onRemoteChat: (chat) => {
+        setChatMessages((prev) => [
+          ...prev,
+          {
+            id: Date.now(),
+            sender: `${chat.author}`,
+            realm: chat.guildId ? (getGuild(chat.guildId)?.name || 'Vạn Dân') : 'Vạn Dân',
+            content: chat.text,
+            isPlayer: false,
+          },
+        ]);
+      },
+      onPeersChange: (peers) => {
+        setOnlinePeers(peers);
+        canvasHandleRef.current?.updateRemotePeers(peers);
+        setActiveForgersCount(peers.length > 0 ? peers.length + 1 : 480);
+        setIsOffline(peers.length === 0);
+      },
+    });
+
+    realtimeRoomRef.current = room;
+    room.init(userGuildId, activeStance, currentVaultId);
+
     return () => {
       mp.disconnect();
+      room.destroy();
     };
-  }, [appendCombatLog]);
+  }, [userGuildId, activeStance, currentVaultId, appendCombatLog]);
 
   const startGame = useCallback(() => {
     soundEngine.unlockAudio();
@@ -420,8 +535,9 @@ export default function App() {
     if (document.activeElement instanceof HTMLElement) {
       document.activeElement.blur();
     }
-    setBossHp(BOSS_FLOOR_1_MAX_HP);
-    setBossTrailHp(BOSS_FLOOR_1_MAX_HP);
+    const vault = getCelestialVault(currentVaultId);
+    setBossHp(vault.maxHp);
+    setBossTrailHp(vault.maxHp);
     setBossShieldPct(100.0);
     setIsShieldBroken(false);
     setShieldBreakTimeLeft(0);
@@ -525,9 +641,12 @@ export default function App() {
 
   const basePower = calculateBasePower(upgrades);
   const spiritBonusMult = calculateSpiritMultiplier(spiritNodes);
-  const currentSeal = getAtmosphericSealLayer(bossHp, BOSS_FLOOR_1_MAX_HP);
+  const currentVault = getCelestialVault(currentVaultId);
+  const currentSeal = getAtmosphericSealLayer(bossHp, currentVault.maxHp);
   const tier2Unlocked = playerTotalDamage >= 100_000 || claimedMilestones.includes('tier_3');
   const arsenalBonuses = calculateArsenalBonuses(equippedItems);
+  const forgerRank = getForgerRank(playerTotalDamage);
+  const currentGuild = getGuild(userGuildId);
 
   // Player Strike Handler
   const handleHeroStrike = useCallback(
@@ -643,7 +762,7 @@ export default function App() {
         });
       }
 
-      // 6. Send strike to multiplayer gateway queue
+      // 6. Send strike to multiplayer gateway queue & broadcast to real-time peers
       mpClientRef.current?.recordStrike({
         stance: activeStance,
         quality: grade,
@@ -652,6 +771,12 @@ export default function App() {
         offsetMs: 0,
         isCrit: outcome.triggeredOverdrive || overdriveActive || isGoldenHit,
       });
+
+      realtimeRoomRef.current?.broadcastStrike(
+        outcome.damage,
+        isGoldenHit,
+        !!outcome.isCrit
+      );
 
       // 7. Update Combo & Overdrive
       setCombo(outcome.nextCombo);
@@ -744,6 +869,25 @@ export default function App() {
           }
         }
 
+        // Phase 3: Tam Điểm Lôi Hỏa (Co-op Beat Chain with Blacksmith Guild)
+        if (combo >= 6 && isGoldenHit && Math.random() < 0.25) {
+          const tamDiemDmg = 1500;
+          setBossHp((hp) => Math.max(0, hp - tamDiemDmg));
+          setPlayerTotalDamage((dmg) => dmg + tamDiemDmg);
+          soundEngine.playGlobalBurstFanfare();
+          canvasHandleRef.current?.spawnCombatText(
+            '💥 TAM ĐIỂM LÔI HỎA! -1,500 DMG',
+            '3 ĐỒNG MÔN PHƯỜNG RÈN HỢP LỰC TRẢM THIÊN',
+            '#FFD700',
+            '#FF4D00',
+            true
+          );
+          appendCombatLog(
+            `💥 [TAM ĐIỂM LÔI HỎA] Vũ điệu Khai Thiên hòa nhịp! Đồng môn ${currentGuild.name} phóng 3 cột lôi hỏa giáng -1,500 DMG!`,
+            'gold'
+          );
+        }
+
         // 9. Procedural ARPG Loot Drop Check
         const droppedItem = rollLootDrop(
           grade === 'PERFECT' ? 'perfect' : 'great',
@@ -822,6 +966,8 @@ export default function App() {
       playerTotalDamage,
       burnStacks,
       bossHp,
+      currentGuild,
+      currentVault,
       appendCombatLog,
     ]
   );
@@ -829,6 +975,7 @@ export default function App() {
   const handleSelectStance = useCallback(
     (stance: StanceKey) => {
       setActiveStance(stance);
+      realtimeRoomRef.current?.updateIdentity(stance, userGuildId);
       soundEngine.playStanceSwitch(stance);
       appendCombatLog(
         `Chuyển thế búa: [${stance}] ${HAMMER_STANCES[stance].name} (${HAMMER_STANCES[stance].title})`,
@@ -879,6 +1026,110 @@ export default function App() {
       );
     },
     [stanceSkills, tinhHoa, playerTotalDamage, appendCombatLog]
+  );
+
+  // Phase 3: Celestial Vaults, Blacksmith Guilds & Quenching Handlers
+  const handleSelectVault = useCallback(
+    (vaultId: number) => {
+      const v = getCelestialVault(vaultId);
+      setCurrentVaultId(vaultId);
+      setBossHp(v.maxHp);
+      setBossTrailHp(v.maxHp);
+      setBossShieldPct(100.0);
+      setIsShieldBroken(false);
+      setShieldBreakTimeLeft(0);
+      setResonanceStrikes(0);
+      soundEngine.playGlobalBurstFanfare();
+      appendCombatLog(
+        `🌌 [CHUYỂN VÒM TRỜI] Đã tiến vào ${v.title} (${v.name})! Trùm trấn thủ: [${v.bossName}] (${formatInteger(
+          v.maxHp
+        )} HP)!`,
+        'cyan'
+      );
+    },
+    [appendCombatLog]
+  );
+
+  const handleSelectGuild = useCallback(
+    (guildId: string) => {
+      const g = getGuild(guildId);
+      setUserGuildId(guildId);
+      soundEngine.playStanceSwitch(g.preferredStance);
+      appendCombatLog(
+        `🚩 [GIA NHẬP PHƯỜNG RÈN] Bạn đã gia nhập [${g.name}]! Nhận hào quang: ${g.auraPerk}!`,
+        'gold'
+      );
+    },
+    [appendCombatLog]
+  );
+
+  const handleDonateHearth = useCallback(
+    (guildId: string, amount: number) => {
+      if (linhThach < amount) return;
+      setLinhThach((lt) => lt - amount);
+      setGuildHearths((prev) => {
+        const current = prev[guildId] || { level: 1, exp: 0 };
+        const nextExp = current.exp + amount;
+        const expNeeded = current.level * 1000;
+        let nextLevel = current.level;
+        let remainingExp = nextExp;
+
+        if (nextExp >= expNeeded && nextLevel < 10) {
+          nextLevel += 1;
+          remainingExp = nextExp - expNeeded;
+          soundEngine.playGlobalBurstFanfare();
+          appendCombatLog(
+            `🔥 [ĐẠI HỎA LÒ THĂNG CẤP] Đại Hỏa Lò Phường Rèn đã đạt CẤP ${nextLevel}! Hào quang bang hội tăng thêm!`,
+            'gold'
+          );
+        } else {
+          soundEngine.playStanceSwitch('W');
+          appendCombatLog(
+            `🔥 [QUYÊN GÓP HỎA LÒ] Đã đóng góp +${amount} Linh Thạch vào Đại Hỏa Lò!`,
+            'cyan'
+          );
+        }
+
+        return {
+          ...prev,
+          [guildId]: { level: nextLevel, exp: remainingExp },
+        };
+      });
+    },
+    [linhThach, appendCombatLog]
+  );
+
+  const handleQuenchItem = useCallback(
+    (itemId: string, quenchType: QuenchType) => {
+      if (linhThach < 150 || tinhHoa < 1) return;
+      setLinhThach((lt) => lt - 150);
+      setTinhHoa((th) => th - 1);
+
+      const updateItem = (item: EquipmentItem | null) => {
+        if (!item || item.id !== itemId) return item;
+        return { ...item, quench: quenchType };
+      };
+
+      setEquippedItems((prev) => {
+        const next = { ...prev };
+        for (const key of Object.keys(next) as EquipmentSlotKey[]) {
+          if (next[key]?.id === itemId) {
+            next[key] = updateItem(next[key]);
+          }
+        }
+        return next;
+      });
+
+      setInventory((prev) => prev.map((it) => (it.id === itemId ? updateItem(it)! : it)));
+
+      soundEngine.playGlobalBurstFanfare();
+      const quenchMeta = QUENCH_OPTIONS.find((q) => q.type === quenchType);
+      appendCombatLog(
+        `✨ [TÔI LỬA NGUYÊN TỐ] Đã tôi [${quenchMeta?.name}] cho trang bị thành công!`,
+        'gold'
+      );
+    },
+    [linhThach, tinhHoa, appendCombatLog]
   );
 
   const handleBuyUpgrade = useCallback(
@@ -1039,6 +1290,7 @@ export default function App() {
         isPlayer: true,
       },
     ]);
+    realtimeRoomRef.current?.broadcastChat(content);
   }, []);
 
   // Keyboard Shortcuts: Space, Q/W/E/R, P/Esc, M, [ and ]
@@ -1144,7 +1396,7 @@ export default function App() {
         <CommunityPanoramicForgeCanvas
           ref={canvasHandleRef}
           bossHp={bossHp}
-          bossMaxHp={BOSS_FLOOR_1_MAX_HP}
+          bossMaxHp={currentVault.maxHp}
           activeStance={activeStance}
           gameState={gameState}
           onHeroStrikeAction={() => handleHeroStrike(false)}
@@ -1159,15 +1411,16 @@ export default function App() {
 
       {/* Top Floating Diegetic Sky Health Header (Zero Sky Obstruction) */}
       <TopBossHeader
-        bossName={BOSS_FLOOR_NAME}
+        bossName={`${currentVault.name} · ${currentVault.bossName}`}
         bossHp={bossHp}
-        bossMaxHp={BOSS_FLOOR_1_MAX_HP}
+        bossMaxHp={currentVault.maxHp}
         bossTrailHp={bossTrailHp}
         bossShieldPct={isShieldBroken ? 0 : bossShieldPct}
         globalCountdownSec={globalCountdownSec}
         globalSynergyPct={globalSynergyPct}
         globalBurstActive={globalBurstActive}
         activeForgersCount={activeForgersCount}
+        realOnlinePeersCount={onlinePeers.length}
         isOffline={isOffline}
         anvilHeat={anvilHeat}
         resonanceStrikes={resonanceStrikes}
@@ -1350,6 +1603,13 @@ export default function App() {
             combatLogs={combatLogs}
             chatMessages={chatMessages}
             onSendChat={handleSendChat}
+            currentVaultId={currentVaultId}
+            onSelectVault={handleSelectVault}
+            userGuildId={userGuildId}
+            onSelectGuild={handleSelectGuild}
+            guildHearths={guildHearths}
+            onDonateHearth={handleDonateHearth}
+            linhThach={linhThach}
           />
         </div>
       </div>
@@ -1396,6 +1656,7 @@ export default function App() {
             onUnequipItem={handleUnequipItem}
             onSalvageItem={handleSalvageItem}
             onQuickSalvage={handleQuickSalvage}
+            onQuenchItem={handleQuenchItem}
           />
         </div>
       </div>

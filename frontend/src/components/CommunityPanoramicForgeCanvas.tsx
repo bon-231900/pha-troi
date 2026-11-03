@@ -19,9 +19,29 @@ import {
   type Point2D,
 } from '../game/rules';
 
+export interface RemotePeerStrikePayload {
+  peerId: string;
+  name: string;
+  slotIndex: number;
+  stance: StanceKey;
+  damage: number;
+  isGolden: boolean;
+  isCrit?: boolean;
+}
+
+export interface RemotePeerInfo {
+  peerId: string;
+  name: string;
+  guildId?: string;
+  stance: StanceKey;
+  slotIndex: number;
+}
+
 export interface CommunityPanoramicForgeCanvasHandle {
   triggerHeroStrike: (forceGolden?: boolean) => void;
   triggerPeerWave: () => void;
+  triggerRemotePeerStrike: (payload: RemotePeerStrikePayload) => void;
+  updateRemotePeers: (peers: RemotePeerInfo[]) => void;
   spawnCombatText: (
     text: string,
     subtext: string,
@@ -127,6 +147,8 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
     ((text: string, subtext: string, color: string, glowColor: string, isGolden: boolean) => void) | null
   >(null);
   const resetClosureRef = useRef<(() => void) | null>(null);
+  const triggerRemotePeerStrikeClosureRef = useRef<((payload: RemotePeerStrikePayload) => void) | null>(null);
+  const updateRemotePeersClosureRef = useRef<((peers: RemotePeerInfo[]) => void) | null>(null);
 
   useImperativeHandle(
     ref,
@@ -136,6 +158,12 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
       },
       triggerPeerWave: () => {
         triggerPeerWaveClosureRef.current?.();
+      },
+      triggerRemotePeerStrike: (payload: RemotePeerStrikePayload) => {
+        triggerRemotePeerStrikeClosureRef.current?.(payload);
+      },
+      updateRemotePeers: (peers: RemotePeerInfo[]) => {
+        updateRemotePeersClosureRef.current?.(peers);
       },
       spawnCombatText: (text, subtext, color, glowColor, isGolden) => {
         spawnCombatTextClosureRef.current?.(text, subtext, color, glowColor, isGolden);
@@ -313,7 +341,7 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
         impactY: targetY,
       });
 
-      spawnAnvilSparkBurst(anvilX, anvilY, 6, peer.beamColorHex, false);
+      spawnAnvilSparkBurst(anvilX, anvilY, 3, peer.beamColorHex, false);
 
       if (gameStateRef.current === 'playing' && bossHpRef.current > 0) {
         onPeerAutonomousDamageRef.current?.(1 + Math.floor(Math.random() * 3));
@@ -417,6 +445,62 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
       resetSimulation();
     };
 
+    const remotePeersMap = new Map<number, RemotePeerInfo>();
+
+    updateRemotePeersClosureRef.current = (peers: RemotePeerInfo[]) => {
+      remotePeersMap.clear();
+      for (const p of peers) {
+        remotePeersMap.set(p.slotIndex, p);
+      }
+    };
+
+    triggerRemotePeerStrikeClosureRef.current = (payload: RemotePeerStrikePayload) => {
+      const slot = payload.slotIndex;
+      if (slot >= 0 && slot < peerActors.length) {
+        peerActiveStrikeTimers[slot] = 0;
+        const peer = peerActors[slot];
+        const px = peer.xNorm * viewW;
+        const py = peer.yNorm * viewH;
+        const anvilX = px + peer.facing * 20 * peer.scale;
+        const anvilY = py - 14 * peer.scale;
+        const targetX = viewW * (0.28 + (peer.xNorm - 0.5) * 0.44 + (Math.random() - 0.5) * 0.12);
+        const targetY = viewH * (0.11 + Math.random() * 0.16);
+
+        const bolt = generate2DLightningBolt(
+          anvilX,
+          anvilY,
+          targetX,
+          targetY,
+          true,
+          Math.floor((elapsedSec * 1000 + slot * 313) % 99999)
+        );
+        const palette = HERO_STANCE_PALETTES[payload.stance] || HERO_STANCE_PALETTES.Q;
+
+        activeBeams.push({
+          id: boltIdCounter++,
+          mainPoints: bolt.mainPoints,
+          branches: bolt.branches,
+          isHero: true,
+          rimHex: palette.rimHex,
+          coreHex: palette.coreHex,
+          ageSec: 0,
+          durationSec: 0.45,
+          impactX: targetX,
+          impactY: targetY,
+        });
+
+        spawnAnvilSparkBurst(anvilX, anvilY, 24, palette.sparkHex, true);
+
+        spawnCombatTextInternal(
+          payload.isCrit ? 'BẠO KÍCH!' : payload.isGolden ? 'HOÀNG KIM! x3.0' : 'CHUẨN XÁC!',
+          `★ ${payload.name} · -${payload.damage} DMG`,
+          palette.rimHex,
+          palette.coreHex,
+          payload.isGolden || !!payload.isCrit
+        );
+      }
+    };
+
     // Seed initial peer sparks
     for (let i = 0; i < 3; i++) {
       triggerPeerStrike(i * 5 + 1);
@@ -488,16 +572,25 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
       rimHex: string,
       coreHex: string,
       isMainHero: boolean,
-      label?: string
+      label?: string,
+      isRealPlayer: boolean = false
     ) => {
       ctx.save();
       ctx.translate(cx, footY);
       ctx.scale(scale * squashX, scale * squashY);
 
+      // Real Player or Main Hero: 100% full opacity, bright glowing presence!
+      // Bot: 0.32 subtle ambient silhouette!
+      if (!isMainHero && !isRealPlayer) {
+        ctx.globalAlpha = 0.32;
+      } else {
+        ctx.globalAlpha = 1.0;
+      }
+
       // 1. Ground Forge Aura Ring under feet + Anvil
       ctx.save();
-      ctx.fillStyle = rimHex;
-      ctx.globalAlpha = isMainHero ? 0.16 : 0.1;
+      ctx.fillStyle = isMainHero ? rimHex : '#334155';
+      ctx.globalAlpha = isMainHero ? 0.16 : 0.04;
       ctx.beginPath();
       ctx.ellipse(14 * facing, 0, isMainHero ? 88 : 48, isMainHero ? 18 : 10, 0, 0, Math.PI * 2);
       ctx.fill();
@@ -508,9 +601,9 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
       ctx.save();
       ctx.translate(anvilX, 0);
 
-      ctx.fillStyle = '#080C16';
-      ctx.strokeStyle = isMainHero ? '#FFB703' : rimHex;
-      ctx.lineWidth = isMainHero ? 2.4 : 1.5;
+      ctx.fillStyle = '#050811';
+      ctx.strokeStyle = isMainHero ? '#FFB703' : '#334155';
+      ctx.lineWidth = isMainHero ? 2.4 : 1.0;
 
       ctx.beginPath();
       ctx.moveTo(-26, 0);
@@ -680,13 +773,13 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
       ctx.restore();
       ctx.restore();
 
-      // 4. Overhead Badge
-      if (label) {
+      // 4. Overhead Badge (Đóng hộp nổi bật cho Nhân Vật Chính & Người Chơi Thật; Bot dùng nhãn mờ)
+      if (label && (isMainHero || isRealPlayer)) {
         ctx.save();
         const labelY = -138 + torsoOffsetY * 0.4;
         ctx.font = isMainHero
           ? '700 13px "Chakra Petch", sans-serif'
-          : '600 11.5px "Chakra Petch", monospace';
+          : '700 11.5px "Chakra Petch", sans-serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
 
@@ -695,16 +788,25 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
         const boxW = textMetrics.width + padX * 2;
         const boxH = isMainHero ? 22 : 19;
 
-        ctx.fillStyle = isMainHero ? 'rgba(6, 10, 20, 0.88)' : 'rgba(6, 10, 20, 0.76)';
-        ctx.strokeStyle = isMainHero ? rimHex : 'rgba(148, 163, 184, 0.4)';
-        ctx.lineWidth = isMainHero ? 1.5 : 1;
+        ctx.fillStyle = isMainHero ? 'rgba(6, 10, 20, 0.88)' : 'rgba(8, 14, 28, 0.9)';
+        ctx.strokeStyle = isMainHero ? rimHex : '#00F0FF';
+        ctx.lineWidth = isMainHero ? 1.5 : 1.2;
         ctx.beginPath();
         ctx.roundRect(-boxW * 0.5, labelY - boxH * 0.5, boxW, boxH, 4);
         ctx.fill();
         ctx.stroke();
 
-        ctx.fillStyle = isMainHero ? coreHex : '#E2E8F0';
+        ctx.fillStyle = isMainHero ? coreHex : '#00F0FF';
         ctx.fillText(label, 0, labelY + 0.5);
+        ctx.restore();
+      } else if (label && !isMainHero) {
+        ctx.save();
+        const labelY = -128 + torsoOffsetY * 0.4;
+        ctx.font = '500 10px "Chakra Petch", monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = 'rgba(148, 163, 184, 0.3)';
+        ctx.fillText(label, 0, labelY);
         ctx.restore();
       }
 
@@ -1029,10 +1131,10 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
               drawLightningPolyline(br, '#FFFFFF', 1.5, '#FFFFFF', 4, alpha * 0.9);
             }
           } else {
-            drawLightningPolyline(beam.mainPoints, beam.rimHex, 3.6, beam.rimHex, 10, alpha * 0.45);
-            drawLightningPolyline(beam.mainPoints, beam.coreHex, 1.4, beam.rimHex, 4, alpha * 0.78);
+            drawLightningPolyline(beam.mainPoints, beam.rimHex, 2.0, beam.rimHex, 5, alpha * 0.22);
+            drawLightningPolyline(beam.mainPoints, beam.coreHex, 0.9, beam.rimHex, 2, alpha * 0.40);
             for (const br of beam.branches) {
-              drawLightningPolyline(br, beam.rimHex, 1.2, beam.rimHex, 4, alpha * 0.5);
+              drawLightningPolyline(br, beam.rimHex, 0.8, beam.rimHex, 2, alpha * 0.20);
             }
           }
 
@@ -1067,6 +1169,13 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
             elapsedSec + peer.strikeOffsetSec
           );
 
+          const realPeer = remotePeersMap.get(i);
+          const isReal = !!realPeer;
+          const palette = realPeer ? HERO_STANCE_PALETTES[realPeer.stance] : null;
+          const rimHex = realPeer ? (palette?.rimHex || '#00F0FF') : '#475569';
+          const coreHex = realPeer ? (palette?.coreHex || '#FFFFFF') : '#334155';
+          const label = realPeer ? `★ ${realPeer.name}` : peer.label;
+
           drawBlacksmith2DSilhouette(
             px,
             py,
@@ -1076,10 +1185,11 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
             peerPose.torsoOffsetY,
             peerPose.scaleX,
             peerPose.scaleY,
-            peer.beamColorHex,
-            '#E2F8FF',
+            rimHex,
+            coreHex,
             false,
-            peer.label
+            label,
+            isReal
           );
         }
 

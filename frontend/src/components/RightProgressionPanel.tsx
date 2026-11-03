@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   ForgeUpgrade,
   SpiritNode,
@@ -22,6 +22,8 @@ import {
   StanceKey,
   HAMMER_STANCES,
   formatInteger,
+  QuenchType,
+  QUENCH_OPTIONS,
 } from '../game/rules';
 import {
   Hammer,
@@ -71,6 +73,7 @@ interface RightProgressionPanelProps {
   onUnequipItem: (slotKey: EquipmentSlotKey) => void;
   onSalvageItem: (item: EquipmentItem) => void;
   onQuickSalvage: (rarities: ItemRarity[]) => void;
+  onQuenchItem?: (itemId: string, quenchType: QuenchType) => void;
 }
 
 export const RightProgressionPanel: React.FC<RightProgressionPanelProps> = ({
@@ -95,6 +98,7 @@ export const RightProgressionPanel: React.FC<RightProgressionPanelProps> = ({
   onUnequipItem,
   onSalvageItem,
   onQuickSalvage,
+  onQuenchItem,
 }) => {
   const [activeTab, setActiveTab] = useState<'arsenal' | 'upgrades' | 'spirit' | 'leaderboard'>('arsenal');
   const [selectedItem, setSelectedItem] = useState<EquipmentItem | null>(() => {
@@ -103,6 +107,15 @@ export const RightProgressionPanel: React.FC<RightProgressionPanelProps> = ({
   const [selectedStanceTree, setSelectedStanceTree] = useState<StanceKey>('Q');
   const [selectedSkillNodeId, setSelectedSkillNodeId] = useState<string>('q_tier_1');
   const [selectedNodeId, setSelectedNodeId] = useState<string>('node_thunder_eye');
+
+  // Always resolve freshest reference from equippedItems or inventory
+  const activeSelected = useMemo(() => {
+    if (!selectedItem) return null;
+    for (const k of Object.keys(equippedItems) as EquipmentSlotKey[]) {
+      if (equippedItems[k]?.id === selectedItem.id) return equippedItems[k];
+    }
+    return inventory.find((it) => it.id === selectedItem.id) || selectedItem;
+  }, [selectedItem, equippedItems, inventory]);
 
   const selectedNode =
     spiritNodes.find((n) => n.id === selectedNodeId) || spiritNodes[0];
@@ -401,23 +414,23 @@ export const RightProgressionPanel: React.FC<RightProgressionPanelProps> = ({
             </div>
 
             {/* Selected Item Inspector & Comparison Card */}
-            {selectedItem && (
+            {activeSelected && (
               <div className="p-3.5 rounded-xl bg-[#080A10] border border-slate-800 space-y-2.5">
                 {/* Header */}
                 <div className="flex items-start justify-between gap-2">
                   <div>
                     <div className="flex items-center gap-1.5">
                       <span className="text-[10px] font-tech text-cyan-400 uppercase">
-                        [{selectedItem.slotName}]
+                        [{activeSelected.slotName}]
                       </span>
                       <span
                         className={`text-[9px] px-1.5 py-0.2 rounded border font-tech ${
-                          getItemRarityMeta(selectedItem.rarity).badgeBg
+                          getItemRarityMeta(activeSelected.rarity).badgeBg
                         }`}
                       >
-                        {getItemRarityMeta(selectedItem.rarity).label}
+                        {getItemRarityMeta(activeSelected.rarity).label}
                       </span>
-                      {isEquipped(selectedItem) && (
+                      {isEquipped(activeSelected) && (
                         <span className="text-[9px] px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-tech">
                           ĐANG TRANG BỊ
                         </span>
@@ -425,38 +438,38 @@ export const RightProgressionPanel: React.FC<RightProgressionPanelProps> = ({
                     </div>
                     <h4
                       className={`font-semibold text-sm ${
-                        getItemRarityMeta(selectedItem.rarity).textColor
+                        getItemRarityMeta(activeSelected.rarity).textColor
                       }`}
                     >
-                      {selectedItem.name}
+                      {activeSelected.name}
                     </h4>
                   </div>
 
                   <span className="text-xs font-tech font-bold text-slate-400 whitespace-nowrap">
-                    Lv.{selectedItem.itemLevel}
+                    Lv.{activeSelected.itemLevel}
                   </span>
                 </div>
 
                 {/* Lore quote */}
                 <p className="text-[11px] text-slate-400 italic leading-relaxed border-l-2 border-slate-700 pl-2">
-                  "{selectedItem.loreDescription}"
+                  "{activeSelected.loreDescription}"
                 </p>
 
                 {/* Base Stat */}
                 <div className="p-2 rounded-lg bg-[#111625] border border-slate-800 text-xs font-tech flex items-center justify-between">
-                  <span className="text-slate-400">{selectedItem.baseStatLabel}:</span>
+                  <span className="text-slate-400">{activeSelected.baseStatLabel}:</span>
                   <span className="text-cyan-300 font-bold">
-                    +{selectedItem.baseStatValue} {selectedItem.baseStatUnit}
+                    +{activeSelected.baseStatValue} {activeSelected.baseStatUnit}
                   </span>
                 </div>
 
                 {/* Prefixes (Tiền Tố) */}
-                {selectedItem.prefixes.length > 0 && (
+                {activeSelected.prefixes.length > 0 && (
                   <div className="space-y-1">
                     <div className="text-[10px] font-tech text-amber-300 uppercase tracking-wider">
                       ⚡ Tiền Tố (Prefix):
                     </div>
-                    {selectedItem.prefixes.map((pref) => (
+                    {activeSelected.prefixes.map((pref) => (
                       <div
                         key={pref.id}
                         className="px-2 py-1 rounded-lg bg-amber-500/10 border border-amber-500/20 text-[11px] font-tech text-amber-200 flex items-center justify-between"
@@ -469,12 +482,12 @@ export const RightProgressionPanel: React.FC<RightProgressionPanelProps> = ({
                 )}
 
                 {/* Suffixes (Hậu Tố) */}
-                {selectedItem.suffixes.length > 0 && (
+                {activeSelected.suffixes.length > 0 && (
                   <div className="space-y-1">
                     <div className="text-[10px] font-tech text-purple-300 uppercase tracking-wider">
                       🔮 Hậu Tố (Suffix / Affix):
                     </div>
-                    {selectedItem.suffixes.map((suf) => (
+                    {activeSelected.suffixes.map((suf) => (
                       <div
                         key={suf.id}
                         className="px-2 py-1 rounded-lg bg-purple-500/10 border border-purple-500/20 text-[11px] font-tech text-purple-200 flex items-center justify-between"
@@ -487,11 +500,11 @@ export const RightProgressionPanel: React.FC<RightProgressionPanelProps> = ({
                 )}
 
                 {/* Comparison with currently equipped slot (if inspecting a bag item) */}
-                {!isEquipped(selectedItem) && (() => {
-                  const currentEq = equippedItems[selectedItem.slotKey];
+                {!isEquipped(activeSelected) && (() => {
+                  const currentEq = equippedItems[activeSelected.slotKey];
                   const diff = currentEq
-                    ? selectedItem.baseStatValue - currentEq.baseStatValue
-                    : selectedItem.baseStatValue;
+                    ? activeSelected.baseStatValue - currentEq.baseStatValue
+                    : activeSelected.baseStatValue;
 
                   return (
                     <div className="p-2 rounded-lg bg-[#0E1322] border border-slate-800 text-[11px] font-tech flex items-center justify-between">
@@ -508,30 +521,82 @@ export const RightProgressionPanel: React.FC<RightProgressionPanelProps> = ({
                             : 'text-slate-400'
                         }`}
                       >
-                        {diff > 0 ? `+${diff}` : `${diff}`} {selectedItem.baseStatUnit}
+                        {diff > 0 ? `+${diff}` : `${diff}`} {activeSelected.baseStatUnit}
                       </span>
                     </div>
                   );
                 })()}
 
+                {/* Phase 3: Nghi Thức Tôi Lửa (Elemental Tempering / Quenching) */}
+                <div className="pt-2 border-t border-slate-800 space-y-1.5">
+                  <div className="flex items-center justify-between text-[11px] font-tech text-amber-300">
+                    <span className="flex items-center gap-1 font-bold">
+                      <Flame className="w-3.5 h-3.5 text-orange-400" />
+                      NGHI THỨC TÔI LỬA (TEMPERING):
+                    </span>
+                    {activeSelected.quench ? (
+                      <span className="text-[10px] text-emerald-300 font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 border border-emerald-500/40">
+                        ✓ {QUENCH_OPTIONS.find((q) => q.type === activeSelected.quench)?.name.split(' ')[1] || 'ĐÃ TÔI LỬA'}
+                      </span>
+                    ) : (
+                      <span className="text-[10px] text-slate-400 font-mono">150 LT + 1 TH</span>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-1.5">
+                    {QUENCH_OPTIONS.map((q) => {
+                      const isApplied = activeSelected.quench === q.type;
+                      const canAfford = linhThach >= q.costLinhThach && tinhHoa >= q.costTinhHoa;
+
+                      return (
+                        <button
+                          key={q.type}
+                          type="button"
+                          disabled={isApplied || !canAfford}
+                          onClick={() => {
+                            onQuenchItem?.(activeSelected.id, q.type);
+                            setSelectedItem((prev) => (prev ? { ...prev, quench: q.type } : null));
+                          }}
+                          className={`p-2 rounded-lg border text-center transition-all flex flex-col items-center justify-center gap-0.5 ${
+                            isApplied
+                              ? 'bg-emerald-950/40 border-emerald-500/60 text-emerald-300 ring-1 ring-emerald-500/30'
+                              : canAfford
+                              ? 'bg-slate-900/60 border-slate-700 hover:border-amber-400 cursor-pointer active:scale-95 text-slate-200'
+                              : 'bg-slate-900/20 border-slate-800 text-slate-500 cursor-not-allowed opacity-60'
+                          }`}
+                          title={`${q.name}: ${q.bonusDesc}`}
+                        >
+                          <span className="text-base">{q.icon}</span>
+                          <span className="text-[10px] font-tech font-bold truncate max-w-full">
+                            {q.name.split(' ')[1]}
+                          </span>
+                          <span className="text-[9px] font-mono text-slate-400">
+                            {isApplied ? 'Đang dùng' : '150 LT'}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
                 {/* Action Buttons: Equip or Salvage */}
                 <div className="pt-2 border-t border-slate-800 flex items-center gap-2">
-                  {!isEquipped(selectedItem) ? (
+                  {!isEquipped(activeSelected) ? (
                     <>
                       <button
                         type="button"
-                        onClick={() => onEquipItem(selectedItem)}
+                        onClick={() => onEquipItem(activeSelected)}
                         className="flex-1 py-2 px-3 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-tech font-bold text-xs tracking-wider cursor-pointer shadow-md shadow-amber-500/20 active:scale-95 transition-all text-center"
                       >
                         TRANG BỊ NGAY
                       </button>
 
                       {(() => {
-                        const salvage = getSalvageYield(selectedItem);
+                        const salvage = getSalvageYield(activeSelected);
                         return (
                           <button
                             type="button"
-                            onClick={() => onSalvageItem(selectedItem)}
+                            onClick={() => onSalvageItem(activeSelected)}
                             className="py-2 px-3 rounded-xl bg-red-950/40 hover:bg-red-900/60 border border-red-500/40 text-red-300 font-tech font-bold text-xs flex items-center gap-1 cursor-pointer transition-colors"
                             title={`Tách thành +${salvage.linhThach} LT${
                               salvage.tinhHoa > 0 ? `, +${salvage.tinhHoa} TH` : ''
@@ -546,7 +611,7 @@ export const RightProgressionPanel: React.FC<RightProgressionPanelProps> = ({
                   ) : (
                     <button
                       type="button"
-                      onClick={() => onUnequipItem(selectedItem.slotKey)}
+                      onClick={() => onUnequipItem(activeSelected.slotKey)}
                       className="w-full py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 font-tech font-bold text-xs cursor-pointer transition-colors text-center"
                     >
                       THÁO RA TÚI ĐỒ

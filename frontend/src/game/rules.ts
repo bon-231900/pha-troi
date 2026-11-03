@@ -351,6 +351,8 @@ export interface ItemAffix {
   value: number;
 }
 
+export type QuenchType = 'ice' | 'magma' | 'thunder';
+
 export interface EquipmentItem {
   id: string;
   slotKey: EquipmentSlotKey;
@@ -366,6 +368,7 @@ export interface EquipmentItem {
   suffixes: ItemAffix[];
   loreDescription: string;
   droppedAt?: number;
+  quench?: QuenchType;
 }
 
 export interface ArsenalBonuses {
@@ -868,6 +871,18 @@ export function calculateArsenalBonuses(
       case 'relic':
         damageMultiplier += item.baseStatValue / 100;
         break;
+    }
+
+    // Phase 3: Elemental Tempering Quench Bonus
+    if (item.quench) {
+      if (item.quench === 'ice') {
+        essenceDropChancePct += 15;
+        afkLinhThachPerMin += 25;
+      } else if (item.quench === 'magma') {
+        flatDamage += 8;
+      } else if (item.quench === 'thunder') {
+        critChancePct += 12;
+      }
     }
 
     const allAffixes = [...item.prefixes, ...item.suffixes];
@@ -1663,6 +1678,317 @@ export function calculateStanceSkillBonuses(
 
   return bonuses;
 }
+
+// ============================================================================
+// PHASE 3: CỬU TRỌNG THIÊN (THE 9 CELESTIAL VAULTS)
+// ============================================================================
+export interface CelestialVault {
+  id: number;
+  name: string;
+  title: string;
+  bossName: string;
+  bossTitle: string;
+  maxHp: number; // Integer RPG HP
+  damageReductionPct: number;
+  skyTheme: {
+    bgGradient: string;
+    crackColor: string;
+    crackGlow: string;
+    lightningHex: string;
+    particleHex: string;
+  };
+  loreSummary: string;
+  unlockedByDefault?: boolean;
+}
+
+export const CELESTIAL_VAULTS: CelestialVault[] = [
+  {
+    id: 1,
+    name: 'Thiết Vân Vòm',
+    title: 'Tầng 1 · Giáp Sắt Mây Đen',
+    bossName: 'Hắc Diệm Thao Thiết',
+    bossTitle: 'Cổ Thần Cửu U · Thôn Phệ Vạn Vật',
+    maxHp: 500_000_000,
+    damageReductionPct: 80,
+    skyTheme: {
+      bgGradient: 'from-slate-950 via-[#0a0f1d] to-[#121927]',
+      crackColor: '#FF9E00',
+      crackGlow: '#FF4D00',
+      lightningHex: '#00F0FF',
+      particleHex: '#FF9E00',
+    },
+    loreSummary: 'Mái vòm bằng kim loại rỉ sét và mây đen kịt bọc kín thung lũng Thiên Thai.',
+    unlockedByDefault: true,
+  },
+  {
+    id: 2,
+    name: 'Cổ Đồng Thiên',
+    title: 'Tầng 2 · Đồng Rỉ Đông Sơn',
+    bossName: 'Trấn Thiên Lạc Thần',
+    bossTitle: 'Hộ Giới Thần Tướng · Trấn Áp Cổ Cương',
+    maxHp: 1_200_000_000,
+    damageReductionPct: 82,
+    skyTheme: {
+      bgGradient: 'from-[#1a120b] via-[#24170d] to-[#3a2310]',
+      crackColor: '#F59E0B',
+      crackGlow: '#D97706',
+      lightningHex: '#FBBF24',
+      particleHex: '#F59E0B',
+    },
+    loreSummary: 'Mái vòm đồng cổ chạm khắc hoa văn Đông Sơn ngàn năm, rỉ sét bốc khói độc thiêu đốt nhân gian.',
+  },
+  {
+    id: 3,
+    name: 'Lôi Tiêu Điện',
+    title: 'Tầng 3 · Bão Plasma Tím',
+    bossName: 'Ứng Lôi Chân Quân',
+    bossTitle: 'Thiên Cấm Lôi Thần · Chưởng Quản Tử Lôi',
+    maxHp: 2_500_000_000,
+    damageReductionPct: 85,
+    skyTheme: {
+      bgGradient: 'from-[#140b24] via-[#1f1038] to-[#2c134d]',
+      crackColor: '#C084FC',
+      crackGlow: '#9333EA',
+      lightningHex: '#E879F9',
+      particleHex: '#A855F7',
+    },
+    loreSummary: 'Biển mây tím phóng ra các luồng sét plasma hàng triệu vôn ngăn cản bước chân thợ rèn.',
+  },
+  {
+    id: 4,
+    name: 'Hàn Băng Thần',
+    title: 'Tầng 4 · Kính Băng Cực Độ',
+    bossName: 'Huyền Minh Băng Hoàng',
+    bossTitle: 'Tuyết Vực Thần Tước · Đóng Băng Hư Không',
+    maxHp: 5_000_000_000,
+    damageReductionPct: 88,
+    skyTheme: {
+      bgGradient: 'from-[#081826] via-[#0d273d] to-[#123654]',
+      crackColor: '#38BDF8',
+      crackGlow: '#0284C7',
+      lightningHex: '#7DD3FC',
+      particleHex: '#38BDF8',
+    },
+    loreSummary: 'Mặt gương băng vĩnh cửu đông cứng linh khí và phản hồi sát thương ngược về trần thế.',
+  },
+  {
+    id: 5,
+    name: 'Xích Diễm Giới',
+    title: 'Tầng 5 · Nham Thạch Núi Lửa',
+    bossName: 'Chúc Dung Ma Thần',
+    bossTitle: 'Hỏa Cực Chi Chủ · Phần Diệt Cửu Châu',
+    maxHp: 10_000_000_000,
+    damageReductionPct: 90,
+    skyTheme: {
+      bgGradient: 'from-[#260b08] via-[#3d120d] to-[#541812]',
+      crackColor: '#EF4444',
+      crackGlow: '#DC2626',
+      lightningHex: '#F87171',
+      particleHex: '#EF4444',
+    },
+    loreSummary: 'Bầu trời dung nham đỏ quạch, lửa thiêng liên tục dội xuống đe rèn của nhân loại.',
+  },
+  {
+    id: 6,
+    name: 'Huyền Thủy Hải',
+    title: 'Tầng 6 · Biển Trời Nghịch',
+    bossName: 'Côn Bằng Hóa Minh',
+    bossTitle: 'Cự Thú Thâm Uyên · Thôn Thiên Nạp Địa',
+    maxHp: 20_000_000_000,
+    damageReductionPct: 92,
+    skyTheme: {
+      bgGradient: 'from-[#06181f] via-[#0b2834] to-[#103b4d]',
+      crackColor: '#06B6D4',
+      crackGlow: '#0891B2',
+      lightningHex: '#22D3EE',
+      particleHex: '#06B6D4',
+    },
+    loreSummary: 'Đại dương nghịch chuyển treo ngược trên bầu trời, áp suất khủng khiếp bóp nát vạn vật.',
+  },
+  {
+    id: 7,
+    name: 'Bát Quái Phong',
+    title: 'Tầng 7 · Trận Đồ Phong Cấm',
+    bossName: 'Vô Cực Cơ Quan Tôn',
+    bossTitle: 'Thái Cổ Khôi Lỗi · Trận Nhãn Vạn Cổ',
+    maxHp: 40_000_000_000,
+    damageReductionPct: 94,
+    skyTheme: {
+      bgGradient: 'from-[#181a0b] via-[#262912] to-[#363a18]',
+      crackColor: '#84CC16',
+      crackGlow: '#65A30D',
+      lightningHex: '#A3E635',
+      particleHex: '#84CC16',
+    },
+    loreSummary: 'Vòng quay bánh răng cơ quan khổng lồ che lấp nhật nguyệt, vận hành theo Bát Quái trận đồ.',
+  },
+  {
+    id: 8,
+    name: 'Hư Không Đoạn',
+    title: 'Tầng 8 · Hố Đen Vũ Trụ',
+    bossName: 'Thôn Thiên Ma Thú',
+    bossTitle: 'Dị Thứ Nguyên Thần · Thôn Hấp Tinh Tú',
+    maxHp: 80_000_000_000,
+    damageReductionPct: 95,
+    skyTheme: {
+      bgGradient: 'from-[#090614] via-[#120d26] to-[#1c133b]',
+      crackColor: '#818CF8',
+      crackGlow: '#4F46E5',
+      lightningHex: '#A5B4FC',
+      particleHex: '#818CF8',
+    },
+    loreSummary: 'Vết nứt không gian vũ trụ hút cạn mọi tia sáng, thời gian và không gian bị bẻ cong.',
+  },
+  {
+    id: 9,
+    name: 'Hỗn Độn Thiên',
+    title: 'Tầng 9 · Con Mắt Thiên Đạo',
+    bossName: 'Cửu U Tối Cao Chi Nhãn',
+    bossTitle: 'Nguồn Cội Hắc Ám · Chúa Tể Cửu U',
+    maxHp: 150_000_000_000,
+    damageReductionPct: 96,
+    skyTheme: {
+      bgGradient: 'from-[#1f0510] via-[#33081a] to-[#470a25]',
+      crackColor: '#F43F5E',
+      crackGlow: '#E11D48',
+      lightningHex: '#FB7185',
+      particleHex: '#F43F5E',
+    },
+    loreSummary: 'Đỉnh cao của Cửu Trọng Thiên Cấm. Con mắt thần thức tối cao giáng sự diệt vong xuống trần gian.',
+  },
+];
+
+export function getCelestialVault(id: number): CelestialVault {
+  return CELESTIAL_VAULTS.find((v) => v.id === id) || CELESTIAL_VAULTS[0];
+}
+
+// ============================================================================
+// PHASE 3: HỆ THỐNG PHƯỜNG RÈN (BLACKSMITH GUILDS) & ĐẠI HỎA LÒ BANG HỘI
+// ============================================================================
+export interface BlacksmithGuild {
+  id: string;
+  name: string;
+  motto: string;
+  icon: string;
+  color: string;
+  preferredStance: StanceKey;
+  description: string;
+  hearthLevel: number;
+  hearthExp: number;
+  hearthExpToNext: number;
+  auraPerk: string;
+  memberCount: number;
+}
+
+export const BLACKSMITH_GUILDS: BlacksmithGuild[] = [
+  {
+    id: 'guild_thien_thai',
+    name: 'Thiên Thai Phường',
+    motto: 'Khai Lò Phá Khởi · Lôi Đình Trảm Thiên',
+    icon: '⚡',
+    color: '#00F0FF',
+    preferredStance: 'Q',
+    description: 'Nơi phát tích nhát búa đầu tiên của nhân loại trên đỉnh Thiên Thai. Chuyên tinh thế Lôi Đỉnh.',
+    hearthLevel: 1,
+    hearthExp: 0,
+    hearthExpToNext: 1000,
+    auraPerk: '+10% tốc độ tích Overdrive & +15% tỷ lệ Sét Lan đồng minh',
+    memberCount: 142,
+  },
+  {
+    id: 'guild_phan_thien',
+    name: 'Phần Thiên Các',
+    motto: 'Hỏa Diệm Bất Diệt · Luyện Khí Thành Thần',
+    icon: '🔥',
+    color: '#FF4D00',
+    preferredStance: 'W',
+    description: 'Tập hợp những thợ rèn cuồng nhiệt giữ ngọn lửa lò không bao giờ tắt. Chuyên tinh thế Viêm Dương.',
+    hearthLevel: 1,
+    hearthExp: 0,
+    hearthExpToNext: 1000,
+    auraPerk: '+15% Sát thương thiêu đốt DoT & duy trì Hỏa Hầu >600°C',
+    memberCount: 118,
+  },
+  {
+    id: 'guild_van_kiem',
+    name: 'Vạn Kiếm Sơn',
+    motto: 'Nặng Tựa Thái Sơn · Nhất Kích Vỡ Vòm',
+    icon: '🏔️',
+    color: '#A855F7',
+    preferredStance: 'E',
+    description: 'Ẩn cư tại dãy Vạn Kiếm hiểm trở, tôn sùng lực nện ngàn cân. Chuyên tinh thế Trọng Lực.',
+    hearthLevel: 1,
+    hearthExp: 0,
+    hearthExpToNext: 1000,
+    auraPerk: '+15% Sát thương Bạo Kích & giảm 20% nhát gõ cần để Phá Giáp',
+    memberCount: 96,
+  },
+  {
+    id: 'guild_doan_hon',
+    name: 'Đoạn Hồn Cốc',
+    motto: 'Khúc Hát Khải Hoàn · Đồng Tâm Hiệp Lực',
+    icon: '🎶',
+    color: '#10B981',
+    preferredStance: 'R',
+    description: 'Thung lũng âm vang tiếng đe rèn đồng điệu vạn dặm. Chuyên tinh thế Huyền Âm.',
+    hearthLevel: 1,
+    hearthExp: 0,
+    hearthExpToNext: 1000,
+    auraPerk: '+20% sản lượng Linh Thạch & tăng gấp đôi thời gian Đại Cộng Hưởng',
+    memberCount: 164,
+  },
+];
+
+export function getGuild(id: string): BlacksmithGuild {
+  return BLACKSMITH_GUILDS.find((g) => g.id === id) || BLACKSMITH_GUILDS[0];
+}
+
+// ============================================================================
+// PHASE 3: NGHI THỨC TÔI LỬA NGUYÊN TỐ (ELEMENTAL TEMPERING / FORGE QUENCHING)
+// ============================================================================
+export interface QuenchOption {
+  type: QuenchType;
+  name: string;
+  icon: string;
+  color: string;
+  costLinhThach: number;
+  costTinhHoa: number;
+  bonusTitle: string;
+  bonusDesc: string;
+}
+
+export const QUENCH_OPTIONS: QuenchOption[] = [
+  {
+    type: 'ice',
+    name: 'Tôi Nước Suối Băng',
+    icon: '❄️',
+    color: '#38BDF8',
+    costLinhThach: 150,
+    costTinhHoa: 1,
+    bonusTitle: 'Hút Tinh Thể & Tài Phú',
+    bonusDesc: '+15% Tỷ lệ Tinh Hoa & +25 Linh Thạch AFK/phút',
+  },
+  {
+    type: 'magma',
+    name: 'Tôi Dung Nham Núi Lửa',
+    icon: '🌋',
+    color: '#F97316',
+    costLinhThach: 150,
+    costTinhHoa: 1,
+    bonusTitle: 'Hỏa Diệm Thiêu Đốt',
+    bonusDesc: '+8 Sát thương thiêu đốt DoT cố định mỗi đòn nện búa',
+  },
+  {
+    type: 'thunder',
+    name: 'Tôi Máu Lôi Thần',
+    icon: '⚡',
+    color: '#A855F7',
+    costLinhThach: 150,
+    costTinhHoa: 1,
+    bonusTitle: 'Lôi Điện Bạo Liệt',
+    bonusDesc: '+12% Tỷ lệ Bạo Kích (Crit) & nổ sét diện rộng',
+  },
+];
 
 export function formatInteger(n: number): string {
   return Math.max(0, Math.round(n)).toLocaleString('en-US');

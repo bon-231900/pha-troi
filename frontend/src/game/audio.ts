@@ -174,6 +174,26 @@ class CelestialAudioEngine {
     osc.stop(now + 0.075);
   }
 
+  public playComboStreakSound(streak: number = 4) {
+    if (this.muted) return;
+    const ctx = this.ensureContext();
+    if (!ctx) return;
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    const baseFreq = 440 + Math.min(streak, 20) * 22;
+    osc.frequency.setValueAtTime(baseFreq, now);
+    osc.frequency.exponentialRampToValueAtTime(baseFreq * 1.5, now + 0.12);
+    gain.gain.setValueAtTime(0.001, now);
+    gain.gain.linearRampToValueAtTime(0.08, now + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.15);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.16);
+  }
+
   public playGlobalBurstFanfare() {
     this.triggerHaptic([60, 30, 90, 30, 140]);
     const ctx = this.ensureContext();

@@ -14,6 +14,7 @@ export interface TopBossHeaderProps {
   globalBurstActive: boolean;
   activeForgersCount: number;
   isOffline?: boolean;
+  realOnlinePeersCount?: number;
   anvilHeat?: number; // 100 - 1000°C
   resonanceStrikes?: number; // 0 - 50
   isShieldBroken?: boolean;
@@ -41,6 +42,7 @@ export const TopBossHeader: React.FC<TopBossHeaderProps> = ({
   globalBurstActive,
   activeForgersCount,
   isOffline = false,
+  realOnlinePeersCount = 0,
   anvilHeat = 100,
   resonanceStrikes = 0,
   isShieldBroken = false,
@@ -98,7 +100,13 @@ export const TopBossHeader: React.FC<TopBossHeaderProps> = ({
             {activeForgersCount.toLocaleString('en-US')}
           </span>
           <span className="text-slate-400 text-[11px]">
-            {isOffline ? 'Độc Hành' : 'Vạn Dân'}
+            {realOnlinePeersCount > 0 ? (
+              <span className="text-cyan-400 font-bold">({realOnlinePeersCount + 1} Đồng Môn P2P)</span>
+            ) : isOffline ? (
+              'Độc Hành'
+            ) : (
+              'Vạn Dân'
+            )}
           </span>
         </div>
       </div>
