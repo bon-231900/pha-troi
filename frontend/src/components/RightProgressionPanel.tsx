@@ -5,14 +5,16 @@ import {
   getUpgradeCost,
   canUnlockSpiritNode,
   calculateSpiritMultiplier,
+  calculateForgeDamage,
 } from '../game/rules';
-import { Hammer, Sparkles, Trophy, X, Check } from 'lucide-react';
+import { Hammer, Sparkles, Trophy, X, Check, Lock } from 'lucide-react';
 
 export interface LeaderboardEntry {
   id: string;
   name: string;
   sect: string;
-  damageBillions: number;
+  damage: number; // Integer DMG
+  damageBillions?: number; // legacy fallback
   isPlayer?: boolean;
 }
 
@@ -21,6 +23,7 @@ interface RightProgressionPanelProps {
   spiritNodes: SpiritNode[];
   linhThach: number;
   tinhHoa: number;
+  tier2Unlocked?: boolean;
   leaderboard: LeaderboardEntry[];
   mobileDrawerOpen: boolean;
   onCloseMobileDrawer: () => void;
@@ -33,6 +36,7 @@ export const RightProgressionPanel: React.FC<RightProgressionPanelProps> = ({
   spiritNodes,
   linhThach,
   tinhHoa,
+  tier2Unlocked = false,
   leaderboard,
   mobileDrawerOpen,
   onCloseMobileDrawer,
@@ -125,6 +129,20 @@ export const RightProgressionPanel: React.FC<RightProgressionPanelProps> = ({
             {upgrades.map((up) => {
               const cost = getUpgradeCost(up);
               const canAfford = linhThach >= cost && up.level < up.maxLevel;
+
+              let currentBonusText = '';
+              if (up.id === 'celestial_hammer_core') {
+                const cur = calculateForgeDamage(up.level);
+                const nxt = calculateForgeDamage(up.level + 1);
+                currentBonusText = `Sát thương: ${cur} DMG (Cấp tới: ${nxt} DMG)`;
+              } else if (up.id === 'thunder_quench_oil') {
+                currentBonusText = `Hiện tại: +${up.level} DMG thực tế`;
+              } else if (up.id === 'nine_heavens_bellows') {
+                currentBonusText = `Hiện tại: +${up.level * 10}% tốc độ Hỏa Hầu`;
+              } else {
+                currentBonusText = `Hiện tại: +${up.level} Linh Thạch & +${up.level * 5}% Phá Giáp`;
+              }
+
               return (
                 <div
                   key={up.id}
@@ -142,10 +160,7 @@ export const RightProgressionPanel: React.FC<RightProgressionPanelProps> = ({
 
                   <div className="flex items-center justify-between pt-1 border-t border-slate-800/70">
                     <div className="text-xs font-tech text-slate-300">
-                      Hiện tăng:{' '}
-                      <span className="text-cyan-300 font-semibold">
-                        +{(up.level * up.powerPerLevel).toFixed(2)}B
-                      </span>
+                      <span className="text-cyan-300 font-semibold">{currentBonusText}</span>
                     </div>
                     <button
                       type="button"
@@ -201,7 +216,10 @@ export const RightProgressionPanel: React.FC<RightProgressionPanelProps> = ({
                 {/* Constellation Star Nodes */}
                 {spiritNodes.map((node) => {
                   const isSelected = selectedNode.id === node.id;
-                  const unlockable = canUnlockSpiritNode(node.id, spiritNodes, tinhHoa);
+                  const isTier2Locked = node.tier === 2 && !tier2Unlocked;
+                  const unlockable =
+                    !isTier2Locked && canUnlockSpiritNode(node.id, spiritNodes, tinhHoa, tier2Unlocked);
+
                   return (
                     <g
                       key={node.id}
@@ -226,6 +244,8 @@ export const RightProgressionPanel: React.FC<RightProgressionPanelProps> = ({
                         fill={
                           node.unlocked
                             ? '#00F0FF'
+                            : isTier2Locked
+                            ? '#475569'
                             : unlockable
                             ? '#FFD23F'
                             : '#1E293B'
@@ -237,11 +257,11 @@ export const RightProgressionPanel: React.FC<RightProgressionPanelProps> = ({
                         x={node.x}
                         y={node.y + 10}
                         textAnchor="middle"
-                        fill={node.unlocked ? '#E2E8F0' : '#94A3B8'}
+                        fill={node.unlocked ? '#E2E8F0' : isTier2Locked ? '#64748B' : '#94A3B8'}
                         fontSize="4.2"
                         fontWeight="600"
                       >
-                        {node.name}
+                        {isTier2Locked ? `🔒 ${node.name}` : node.name}
                       </text>
                     </g>
                   );
@@ -249,15 +269,20 @@ export const RightProgressionPanel: React.FC<RightProgressionPanelProps> = ({
               </svg>
             </div>
 
-            {/* Selected Constellation Node Details & Unlock Action */}
-            <div className="p-3.5 rounded-xl bg-[#080A10] border border-slate-800 flex flex-col gap-2">
+            {/* Selected Node Details Card */}
+            <div className="p-3.5 rounded-xl bg-[#080A10] border border-slate-800 space-y-2">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-xs font-tech text-cyan-300">
+                  <span className="text-[11px] font-tech text-cyan-400">
                     {selectedNode.constellation}
-                  </div>
-                  <h4 className="font-display font-bold text-sm text-amber-300">
+                  </span>
+                  <h4 className="font-semibold text-sm text-slate-100 flex items-center gap-1.5">
                     {selectedNode.name}
+                    {selectedNode.tier === 2 && (
+                      <span className="text-[10px] px-1.5 py-0.2 rounded bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                        Bậc 2
+                      </span>
+                    )}
                   </h4>
                 </div>
                 <span className="text-xs font-tech font-bold text-emerald-300">
@@ -268,6 +293,13 @@ export const RightProgressionPanel: React.FC<RightProgressionPanelProps> = ({
               <p className="text-xs text-slate-300 leading-relaxed">
                 {selectedNode.description}
               </p>
+
+              {selectedNode.tier === 2 && !tier2Unlocked && (
+                <div className="flex items-center gap-1.5 text-xs text-amber-300/90 bg-amber-500/10 border border-amber-500/30 rounded-lg p-2">
+                  <Lock className="w-3.5 h-3.5 shrink-0" />
+                  <span>Yêu cầu đạt Cột Mốc 100,000 DMG cá nhân để khai mở Thần Hồn Bậc 2.</span>
+                </div>
+              )}
 
               <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between">
                 <span className="text-xs font-tech text-slate-400">
@@ -283,10 +315,13 @@ export const RightProgressionPanel: React.FC<RightProgressionPanelProps> = ({
                 ) : (
                   <button
                     type="button"
-                    disabled={!canUnlockSpiritNode(selectedNode.id, spiritNodes, tinhHoa)}
+                    disabled={
+                      (selectedNode.tier === 2 && !tier2Unlocked) ||
+                      !canUnlockSpiritNode(selectedNode.id, spiritNodes, tinhHoa, tier2Unlocked)
+                    }
                     onClick={() => onUnlockSpiritNode(selectedNode.id)}
                     className={`px-3.5 py-1.5 rounded-lg text-xs font-tech font-bold transition-all whitespace-nowrap ${
-                      canUnlockSpiritNode(selectedNode.id, spiritNodes, tinhHoa)
+                      canUnlockSpiritNode(selectedNode.id, spiritNodes, tinhHoa, tier2Unlocked)
                         ? 'bg-cyan-400 hover:bg-cyan-300 text-slate-950 cursor-pointer'
                         : 'bg-slate-800 text-slate-500 cursor-not-allowed'
                     }`}
@@ -304,49 +339,56 @@ export const RightProgressionPanel: React.FC<RightProgressionPanelProps> = ({
             <div className="text-xs text-slate-400 font-tech px-1">
               Bảng Vàng Cửu Trọng · Xếp hạng theo Sát Thương Tích Lũy
             </div>
-            {leaderboard.map((row, index) => (
-              <div
-                key={row.id}
-                className={`p-3 rounded-xl border flex items-center justify-between gap-2 ${
-                  row.isPlayer
-                    ? 'bg-amber-500/10 border-amber-400/70'
-                    : 'bg-[#080A10] border-slate-800/90'
-                }`}
-              >
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <span
-                    className={`w-6 h-6 rounded-md font-tech font-bold text-xs flex items-center justify-center shrink-0 ${
-                      index === 0
-                        ? 'bg-amber-400 text-slate-950'
-                        : index === 1
-                        ? 'bg-cyan-400 text-slate-950'
-                        : index === 2
-                        ? 'bg-orange-400 text-slate-950'
-                        : 'bg-slate-800 text-slate-300'
-                    }`}
-                  >
-                    {index + 1}
-                  </span>
-                  <div className="min-w-0">
-                    <div
-                      className={`text-xs font-semibold truncate ${
-                        row.isPlayer ? 'text-amber-300' : 'text-slate-100'
+            {leaderboard.map((row, index) => {
+              const dmgVal = Math.round(
+                typeof row.damage === 'number'
+                  ? row.damage
+                  : (row.damageBillions || 0) * 1e9
+              );
+              return (
+                <div
+                  key={row.id}
+                  className={`p-3 rounded-xl border flex items-center justify-between gap-2 ${
+                    row.isPlayer
+                      ? 'bg-amber-500/10 border-amber-400/70'
+                      : 'bg-[#080A10] border-slate-800/90'
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <span
+                      className={`w-6 h-6 rounded-md font-tech font-bold text-xs flex items-center justify-center shrink-0 ${
+                        index === 0
+                          ? 'bg-amber-400 text-slate-950'
+                          : index === 1
+                          ? 'bg-cyan-400 text-slate-950'
+                          : index === 2
+                          ? 'bg-orange-400 text-slate-950'
+                          : 'bg-slate-800 text-slate-300'
                       }`}
                     >
-                      {row.name}
+                      {index + 1}
+                    </span>
+                    <div className="min-w-0">
+                      <div
+                        className={`text-xs font-semibold truncate ${
+                          row.isPlayer ? 'text-amber-300' : 'text-slate-100'
+                        }`}
+                      >
+                        {row.name}
+                      </div>
+                      <div className="text-[11px] text-slate-400 truncate">{row.sect}</div>
                     </div>
-                    <div className="text-[11px] text-slate-400 truncate">{row.sect}</div>
                   </div>
-                </div>
 
-                <div className="text-right font-tech shrink-0">
-                  <div className="text-xs font-bold text-amber-300">
-                    {row.damageBillions.toFixed(2)}B
+                  <div className="text-right font-tech shrink-0">
+                    <div className="text-xs font-bold text-amber-300">
+                      {dmgVal.toLocaleString('en-US')} DMG
+                    </div>
+                    <div className="text-[10px] text-slate-400">Sát thương</div>
                   </div>
-                  <div className="text-[10px] text-slate-400">Sát thương</div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
@@ -363,7 +405,7 @@ export const RightProgressionPanel: React.FC<RightProgressionPanelProps> = ({
         {renderPanelContent()}
       </aside>
 
-      {/* Mobile Portrait Bottom Sheet Drawer (Ngăn Kéo Vuốt Lên) */}
+      {/* Mobile Portrait Bottom Sheet Drawer */}
       {mobileDrawerOpen && (
         <div
           role="dialog"

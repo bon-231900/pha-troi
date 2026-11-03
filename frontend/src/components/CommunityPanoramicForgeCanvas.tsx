@@ -316,7 +316,7 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
       spawnAnvilSparkBurst(anvilX, anvilY, 6, peer.beamColorHex, false);
 
       if (gameStateRef.current === 'playing' && bossHpRef.current > 0) {
-        onPeerAutonomousDamageRef.current?.(0.18 + Math.random() * 0.12);
+        onPeerAutonomousDamageRef.current?.(1 + Math.floor(Math.random() * 3));
       }
     };
 

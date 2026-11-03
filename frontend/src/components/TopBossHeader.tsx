@@ -1,19 +1,24 @@
 import React from 'react';
-import { Volume2, VolumeX, Pause, RotateCcw, Shield, Hammer } from 'lucide-react';
-import { formatCountdown } from '../game/rules';
+import { Volume2, VolumeX, Pause, RotateCcw, Shield, Hammer, Flame } from 'lucide-react';
+import { formatCountdown, AtmosphericSealLayer, getAtmosphericSealLayer } from '../game/rules';
 
 export interface TopBossHeaderProps {
   bossName?: string;
   bossRealm?: string;
-  bossHpBillions: number;
-  bossMaxHpBillions: number;
-  bossTrailHpBillions: number;
+  bossHp: number; // Integer HP (e.g. 500,000,000)
+  bossMaxHp: number;
+  bossTrailHp: number;
   bossShieldPct: number;
   globalCountdownSec: number;
   globalSynergyPct: number;
   globalBurstActive: boolean;
   activeForgersCount: number;
   isOffline?: boolean;
+  anvilHeat?: number; // 100 - 1000°C
+  resonanceStrikes?: number; // 0 - 50
+  isShieldBroken?: boolean;
+  shieldBreakTimeLeft?: number;
+  currentSealLayer?: AtmosphericSealLayer;
   muted: boolean;
   onToggleMute: () => void;
   onPause: () => void;
@@ -26,15 +31,21 @@ export interface TopBossHeaderProps {
 }
 
 export const TopBossHeader: React.FC<TopBossHeaderProps> = ({
-  bossHpBillions,
-  bossMaxHpBillions,
-  bossTrailHpBillions,
+  bossName = 'Vòm Trời Thiết Vân · Tầng 1',
+  bossHp,
+  bossMaxHp,
+  bossTrailHp,
   bossShieldPct,
   globalCountdownSec,
   globalSynergyPct,
   globalBurstActive,
   activeForgersCount,
   isOffline = false,
+  anvilHeat = 100,
+  resonanceStrikes = 0,
+  isShieldBroken = false,
+  shieldBreakTimeLeft = 0,
+  currentSealLayer,
   muted,
   onToggleMute,
   onPause,
@@ -45,19 +56,22 @@ export const TopBossHeader: React.FC<TopBossHeaderProps> = ({
   rightPanelOpen = false,
   onToggleRightPanel,
 }) => {
-  const safeMax = Math.max(1, bossMaxHpBillions);
-  const hpPct = Math.max(0, Math.min(100, (bossHpBillions / safeMax) * 100));
-  const trailPct = Math.max(hpPct, Math.min(100, (bossTrailHpBillions / safeMax) * 100));
+  const safeMax = Math.max(1, bossMaxHp);
+  const safeHp = Math.max(0, Math.min(safeMax, bossHp));
+  const hpPct = Math.max(0, Math.min(100, (safeHp / safeMax) * 100));
+  const trailPct = Math.max(hpPct, Math.min(100, (bossTrailHp / safeMax) * 100));
   const crackPct = Math.max(0, Math.min(100, 100 - hpPct));
-  const shieldBroken = bossShieldPct <= 0;
+
+  const seal = currentSealLayer || getAtmosphericSealLayer(safeHp, safeMax);
+  const heatBonusPct = Math.min(45, Math.floor((Math.max(100, anvilHeat) - 100) / 100) * 5);
 
   return (
     <header
       aria-label="Trạng thái Vòm Trời Thiên Cấm"
-      className="pointer-events-none fixed top-2.5 sm:top-3 inset-x-0 z-20 px-3 sm:px-6 flex items-center justify-between gap-2.5 sm:gap-4 select-none"
+      className="pointer-events-none fixed top-2 sm:top-2.5 inset-x-0 z-20 px-2 sm:px-5 flex items-center justify-between gap-2 select-none"
     >
       {/* 1. Left Floating Capsule: Toggle Thế Trận & Online Counter */}
-      <div className="pointer-events-auto flex items-center gap-2">
+      <div className="pointer-events-auto flex items-center gap-1.5">
         {onToggleLeftPanel && (
           <button
             type="button"
@@ -67,10 +81,10 @@ export const TopBossHeader: React.FC<TopBossHeaderProps> = ({
                 ? 'bg-amber-400 text-slate-950 border-amber-300 shadow-amber-500/25'
                 : 'bg-[#070B16]/85 hover:bg-slate-900 border-amber-500/30 text-amber-300 hover:text-amber-200'
             }`}
-            title="Bật/Tắt Thế Trận & Chat [Phím [ ]"
+            title="Bật/Tắt Thế Trận & Cống Hiến [Phím [ ]"
           >
             <Shield className="w-3.5 h-3.5 text-cyan-400" />
-            <span className="hidden sm:inline">Thế Trận & Chat</span>
+            <span className="hidden sm:inline">Thế Trận</span>
           </button>
         )}
 
@@ -89,22 +103,26 @@ export const TopBossHeader: React.FC<TopBossHeaderProps> = ({
         </div>
       </div>
 
-      {/* 2. Center Capsule: VÒM TRỜI THIÊN CẤM (Ultra-Compact, Sleek & Floating - Zero Sky Obstruction) */}
+      {/* 2. Center Capsule: VÒM TRỜI THIẾT VÂN (Ultra-Compact Floating Bar - Zero Sky Obstruction) */}
       <div
-        aria-label="Thanh máu Vòm Trời Thiên Cấm"
-        className="pointer-events-auto flex-1 max-w-sm sm:max-w-md mx-auto bg-[#070A14]/85 border border-amber-500/40 px-3.5 py-1.5 rounded-xl shadow-[0_8px_25px_rgba(0,0,0,0.7)] backdrop-blur-md"
+        aria-label="Thanh máu Vòm Trời Thiết Vân"
+        className="pointer-events-auto flex-1 max-w-sm sm:max-w-lg mx-auto bg-[#070A14]/90 border border-amber-500/40 px-3 py-1.5 rounded-xl shadow-[0_8px_25px_rgba(0,0,0,0.8)] backdrop-blur-md"
       >
         <div className="flex items-center justify-between gap-2 mb-1">
           <div className="flex items-center gap-1.5 min-w-0">
-            <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse shrink-0" />
+            <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse shrink-0" />
             <span className="font-display text-[11px] sm:text-xs font-bold tracking-wider text-amber-300 uppercase truncate">
-              Vòm Trời Thiên Cấm
+              {bossName}
+            </span>
+            <span className="hidden sm:inline px-1.5 py-0.2 rounded bg-amber-500/20 border border-amber-500/40 text-[9px] font-tech text-amber-300">
+              {seal.shortName} (-{seal.damageReductionPct}%)
             </span>
           </div>
+
           <div className="font-tech text-[10px] sm:text-xs font-bold tabular-nums text-slate-200 whitespace-nowrap shrink-0">
-            <span className="text-red-400 font-extrabold">{bossHpBillions.toFixed(1)}B</span>
-            <span className="text-slate-400 font-normal"> / {bossMaxHpBillions.toFixed(0)}B</span>
-            <span className="ml-1 text-orange-400 font-semibold">(Nứt {crackPct.toFixed(0)}%)</span>
+            <span className="text-red-400 font-extrabold">{safeHp.toLocaleString('en-US')}</span>
+            <span className="text-slate-400 font-normal"> / {safeMax.toLocaleString('en-US')} HP</span>
+            <span className="ml-1 text-orange-400 font-semibold">(Nứt {crackPct.toFixed(1)}%)</span>
           </div>
         </div>
 
@@ -120,14 +138,32 @@ export const TopBossHeader: React.FC<TopBossHeaderProps> = ({
           />
         </div>
 
-        {/* Micro Sub-indicators: Shield & Synergy in 1 compact row */}
-        <div className="flex items-center justify-between text-[9px] sm:text-[10px] font-tech text-slate-400 mt-1 tabular-nums">
-          <div className="flex items-center gap-1">
-            <span className={shieldBroken ? 'text-cyan-300 font-bold' : 'text-slate-400'}>
-              {shieldBroken ? 'Giáp vỡ (x1.5 dmg)' : `Giáp: ${bossShieldPct.toFixed(0)}%`}
-            </span>
+        {/* Micro Sub-indicators: Heat, Resonance & Synergy in 1 compact row */}
+        <div className="flex items-center justify-between text-[9px] sm:text-[10px] font-tech text-slate-400 mt-1 tabular-nums gap-1">
+          {/* Anvil Heat indicator */}
+          <div className="flex items-center gap-1 text-amber-300">
+            <Flame className="w-3 h-3 text-orange-400" />
+            <span>Hỏa Hầu: {anvilHeat}°C</span>
+            {heatBonusPct > 0 && (
+              <span className="text-emerald-400 font-bold">(+{heatBonusPct}%)</span>
+            )}
           </div>
-          <div className="flex items-center gap-1.5">
+
+          {/* Phá Giáp Resonance indicator */}
+          <div className="flex items-center gap-1">
+            {isShieldBroken ? (
+              <span className="text-cyan-300 font-bold animate-pulse">
+                VỠ GIÁP ({shieldBreakTimeLeft.toFixed(0)}s) x1.5 DMG!
+              </span>
+            ) : (
+              <span className="text-slate-400">
+                Phá Giáp: <span className="text-amber-300 font-bold">{resonanceStrikes}</span>/50
+              </span>
+            )}
+          </div>
+
+          {/* Cực nhịp / Global Burst */}
+          <div className="flex items-center gap-1">
             <span>Cực nhịp: {formatCountdown(globalCountdownSec)}</span>
             {globalSynergyPct >= 100 || globalBurstActive ? (
               <button
@@ -159,10 +195,11 @@ export const TopBossHeader: React.FC<TopBossHeaderProps> = ({
           >
             {muted ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
           </button>
+
           <button
             type="button"
             tabIndex={-1}
-            aria-label="Tạm dừng [P]"
+            aria-label="Tạm dừng lò rèn [P]"
             onClick={(e) => {
               e.currentTarget.blur();
               onPause();
@@ -171,6 +208,7 @@ export const TopBossHeader: React.FC<TopBossHeaderProps> = ({
           >
             <Pause className="w-3.5 h-3.5" />
           </button>
+
           <button
             type="button"
             tabIndex={-1}

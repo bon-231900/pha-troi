@@ -2,7 +2,8 @@ import React from 'react';
 
 interface StatusModalProps {
   mode: 'paused' | 'gameover';
-  playerTotalDamageBillions: number;
+  playerTotalDamage?: number;
+  playerTotalDamageBillions?: number; // legacy fallback
   maxCombo: number;
   perfectCount: number;
   onResume: () => void;
@@ -12,6 +13,7 @@ interface StatusModalProps {
 
 export const StatusModal: React.FC<StatusModalProps> = ({
   mode,
+  playerTotalDamage,
   playerTotalDamageBillions,
   maxCombo,
   perfectCount,
@@ -19,6 +21,12 @@ export const StatusModal: React.FC<StatusModalProps> = ({
   onRestart,
   onReturnTitle,
 }) => {
+  const currentDamage = Math.round(
+    typeof playerTotalDamage === 'number'
+      ? playerTotalDamage
+      : (playerTotalDamageBillions || 0) * 1e9
+  );
+
   return (
     <div
       role="dialog"
@@ -39,7 +47,7 @@ export const StatusModal: React.FC<StatusModalProps> = ({
           <div className="p-3 rounded-xl bg-[#080A10] border border-slate-800">
             <div className="text-[11px] text-slate-400">Tổng Công Phá</div>
             <div className="text-base font-bold text-amber-300">
-              {playerTotalDamageBillions.toFixed(2)}B
+              {currentDamage.toLocaleString('en-US')}
             </div>
           </div>
           <div className="p-3 rounded-xl bg-[#080A10] border border-slate-800">
@@ -58,34 +66,35 @@ export const StatusModal: React.FC<StatusModalProps> = ({
               <button
                 type="button"
                 onClick={onResume}
-                className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-display font-bold text-sm cursor-pointer whitespace-nowrap"
+                className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-tech font-bold text-sm shadow-md cursor-pointer transition-colors"
               >
-                Tiếp Tục Rèn [P]
+                TIẾP TỤC RÈN ĐÚC
               </button>
               <button
                 type="button"
                 onClick={onRestart}
-                className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-[#080A10] hover:bg-slate-800 border border-slate-700 text-slate-200 font-tech text-sm cursor-pointer whitespace-nowrap"
+                className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-tech font-semibold text-sm cursor-pointer transition-colors"
               >
-                Rèn Lại Từ Đầu
+                RÈN LẠI TỪ ĐẦU
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                type="button"
+                onClick={onRestart}
+                className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-tech font-bold text-sm shadow-md cursor-pointer transition-colors"
+              >
+                TIẾN VÀO TẦNG TIẾP THEO
               </button>
               <button
                 type="button"
                 onClick={onReturnTitle}
-                className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-[#080A10] hover:bg-slate-800 border border-slate-800 text-slate-400 font-tech text-sm cursor-pointer whitespace-nowrap"
+                className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-tech font-semibold text-sm cursor-pointer transition-colors"
               >
-                Màn Hình Chính
+                VỀ TRANG CHỦ
               </button>
             </>
-          ) : (
-            <button
-              type="button"
-              data-start="true"
-              onClick={onRestart}
-              className="w-full px-6 py-3 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-display font-bold text-base cursor-pointer whitespace-nowrap"
-            >
-              Khiêu Chiến Tầng Tiếp Theo
-            </button>
           )}
         </div>
       </div>

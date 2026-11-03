@@ -168,27 +168,184 @@ export function judgeRhythmWave(progress: number): JudgmentResult {
   };
 }
 
+// ============================================================================
+// BALANCE OVERHAUL: DE-INFLATION RPG BASELINE & COMMUNITY RAID MODEL
+// ============================================================================
+export const BOSS_FLOOR_1_MAX_HP = 500_000_000; // 500 Triệu HP (Vòm Trời Thiết Vân - Tầng 1)
+export const BOSS_FLOOR_NAME = 'Vòm Trời Thiết Vân · Tầng 1';
+
+export const RESONANCE_MAX_STRIKES = 50; // Tích 50 nhát -> Vỡ giáp 30s
+export const SHIELD_BREAK_DURATION_SEC = 30; // 30s phá giáp
+
+export const MIN_ANVIL_HEAT = 100; // 100°C base
+export const MAX_ANVIL_HEAT = 1000; // 1000°C max
+export const HEAT_DECAY_PER_SEC = 5; // -5°C per second idle decay
+
+export interface AtmosphericSealLayer {
+  id: number;
+  name: string;
+  shortName: string;
+  minHpRatio: number; // e.g. 0.75
+  maxHpRatio: number; // 1.0
+  damageReductionPct: number; // 80 -> damage taken = 20%
+  description: string;
+}
+
+export const ATMOSPHERIC_SEAL_LAYERS: AtmosphericSealLayer[] = [
+  {
+    id: 1,
+    name: 'LỚP 1: THIẾT BÌ',
+    shortName: 'Thiết Bì',
+    minHpRatio: 0.75,
+    maxHpRatio: 1.0,
+    damageReductionPct: 80,
+    description: 'Vỏ sắt nguội dày đặc phong tỏa · Giảm 80% DMG',
+  },
+  {
+    id: 2,
+    name: 'LỚP 2: CƯƠNG CỐT',
+    shortName: 'Cương Cốt',
+    minHpRatio: 0.5,
+    maxHpRatio: 0.75,
+    damageReductionPct: 60,
+    description: 'Khung thiên cương cứng rắn · Giảm 60% DMG',
+  },
+  {
+    id: 3,
+    name: 'LỚP 3: LÔI HỎA TÂM',
+    shortName: 'Lôi Hỏa Tâm',
+    minHpRatio: 0.25,
+    maxHpRatio: 0.5,
+    damageReductionPct: 40,
+    description: 'Lõi bão lôi hỏa bùng phát · Giảm 40% DMG',
+  },
+  {
+    id: 4,
+    name: 'LỚP 4: NGHỊCH CẢNH',
+    shortName: 'Nghịch Cảnh',
+    minHpRatio: 0.0,
+    maxHpRatio: 0.25,
+    damageReductionPct: 0,
+    description: 'Vòm trời sụp đổ · Giáp 0% · Cuồng Bạo',
+  },
+];
+
+export function getAtmosphericSealLayer(
+  currentHp: number,
+  maxHp: number = BOSS_FLOOR_1_MAX_HP
+): AtmosphericSealLayer {
+  const ratio = Math.max(0, Math.min(1, currentHp / Math.max(1, maxHp)));
+  for (const layer of ATMOSPHERIC_SEAL_LAYERS) {
+    if (ratio > layer.minHpRatio || (layer.minHpRatio === 0 && ratio >= 0)) {
+      return layer;
+    }
+  }
+  return ATMOSPHERIC_SEAL_LAYERS[ATMOSPHERIC_SEAL_LAYERS.length - 1];
+}
+
+export interface ContributionTier {
+  id: string;
+  title: string;
+  damageRequired: number;
+  rewardLinhThach: number;
+  rewardTinhHoa: number;
+  perkDescription: string;
+  badge: string;
+}
+
+export const CONTRIBUTION_TIERS: ContributionTier[] = [
+  {
+    id: 'tier_1',
+    title: 'Thợ Rèn Tập Sự',
+    damageRequired: 1_000,
+    rewardLinhThach: 100,
+    rewardTinhHoa: 1,
+    perkDescription: 'Nhận 100 Linh Thạch & 1 Tinh Hoa Thần Hồn',
+    badge: '🥉',
+  },
+  {
+    id: 'tier_2',
+    title: 'Búa Sắt Rực Lửa',
+    damageRequired: 10_000,
+    rewardLinhThach: 500,
+    rewardTinhHoa: 3,
+    perkDescription: 'Tăng vĩnh viễn +5% tốc độ tích Overdrive',
+    badge: '🥈',
+  },
+  {
+    id: 'tier_3',
+    title: 'Rương Tinh Thể Thiên Cẩm',
+    damageRequired: 100_000,
+    rewardLinhThach: 2_500,
+    rewardTinhHoa: 8,
+    perkDescription: 'Mở khóa nhánh kỹ năng Thần Hồn bậc 2',
+    badge: '🥇',
+  },
+  {
+    id: 'tier_4',
+    title: 'Tông Sư Phá Thiên',
+    damageRequired: 1_000_000,
+    rewardLinhThach: 10_000,
+    rewardTinhHoa: 20,
+    perkDescription: 'Danh hiệu Tông Sư · Tăng vĩnh viễn +20% sát thương',
+    badge: '👑',
+  },
+];
+
+/**
+ * Calculates base hammer damage based on Forge Level L:
+ * L=1: 1 DMG
+ * L=5: 4 DMG
+ * L=10: 12 DMG
+ * L=20: 35 DMG
+ * L=25: 50 DMG
+ */
+export function calculateForgeDamage(level: number): number {
+  if (level <= 1) return 1;
+  if (level <= 5) return Math.round(1 + (level - 1) * 0.75); // Lv1=1, Lv5=4
+  if (level <= 10) return Math.round(4 + (level - 5) * 1.6); // Lv10=12
+  if (level <= 20) return Math.round(12 + (level - 10) * 2.3); // Lv20=35
+  if (level <= 25) return Math.round(35 + (level - 20) * 3.0); // Lv25=50
+  return Math.round(50 + (level - 25) * 4.4); // Beyond Lv25
+}
+
+/**
+ * Calculates upgrade cost according to: Cost(L) = round(10 * L^1.35)
+ * L=1: 10 LT
+ * L=2: 25 LT
+ * L=5: 88 LT
+ * L=10: 224 LT
+ * L=20: 568 LT
+ */
+export function getForgeUpgradeCost(level: number, baseMultiplier: number = 1.0): number {
+  const safeL = Math.max(1, level);
+  return Math.max(10, Math.round(10 * Math.pow(safeL, 1.35) * baseMultiplier));
+}
+
 export interface StrikeInput {
   grade: JudgmentGrade;
   stance: StanceKey;
-  basePowerBillions: number; // e.g. 0.45B
+  basePower: number; // 1 at Lv1, 12 at Lv10, 50 at Lv25
   combo: number;
   overdriveCharge: number; // 0 to 8
   overdriveActive: boolean;
   bossShieldPct: number; // 0 to 100
   spiritBonusMult: number; // >= 1.0
   globalBurstActive: boolean;
+  anvilHeat?: number; // 100 to 1000 °C
+  sealDamageReductionPct?: number; // 80, 60, 40, 0
+  isShieldBroken?: boolean;
 }
 
 export interface StrikeOutcome {
-  damageBillions: number;
+  damage: number; // Integer DMG (1, 3, 12, 36, 50, 175...)
   displayMultiplier: number;
   nextCombo: number;
   nextOverdriveCharge: number;
   triggeredOverdrive: boolean;
-  shieldDepletion: number;
-  synergyGain: number;
-  linhThachEarned: number;
+  heatGain: number; // +15°C for great, +30°C for perfect
+  resonanceGain: number; // +1 (or +2 for stance E)
+  linhThachEarned: number; // 1-2 for great, 5 for perfect
   tinhHoaEarned: number;
 }
 
@@ -197,23 +354,25 @@ export function calculateStrikeOutcome(input: StrikeInput): StrikeOutcome {
 
   if (input.grade === 'MISS') {
     return {
-      damageBillions: 0,
+      damage: 0,
       displayMultiplier: 0,
       nextCombo: 0,
       nextOverdriveCharge: Math.max(0, input.overdriveCharge - 1),
       triggeredOverdrive: false,
-      shieldDepletion: 0,
-      synergyGain: 0,
+      heatGain: -10,
+      resonanceGain: 0,
       linhThachEarned: 0,
       tinhHoaEarned: 0,
     };
   }
 
-  const gradeMult = input.grade === 'PERFECT' ? 3.5 : 1.5;
+  const isPerfect = input.grade === 'PERFECT';
+  // Perfect gives x3.0 (at Lv1: 1 * 3 = 3 DMG; at Lv10: 12 * 3 = 36 DMG; at Lv25: 50 * 3.5 = 175 DMG)
+  const gradeMult = isPerfect ? (input.basePower >= 50 ? 3.5 : 3.0) : 1.0;
   const nextCombo = input.combo + 1;
-  const comboScaling = 1 + Math.min(nextCombo, 100) * 0.015;
+  const comboScaling = 1 + Math.min(nextCombo, 50) * 0.01; // max +50% at 50 combo
 
-  const chargeGain = input.grade === 'PERFECT' ? 1 : 0.5;
+  const chargeGain = isPerfect ? 1 : 0.5;
   let nextOverdriveCharge = input.overdriveCharge;
   let triggeredOverdrive = false;
 
@@ -226,49 +385,58 @@ export function calculateStrikeOutcome(input: StrikeInput): StrikeOutcome {
 
   const isOverdriveNow = input.overdriveActive || triggeredOverdrive;
   const overdriveMult = isOverdriveNow ? 2.0 : 1.0;
-  const globalBurstMult = input.globalBurstActive ? 2.5 : 1.0;
+  const globalBurstMult = input.globalBurstActive ? 2.0 : 1.0;
 
-  // When Boss Energy Shield is intact (> 0%), damage is mitigated by 35%, when broken (0%), damage gets 1.5x vulnerability bonus
-  const shieldStateMult = input.bossShieldPct > 0 ? 0.65 : 1.5;
+  // Anvil Heat Multiplier: +5% per 100°C above 100°C
+  const currentHeat = Math.max(100, Math.min(1000, input.anvilHeat ?? 100));
+  const heatSteps = Math.floor((currentHeat - 100) / 100);
+  const heatMult = 1 + heatSteps * 0.05; // 100°C = 1.0, 1000°C = 1.45
 
+  // Shield Broken state gives 1.5x vulnerability
+  const shieldBreakMult = input.isShieldBroken || input.bossShieldPct <= 0 ? 1.5 : 1.0;
+
+  // Atmospheric seal layer damage taken ratio:
+  // Layer 1 (reduction 80%): base baseline
+  // Higher layers deal more damage as shields shatter
+  const reduction = input.sealDamageReductionPct ?? 80;
+  const sealScale = (100 - reduction) / 20; // Layer 1: 1.0, Layer 2: 2.0, Layer 3: 3.0, Layer 4: 5.0
+
+  // Calculate final damage with physical weight
   const rawDamage =
-    input.basePowerBillions *
+    input.basePower *
     gradeMult *
     stanceCfg.damageMult *
     comboScaling *
     overdriveMult *
     globalBurstMult *
-    shieldStateMult *
-    input.spiritBonusMult;
+    heatMult *
+    shieldBreakMult *
+    input.spiritBonusMult *
+    sealScale;
 
-  const damageBillions = Number(rawDamage.toFixed(4));
+  // At Level 1, min damage is 1 on great, 3 on perfect
+  const minDmg = isPerfect ? 3 : 1;
+  const finalDamage = Math.max(minDmg, Math.round(rawDamage));
 
-  const baseShieldDepletion = input.grade === 'PERFECT' ? 3.2 : 1.2;
-  const shieldDepletion = Number(
-    (baseShieldDepletion * stanceCfg.shieldMult * (isOverdriveNow ? 1.5 : 1.0)).toFixed(2)
-  );
+  // Linh Thach drops: 1-2 on great, 5 on perfect
+  const baseLinhThach = isPerfect ? 5 : Math.random() < 0.5 ? 1 : 2;
+  const linhThachEarned = Math.round(baseLinhThach * (isOverdriveNow ? 2 : 1));
 
-  const baseSynergy = input.grade === 'PERFECT' ? 2.4 : 0.9;
-  const synergyGain = Number((baseSynergy * stanceCfg.synergyMult).toFixed(2));
+  // Tinh Hoa drop: rare chance on perfect
+  const tinhHoaEarned = isPerfect && Math.random() < 0.15 ? 1 : 0;
 
-  const baseLinhThach = input.grade === 'PERFECT' ? 45 : 18;
-  const linhThachEarned = Math.round(
-    baseLinhThach * stanceCfg.resourceMult * comboScaling * (isOverdriveNow ? 1.5 : 1.0)
-  );
-
-  const tinhHoaEarned =
-    input.grade === 'PERFECT'
-      ? Math.max(1, Math.round(2 * stanceCfg.resourceMult * (isOverdriveNow ? 2 : 1)))
-      : 0;
+  // Heat & Resonance
+  const heatGain = isPerfect ? 30 : 15;
+  const resonanceGain = input.stance === 'E' ? 2 : 1;
 
   return {
-    damageBillions,
+    damage: finalDamage,
     displayMultiplier: Number((gradeMult * (isOverdriveNow ? 2 : 1)).toFixed(1)),
     nextCombo,
     nextOverdriveCharge,
     triggeredOverdrive,
-    shieldDepletion,
-    synergyGain,
+    heatGain,
+    resonanceGain,
     linhThachEarned,
     tinhHoaEarned,
   };
@@ -282,60 +450,73 @@ export interface ForgeUpgrade {
   maxLevel: number;
   baseCost: number;
   costScale: number;
-  powerPerLevel: number; // in Billions HP per strike
+  powerPerLevel: number; // Base flat addition or level scaler
 }
 
 export const INITIAL_UPGRADES: ForgeUpgrade[] = [
   {
     id: 'celestial_hammer_core',
-    name: 'Lõi Búa Thiên Thạch',
-    subtitle: '+0.18B Sát thương cơ bản mỗi cấp',
+    name: 'Búa Rèn Thiên Cương',
+    subtitle: 'Nâng cấp bậc búa · Tăng sát thương gốc lên 4, 12, 35, 50 DMG',
     level: 1,
     maxLevel: 50,
-    baseCost: 80,
+    baseCost: 10,
     costScale: 1.35,
-    powerPerLevel: 0.18,
+    powerPerLevel: 1,
   },
   {
     id: 'thunder_quench_oil',
     name: 'Dầu Tôi Lôi Đình',
-    subtitle: '+0.32B Công lực khi đập trúng nhịp',
-    level: 1,
-    maxLevel: 40,
-    baseCost: 160,
-    costScale: 1.42,
-    powerPerLevel: 0.32,
+    subtitle: '+1 DMG thực tế cho mỗi nhát búa giáng xuống',
+    level: 0,
+    maxLevel: 30,
+    baseCost: 25,
+    costScale: 1.35,
+    powerPerLevel: 1,
   },
   {
     id: 'nine_heavens_bellows',
-    name: 'Ống Bễ Cửu Trọng Thiên',
-    subtitle: '+0.65B Sức công phá lò rèn thần hỏa',
+    name: 'Ống Bễ Cửu Trọng',
+    subtitle: 'Tăng tốc độ đốt nóng Đe Rèn & tăng sát thương Hỏa Hầu',
     level: 0,
-    maxLevel: 30,
-    baseCost: 350,
-    costScale: 1.5,
-    powerPerLevel: 0.65,
+    maxLevel: 25,
+    baseCost: 60,
+    costScale: 1.4,
+    powerPerLevel: 1,
   },
   {
     id: 'ancient_anvil_rune',
     name: 'Cổ Văn Mặt Đe',
-    subtitle: '+1.20B Cộng hưởng sát thương vạn dân',
+    subtitle: '+1 Linh Thạch rơi mỗi nhát & tích Phá Giáp nhanh hơn',
     level: 0,
-    maxLevel: 25,
-    baseCost: 800,
-    costScale: 1.58,
-    powerPerLevel: 1.2,
+    maxLevel: 20,
+    baseCost: 120,
+    costScale: 1.45,
+    powerPerLevel: 1,
   },
 ];
 
 export function getUpgradeCost(upgrade: ForgeUpgrade): number {
+  if (upgrade.id === 'celestial_hammer_core') {
+    return getForgeUpgradeCost(upgrade.level, 1.0);
+  }
   return Math.round(upgrade.baseCost * Math.pow(upgrade.costScale, upgrade.level));
 }
 
+export function calculateBasePower(upgrades: ForgeUpgrade[]): number {
+  const hammer = upgrades.find((u) => u.id === 'celestial_hammer_core');
+  const hammerLevel = hammer ? hammer.level : 1;
+  const baseDmg = calculateForgeDamage(hammerLevel);
+
+  const oil = upgrades.find((u) => u.id === 'thunder_quench_oil');
+  const oilBonus = oil ? oil.level * 1 : 0;
+
+  return Math.max(1, baseDmg + oilBonus);
+}
+
+// Backward-compatibility wrapper
 export function calculateBasePowerBillions(upgrades: ForgeUpgrade[]): number {
-  const base = 0.35;
-  const bonus = upgrades.reduce((sum, u) => sum + u.level * u.powerPerLevel, 0);
-  return Number((base + bonus).toFixed(3));
+  return calculateBasePower(upgrades);
 }
 
 export interface SpiritNode {
@@ -348,6 +529,7 @@ export interface SpiritNode {
   x: number; // SVG 0..100
   y: number; // SVG 0..100
   requires?: string;
+  tier?: number; // Tier 1 (available) or Tier 2 (requires 100k milestone)
   unlocked: boolean;
 }
 
@@ -361,6 +543,7 @@ export const INITIAL_SPIRIT_NODES: SpiritNode[] = [
     bonusMult: 0.2,
     x: 50,
     y: 82,
+    tier: 1,
     unlocked: true,
   },
   {
@@ -368,10 +551,11 @@ export const INITIAL_SPIRIT_NODES: SpiritNode[] = [
     name: 'Lôi Nhãn Tinh Quân',
     constellation: 'Tả Tinh · Lôi Điện',
     description: 'Mở rộng cảm ứng nhịp điệu, tăng +30% công lực Lôi Điện.',
-    costTinhHoa: 4,
+    costTinhHoa: 2,
     bonusMult: 0.3,
     x: 24,
     y: 58,
+    tier: 1,
     requires: 'node_origin',
     unlocked: false,
   },
@@ -380,10 +564,11 @@ export const INITIAL_SPIRIT_NODES: SpiritNode[] = [
     name: 'Xích Đế Lò Luyện',
     constellation: 'Hữu Tinh · Thiên Hỏa',
     description: 'Nhiệt độ lò rèn vượt ngưỡng, tăng +35% sát thương lên Boss.',
-    costTinhHoa: 4,
+    costTinhHoa: 3,
     bonusMult: 0.35,
     x: 76,
     y: 58,
+    tier: 1,
     requires: 'node_origin',
     unlocked: false,
   },
@@ -391,11 +576,12 @@ export const INITIAL_SPIRIT_NODES: SpiritNode[] = [
     id: 'node_shatter_star',
     name: 'Phá Quân Tinh Hồn',
     constellation: 'Trung Tinh · Phá Giáp',
-    description: 'Cộng hưởng trọng lực, tăng +45% tổng sát thương và xuyên giáp.',
-    costTinhHoa: 8,
+    description: 'Cộng hưởng trọng lực, tăng +45% tổng sát thương và phá giáp.',
+    costTinhHoa: 5,
     bonusMult: 0.45,
     x: 50,
     y: 38,
+    tier: 2,
     requires: 'node_origin',
     unlocked: false,
   },
@@ -403,11 +589,12 @@ export const INITIAL_SPIRIT_NODES: SpiritNode[] = [
     id: 'node_sky_breaker',
     name: 'Cửu Trọng Phá Thiên',
     constellation: 'Đỉnh Tinh · Chí Tôn',
-    description: 'Đỉnh cao thần kỹ Vạn Dân Hợp Lực, nhân thêm +80% công lực toàn diện.',
-    costTinhHoa: 15,
+    description: 'Đỉnh cao thần kỹ Vạn Dân Hợp Lực, tăng +80% công lực toàn diện.',
+    costTinhHoa: 10,
     bonusMult: 0.8,
     x: 50,
     y: 14,
+    tier: 2,
     requires: 'node_shatter_star',
     unlocked: false,
   },
@@ -416,10 +603,12 @@ export const INITIAL_SPIRIT_NODES: SpiritNode[] = [
 export function canUnlockSpiritNode(
   nodeId: string,
   nodes: SpiritNode[],
-  currentTinhHoa: number
+  currentTinhHoa: number,
+  tier2Unlocked: boolean = true
 ): boolean {
   const target = nodes.find((n) => n.id === nodeId);
   if (!target || target.unlocked) return false;
+  if (target.tier === 2 && !tier2Unlocked) return false;
   if (currentTinhHoa < target.costTinhHoa) return false;
   if (target.requires) {
     const parent = nodes.find((n) => n.id === target.requires);
@@ -433,8 +622,17 @@ export function calculateSpiritMultiplier(nodes: SpiritNode[]): number {
   return Number(bonus.toFixed(2));
 }
 
-export function formatBillionsHP(billions: number): string {
-  return `${Math.max(0, billions).toFixed(2)}B`;
+export function formatInteger(n: number): string {
+  return Math.max(0, Math.round(n)).toLocaleString('en-US');
+}
+
+export function formatHP(n: number): string {
+  return formatInteger(n);
+}
+
+// Backward-compatibility wrapper
+export function formatBillionsHP(n: number): string {
+  return formatInteger(n);
 }
 
 export function formatCountdown(totalSeconds: number): string {
