@@ -50,7 +50,7 @@ def deploy():
         f"git remote add origin {repo_remote}",
         "git checkout -B gh-pages",
         "git add -A",
-        'git commit -m "Phase 6: Full Integration of Modern 3D Canvas & React UI from Gemini 4 Argon with Multiplayer Sync & Local Storage"',
+        'git commit -m "Phase 1: 6-Slot Arsenal & Forge Quenching (Tôi Lửa) System - De-inflated RPG Balance"',
         "git push -u origin gh-pages --force"
     ]
     full_cmd = " && ".join(commands)
@@ -63,7 +63,7 @@ def deploy():
     print("STDOUT:", res.stdout)
     if res.returncode == 0:
         print("\n" + "="*60)
-        print("  XUẤT BẢN PHASE 4 LÊN PHATROI.COM THÀNH CÔNG RỰC RỠ!")
+        print("  XUẤT BẢN PHASE 1 LÊN PHATROI.COM THÀNH CÔNG RỰC RỠ!")
         print("="*60)
         print("-> Truy cập ngay:")
         print("   https://phatroi.com/")

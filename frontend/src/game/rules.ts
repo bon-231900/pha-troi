@@ -322,6 +322,325 @@ export function getForgeUpgradeCost(level: number, baseMultiplier: number = 1.0)
   return Math.max(10, Math.round(10 * Math.pow(safeL, 1.35) * baseMultiplier));
 }
 
+// ============================================================================
+// 6-SLOT ARSENAL & QUENCHING (TÔI LỬA) SYSTEM
+// ============================================================================
+export type EquipmentSlotKey = 'hammer' | 'anvil' | 'bellows' | 'gauntlets' | 'apron' | 'relic';
+
+export type ItemRarity = 'common' | 'rare' | 'epic' | 'legendary' | 'mythic';
+
+export type QuenchingType = 'none' | 'frost' | 'magma' | 'thunder';
+
+export interface EquipmentItem {
+  id: string;
+  slotKey: EquipmentSlotKey;
+  name: string;
+  slotName: string;
+  rarity: ItemRarity;
+  level: number; // 1 to 100
+  maxLevel: number;
+  baseCost: number;
+  costScale: number;
+  coreStatLabel: string;
+  coreStatValue: number;
+  coreStatUnit: string;
+  affixText: string;
+  loreDescription: string;
+  quenching: QuenchingType;
+  quenchingMilestoneLevel: number;
+}
+
+export interface ArsenalBonuses {
+  flatDamage: number;
+  damageMultiplier: number;
+  resonanceBonus: number;
+  heatPerHitBonus: number;
+  critChancePct: number;
+  missToGreatChancePct: number;
+  dropLinhThachBonus: number;
+  quenchedCount: number;
+  totalArsenalLevel: number;
+}
+
+export const INITIAL_EQUIPMENT: EquipmentItem[] = [
+  {
+    id: 'starter_hammer',
+    slotKey: 'hammer',
+    name: 'Búa Sắt Thiên Thai',
+    slotName: 'Thần Chùy',
+    rarity: 'common',
+    level: 1,
+    maxLevel: 100,
+    baseCost: 15,
+    costScale: 1.15,
+    coreStatLabel: 'Sát Thương Cơ Bản',
+    coreStatValue: 1,
+    coreStatUnit: 'DMG',
+    affixText: '+5% Sát thương Thế Búa Lôi Đỉnh',
+    loreDescription: 'Cây búa sắt thô sơ từ thung lũng Thiên Thai, vết rỉ sét ghi dấu ngày đầu khởi nghĩa phá trời.',
+    quenching: 'none',
+    quenchingMilestoneLevel: 20,
+  },
+  {
+    id: 'starter_anvil',
+    slotKey: 'anvil',
+    name: 'Đe Thép Cổ Vân',
+    slotName: 'Thần Đe',
+    rarity: 'common',
+    level: 1,
+    maxLevel: 100,
+    baseCost: 20,
+    costScale: 1.15,
+    coreStatLabel: 'Mở Rộng Vùng Hoàng Kim',
+    coreStatValue: 5,
+    coreStatUnit: 'ms',
+    affixText: '+1 Điểm tích lũy Phá Giáp mỗi nhát Perfect',
+    loreDescription: 'Khối đe thép tôi qua vạn lớp nước suối mây, bề mặt đanh chắc tạo âm thanh vang dội.',
+    quenching: 'none',
+    quenchingMilestoneLevel: 20,
+  },
+  {
+    id: 'starter_bellows',
+    slotKey: 'bellows',
+    name: 'Ống Bễ Da Hổ Lôi',
+    slotName: 'Hỏa Lò',
+    rarity: 'common',
+    level: 1,
+    maxLevel: 100,
+    baseCost: 25,
+    costScale: 1.16,
+    coreStatLabel: 'Tốc Độ Tích Nhiệt Đe',
+    coreStatValue: 3,
+    coreStatUnit: '°C/hit',
+    affixText: 'Giảm 25% tốc độ nguội của Đe Rèn khi nghỉ tay',
+    loreDescription: 'May từ da thú cổ sơn, mỗi nhịp bễ thổi bùng ngọn lửa rực sáng công trường.',
+    quenching: 'none',
+    quenchingMilestoneLevel: 20,
+  },
+  {
+    id: 'starter_gauntlets',
+    slotKey: 'gauntlets',
+    name: 'Bao Tay Da Thô',
+    slotName: 'Bao Tay Rèn',
+    rarity: 'common',
+    level: 1,
+    maxLevel: 100,
+    baseCost: 30,
+    costScale: 1.16,
+    coreStatLabel: 'Tỷ Lệ Bạo Kích (Crit)',
+    coreStatValue: 5,
+    coreStatUnit: '%',
+    affixText: '10% tỷ lệ chuyển nhịp Trượt (Miss) thành Chuẩn Xác (Great)',
+    loreDescription: 'Bảo vệ lòng bàn tay khỏi những tia tàn tro đỏ rực tóe ra từ mặt đe.',
+    quenching: 'none',
+    quenchingMilestoneLevel: 20,
+  },
+  {
+    id: 'starter_apron',
+    slotKey: 'apron',
+    name: 'Tạp Dề Bì Hộ',
+    slotName: 'Tạp Dề Thiết Hộ',
+    rarity: 'common',
+    level: 1,
+    maxLevel: 100,
+    baseCost: 35,
+    costScale: 1.18,
+    coreStatLabel: 'Sản Lượng Treo Máy (AFK)',
+    coreStatValue: 15,
+    coreStatUnit: 'LT/phút',
+    affixText: 'Kháng 20% chấn động ngược từ phản lực Vòm Trời',
+    loreDescription: 'Tạp dề lót giáp sắt mỏng, che chắn lồng ngực thợ rèn trước xung lực rực lửa.',
+    quenching: 'none',
+    quenchingMilestoneLevel: 20,
+  },
+  {
+    id: 'starter_relic',
+    slotKey: 'relic',
+    name: 'Thạch Bàn Đông Sơn',
+    slotName: 'Định Thiên Pháp Bảo',
+    rarity: 'rare',
+    level: 1,
+    maxLevel: 50,
+    baseCost: 80,
+    costScale: 1.25,
+    coreStatLabel: 'Hào Quang Sát Thương',
+    coreStatValue: 10,
+    coreStatUnit: '%',
+    affixText: 'Khắc 18 chim Lạc: Mỗi 50 nhát Perfect tăng 10% sát thương đồng minh',
+    loreDescription: 'Phiến đá khắc họa cổ văn Đông Sơn, hấp thu khí thiêng đất trời tỏa ánh ngọc bích.',
+    quenching: 'none',
+    quenchingMilestoneLevel: 20,
+  },
+];
+
+export function getItemUpgradeCost(item: EquipmentItem): number {
+  const safeL = Math.max(1, item.level);
+  return Math.round(item.baseCost * Math.pow(item.costScale, safeL - 1));
+}
+
+export function getItemRarityMeta(rarity: ItemRarity) {
+  switch (rarity) {
+    case 'mythic':
+      return {
+        label: 'Khai Thiên',
+        textColor: 'text-orange-400',
+        borderColor: 'border-orange-500/80',
+        bgColor: 'bg-orange-500/15',
+        badgeBg: 'bg-orange-500/20 text-orange-300 border-orange-500/40',
+        glow: 'shadow-orange-500/30',
+        hex: '#F97316',
+      };
+    case 'legendary':
+      return {
+        label: 'Hoàng Kim',
+        textColor: 'text-amber-400',
+        borderColor: 'border-amber-400/80',
+        bgColor: 'bg-amber-500/15',
+        badgeBg: 'bg-amber-500/20 text-amber-300 border-amber-500/40',
+        glow: 'shadow-amber-500/30',
+        hex: '#F59E0B',
+      };
+    case 'epic':
+      return {
+        label: 'U Minh',
+        textColor: 'text-purple-400',
+        borderColor: 'border-purple-400/80',
+        bgColor: 'bg-purple-500/15',
+        badgeBg: 'bg-purple-500/20 text-purple-300 border-purple-500/40',
+        glow: 'shadow-purple-500/30',
+        hex: '#A855F7',
+      };
+    case 'rare':
+      return {
+        label: 'Cổ Thiết',
+        textColor: 'text-cyan-400',
+        borderColor: 'border-cyan-400/80',
+        bgColor: 'bg-cyan-500/15',
+        badgeBg: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40',
+        glow: 'shadow-cyan-500/30',
+        hex: '#06B6D4',
+      };
+    default:
+      return {
+        label: 'Phàm Thiết',
+        textColor: 'text-slate-200',
+        borderColor: 'border-slate-700/80',
+        bgColor: 'bg-slate-800/40',
+        badgeBg: 'bg-slate-800/60 text-slate-300 border-slate-700/50',
+        glow: 'shadow-slate-700/20',
+        hex: '#94A3B8',
+      };
+  }
+}
+
+export function getQuenchingMeta(q: QuenchingType) {
+  switch (q) {
+    case 'frost':
+      return {
+        label: 'Tôi Nước Suối Băng',
+        badge: '❄️ Băng Tinh',
+        color: 'text-cyan-300',
+        bgColor: 'bg-cyan-500/20 border-cyan-400/50',
+        desc: '+25% Linh Thạch rơi mỗi nhát đập',
+        costLT: 100,
+        costTH: 1,
+      };
+    case 'magma':
+      return {
+        label: 'Tôi Dung Nham',
+        badge: '🔥 Dung Nham',
+        color: 'text-orange-400',
+        bgColor: 'bg-orange-500/20 border-orange-400/50',
+        desc: '+20% Sát thương thiêu đốt theo Hỏa Hầu',
+        costLT: 100,
+        costTH: 1,
+      };
+    case 'thunder':
+      return {
+        label: 'Tôi Máu Lôi Thần',
+        badge: '⚡ Lôi Huyết',
+        color: 'text-amber-300',
+        bgColor: 'bg-amber-500/20 border-amber-400/50',
+        desc: '+15% Tỷ lệ nổ sét lan và Bạo Kích',
+        costLT: 150,
+        costTH: 2,
+      };
+    default:
+      return {
+        label: 'Chưa Tôi Lửa',
+        badge: 'Chưa Tôi',
+        color: 'text-slate-400',
+        bgColor: 'bg-slate-800/40 border-slate-700/40',
+        desc: 'Đạt Cấp 20 để mở khóa nghi thức Tôi Lửa',
+        costLT: 0,
+        costTH: 0,
+      };
+  }
+}
+
+export function calculateArsenalBonuses(equipment: EquipmentItem[]): ArsenalBonuses {
+  let flatDamage = 0;
+  let damageMultiplier = 1.0;
+  let resonanceBonus = 0;
+  let heatPerHitBonus = 0;
+  let critChancePct = 0;
+  let missToGreatChancePct = 0;
+  let dropLinhThachBonus = 0;
+  let quenchedCount = 0;
+  let totalArsenalLevel = 0;
+
+  for (const item of equipment) {
+    totalArsenalLevel += item.level;
+    if (item.quenching !== 'none') quenchedCount += 1;
+
+    switch (item.slotKey) {
+      case 'hammer': {
+        flatDamage += (item.level - 1) * 2;
+        if (item.quenching === 'thunder') flatDamage += 5;
+        break;
+      }
+      case 'anvil': {
+        resonanceBonus += Math.floor(item.level / 5);
+        if (item.quenching === 'frost') dropLinhThachBonus += 2;
+        break;
+      }
+      case 'bellows': {
+        heatPerHitBonus += Math.floor(item.level / 4);
+        if (item.quenching === 'magma') damageMultiplier += 0.15;
+        break;
+      }
+      case 'gauntlets': {
+        critChancePct += Math.min(50, 5 + item.level);
+        missToGreatChancePct += 15;
+        if (item.quenching === 'thunder') critChancePct += 10;
+        break;
+      }
+      case 'apron': {
+        dropLinhThachBonus += Math.floor(item.level / 3);
+        if (item.quenching === 'frost') dropLinhThachBonus += 3;
+        break;
+      }
+      case 'relic': {
+        damageMultiplier += item.level * 0.02;
+        if (item.quenching === 'magma') damageMultiplier += 0.2;
+        break;
+      }
+    }
+  }
+
+  return {
+    flatDamage,
+    damageMultiplier: Number(damageMultiplier.toFixed(2)),
+    resonanceBonus,
+    heatPerHitBonus,
+    critChancePct,
+    missToGreatChancePct,
+    dropLinhThachBonus,
+    quenchedCount,
+    totalArsenalLevel,
+  };
+}
+
 export interface StrikeInput {
   grade: JudgmentGrade;
   stance: StanceKey;
@@ -335,6 +654,7 @@ export interface StrikeInput {
   anvilHeat?: number; // 100 to 1000 °C
   sealDamageReductionPct?: number; // 80, 60, 40, 0
   isShieldBroken?: boolean;
+  arsenalBonuses?: ArsenalBonuses;
 }
 
 export interface StrikeOutcome {
@@ -347,6 +667,7 @@ export interface StrikeOutcome {
   resonanceGain: number; // +1 (or +2 for stance E)
   linhThachEarned: number; // 1-2 for great, 5 for perfect
   tinhHoaEarned: number;
+  isCrit?: boolean;
 }
 
 export function calculateStrikeOutcome(input: StrikeInput): StrikeOutcome {
@@ -367,7 +688,6 @@ export function calculateStrikeOutcome(input: StrikeInput): StrikeOutcome {
   }
 
   const isPerfect = input.grade === 'PERFECT';
-  // Perfect gives x3.0 (at Lv1: 1 * 3 = 3 DMG; at Lv10: 12 * 3 = 36 DMG; at Lv25: 50 * 3.5 = 175 DMG)
   const gradeMult = isPerfect ? (input.basePower >= 50 ? 3.5 : 3.0) : 1.0;
   const nextCombo = input.combo + 1;
   const comboScaling = 1 + Math.min(nextCombo, 50) * 0.01; // max +50% at 50 combo
@@ -395,15 +715,23 @@ export function calculateStrikeOutcome(input: StrikeInput): StrikeOutcome {
   // Shield Broken state gives 1.5x vulnerability
   const shieldBreakMult = input.isShieldBroken || input.bossShieldPct <= 0 ? 1.5 : 1.0;
 
-  // Atmospheric seal layer damage taken ratio:
-  // Layer 1 (reduction 80%): base baseline
-  // Higher layers deal more damage as shields shatter
+  // Atmospheric seal layer damage reduction ratio:
   const reduction = input.sealDamageReductionPct ?? 80;
   const sealScale = (100 - reduction) / 20; // Layer 1: 1.0, Layer 2: 2.0, Layer 3: 3.0, Layer 4: 5.0
 
+  // Arsenal Bonuses integration
+  const arsenal = input.arsenalBonuses;
+  const effectiveBasePower = input.basePower + (arsenal ? arsenal.flatDamage : 0);
+  const arsenalDamageMultiplier = arsenal ? arsenal.damageMultiplier : 1.0;
+
+  // Check Arsenal Crit
+  const critChance = arsenal ? arsenal.critChancePct : 5;
+  const isCrit = Math.random() * 100 < critChance;
+  const critMult = isCrit ? 1.5 : 1.0;
+
   // Calculate final damage with physical weight
   const rawDamage =
-    input.basePower *
+    effectiveBasePower *
     gradeMult *
     stanceCfg.damageMult *
     comboScaling *
@@ -412,26 +740,31 @@ export function calculateStrikeOutcome(input: StrikeInput): StrikeOutcome {
     heatMult *
     shieldBreakMult *
     input.spiritBonusMult *
-    sealScale;
+    sealScale *
+    arsenalDamageMultiplier *
+    critMult;
 
   // At Level 1, min damage is 1 on great, 3 on perfect
   const minDmg = isPerfect ? 3 : 1;
   const finalDamage = Math.max(minDmg, Math.round(rawDamage));
 
-  // Linh Thach drops: 1-2 on great, 5 on perfect
+  // Linh Thach drops: 1-2 on great, 5 on perfect + Arsenal drop bonus
   const baseLinhThach = isPerfect ? 5 : Math.random() < 0.5 ? 1 : 2;
-  const linhThachEarned = Math.round(baseLinhThach * (isOverdriveNow ? 2 : 1));
+  const extraLTDrops = arsenal ? arsenal.dropLinhThachBonus : 0;
+  const linhThachEarned = Math.round((baseLinhThach + extraLTDrops) * (isOverdriveNow ? 2 : 1));
 
   // Tinh Hoa drop: rare chance on perfect
   const tinhHoaEarned = isPerfect && Math.random() < 0.15 ? 1 : 0;
 
   // Heat & Resonance
-  const heatGain = isPerfect ? 30 : 15;
-  const resonanceGain = input.stance === 'E' ? 2 : 1;
+  const extraHeat = arsenal ? arsenal.heatPerHitBonus : 0;
+  const heatGain = (isPerfect ? 30 : 15) + extraHeat;
+  const extraResonance = arsenal ? arsenal.resonanceBonus : 0;
+  const resonanceGain = (input.stance === 'E' ? 2 : 1) + extraResonance;
 
   return {
     damage: finalDamage,
-    displayMultiplier: Number((gradeMult * (isOverdriveNow ? 2 : 1)).toFixed(1)),
+    displayMultiplier: Number((gradeMult * (isOverdriveNow ? 2 : 1) * (isCrit ? 1.5 : 1)).toFixed(1)),
     nextCombo,
     nextOverdriveCharge,
     triggeredOverdrive,
@@ -439,6 +772,7 @@ export function calculateStrikeOutcome(input: StrikeInput): StrikeOutcome {
     resonanceGain,
     linhThachEarned,
     tinhHoaEarned,
+    isCrit,
   };
 }
 

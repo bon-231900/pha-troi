@@ -25,6 +25,12 @@ import {
   CONTRIBUTION_TIERS,
   ContributionTier,
   formatInteger,
+  EquipmentItem,
+  INITIAL_EQUIPMENT,
+  QuenchingType,
+  getItemUpgradeCost,
+  getQuenchingMeta,
+  calculateArsenalBonuses,
 } from './game/rules';
 import { soundEngine } from './game/audio';
 import { safeStorage } from './game/storage';
@@ -211,6 +217,20 @@ export default function App() {
     return 0;
   });
 
+  // 6-Slot Arsenal State (Phase 1)
+  const [equipment, setEquipment] = useState<EquipmentItem[]>(() => {
+    try {
+      const s = safeStorage.getItem('phatroi_save_v6');
+      if (s) {
+        const parsed = JSON.parse(s);
+        if (Array.isArray(parsed.equipment) && parsed.equipment.length > 0) {
+          return parsed.equipment;
+        }
+      }
+    } catch {}
+    return INITIAL_EQUIPMENT;
+  });
+
   // UI & Feedback State
   const [lastFeedback, setLastFeedback] = useState<{
     id: number;
@@ -286,6 +306,7 @@ export default function App() {
           tinhHoa,
           upgrades,
           spiritNodes,
+          equipment,
           playerTotalDamage,
           claimedMilestones,
           lastActiveTimestamp: Date.now(),
@@ -300,7 +321,7 @@ export default function App() {
       clearInterval(timer);
       window.removeEventListener('beforeunload', saveState);
     };
-  }, [bossHp, linhThach, tinhHoa, upgrades, spiritNodes, playerTotalDamage, claimedMilestones]);
+  }, [bossHp, linhThach, tinhHoa, upgrades, spiritNodes, equipment, playerTotalDamage, claimedMilestones]);
 
   // Connect to Multiplayer Gateway (Offline Fallback if server unreachable)
   useEffect(() => {
@@ -454,6 +475,7 @@ export default function App() {
   const spiritBonusMult = calculateSpiritMultiplier(spiritNodes);
   const currentSeal = getAtmosphericSealLayer(bossHp, BOSS_FLOOR_1_MAX_HP);
   const tier2Unlocked = playerTotalDamage >= 100_000 || claimedMilestones.includes('tier_3');
+  const arsenalBonuses = calculateArsenalBonuses(equipment);
 
   // Player Strike Handler
   const handleHeroStrike = useCallback(
@@ -480,6 +502,7 @@ export default function App() {
         anvilHeat,
         sealDamageReductionPct: currentSeal.damageReductionPct,
         isShieldBroken,
+        arsenalBonuses,
       });
 
       // 1. Trigger Panoramic Canvas 2D Strike Visuals
@@ -487,12 +510,25 @@ export default function App() {
 
       // 2. Spawn Floating Text in Canvas (Pure Integer RPG numbers: -1 DMG, -3 DMG, -12 DMG)
       const stanceData = HAMMER_STANCES[activeStance];
+      const isCritHit = outcome.isCrit;
+      const combatGradeLabel = isCritHit
+        ? `BẠO KÍCH! x${outcome.displayMultiplier}`
+        : isGoldenHit
+        ? 'HOÀNG KIM! x3.0'
+        : 'CHUẨN XÁC! x1.0';
+
+      const combatGradeColor = isCritHit
+        ? '#00F0FF'
+        : isGoldenHit
+        ? '#FFD166'
+        : stanceData.color;
+
       canvasHandleRef.current?.spawnCombatText(
-        isGoldenHit ? 'HOÀNG KIM! x3.0' : 'CHUẨN XÁC! x1.0',
+        combatGradeLabel,
         `${stanceData.name.toUpperCase()} · -${outcome.damage} DMG`,
-        isGoldenHit ? '#FFD166' : stanceData.color,
-        isGoldenHit ? '#FF9E00' : stanceData.color,
-        isGoldenHit
+        combatGradeColor,
+        isCritHit ? '#0099FF' : isGoldenHit ? '#FF9E00' : stanceData.color,
+        isGoldenHit || !!isCritHit
       );
 
       // 3. Audio & Haptics
@@ -575,12 +611,17 @@ export default function App() {
       setLastFeedback({
         id: feedbackCounterRef.current,
         grade,
-        labelVn: isGoldenHit ? 'HOÀNG KIM' : 'CHUẨN XÁC',
+        labelVn: isCritHit ? 'BẠO KÍCH' : isGoldenHit ? 'HOÀNG KIM' : 'CHUẨN XÁC',
         multiplier: outcome.displayMultiplier,
         damage: outcome.damage,
       });
 
-      if (isGoldenHit) {
+      if (isCritHit) {
+        appendCombatLog(
+          `⚡ [BẠO KÍCH BAO TAY] [${activeStance}] giáng -${outcome.damage} DMG! (+${outcome.linhThachEarned} LT)`,
+          'cyan'
+        );
+      } else if (isGoldenHit) {
         appendCombatLog(
           `Nhịp Hoàng Kim [${activeStance}]! Giáng -${outcome.damage} DMG (+${outcome.linhThachEarned} LT)`,
           'gold'
@@ -606,6 +647,7 @@ export default function App() {
       anvilHeat,
       currentSeal.damageReductionPct,
       isShieldBroken,
+      arsenalBonuses,
       appendCombatLog,
     ]
   );
@@ -670,6 +712,63 @@ export default function App() {
       );
     },
     [spiritNodes, tinhHoa, tier2Unlocked, appendCombatLog]
+  );
+
+  // 6-Slot Arsenal (Phase 1): Cường Hóa & Tôi Lửa Handlers
+  const handleUpgradeEquipment = useCallback(
+    (itemId: string) => {
+      const targetItem = equipment.find((it) => it.id === itemId);
+      if (!targetItem) return;
+      if (targetItem.level >= targetItem.maxLevel) {
+        appendCombatLog(`[${targetItem.name}] đã đạt cấp tối đa (${targetItem.maxLevel})!`, 'cyan');
+        return;
+      }
+      const cost = getItemUpgradeCost(targetItem);
+      if (linhThach < cost) {
+        appendCombatLog(`Không đủ Linh Thạch (cần ${cost.toLocaleString('en-US')} LT) để cường hóa!`, 'red');
+        return;
+      }
+      setLinhThach((lt) => lt - cost);
+      setEquipment((prev) =>
+        prev.map((it) => (it.id === itemId ? { ...it, level: it.level + 1 } : it))
+      );
+      soundEngine.playStanceSwitch('E');
+      appendCombatLog(
+        `Cường hóa thành công: [${targetItem.name}] lên Cấp ${targetItem.level + 1}! (+${targetItem.coreStatValue * (targetItem.level + 1)} ${targetItem.coreStatUnit})`,
+        'gold'
+      );
+    },
+    [equipment, linhThach, appendCombatLog]
+  );
+
+  const handleQuenchEquipment = useCallback(
+    (itemId: string, quenching: QuenchingType) => {
+      const targetItem = equipment.find((it) => it.id === itemId);
+      if (!targetItem) return;
+      if (targetItem.level < targetItem.quenchingMilestoneLevel) {
+        appendCombatLog(`Trang bị chưa đạt Cấp ${targetItem.quenchingMilestoneLevel} để Tôi Lửa!`, 'red');
+        return;
+      }
+      const qMeta = getQuenchingMeta(quenching);
+      if (linhThach < qMeta.costLT || tinhHoa < qMeta.costTH) {
+        appendCombatLog(
+          `Cần ${qMeta.costLT} Linh Thạch & ${qMeta.costTH} Tinh Hoa để Tôi Lửa (${qMeta.label})!`,
+          'red'
+        );
+        return;
+      }
+      setLinhThach((lt) => lt - qMeta.costLT);
+      setTinhHoa((th) => th - qMeta.costTH);
+      setEquipment((prev) =>
+        prev.map((it) => (it.id === itemId ? { ...it, quenching } : it))
+      );
+      soundEngine.playGlobalBurstFanfare();
+      appendCombatLog(
+        `🔥 [TÔI LỬA HOÀN TẤT] [${targetItem.name}] đã được tôi luyện bằng ${qMeta.label}! ${qMeta.desc}`,
+        'gold'
+      );
+    },
+    [equipment, linhThach, tinhHoa, appendCombatLog]
   );
 
   // Claim Personal Contribution Tier Handler
@@ -1040,6 +1139,7 @@ export default function App() {
         </div>
         <div className="flex-1 overflow-y-auto">
           <RightProgressionPanel
+            equipment={equipment}
             upgrades={upgrades}
             spiritNodes={spiritNodes}
             linhThach={linhThach}
@@ -1050,6 +1150,8 @@ export default function App() {
             onCloseMobileDrawer={() => setRightPanelOpen(false)}
             onBuyUpgrade={handleBuyUpgrade}
             onUnlockSpiritNode={handleUnlockSpiritNode}
+            onUpgradeEquipment={handleUpgradeEquipment}
+            onQuenchEquipment={handleQuenchEquipment}
           />
         </div>
       </div>
