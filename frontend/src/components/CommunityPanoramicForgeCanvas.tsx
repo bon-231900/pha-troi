@@ -851,6 +851,18 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
 
           // Autonomous Peer schedule
           for (let i = 0; i < peerActors.length; i++) {
+            // CRITICAL: If this slot is occupied by a REAL remote player, DO NOT trigger autonomously!
+            // Real players only strike when they actively press Space/click in their own browser window.
+            if (remotePeersMap.has(i)) {
+              if (peerActiveStrikeTimers[i] >= 0) {
+                peerActiveStrikeTimers[i] += simDt;
+                if (peerActiveStrikeTimers[i] > HERO_STRIKE_TOTAL_SEC) {
+                  peerActiveStrikeTimers[i] = -1;
+                }
+              }
+              continue;
+            }
+
             const peer = peerActors[i];
             const cycleIndex = Math.floor(
               (elapsedSec + peer.strikeOffsetSec) / peer.strikePeriodSec
