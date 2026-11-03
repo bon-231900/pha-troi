@@ -14,6 +14,14 @@ import {
   getItemRarityMeta,
   getSalvageYield,
   calculateArsenalBonuses,
+  ForgerRank,
+  FORGER_RANKS,
+  getForgerRank,
+  StanceSkillNode,
+  canUnlockStanceSkill,
+  StanceKey,
+  HAMMER_STANCES,
+  formatInteger,
 } from '../game/rules';
 import {
   Hammer,
@@ -45,7 +53,11 @@ interface RightProgressionPanelProps {
   equippedItems: Record<EquipmentSlotKey, EquipmentItem | null>;
   inventory: EquipmentItem[];
   upgrades: ForgeUpgrade[];
-  spiritNodes: SpiritNode[];
+  spiritNodes?: SpiritNode[];
+  stanceSkills: StanceSkillNode[];
+  forgerRank: ForgerRank;
+  playerTotalDamage: number;
+  burnStacks?: number;
   linhThach: number;
   tinhHoa: number;
   tier2Unlocked?: boolean;
@@ -53,7 +65,8 @@ interface RightProgressionPanelProps {
   mobileDrawerOpen: boolean;
   onCloseMobileDrawer: () => void;
   onBuyUpgrade: (upgradeId: string) => void;
-  onUnlockSpiritNode: (nodeId: string) => void;
+  onUnlockSpiritNode?: (nodeId: string) => void;
+  onUnlockStanceSkill: (skillId: string) => void;
   onEquipItem: (item: EquipmentItem) => void;
   onUnequipItem: (slotKey: EquipmentSlotKey) => void;
   onSalvageItem: (item: EquipmentItem) => void;
@@ -64,7 +77,11 @@ export const RightProgressionPanel: React.FC<RightProgressionPanelProps> = ({
   equippedItems,
   inventory,
   upgrades,
-  spiritNodes,
+  spiritNodes = [],
+  stanceSkills,
+  forgerRank,
+  playerTotalDamage,
+  burnStacks = 0,
   linhThach,
   tinhHoa,
   tier2Unlocked = false,
@@ -73,6 +90,7 @@ export const RightProgressionPanel: React.FC<RightProgressionPanelProps> = ({
   onCloseMobileDrawer,
   onBuyUpgrade,
   onUnlockSpiritNode,
+  onUnlockStanceSkill,
   onEquipItem,
   onUnequipItem,
   onSalvageItem,
@@ -82,6 +100,8 @@ export const RightProgressionPanel: React.FC<RightProgressionPanelProps> = ({
   const [selectedItem, setSelectedItem] = useState<EquipmentItem | null>(() => {
     return equippedItems.hammer || inventory[0] || null;
   });
+  const [selectedStanceTree, setSelectedStanceTree] = useState<StanceKey>('Q');
+  const [selectedSkillNodeId, setSelectedSkillNodeId] = useState<string>('q_tier_1');
   const [selectedNodeId, setSelectedNodeId] = useState<string>('node_thunder_eye');
 
   const selectedNode =
@@ -150,10 +170,10 @@ export const RightProgressionPanel: React.FC<RightProgressionPanelProps> = ({
               ? 'bg-cyan-400 text-slate-950 font-bold'
               : 'text-slate-300 hover:text-white'
           }`}
-          title="Chòm Sao Thần Hồn"
+          title="Kỹ Pháp Tứ Thế & Đẳng Cấp Thợ Rèn"
         >
           <Sparkles className="w-3.5 h-3.5" />
-          <span className="truncate">Thần Hồn</span>
+          <span className="truncate">Kỹ Pháp</span>
         </button>
 
         <button
@@ -613,122 +633,295 @@ export const RightProgressionPanel: React.FC<RightProgressionPanelProps> = ({
         )}
 
         {/* ================================================================= */}
-        {/* TAB 3: SPIRIT CONSTELLATION NODES */}
+        {/* TAB 3: KỸ PHÁP TỨ THẾ & ĐẲNG CẤP THỢ RÈN */}
         {/* ================================================================= */}
         {activeTab === 'spirit' && (
           <div className="space-y-3">
-            <div className="p-3 rounded-xl bg-[#080A10] border border-cyan-500/30 flex items-center justify-between">
-              <div>
-                <div className="text-[10px] text-slate-400 font-tech">Hào Quang Thần Hồn</div>
-                <div className="text-sm font-bold text-cyan-300 font-tech">
-                  x{spiritTotalMult.toFixed(2)} Sát Thương Toàn Bản Thân
-                </div>
-              </div>
-              <div className="text-right">
-                <div className="text-[10px] text-slate-400 font-tech">Tinh Hoa Đang Có</div>
-                <div className="text-sm font-bold text-amber-400 font-tech">
-                  {tinhHoa} TH
-                </div>
-              </div>
-            </div>
+            {/* 1. ĐẲNG CẤP THỢ RÈN (FORGER RANK) CARD */}
+            {(() => {
+              const currentRankIndex = FORGER_RANKS.findIndex((r) => r.id === forgerRank.id);
+              const nextRank = FORGER_RANKS[currentRankIndex + 1] || null;
+              const progressPct = nextRank
+                ? Math.min(100, Math.max(0, (playerTotalDamage / nextRank.damageRequired) * 100))
+                : 100;
 
-            <div className="space-y-2">
-              <div className="text-xs font-tech text-slate-400 font-semibold px-1">
-                CHÒM SAO THẦN HỒN BẬC 1:
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                {spiritNodes
-                  .filter((n) => n.tier === 1)
-                  .map((node) => {
-                    const isSelected = selectedNode.id === node.id;
-                    const canUnlock = canUnlockSpiritNode(
-                      node.id,
-                      spiritNodes,
-                      tinhHoa,
-                      tier2Unlocked
-                    );
-
-                    return (
-                      <button
-                        key={node.id}
-                        type="button"
-                        onClick={() => setSelectedNodeId(node.id)}
-                        className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between min-h-[92px] ${
-                          node.unlocked
-                            ? 'bg-cyan-950/20 border-cyan-500/40'
-                            : canUnlock
-                            ? 'bg-amber-950/20 border-amber-500/40 hover:border-amber-400'
-                            : 'bg-slate-900/40 border-slate-800 opacity-60'
-                        } ${isSelected ? 'ring-2 ring-cyan-400 shadow-lg shadow-cyan-500/20' : ''}`}
-                      >
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-[10px] font-tech text-slate-400">
-                            Node #{node.id.split('_')[1]?.toUpperCase()}
+              return (
+                <div className="p-3 rounded-xl bg-gradient-to-br from-[#0c0f18] to-[#141a29] border border-amber-500/30 shadow-lg">
+                  <div className="flex items-center justify-between gap-2 mb-1.5">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xl">{forgerRank.badge}</span>
+                      <div>
+                        <div className="flex items-center gap-1.5">
+                          <h4 className="font-tech font-bold text-sm text-amber-300">
+                            {forgerRank.title}
+                          </h4>
+                          <span className="text-[10px] font-tech px-1.5 py-0.5 rounded bg-amber-400/20 text-amber-300 font-bold border border-amber-400/30">
+                            BẬC {forgerRank.tier}/4
                           </span>
-                          {node.unlocked ? (
-                            <Check className="w-3.5 h-3.5 text-emerald-400" />
-                          ) : (
-                            <Lock className="w-3.5 h-3.5 text-slate-500" />
-                          )}
                         </div>
+                        <p className="text-[10px] text-slate-400 font-tech">
+                          Tổng cống hiến: <b className="text-slate-200">{formatInteger(playerTotalDamage)} DMG</b>
+                        </p>
+                      </div>
+                    </div>
 
-                        <div className="font-semibold text-xs text-slate-200 line-clamp-1">
-                          {node.name}
-                        </div>
+                    <div className="text-right">
+                      <div className="text-[10px] font-tech text-slate-400">Tinh Hoa Thần Hồn</div>
+                      <div className="text-sm font-bold text-amber-400 font-tech">
+                        {tinhHoa} TH
+                      </div>
+                    </div>
+                  </div>
 
-                        <div className="text-[10px] font-tech text-cyan-400 mt-1">
-                          +{Math.round(node.bonusMult * 100)}% Công Lực
-                        </div>
-                      </button>
-                    );
-                  })}
-              </div>
-            </div>
+                  {/* Progress bar to next rank */}
+                  {nextRank ? (
+                    <div className="space-y-1 mt-2 pt-2 border-t border-slate-800">
+                      <div className="flex items-center justify-between text-[10px] font-tech">
+                        <span className="text-slate-400">
+                          Thăng bậc: <b className="text-cyan-300">{nextRank.title}</b>
+                        </span>
+                        <span className="text-amber-300 font-bold">
+                          {formatInteger(playerTotalDamage)} / {formatInteger(nextRank.damageRequired)} DMG ({progressPct.toFixed(1)}%)
+                        </span>
+                      </div>
+                      <div className="h-1.5 w-full bg-slate-900 rounded-full overflow-hidden border border-slate-800">
+                        <div
+                          className="h-full bg-gradient-to-r from-amber-500 to-amber-300 transition-all duration-300 shadow-sm shadow-amber-400/50"
+                          style={{ width: `${progressPct}%` }}
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="mt-2 pt-1.5 border-t border-slate-800 text-[10px] font-tech text-emerald-400 font-bold text-center">
+                      👑 ĐÃ ĐẠT CẢNH GIỚI CAO NHẤT: TRẢM THIÊN THẦN TƯỢNG
+                    </div>
+                  )}
 
-            {/* Selected Spirit Node Inspector Card */}
-            {selectedNode && (
-              <div className="p-3.5 rounded-xl bg-[#080A10] border border-cyan-500/40 space-y-2">
-                <div className="flex items-center justify-between">
-                  <h4 className="font-semibold text-sm text-cyan-300 font-tech">
-                    {selectedNode.name}
-                  </h4>
-                  <span
-                    className={`text-[10px] font-tech px-2 py-0.5 rounded ${
-                      selectedNode.unlocked
-                        ? 'bg-emerald-500/20 text-emerald-300'
-                        : 'bg-slate-800 text-slate-400'
-                    }`}
-                  >
-                    {selectedNode.unlocked ? 'ĐÃ KHAI MỞ' : 'CHƯA MỞ'}
-                  </span>
+                  {/* Passive buffs banner */}
+                  <div className="mt-2 px-2 py-1.5 rounded-lg bg-black/40 border border-slate-800/80 text-[11px] text-amber-200/90 font-tech">
+                    ⚡ {forgerRank.bonusDesc}
+                  </div>
                 </div>
+              );
+            })()}
 
-                <p className="text-xs text-slate-300 leading-relaxed">
-                  {selectedNode.description}
-                </p>
+            {/* 2. STANCE SELECTOR TABS (Q, W, E, R) */}
+            <div>
+              <div className="text-xs font-tech text-slate-400 font-semibold px-1 mb-1.5 flex items-center justify-between">
+                <span>CÂY KỸ PHÁP TỨ THẾ:</span>
+                <span className="text-[10px] text-slate-500 font-mono">Dùng Tinh Hoa để lĩnh hội</span>
+              </div>
 
-                <div className="flex items-center justify-between pt-2 border-t border-slate-800">
-                  <span className="text-xs font-tech text-amber-300">
-                    Chi phí: <b>{selectedNode.costTinhHoa} Tinh Hoa</b>
-                  </span>
+              <div className="grid grid-cols-4 gap-1 p-1 bg-[#080A10] border border-slate-800 rounded-xl">
+                {(['Q', 'W', 'E', 'R'] as StanceKey[]).map((stKey) => {
+                  const st = HAMMER_STANCES[stKey];
+                  const isSelected = selectedStanceTree === stKey;
+                  const unlockedCount = stanceSkills.filter((s) => s.stance === stKey && s.unlocked).length;
 
-                  {!selectedNode.unlocked && (
+                  const borderClasses = {
+                    Q: 'border-cyan-400 bg-cyan-950/50 text-cyan-300 shadow-cyan-500/20',
+                    W: 'border-orange-500 bg-orange-950/50 text-orange-300 shadow-orange-500/20',
+                    E: 'border-purple-500 bg-purple-950/50 text-purple-300 shadow-purple-500/20',
+                    R: 'border-emerald-500 bg-emerald-950/50 text-emerald-300 shadow-emerald-500/20',
+                  }[stKey];
+
+                  return (
                     <button
+                      key={stKey}
                       type="button"
-                      disabled={!canUnlockSpiritNode(selectedNode.id, spiritNodes, tinhHoa, tier2Unlocked)}
-                      onClick={() => onUnlockSpiritNode(selectedNode.id)}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-tech font-bold transition-all shadow-sm ${
-                        canUnlockSpiritNode(selectedNode.id, spiritNodes, tinhHoa, tier2Unlocked)
-                          ? 'bg-cyan-400 hover:bg-cyan-300 text-slate-950 cursor-pointer shadow-cyan-500/20'
-                          : 'bg-slate-800 text-slate-500 cursor-not-allowed'
+                      onClick={() => {
+                        setSelectedStanceTree(stKey);
+                        const firstOfStance = stanceSkills.find((s) => s.stance === stKey);
+                        if (firstOfStance) setSelectedSkillNodeId(firstOfStance.id);
+                      }}
+                      className={`p-2 rounded-lg border text-center transition-all cursor-pointer flex flex-col items-center justify-center gap-0.5 ${
+                        isSelected
+                          ? `border-2 ${borderClasses} shadow-md`
+                          : 'border-slate-800 bg-slate-900/30 text-slate-400 hover:text-slate-200'
                       }`}
                     >
-                      Khai Mở Node
+                      <span className="font-tech font-bold text-xs">[{stKey}]</span>
+                      <span className="text-[10px] font-tech truncate max-w-full">{st.name}</span>
+                      <span className="text-[9px] font-tech text-slate-400">{unlockedCount}/5</span>
                     </button>
-                  )}
-                </div>
+                  );
+                })}
               </div>
-            )}
+            </div>
+
+            {/* 3. 5-TIER SKILL PROGRESSION NODES */}
+            <div className="space-y-1.5">
+              {stanceSkills
+                .filter((s) => s.stance === selectedStanceTree)
+                .map((node) => {
+                  const isSelected = selectedSkillNodeId === node.id;
+                  const canUnlock = canUnlockStanceSkill(node.id, stanceSkills, tinhHoa, forgerRank.tier);
+                  const isMasterPerk = node.tier === 5;
+
+                  return (
+                    <button
+                      key={node.id}
+                      type="button"
+                      onClick={() => setSelectedSkillNodeId(node.id)}
+                      className={`w-full p-2.5 rounded-xl border text-left transition-all cursor-pointer flex items-center justify-between gap-2.5 ${
+                        node.unlocked
+                          ? 'bg-emerald-950/20 border-emerald-500/40 hover:border-emerald-400'
+                          : canUnlock
+                          ? 'bg-amber-950/25 border-amber-400/50 hover:border-amber-300 ring-1 ring-amber-400/30'
+                          : 'bg-slate-900/30 border-slate-800 opacity-60'
+                      } ${isSelected ? 'ring-2 ring-cyan-400 shadow-lg shadow-cyan-500/20' : ''} ${
+                        isMasterPerk ? 'border-amber-400/60 bg-gradient-to-r from-amber-950/30 via-purple-950/30 to-slate-900/40' : ''
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div
+                          className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 font-tech font-bold text-xs ${
+                            node.unlocked
+                              ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+                              : isMasterPerk
+                              ? 'bg-amber-400/20 text-amber-300 border border-amber-400'
+                              : 'bg-slate-800 text-slate-400 border border-slate-700'
+                          }`}
+                        >
+                          {isMasterPerk ? '★' : `T${node.tier}`}
+                        </div>
+
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-tech font-semibold text-xs text-slate-100 truncate">
+                              {node.name}
+                            </span>
+                            {isMasterPerk && (
+                              <span className="text-[9px] font-tech font-bold px-1 rounded bg-amber-400 text-slate-950 shrink-0">
+                                MASTER
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-[10px] text-slate-400 truncate max-w-[240px]">
+                            {node.description}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span className="text-xs font-tech font-bold text-amber-300 whitespace-nowrap">
+                          {node.costTinhHoa} TH
+                        </span>
+                        {node.unlocked ? (
+                          <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+                        ) : canUnlock ? (
+                          <Sparkles className="w-4 h-4 text-amber-400 shrink-0 animate-pulse" />
+                        ) : (
+                          <Lock className="w-4 h-4 text-slate-500 shrink-0" />
+                        )}
+                      </div>
+                    </button>
+                  );
+                })}
+            </div>
+
+            {/* 4. SELECTED SKILL INSPECTOR & UNLOCK ACTION CARD */}
+            {(() => {
+              const selectedSkill =
+                stanceSkills.find((s) => s.id === selectedSkillNodeId) ||
+                stanceSkills.find((s) => s.stance === selectedStanceTree);
+              if (!selectedSkill) return null;
+
+              const canUnlock = canUnlockStanceSkill(
+                selectedSkill.id,
+                stanceSkills,
+                tinhHoa,
+                forgerRank.tier
+              );
+              const parentNode = selectedSkill.requires
+                ? stanceSkills.find((s) => s.id === selectedSkill.requires)
+                : null;
+              const needsParent = parentNode && !parentNode.unlocked;
+              const needsRank = selectedSkill.tier >= 4 && forgerRank.tier < 3;
+              const notEnoughTH = tinhHoa < selectedSkill.costTinhHoa;
+
+              return (
+                <div className="p-3.5 rounded-xl bg-[#080A10] border border-cyan-500/40 space-y-2.5 shadow-xl">
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[10px] font-tech px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 font-bold">
+                          TẦNG {selectedSkill.tier} · [{selectedSkill.stance}] {HAMMER_STANCES[selectedSkill.stance].name}
+                        </span>
+                        {selectedSkill.tier === 5 && (
+                          <span className="text-[10px] font-tech px-1.5 py-0.5 rounded bg-amber-500/20 border border-amber-400/50 text-amber-300 font-bold">
+                            MASTER PERK
+                          </span>
+                        )}
+                      </div>
+                      <h4 className="font-tech font-bold text-sm text-amber-300 mt-1">
+                        {selectedSkill.name}
+                      </h4>
+                    </div>
+
+                    <span
+                      className={`text-[10px] font-tech px-2 py-0.5 rounded font-bold shrink-0 ${
+                        selectedSkill.unlocked
+                          ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+                          : 'bg-slate-800 text-slate-400'
+                      }`}
+                    >
+                      {selectedSkill.unlocked ? '✓ ĐÃ LĨNH HỘI' : 'CHƯA MỞ'}
+                    </span>
+                  </div>
+
+                  <p className="text-xs text-slate-300 leading-relaxed font-sans bg-black/30 p-2.5 rounded-lg border border-slate-800/80">
+                    {selectedSkill.description}
+                  </p>
+
+                  {/* Requirements / Warnings */}
+                  {!selectedSkill.unlocked && (
+                    <div className="space-y-1 text-[11px] font-tech">
+                      {needsParent && (
+                        <div className="text-rose-400 flex items-center gap-1">
+                          <span>⚠️ Yêu cầu hoàn thành trước:</span>
+                          <b className="text-slate-200">{parentNode?.name}</b>
+                        </div>
+                      )}
+                      {needsRank && (
+                        <div className="text-amber-400 flex items-center gap-1">
+                          <span>⚠️ Yêu cầu Đẳng cấp:</span>
+                          <b className="text-amber-300">Cổ Đúc Sư (Bậc 3) trở lên</b>
+                        </div>
+                      )}
+                      {notEnoughTH && (
+                        <div className="text-slate-400">
+                          Chi phí: <b className="text-amber-300">{selectedSkill.costTinhHoa} TH</b> (Bạn có {tinhHoa} TH)
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Action Button */}
+                  <div className="pt-2 border-t border-slate-800">
+                    {selectedSkill.unlocked ? (
+                      <div className="w-full py-2 rounded-xl bg-emerald-950/30 border border-emerald-500/30 text-emerald-300 font-tech font-bold text-xs text-center">
+                        ✓ KỸ PHÁP ĐÃ LĨNH HỘI & ĐANG KÍCH HOẠT VĨNH VIỄN
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        disabled={!canUnlock}
+                        onClick={() => onUnlockStanceSkill(selectedSkill.id)}
+                        className={`w-full py-2.5 px-3 rounded-xl font-tech font-bold text-xs tracking-wider transition-all flex items-center justify-center gap-2 ${
+                          canUnlock
+                            ? 'bg-gradient-to-r from-amber-400 to-amber-300 hover:from-amber-300 hover:to-amber-200 text-slate-950 cursor-pointer shadow-lg shadow-amber-500/20 active:scale-95'
+                            : 'bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700/50'
+                        }`}
+                      >
+                        <Sparkles className="w-4 h-4" />
+                        <span>KHAI MỞ KỸ PHÁP · {selectedSkill.costTinhHoa} TINH HOA THẦN HỒN</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })()}
           </div>
         )}
 

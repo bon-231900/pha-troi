@@ -34,6 +34,13 @@ import {
   getSalvageYield,
   getItemRarityMeta,
   calculateArsenalBonuses,
+  ForgerRank,
+  FORGER_RANKS,
+  getForgerRank,
+  StanceSkillNode,
+  INITIAL_STANCE_SKILLS,
+  canUnlockStanceSkill,
+  calculateStanceSkillBonuses,
 } from './game/rules';
 import { soundEngine } from './game/audio';
 import { safeStorage } from './game/storage';
@@ -247,6 +254,24 @@ export default function App() {
     return [];
   });
 
+  // Phase 2: Kỹ Pháp Tứ Thế & Stance Skills Progression
+  const [stanceSkills, setStanceSkills] = useState<StanceSkillNode[]>(() => {
+    try {
+      const s = safeStorage.getItem('phatroi_save_v6');
+      if (s) {
+        const parsed = JSON.parse(s);
+        if (Array.isArray(parsed.stanceSkills) && parsed.stanceSkills.length === INITIAL_STANCE_SKILLS.length) {
+          return parsed.stanceSkills;
+        }
+      }
+    } catch {}
+    return INITIAL_STANCE_SKILLS;
+  });
+
+  // Viêm Dương [W] Burn DoT Stacks (0 - 80)
+  const [burnStacks, setBurnStacks] = useState<number>(0);
+  const goldenStreakRef = useRef<number>(0);
+
   // UI & Feedback State
   const [lastFeedback, setLastFeedback] = useState<{
     id: number;
@@ -322,6 +347,7 @@ export default function App() {
           tinhHoa,
           upgrades,
           spiritNodes,
+          stanceSkills,
           equippedItems,
           inventory,
           playerTotalDamage,
@@ -338,7 +364,7 @@ export default function App() {
       clearInterval(timer);
       window.removeEventListener('beforeunload', saveState);
     };
-  }, [bossHp, linhThach, tinhHoa, upgrades, spiritNodes, equippedItems, inventory, playerTotalDamage, claimedMilestones]);
+  }, [bossHp, linhThach, tinhHoa, upgrades, spiritNodes, stanceSkills, equippedItems, inventory, playerTotalDamage, claimedMilestones]);
 
   // Connect to Multiplayer Gateway (Offline Fallback if server unreachable)
   useEffect(() => {
@@ -445,6 +471,15 @@ export default function App() {
       // 3. Anvil Heat idle cooling (-2.5°C per 500ms down to 100°C)
       setAnvilHeat((prev) => Math.max(MIN_ANVIL_HEAT, Math.round(prev - HEAT_DECAY_PER_SEC * 0.5)));
 
+      // 3B. Viêm Dương Burn DoT tick (every 500ms)
+      setBurnStacks((currentBurn) => {
+        if (currentBurn <= 0) return 0;
+        const burnTickDmg = Math.max(1, Math.round(currentBurn * 1.5));
+        setBossHp((prevHp) => Math.max(0, prevHp - burnTickDmg));
+        setPlayerTotalDamage((prevDmg) => prevDmg + burnTickDmg);
+        return Math.random() < 0.25 ? currentBurn - 1 : currentBurn;
+      });
+
       // 4. Global countdown
       setGlobalCountdownSec((prev) => (prev <= 1 ? 180 : prev - 0.5));
 
@@ -506,6 +541,9 @@ export default function App() {
       const isGoldenHit = forceGolden || Math.random() < 0.45;
       const grade = isGoldenHit ? 'PERFECT' : 'GREAT';
 
+      const forgerRank = getForgerRank(playerTotalDamage);
+      const stanceSkillBonuses = calculateStanceSkillBonuses(stanceSkills, activeStance);
+
       const outcome = calculateStrikeOutcome({
         grade,
         stance: activeStance,
@@ -520,6 +558,8 @@ export default function App() {
         sealDamageReductionPct: currentSeal.damageReductionPct,
         isShieldBroken,
         arsenalBonuses,
+        stanceSkillBonuses,
+        forgerRankMultiplier: forgerRank.damageMultiplier,
       });
 
       // 1. Trigger Panoramic Canvas 2D Strike Visuals
@@ -558,6 +598,12 @@ export default function App() {
       // 4. Update Anvil Heat (Hỏa Hầu)
       setAnvilHeat((prev) => Math.min(MAX_ANVIL_HEAT, prev + outcome.heatGain));
 
+      // 4B. Stance W (Viêm Dương): Burn Stacks Application
+      if (activeStance === 'W') {
+        const addedBurn = isGoldenHit ? 2 : 1;
+        setBurnStacks((prev) => Math.min(80, prev + addedBurn));
+      }
+
       // 5. Update Phá Giáp Resonance
       if (!isShieldBroken) {
         setResonanceStrikes((prev) => {
@@ -570,6 +616,27 @@ export default function App() {
               '⚡ GIÁP NĂNG LƯỢNG TAN VỠ! Sát thương toàn server lên Boss tăng x1.5 trong 30 giây!',
               'gold'
             );
+
+            // Phase 2: Stance W Master Perk (Hỏa Ngục Đồng Quy)
+            const w5Unlocked = stanceSkills.some((s) => s.id === 'w_tier_5' && s.unlocked);
+            if (w5Unlocked && burnStacks > 0) {
+              const detonateDmg = Math.round(burnStacks * 15 * 3);
+              setBossHp((hp) => Math.max(0, hp - detonateDmg));
+              setPlayerTotalDamage((dmg) => dmg + detonateDmg);
+              canvasHandleRef.current?.spawnCombatText(
+                '🔥 HỎA NGỤC ĐỒNG QUY! BÙNG NỔ',
+                `KÍCH NỔ ${burnStacks} TẦNG LỬA: -${detonateDmg} DMG`,
+                '#FF4D00',
+                '#FFD700',
+                true
+              );
+              appendCombatLog(
+                `🔥 [HỎA NGỤC ĐỒNG QUY] Vỡ giáp kích nổ toàn bộ ${burnStacks} tầng lửa, giáng bạo liệt -${detonateDmg} DMG!`,
+                'gold'
+              );
+              setBurnStacks(0);
+            }
+
             return 0;
           }
           return next;
@@ -622,6 +689,60 @@ export default function App() {
           }
           return nextHp;
         });
+
+        // 8B. Phase 2 Stance Master Perks
+        // Stance Q Master Perk: Thiên Lôi Giáng Thế (15 consecutive Perfect hits triggers -500 pure DMG)
+        if (activeStance === 'Q') {
+          if (isGoldenHit) {
+            goldenStreakRef.current += 1;
+            const q5Unlocked = stanceSkills.some((s) => s.id === 'q_tier_5' && s.unlocked);
+            if (goldenStreakRef.current >= 15 && q5Unlocked) {
+              goldenStreakRef.current = 0;
+              const pureLightningDmg = 500;
+              setBossHp((hp) => Math.max(0, hp - pureLightningDmg));
+              setPlayerTotalDamage((dmg) => dmg + pureLightningDmg);
+              soundEngine.playGlobalBurstFanfare();
+              canvasHandleRef.current?.spawnCombatText(
+                '⚡ THIÊN LÔI GIÁNG THẾ! -500 DMG',
+                'SẤM SÉT XUYÊN THỦNG 100% GIÁP TRỜI',
+                '#00F0FF',
+                '#FFFFFF',
+                true
+              );
+              appendCombatLog(
+                '⚡ [THIÊN LÔI GIÁNG THẾ] Chuỗi 15 Hoàng Kim liên tiếp! Thiên lôi giáng -500 DMG xuyên giáp trời!',
+                'gold'
+              );
+            }
+          } else {
+            goldenStreakRef.current = 0;
+          }
+        } else {
+          goldenStreakRef.current = 0;
+        }
+
+        // Stance E Master Perk: Hư Không Đoạt Mệnh (Boss HP <= 30%, 30% execute chance for x5.0)
+        if (activeStance === 'E') {
+          const e5Unlocked = stanceSkills.some((s) => s.id === 'e_tier_5' && s.unlocked);
+          if (e5Unlocked && bossHp <= BOSS_FLOOR_1_MAX_HP * 0.3) {
+            if (Math.random() < 0.3) {
+              const executeBonusDmg = outcome.damage * 4;
+              setBossHp((hp) => Math.max(0, hp - executeBonusDmg));
+              setPlayerTotalDamage((dmg) => dmg + executeBonusDmg);
+              canvasHandleRef.current?.spawnCombatText(
+                '☠️ HƯ KHÔNG ĐOẠT MỆNH! x5.0',
+                `TRẢM SÁT BẦU TRỜI: -${outcome.damage * 5} DMG`,
+                '#A855F7',
+                '#FFD700',
+                true
+              );
+              appendCombatLog(
+                `☠️ [HƯ KHÔNG ĐOẠT MỆNH] Trảm sát kích hoạt x5.0 sát thương (-${outcome.damage * 5} DMG)!`,
+                'gold'
+              );
+            }
+          }
+        }
 
         // 9. Procedural ARPG Loot Drop Check
         const droppedItem = rollLootDrop(
@@ -697,6 +818,10 @@ export default function App() {
       currentSeal.damageReductionPct,
       isShieldBroken,
       arsenalBonuses,
+      stanceSkills,
+      playerTotalDamage,
+      burnStacks,
+      bossHp,
       appendCombatLog,
     ]
   );
@@ -715,18 +840,46 @@ export default function App() {
 
   const handleTriggerGlobalBurst = useCallback(() => {
     if (globalSynergyPct < 100 && !globalBurstActive) return;
+    const r5Unlocked = stanceSkills.some((s) => s.id === 'r_tier_5' && s.unlocked);
+    const burstDurationMs = r5Unlocked ? 23000 : 8000;
+    const burstDamage = r5Unlocked ? 37500 : 25000;
+
     soundEngine.playGlobalBurstFanfare();
     setGlobalBurstActive(true);
     setGlobalSynergyPct(0);
-    setBossHp((prev) => Math.max(0, prev - 25000));
+    setBossHp((prev) => Math.max(0, prev - burstDamage));
+    setPlayerTotalDamage((prev) => prev + burstDamage);
     setIsShieldBroken(true);
-    setShieldBreakTimeLeft(30);
+    setShieldBreakTimeLeft(r5Unlocked ? 45 : 30);
     appendCombatLog(
-      'ĐẠI CỘNG HƯỞNG VẠN DÂN BÙNG NỔ! Giáng thiên lôi -25,000 DMG & vỡ giáp toàn vòm trời!',
+      r5Unlocked
+        ? '🎶 [KHÚC KHẢI HOÀN] ĐẠI CỘNG HƯỞNG BÙNG NỔ! Giáng thiên lôi x1.5 (-37,500 DMG) & duy trì hào quang 23 giây!'
+        : 'ĐẠI CỘNG HƯỞNG VẠN DÂN BÙNG NỔ! Giáng thiên lôi -25,000 DMG & vỡ giáp toàn vòm trời!',
       'gold'
     );
-    setTimeout(() => setGlobalBurstActive(false), 8000);
-  }, [globalSynergyPct, globalBurstActive, appendCombatLog]);
+    setTimeout(() => setGlobalBurstActive(false), burstDurationMs);
+  }, [globalSynergyPct, globalBurstActive, stanceSkills, appendCombatLog]);
+
+  const handleUnlockStanceSkill = useCallback(
+    (skillId: string) => {
+      const rank = getForgerRank(playerTotalDamage);
+      if (!canUnlockStanceSkill(skillId, stanceSkills, tinhHoa, rank.tier)) return;
+      const target = stanceSkills.find((s) => s.id === skillId);
+      if (!target) return;
+
+      setTinhHoa((th) => th - target.costTinhHoa);
+      setStanceSkills((prev) =>
+        prev.map((s) => (s.id === skillId ? { ...s, unlocked: true } : s))
+      );
+      soundEngine.playGlobalBurstFanfare();
+      const stanceName = HAMMER_STANCES[target.stance].name;
+      appendCombatLog(
+        `✨ [LĨNH HỘI KỸ PHÁP] Đã khai mở [Tầng ${target.tier}: ${target.name}] của thế [${stanceName}]!`,
+        'gold'
+      );
+    },
+    [stanceSkills, tinhHoa, playerTotalDamage, appendCombatLog]
+  );
 
   const handleBuyUpgrade = useCallback(
     (upgradeId: string) => {
@@ -1210,7 +1363,7 @@ export default function App() {
         <div className="flex items-center justify-between px-4 py-3 border-b border-slate-800 bg-slate-900/80">
           <div className="flex items-center gap-2 text-amber-300 font-tech font-bold text-sm">
             <Hammer className="w-4 h-4 text-amber-400" />
-            <span>LÒ RÈN & THẦN HỒN</span>
+            <span>LÒ RÈN, VŨ KHÍ & KỸ PHÁP</span>
           </div>
           <button
             type="button"
@@ -1226,6 +1379,10 @@ export default function App() {
             inventory={inventory}
             upgrades={upgrades}
             spiritNodes={spiritNodes}
+            stanceSkills={stanceSkills}
+            forgerRank={forgerRank}
+            playerTotalDamage={playerTotalDamage}
+            burnStacks={burnStacks}
             linhThach={linhThach}
             tinhHoa={tinhHoa}
             tier2Unlocked={tier2Unlocked}
@@ -1234,6 +1391,7 @@ export default function App() {
             onCloseMobileDrawer={() => setRightPanelOpen(false)}
             onBuyUpgrade={handleBuyUpgrade}
             onUnlockSpiritNode={handleUnlockSpiritNode}
+            onUnlockStanceSkill={handleUnlockStanceSkill}
             onEquipItem={handleEquipItem}
             onUnequipItem={handleUnequipItem}
             onSalvageItem={handleSalvageItem}

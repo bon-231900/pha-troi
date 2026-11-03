@@ -940,6 +940,8 @@ export interface StrikeInput {
   sealDamageReductionPct?: number; // 80, 60, 40, 0
   isShieldBroken?: boolean;
   arsenalBonuses?: ArsenalBonuses;
+  stanceSkillBonuses?: Record<string, number>;
+  forgerRankMultiplier?: number;
 }
 
 export interface StrikeOutcome {
@@ -1009,10 +1011,16 @@ export function calculateStrikeOutcome(input: StrikeInput): StrikeOutcome {
   const effectiveBasePower = input.basePower + (arsenal ? arsenal.flatDamage : 0);
   const arsenalDamageMultiplier = arsenal ? arsenal.damageMultiplier : 1.0;
 
-  // Check Arsenal Crit
-  const critChance = arsenal ? arsenal.critChancePct : 5;
+  // Check Arsenal & Stance Skill Crit
+  const stanceBonuses = input.stanceSkillBonuses;
+  const stanceCritAdd = stanceBonuses ? stanceBonuses.critChanceAdd ?? 0 : 0;
+  const critChance = (arsenal ? arsenal.critChancePct : 5) + stanceCritAdd;
   const isCrit = Math.random() * 100 < critChance;
-  const critMult = isCrit ? 1.5 : 1.0;
+  const critMultOverride = stanceBonuses ? stanceBonuses.critMultOverride ?? 0 : 0;
+  const critMult = isCrit ? (critMultOverride > 0 ? critMultOverride : 1.5) : 1.0;
+
+  const stanceDamageMult = stanceBonuses ? stanceBonuses.damageMult ?? 1.0 : 1.0;
+  const forgerRankMult = input.forgerRankMultiplier ?? 1.0;
 
   // Calculate final damage with physical weight
   const rawDamage =
@@ -1027,6 +1035,8 @@ export function calculateStrikeOutcome(input: StrikeInput): StrikeOutcome {
     input.spiritBonusMult *
     sealScale *
     arsenalDamageMultiplier *
+    stanceDamageMult *
+    forgerRankMult *
     critMult;
 
   // At Level 1, min damage is 1 on great, 3 on perfect
@@ -1036,16 +1046,19 @@ export function calculateStrikeOutcome(input: StrikeInput): StrikeOutcome {
   // Linh Thach drops: 1-2 on great, 5 on perfect + Arsenal drop bonus
   const baseLinhThach = isPerfect ? 5 : Math.random() < 0.5 ? 1 : 2;
   const extraLTDrops = arsenal ? arsenal.dropLinhThachBonus : 0;
-  const linhThachEarned = Math.round((baseLinhThach + extraLTDrops) * (isOverdriveNow ? 2 : 1));
+  const linhThachEarned = Math.round(
+    (baseLinhThach + extraLTDrops) * (isOverdriveNow ? 2 : 1) * (stanceBonuses?.linhThachMult ?? 1.0)
+  );
 
   // Tinh Hoa drop: rare chance on perfect
-  const tinhHoaEarned = isPerfect && Math.random() < 0.15 ? 1 : 0;
+  const baseTingHoaChance = 0.15 * (stanceBonuses?.essenceDropMult ?? 1.0);
+  const tinhHoaEarned = isPerfect && Math.random() < baseTingHoaChance ? 1 : 0;
 
   // Heat & Resonance
-  const extraHeat = arsenal ? arsenal.heatPerHitBonus : 0;
+  const extraHeat = (arsenal ? arsenal.heatPerHitBonus : 0) + (stanceBonuses?.heatGainAdd ?? 0);
   const heatGain = (isPerfect ? 30 : 15) + extraHeat;
-  const extraResonance = arsenal ? arsenal.resonanceBonus : 0;
-  const resonanceGain = (input.stance === 'E' ? 2 : 1) + extraResonance;
+  const extraResonance = (arsenal ? arsenal.resonanceBonus : 0) + (stanceBonuses?.resonanceAdd ?? 0);
+  const resonanceGain = Math.round((input.stance === 'E' ? 2 : 1) + extraResonance);
 
   return {
     damage: finalDamage,
@@ -1239,6 +1252,416 @@ export function canUnlockSpiritNode(
 export function calculateSpiritMultiplier(nodes: SpiritNode[]): number {
   const bonus = nodes.reduce((acc, n) => (n.unlocked ? acc + n.bonusMult : acc), 1.0);
   return Number(bonus.toFixed(2));
+}
+
+// ============================================================================
+// PHASE 2: ĐẲNG CẤP THỢ RÈN (FORGER RANKS) & KỸ PHÁP TỨ THẾ (STANCE SKILL TREES)
+// ============================================================================
+export interface ForgerRank {
+  id: string;
+  tier: number;
+  title: string;
+  badge: string;
+  damageRequired: number;
+  bonusDesc: string;
+  damageMultiplier: number;
+  essenceBonusPct: number;
+  synergyRateBonusPct: number;
+}
+
+export const FORGER_RANKS: ForgerRank[] = [
+  {
+    id: 'rank_1',
+    tier: 1,
+    title: 'Thiết Đồ (Apprentice)',
+    badge: '🔨',
+    damageRequired: 0,
+    bonusDesc: 'Tân thủ khai lò tại thung lũng Thiên Thai.',
+    damageMultiplier: 1.0,
+    essenceBonusPct: 0,
+    synergyRateBonusPct: 0,
+  },
+  {
+    id: 'rank_2',
+    tier: 2,
+    title: 'Hỏa Tượng (Furnace Smith)',
+    badge: '🔥',
+    damageRequired: 10_000,
+    bonusDesc: 'Tăng vĩnh viễn +5% Sát thương & +10% Tinh Hoa rơi.',
+    damageMultiplier: 1.05,
+    essenceBonusPct: 10,
+    synergyRateBonusPct: 5,
+  },
+  {
+    id: 'rank_3',
+    tier: 3,
+    title: 'Cổ Đúc Sư (Ancient Forger)',
+    badge: '⚡',
+    damageRequired: 100_000,
+    bonusDesc: 'Tăng vĩnh viễn +12% Sát thương & mở khóa Kỹ Pháp Tầng 4 & 5.',
+    damageMultiplier: 1.12,
+    essenceBonusPct: 25,
+    synergyRateBonusPct: 15,
+  },
+  {
+    id: 'rank_4',
+    tier: 4,
+    title: 'Trảm Thiên Thần Tượng (Heaven Breaker Master)',
+    badge: '👑',
+    damageRequired: 1_000_000,
+    bonusDesc: 'Được tạc tượng đá. Tăng vĩnh viễn +25% Sát thương & +50% Tốc độ nạp Cực Nhịp!',
+    damageMultiplier: 1.25,
+    essenceBonusPct: 50,
+    synergyRateBonusPct: 50,
+  },
+];
+
+export function getForgerRank(totalDamage: number): ForgerRank {
+  for (let i = FORGER_RANKS.length - 1; i >= 0; i--) {
+    if (totalDamage >= FORGER_RANKS[i].damageRequired) {
+      return FORGER_RANKS[i];
+    }
+  }
+  return FORGER_RANKS[0];
+}
+
+export interface StanceSkillNode {
+  id: string;
+  stance: StanceKey; // 'Q' | 'W' | 'E' | 'R'
+  tier: number; // 1 to 5
+  name: string;
+  description: string;
+  costTinhHoa: number;
+  bonusType:
+    | 'resonanceSpeed'
+    | 'perfectWindow'
+    | 'plasmaLightning'
+    | 'burnDoT'
+    | 'furnaceHeat'
+    | 'fireBurst'
+    | 'heavyShatter'
+    | 'executeCrit'
+    | 'oreWealth'
+    | 'missForgive'
+    | 'masterPerk';
+  bonusValue: number;
+  unlocked: boolean;
+  requires?: string;
+}
+
+export const INITIAL_STANCE_SKILLS: StanceSkillNode[] = [
+  // ===================== [Q] LÔI ĐỈNH (TỐC ĐỘ & NHỊP ĐIỆU) =====================
+  {
+    id: 'q_tier_1',
+    stance: 'Q',
+    tier: 1,
+    name: 'Dẫn Lôi',
+    description: 'Tăng +15% điểm Phá Giáp & +10% tốc độ nạp Cực Nhịp khi dùng thế Lôi Đỉnh.',
+    costTinhHoa: 1,
+    bonusType: 'resonanceSpeed',
+    bonusValue: 0.15,
+    unlocked: false,
+  },
+  {
+    id: 'q_tier_2',
+    stance: 'Q',
+    tier: 2,
+    name: 'Lôi Tốc Kích',
+    description: 'Mở rộng cửa sổ nhịp Hoàng Kim thêm +15 ms khi ở thế Lôi Đỉnh.',
+    costTinhHoa: 2,
+    bonusType: 'perfectWindow',
+    bonusValue: 15,
+    requires: 'q_tier_1',
+    unlocked: false,
+  },
+  {
+    id: 'q_tier_3',
+    stance: 'Q',
+    tier: 3,
+    name: 'Sét Truyền Thần',
+    description: 'Gõ Perfect phóng tia sét lan sang các thợ rèn lân cận, buff +10% sát thương đồng minh.',
+    costTinhHoa: 3,
+    bonusType: 'plasmaLightning',
+    bonusValue: 0.1,
+    requires: 'q_tier_2',
+    unlocked: false,
+  },
+  {
+    id: 'q_tier_4',
+    stance: 'Q',
+    tier: 4,
+    name: 'Bão Plasma Cuồng Kích',
+    description: 'Trong trạng thái Overdrive, Thế Lôi Đỉnh gây thêm +50% Sát Thương sấm sét.',
+    costTinhHoa: 5,
+    bonusType: 'plasmaLightning',
+    bonusValue: 0.5,
+    requires: 'q_tier_3',
+    unlocked: false,
+  },
+  {
+    id: 'q_tier_5',
+    stance: 'Q',
+    tier: 5,
+    name: 'Thiên Lôi Giáng Thế (Master Perk)',
+    description: 'Đạt chuỗi 15 Hoàng Kim: Tự động giáng sấm sét tối thượng bỏ qua 100% giáp Boss (-500 DMG thuần)!',
+    costTinhHoa: 10,
+    bonusType: 'masterPerk',
+    bonusValue: 500,
+    requires: 'q_tier_4',
+    unlocked: false,
+  },
+
+  // ===================== [W] VIÊM DƯƠNG (DoT & GIỮ LỬA) =====================
+  {
+    id: 'w_tier_1',
+    stance: 'W',
+    tier: 1,
+    name: 'Tro Tàn',
+    description: 'Mỗi nhát đập tích lũy tầng cháy trên Vòm Trời (tối đa 50 tầng), thiêu đốt HP Boss mỗi giây.',
+    costTinhHoa: 1,
+    bonusType: 'burnDoT',
+    bonusValue: 1,
+    unlocked: false,
+  },
+  {
+    id: 'w_tier_2',
+    stance: 'W',
+    tier: 2,
+    name: 'Hỏa Lò Khởi Sắc',
+    description: 'Tăng +5°C Hỏa Hầu mỗi nhát đập và giảm 30% tốc độ nguội đe rèn tự nhiên.',
+    costTinhHoa: 2,
+    bonusType: 'furnaceHeat',
+    bonusValue: 5,
+    requires: 'w_tier_1',
+    unlocked: false,
+  },
+  {
+    id: 'w_tier_3',
+    stance: 'W',
+    tier: 3,
+    name: 'Viêm Nhiệt Cuồng Chùy',
+    description: 'Khi Hỏa Hầu trên 600°C, sát thương thế Viêm Dương tăng thêm +35%.',
+    costTinhHoa: 3,
+    bonusType: 'furnaceHeat',
+    bonusValue: 0.35,
+    requires: 'w_tier_2',
+    unlocked: false,
+  },
+  {
+    id: 'w_tier_4',
+    stance: 'W',
+    tier: 4,
+    name: 'Hỏa Diệm Bùng Phát',
+    description: 'Nhát gõ Hoàng Kim tích gấp đôi (+2 tầng cháy), giới hạn nâng lên tối đa 80 tầng cháy.',
+    costTinhHoa: 5,
+    bonusType: 'burnDoT',
+    bonusValue: 2,
+    requires: 'w_tier_3',
+    unlocked: false,
+  },
+  {
+    id: 'w_tier_5',
+    stance: 'W',
+    tier: 5,
+    name: 'Hỏa Ngục Đồng Quy (Master Perk)',
+    description: 'Kích nổ toàn bộ tầng cháy khi Phá Giáp (Shield Break), gây x3.0 sát thương tích lũy thiêu đốt!',
+    costTinhHoa: 10,
+    bonusType: 'fireBurst',
+    bonusValue: 3.0,
+    requires: 'w_tier_4',
+    unlocked: false,
+  },
+
+  // ===================== [E] TRỌNG LỰC (BẠO KÍCH & CHÙY NẶNG) =====================
+  {
+    id: 'e_tier_1',
+    stance: 'E',
+    tier: 1,
+    name: 'Chùy Ngàn Cân',
+    description: 'Tăng sát thương thế Trọng Lực lên x1.5, mỗi nhát tích +2 điểm Phá Giáp.',
+    costTinhHoa: 1,
+    bonusType: 'heavyShatter',
+    bonusValue: 2,
+    unlocked: false,
+  },
+  {
+    id: 'e_tier_2',
+    stance: 'E',
+    tier: 2,
+    name: 'Địa Chấn Hư Không',
+    description: 'Nhát gõ Chuẩn Xác/Hoàng Kim tạo chấn động cực mạnh, giảm 15% số nhát cần để Phá Giáp.',
+    costTinhHoa: 2,
+    bonusType: 'heavyShatter',
+    bonusValue: 0.15,
+    requires: 'e_tier_1',
+    unlocked: false,
+  },
+  {
+    id: 'e_tier_3',
+    stance: 'E',
+    tier: 3,
+    name: 'Trọng Áp Phá Giáp',
+    description: 'Tăng +25% Tỷ Lệ Bạo Kích (Crit) khi đang vận dụng thế Trọng Lực.',
+    costTinhHoa: 3,
+    bonusType: 'executeCrit',
+    bonusValue: 0.25,
+    requires: 'e_tier_2',
+    unlocked: false,
+  },
+  {
+    id: 'e_tier_4',
+    stance: 'E',
+    tier: 4,
+    name: 'Nặng Tựa Thái Sơn',
+    description: 'Đòn đánh Bạo Kích ở thế Trọng Lực gây x2.0 sát thương (thay vì x1.5 thông thường).',
+    costTinhHoa: 5,
+    bonusType: 'executeCrit',
+    bonusValue: 2.0,
+    requires: 'e_tier_3',
+    unlocked: false,
+  },
+  {
+    id: 'e_tier_5',
+    stance: 'E',
+    tier: 5,
+    name: 'Hư Không Đoạt Mệnh (Master Perk)',
+    description: 'Khi Boss còn dưới 30% máu lớp phong ấn: Tăng 30% tỷ lệ đòn đánh trảm sát nhân x5.0 sát thương!',
+    costTinhHoa: 10,
+    bonusType: 'masterPerk',
+    bonusValue: 5.0,
+    requires: 'e_tier_4',
+    unlocked: false,
+  },
+
+  // ===================== [R] HUYỀN ÂM (CỘNG HƯỞNG & TRỢ LỰC) =====================
+  {
+    id: 'r_tier_1',
+    stance: 'R',
+    tier: 1,
+    name: 'Hòa Âm',
+    description: 'Tăng +25% Linh Thạch rơi mỗi nhát búa và tăng +20% Linh Thạch AFK treo máy.',
+    costTinhHoa: 1,
+    bonusType: 'oreWealth',
+    bonusValue: 0.25,
+    unlocked: false,
+  },
+  {
+    id: 'r_tier_2',
+    stance: 'R',
+    tier: 2,
+    name: 'Ngọc Bích Hộ Thể',
+    description: 'Giảm 50% hình phạt khi bấm trượt nhịp (Miss), tự động bảo toàn 1 tầng Overdrive.',
+    costTinhHoa: 2,
+    bonusType: 'missForgive',
+    bonusValue: 0.5,
+    requires: 'r_tier_1',
+    unlocked: false,
+  },
+  {
+    id: 'r_tier_3',
+    stance: 'R',
+    tier: 3,
+    name: 'Tiếng Vang Vạn Dân',
+    description: 'Mỗi nhát gõ hoàn hảo tăng +0.3% tiến độ nạp Cực Nhịp Toàn Cầu.',
+    costTinhHoa: 3,
+    bonusType: 'oreWealth',
+    bonusValue: 0.3,
+    requires: 'r_tier_2',
+    unlocked: false,
+  },
+  {
+    id: 'r_tier_4',
+    stance: 'R',
+    tier: 4,
+    name: 'Tinh Hoa Tụ Đỉnh',
+    description: 'Tăng gấp đôi (+100%) tỷ lệ nhặt Tinh Hoa Thần Hồn từ nhát búa Hoàng Kim.',
+    costTinhHoa: 5,
+    bonusType: 'oreWealth',
+    bonusValue: 1.0,
+    requires: 'r_tier_3',
+    unlocked: false,
+  },
+  {
+    id: 'r_tier_5',
+    stance: 'R',
+    tier: 5,
+    name: 'Khúc Khải Hoàn (Master Perk)',
+    description: 'Kéo dài thời gian Đại Cộng Hưởng thêm 15 giây và ban phát hào quang x1.5 sát thương toàn đội!',
+    costTinhHoa: 10,
+    bonusType: 'masterPerk',
+    bonusValue: 1.5,
+    requires: 'r_tier_4',
+    unlocked: false,
+  },
+];
+
+export function canUnlockStanceSkill(
+  nodeId: string,
+  skills: StanceSkillNode[],
+  currentTinhHoa: number,
+  forgerRankTier: number = 1
+): boolean {
+  const target = skills.find((s) => s.id === nodeId);
+  if (!target || target.unlocked) return false;
+  if (currentTinhHoa < target.costTinhHoa) return false;
+  if (target.tier >= 4 && forgerRankTier < 3) return false;
+  if (target.requires) {
+    const parent = skills.find((s) => s.id === target.requires);
+    if (!parent || !parent.unlocked) return false;
+  }
+  return true;
+}
+
+export function calculateStanceSkillBonuses(
+  skills: StanceSkillNode[],
+  activeStance: StanceKey
+): Record<string, number> {
+  const bonuses: Record<string, number> = {
+    damageMult: 1.0,
+    resonanceAdd: 0,
+    perfectWindowMs: 0,
+    critChanceAdd: 0,
+    critMultOverride: 0,
+    heatGainAdd: 0,
+    linhThachMult: 1.0,
+    essenceDropMult: 1.0,
+    hasMasterPerk: 0,
+  };
+
+  const unlockedSkills = skills.filter((s) => s.unlocked && s.stance === activeStance);
+  for (const s of unlockedSkills) {
+    switch (s.bonusType) {
+      case 'resonanceSpeed':
+        bonuses.resonanceAdd += s.bonusValue;
+        break;
+      case 'perfectWindow':
+        bonuses.perfectWindowMs += s.bonusValue;
+        break;
+      case 'plasmaLightning':
+        bonuses.damageMult += s.bonusValue;
+        break;
+      case 'furnaceHeat':
+        if (s.bonusValue >= 1) bonuses.heatGainAdd += s.bonusValue;
+        else bonuses.damageMult += s.bonusValue;
+        break;
+      case 'heavyShatter':
+        bonuses.resonanceAdd += s.bonusValue;
+        break;
+      case 'executeCrit':
+        if (s.bonusValue < 1) bonuses.critChanceAdd += s.bonusValue * 100;
+        else bonuses.critMultOverride = s.bonusValue;
+        break;
+      case 'oreWealth':
+        bonuses.linhThachMult += s.bonusValue;
+        if (s.id === 'r_tier_4') bonuses.essenceDropMult += 1.0;
+        break;
+      case 'masterPerk':
+        bonuses.hasMasterPerk = s.bonusValue;
+        break;
+    }
+  }
+
+  return bonuses;
 }
 
 export function formatInteger(n: number): string {
