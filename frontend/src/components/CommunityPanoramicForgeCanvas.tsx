@@ -480,7 +480,7 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
           id: boltIdCounter++,
           mainPoints: bolt.mainPoints,
           branches: bolt.branches,
-          isHero: true,
+          isHero: false,
           rimHex: palette.rimHex,
           coreHex: palette.coreHex,
           ageSec: 0,
@@ -491,13 +491,20 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
 
         spawnAnvilSparkBurst(anvilX, anvilY, 24, palette.sparkHex, true);
 
-        spawnCombatTextInternal(
-          payload.isCrit ? 'BẠO KÍCH!' : payload.isGolden ? 'HOÀNG KIM! x3.0' : 'CHUẨN XÁC!',
-          `★ ${payload.name} · -${payload.damage} DMG`,
-          palette.rimHex,
-          palette.coreHex,
-          payload.isGolden || !!payload.isCrit
-        );
+        // Put floating combat text directly on the REMOTE PEER's terrace anvil, NOT over the local Main Hero!
+        floatingTexts.push({
+          id: textIdCounter++,
+          text: payload.isCrit ? 'BẠO KÍCH!' : payload.isGolden ? 'HOÀNG KIM' : 'CHUẨN XÁC',
+          subtext: `-${payload.damage} DMG`,
+          x: anvilX,
+          y: anvilY - 34 * peer.scale,
+          vy: -48,
+          color: palette.rimHex,
+          glowColor: palette.coreHex,
+          ageSec: 0,
+          durationSec: 1.25,
+          scale: peer.scale * 0.9,
+        });
       }
     };
 
