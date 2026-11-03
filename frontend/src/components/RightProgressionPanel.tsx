@@ -3,14 +3,16 @@ import {
   ForgeUpgrade,
   SpiritNode,
   EquipmentItem,
-  QuenchingType,
+  EquipmentSlotKey,
+  ItemRarity,
+  SLOT_INFO,
+  MAX_INVENTORY_SLOTS,
   getUpgradeCost,
   canUnlockSpiritNode,
   calculateSpiritMultiplier,
   calculateForgeDamage,
-  getItemUpgradeCost,
   getItemRarityMeta,
-  getQuenchingMeta,
+  getSalvageYield,
   calculateArsenalBonuses,
 } from '../game/rules';
 import {
@@ -23,9 +25,10 @@ import {
   Shield,
   Flame,
   Zap,
-  Droplet,
   Layers,
-  ChevronRight,
+  Trash2,
+  PackageOpen,
+  ArrowRightLeft,
   Info,
 } from 'lucide-react';
 
@@ -39,7 +42,8 @@ export interface LeaderboardEntry {
 }
 
 interface RightProgressionPanelProps {
-  equipment?: EquipmentItem[];
+  equippedItems: Record<EquipmentSlotKey, EquipmentItem | null>;
+  inventory: EquipmentItem[];
   upgrades: ForgeUpgrade[];
   spiritNodes: SpiritNode[];
   linhThach: number;
@@ -50,12 +54,15 @@ interface RightProgressionPanelProps {
   onCloseMobileDrawer: () => void;
   onBuyUpgrade: (upgradeId: string) => void;
   onUnlockSpiritNode: (nodeId: string) => void;
-  onUpgradeEquipment?: (itemId: string) => void;
-  onQuenchEquipment?: (itemId: string, quenching: QuenchingType) => void;
+  onEquipItem: (item: EquipmentItem) => void;
+  onUnequipItem: (slotKey: EquipmentSlotKey) => void;
+  onSalvageItem: (item: EquipmentItem) => void;
+  onQuickSalvage: (rarities: ItemRarity[]) => void;
 }
 
 export const RightProgressionPanel: React.FC<RightProgressionPanelProps> = ({
-  equipment = [],
+  equippedItems,
+  inventory,
   upgrades,
   spiritNodes,
   linhThach,
@@ -66,24 +73,32 @@ export const RightProgressionPanel: React.FC<RightProgressionPanelProps> = ({
   onCloseMobileDrawer,
   onBuyUpgrade,
   onUnlockSpiritNode,
-  onUpgradeEquipment,
-  onQuenchEquipment,
+  onEquipItem,
+  onUnequipItem,
+  onSalvageItem,
+  onQuickSalvage,
 }) => {
   const [activeTab, setActiveTab] = useState<'arsenal' | 'upgrades' | 'spirit' | 'leaderboard'>('arsenal');
-  const [selectedSlotId, setSelectedSlotId] = useState<string>(
-    equipment.length > 0 ? equipment[0].id : 'starter_hammer'
-  );
+  const [selectedItem, setSelectedItem] = useState<EquipmentItem | null>(() => {
+    return equippedItems.hammer || inventory[0] || null;
+  });
   const [selectedNodeId, setSelectedNodeId] = useState<string>('node_thunder_eye');
-  const [showQuenchModal, setShowQuenchModal] = useState<boolean>(false);
 
   const selectedNode =
     spiritNodes.find((n) => n.id === selectedNodeId) || spiritNodes[0];
   const spiritTotalMult = calculateSpiritMultiplier(spiritNodes);
 
-  const selectedItem =
-    equipment.find((it) => it.id === selectedSlotId) || equipment[0];
+  const arsenalBonuses = calculateArsenalBonuses(equippedItems);
 
-  const arsenalBonuses = calculateArsenalBonuses(equipment);
+  // Helper: check if item is currently equipped
+  const isEquipped = (item: EquipmentItem | null): boolean => {
+    if (!item) return false;
+    return equippedItems[item.slotKey]?.id === item.id;
+  };
+
+  // Quick salvage counts
+  const commonInBag = inventory.filter((it) => it.rarity === 'common').length;
+  const rareInBag = inventory.filter((it) => it.rarity === 'rare').length;
 
   const renderPanelContent = () => (
     <div className="flex flex-col h-full">
@@ -103,7 +118,7 @@ export const RightProgressionPanel: React.FC<RightProgressionPanelProps> = ({
               ? 'bg-amber-400 text-slate-950 font-bold'
               : 'text-slate-300 hover:text-white'
           }`}
-          title="Trang Bị Thợ Rèn (6 Món)"
+          title="Trang Bị & Túi Đồ (Loot & Affix)"
         >
           <Shield className="w-3.5 h-3.5" />
           <span className="truncate">Vũ Khí</span>
@@ -179,79 +194,193 @@ export const RightProgressionPanel: React.FC<RightProgressionPanelProps> = ({
       {/* Tab Body */}
       <div className="flex-1 overflow-y-auto pr-0.5 space-y-2.5">
         {/* ================================================================= */}
-        {/* TAB 1: ARSENAL (BỘ DỤNG CỤ RÈN 6 MÓN) */}
+        {/* TAB 1: ARSENAL & BACKPACK (ARPG LOOT & AFFIX SYSTEM) */}
         {/* ================================================================= */}
         {activeTab === 'arsenal' && (
           <div className="flex flex-col gap-2.5">
-            {/* Arsenal Top Stats Card */}
+            {/* Top Equipped Stats Card */}
             <div className="p-2.5 rounded-xl bg-[#080A10] border border-amber-500/30 flex items-center justify-between">
               <div>
-                <div className="text-[10px] text-slate-400 font-tech">Bộ Khí Giới Thợ Rèn</div>
+                <div className="text-[10px] text-slate-400 font-tech">Sức Mạnh Bộ Trang Bị Đang Mặc</div>
                 <div className="text-xs font-bold text-amber-300">
-                  Tổng Cấp: +{arsenalBonuses.totalArsenalLevel} · Đã Tôi: {arsenalBonuses.quenchedCount}/6
+                  {arsenalBonuses.totalEquippedCount}/6 Món · +{arsenalBonuses.flatDamage} DMG Cơ Bản
                 </div>
               </div>
               <div className="flex items-center gap-1.5 text-[10px] font-tech text-cyan-300 bg-[#111625] px-2 py-1 rounded-lg border border-slate-800">
-                <span>+{arsenalBonuses.flatDamage} DMG</span>
+                <span>x{arsenalBonuses.damageMultiplier} Sát Thương</span>
                 <span>·</span>
                 <span>+{arsenalBonuses.critChancePct}% Crit</span>
               </div>
             </div>
 
-            {/* 6-Slot Grid */}
-            <div className="grid grid-cols-2 gap-2">
-              {equipment.map((item) => {
-                const isSelected = selectedItem?.id === item.id;
-                const rMeta = getItemRarityMeta(item.rarity);
-                const qMeta = getQuenchingMeta(item.quenching);
+            {/* 6 Equipped Slots Grid */}
+            <div>
+              <div className="text-[11px] font-tech text-slate-300 mb-1.5 flex items-center justify-between">
+                <span className="font-bold text-amber-300">6 VỊ TRÍ KHÍ GIỚI ĐANG MANG</span>
+                <span className="text-[10px] text-slate-400">Click để kiểm tra & tháo đồ</span>
+              </div>
 
-                return (
-                  <button
-                    key={item.id}
-                    type="button"
-                    onClick={() => {
-                      setSelectedSlotId(item.id);
-                      setShowQuenchModal(false);
-                    }}
-                    className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between min-h-[92px] ${
-                      isSelected
-                        ? 'bg-slate-900/90 border-amber-400 ring-1 ring-amber-400/50 shadow-md'
-                        : 'bg-[#080A10] border-slate-800 hover:border-slate-700'
-                    }`}
-                  >
-                    <div>
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="text-[9px] font-tech uppercase text-slate-400">
-                          {item.slotName}
-                        </span>
-                        <span className="text-[10px] font-tech font-bold text-amber-300">
-                          +{item.level}
-                        </span>
-                      </div>
+              <div className="grid grid-cols-2 gap-2">
+                {(['hammer', 'anvil', 'bellows', 'gauntlets', 'apron', 'relic'] as EquipmentSlotKey[]).map(
+                  (slotKey) => {
+                    const item = equippedItems[slotKey];
+                    const slotMeta = SLOT_INFO[slotKey];
+                    const isSelected = selectedItem?.id === item?.id;
+                    const rMeta = item ? getItemRarityMeta(item.rarity) : null;
 
-                      <div className={`font-semibold text-xs truncate ${rMeta.textColor}`}>
-                        {item.name}
-                      </div>
-                    </div>
+                    return (
+                      <button
+                        key={slotKey}
+                        type="button"
+                        onClick={() => {
+                          if (item) setSelectedItem(item);
+                        }}
+                        className={`p-2 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between min-h-[82px] ${
+                          isSelected
+                            ? 'bg-slate-900/90 border-amber-400 ring-1 ring-amber-400/50 shadow-md'
+                            : item
+                            ? 'bg-[#080A10] border-slate-800 hover:border-slate-700'
+                            : 'bg-[#06080F]/60 border-dashed border-slate-800 opacity-60'
+                        }`}
+                      >
+                        <div>
+                          <div className="flex items-center justify-between mb-0.5">
+                            <span className="text-[9px] font-tech uppercase text-slate-400">
+                              {slotMeta.name}
+                            </span>
+                            {item && (
+                              <span
+                                className={`text-[8px] px-1 rounded font-tech ${
+                                  rMeta?.badgeBg
+                                }`}
+                              >
+                                {rMeta?.label}
+                              </span>
+                            )}
+                          </div>
 
-                    <div className="mt-1.5 pt-1.5 border-t border-slate-800/80 flex items-center justify-between text-[10px] font-tech">
-                      <span className="text-slate-300">
-                        +{item.coreStatValue * item.level} {item.coreStatUnit}
-                      </span>
-                      {item.quenching !== 'none' ? (
-                        <span className={`text-[9px] px-1 rounded ${qMeta.bgColor} ${qMeta.color}`}>
-                          {qMeta.badge}
-                        </span>
-                      ) : (
-                        <span className="text-[9px] text-slate-500">Lv.20 Tôi Lửa</span>
-                      )}
-                    </div>
-                  </button>
-                );
-              })}
+                          <div
+                            className={`font-semibold text-[11px] truncate ${
+                              rMeta ? rMeta.textColor : 'text-slate-500'
+                            }`}
+                          >
+                            {item ? item.name : 'Chưa Trang Bị'}
+                          </div>
+                        </div>
+
+                        {item ? (
+                          <div className="mt-1 pt-1 border-t border-slate-800/80 flex items-center justify-between text-[9px] font-tech">
+                            <span className="text-cyan-300">
+                              +{item.baseStatValue} {item.baseStatUnit}
+                            </span>
+                            <span className="text-slate-400">
+                              {item.prefixes.length + item.suffixes.length} Dòng Affix
+                            </span>
+                          </div>
+                        ) : (
+                          <div className="text-[9px] text-slate-500 italic">Đập đe để nhặt đồ</div>
+                        )}
+                      </button>
+                    );
+                  }
+                )}
+              </div>
             </div>
 
-            {/* Selected Item Inspector & Upgrade / Quench Card */}
+            {/* Backpack / Inventory Section with Quick Salvage */}
+            <div className="pt-2 border-t border-slate-800">
+              <div className="flex items-center justify-between mb-1.5">
+                <div className="flex items-center gap-1.5 text-xs font-tech">
+                  <PackageOpen className="w-3.5 h-3.5 text-cyan-400" />
+                  <span className="font-bold text-slate-200">TÚI ĐỒ (RƯƠNG VŨ KHÍ)</span>
+                  <span className="text-[10px] text-slate-400">
+                    ({inventory.length}/{MAX_INVENTORY_SLOTS})
+                  </span>
+                </div>
+
+                {/* Quick Salvage Actions */}
+                <div className="flex items-center gap-1">
+                  {commonInBag > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => onQuickSalvage(['common'])}
+                      className="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 text-[10px] font-tech cursor-pointer transition-colors"
+                      title="Phân giải toàn bộ trang bị Phàm Thiết (Trắng) trong túi"
+                    >
+                      Tách Trắng ({commonInBag})
+                    </button>
+                  )}
+                  {(commonInBag > 0 || rareInBag > 0) && (
+                    <button
+                      type="button"
+                      onClick={() => onQuickSalvage(['common', 'rare'])}
+                      className="px-2 py-0.5 rounded bg-cyan-950/60 hover:bg-cyan-900/80 border border-cyan-500/40 text-cyan-300 text-[10px] font-tech cursor-pointer transition-colors"
+                      title="Phân giải nhanh toàn bộ đồ Trắng & Cổ Thiết (Xanh) trong túi"
+                    >
+                      Tách Trắng/Xanh ({commonInBag + rareInBag})
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* 24-Slot Bag Grid */}
+              <div className="grid grid-cols-6 gap-1.5 p-2 rounded-xl bg-[#070912] border border-slate-800/90">
+                {Array.from({ length: MAX_INVENTORY_SLOTS }).map((_, idx) => {
+                  const bagItem = inventory[idx] || null;
+                  const isSelected = selectedItem?.id === bagItem?.id;
+                  const rMeta = bagItem ? getItemRarityMeta(bagItem.rarity) : null;
+
+                  return (
+                    <button
+                      key={bagItem ? bagItem.id : `empty_${idx}`}
+                      type="button"
+                      disabled={!bagItem}
+                      onClick={() => {
+                        if (bagItem) setSelectedItem(bagItem);
+                      }}
+                      className={`relative aspect-square rounded-lg border flex flex-col items-center justify-center transition-all ${
+                        bagItem
+                          ? `cursor-pointer ${
+                              isSelected
+                                ? 'border-amber-400 ring-2 ring-amber-400/40 bg-slate-800 shadow-md scale-105'
+                                : `${rMeta?.borderColor} ${rMeta?.bgColor} hover:brightness-125`
+                            }`
+                          : 'border-dashed border-slate-800/60 bg-slate-950/40 cursor-default'
+                      }`}
+                      title={bagItem ? `${bagItem.name} (${rMeta?.label})` : 'Ô trống'}
+                    >
+                      {bagItem ? (
+                        <>
+                          <div className={`text-[10px] font-tech font-bold ${rMeta?.textColor}`}>
+                            {bagItem.slotName.substring(0, 2)}
+                          </div>
+                          <div className="text-[8px] font-tech text-slate-400">
+                            +{bagItem.baseStatValue}
+                          </div>
+                          {bagItem.rarity !== 'common' && (
+                            <span
+                              className={`absolute top-0.5 right-0.5 w-1.5 h-1.5 rounded-full ${
+                                bagItem.rarity === 'mythic'
+                                  ? 'bg-orange-400 animate-ping'
+                                  : bagItem.rarity === 'legendary'
+                                  ? 'bg-amber-400'
+                                  : bagItem.rarity === 'epic'
+                                  ? 'bg-purple-400'
+                                  : 'bg-cyan-400'
+                              }`}
+                            />
+                          )}
+                        </>
+                      ) : (
+                        <span className="text-[10px] text-slate-700">·</span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Selected Item Inspector & Comparison Card */}
             {selectedItem && (
               <div className="p-3.5 rounded-xl bg-[#080A10] border border-slate-800 space-y-2.5">
                 {/* Header */}
@@ -268,18 +397,23 @@ export const RightProgressionPanel: React.FC<RightProgressionPanelProps> = ({
                       >
                         {getItemRarityMeta(selectedItem.rarity).label}
                       </span>
+                      {isEquipped(selectedItem) && (
+                        <span className="text-[9px] px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-tech">
+                          ĐANG TRANG BỊ
+                        </span>
+                      )}
                     </div>
                     <h4
                       className={`font-semibold text-sm ${
                         getItemRarityMeta(selectedItem.rarity).textColor
                       }`}
                     >
-                      {selectedItem.name} +{selectedItem.level}
+                      {selectedItem.name}
                     </h4>
                   </div>
 
-                  <span className="text-xs font-tech font-bold text-amber-300 whitespace-nowrap">
-                    Cấp {selectedItem.level}/{selectedItem.maxLevel}
+                  <span className="text-xs font-tech font-bold text-slate-400 whitespace-nowrap">
+                    Lv.{selectedItem.itemLevel}
                   </span>
                 </div>
 
@@ -288,145 +422,117 @@ export const RightProgressionPanel: React.FC<RightProgressionPanelProps> = ({
                   "{selectedItem.loreDescription}"
                 </p>
 
-                {/* Stat comparison */}
-                <div className="p-2 rounded-lg bg-[#111625] border border-slate-800 text-xs font-tech space-y-1">
-                  <div className="flex items-center justify-between">
-                    <span className="text-slate-400">{selectedItem.coreStatLabel}:</span>
-                    <span className="text-cyan-300 font-bold">
-                      +{selectedItem.coreStatValue * selectedItem.level} {selectedItem.coreStatUnit}{' '}
-                      <span className="text-slate-400 font-normal">
-                        (Cấp tới: +{selectedItem.coreStatValue * (selectedItem.level + 1)})
-                      </span>
-                    </span>
-                  </div>
-                  <div className="text-[11px] text-amber-300">
-                    Nội tại: {selectedItem.affixText}
-                  </div>
+                {/* Base Stat */}
+                <div className="p-2 rounded-lg bg-[#111625] border border-slate-800 text-xs font-tech flex items-center justify-between">
+                  <span className="text-slate-400">{selectedItem.baseStatLabel}:</span>
+                  <span className="text-cyan-300 font-bold">
+                    +{selectedItem.baseStatValue} {selectedItem.baseStatUnit}
+                  </span>
                 </div>
 
-                {/* Quenching (Tôi Lửa) Status & Selector */}
-                <div className="p-2.5 rounded-lg bg-[#111625] border border-slate-800 space-y-1.5">
-                  <div className="flex items-center justify-between text-xs">
-                    <div className="flex items-center gap-1 text-slate-200 font-semibold">
-                      <Flame className="w-3.5 h-3.5 text-orange-400" />
-                      <span>Nghi Thức Tôi Lửa (Quenching)</span>
+                {/* Prefixes (Tiền Tố) */}
+                {selectedItem.prefixes.length > 0 && (
+                  <div className="space-y-1">
+                    <div className="text-[10px] font-tech text-amber-300 uppercase tracking-wider">
+                      ⚡ Tiền Tố (Prefix):
                     </div>
-                    <span className={`text-[10px] font-tech font-bold ${getQuenchingMeta(selectedItem.quenching).color}`}>
-                      {getQuenchingMeta(selectedItem.quenching).label}
-                    </span>
+                    {selectedItem.prefixes.map((pref) => (
+                      <div
+                        key={pref.id}
+                        className="px-2 py-1 rounded-lg bg-amber-500/10 border border-amber-500/20 text-[11px] font-tech text-amber-200 flex items-center justify-between"
+                      >
+                        <span className="font-bold">[{pref.name}]</span>
+                        <span>{pref.label}</span>
+                      </div>
+                    ))}
                   </div>
+                )}
 
-                  <div className="text-[11px] text-slate-300">
-                    {getQuenchingMeta(selectedItem.quenching).desc}
+                {/* Suffixes (Hậu Tố) */}
+                {selectedItem.suffixes.length > 0 && (
+                  <div className="space-y-1">
+                    <div className="text-[10px] font-tech text-purple-300 uppercase tracking-wider">
+                      🔮 Hậu Tố (Suffix / Affix):
+                    </div>
+                    {selectedItem.suffixes.map((suf) => (
+                      <div
+                        key={suf.id}
+                        className="px-2 py-1 rounded-lg bg-purple-500/10 border border-purple-500/20 text-[11px] font-tech text-purple-200 flex items-center justify-between"
+                      >
+                        <span className="font-bold">[{suf.name}]</span>
+                        <span>{suf.label}</span>
+                      </div>
+                    ))}
                   </div>
+                )}
 
-                  {/* Quench Action / Milestone status */}
-                  {selectedItem.level >= selectedItem.quenchingMilestoneLevel ? (
-                    <div>
-                      {!showQuenchModal ? (
-                        <button
-                          type="button"
-                          onClick={() => setShowQuenchModal(true)}
-                          className="w-full mt-1 py-1 px-2 rounded-lg bg-orange-500/20 hover:bg-orange-500/30 border border-orange-500/40 text-orange-300 font-tech font-bold text-xs flex items-center justify-center gap-1 cursor-pointer transition-colors"
-                        >
-                          <Flame className="w-3.5 h-3.5" />
-                          <span>
-                            {selectedItem.quenching === 'none'
-                              ? 'Khai Mở Tôi Lửa Ngay'
-                              : 'Đổi Dung Dịch Tôi Lửa'}
-                          </span>
-                        </button>
-                      ) : (
-                        <div className="space-y-1.5 pt-1.5 border-t border-slate-800">
-                          <div className="text-[10px] font-tech text-slate-400">
-                            Chọn dung dịch thần bí để tôi luyện:
-                          </div>
-
-                          {/* Option 1: Frost */}
-                          <button
-                            type="button"
-                            onClick={() => {
-                              onQuenchEquipment?.(selectedItem.id, 'frost');
-                              setShowQuenchModal(false);
-                            }}
-                            className="w-full p-1.5 rounded-lg bg-cyan-950/40 hover:bg-cyan-900/50 border border-cyan-500/40 text-left flex items-center justify-between cursor-pointer"
-                          >
-                            <div className="text-xs text-cyan-300">
-                              <span className="font-bold">❄️ Tôi Nước Suối Băng:</span> +25% Linh Thạch
-                            </div>
-                            <span className="text-[10px] font-tech text-slate-400">100 LT · 1 TH</span>
-                          </button>
-
-                          {/* Option 2: Magma */}
-                          <button
-                            type="button"
-                            onClick={() => {
-                              onQuenchEquipment?.(selectedItem.id, 'magma');
-                              setShowQuenchModal(false);
-                            }}
-                            className="w-full p-1.5 rounded-lg bg-orange-950/40 hover:bg-orange-900/50 border border-orange-500/40 text-left flex items-center justify-between cursor-pointer"
-                          >
-                            <div className="text-xs text-orange-300">
-                              <span className="font-bold">🔥 Tôi Dung Nham:</span> +20% DoT Hỏa Hầu
-                            </div>
-                            <span className="text-[10px] font-tech text-slate-400">100 LT · 1 TH</span>
-                          </button>
-
-                          {/* Option 3: Thunder */}
-                          <button
-                            type="button"
-                            onClick={() => {
-                              onQuenchEquipment?.(selectedItem.id, 'thunder');
-                              setShowQuenchModal(false);
-                            }}
-                            className="w-full p-1.5 rounded-lg bg-amber-950/40 hover:bg-amber-900/50 border border-amber-500/40 text-left flex items-center justify-between cursor-pointer"
-                          >
-                            <div className="text-xs text-amber-300">
-                              <span className="font-bold">⚡ Tôi Máu Lôi Thần:</span> +15% Sét Bạo Kích
-                            </div>
-                            <span className="text-[10px] font-tech text-slate-400">150 LT · 2 TH</span>
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-1 text-[10px] font-tech text-slate-500 pt-1 border-t border-slate-800">
-                      <Lock className="w-3 h-3" />
-                      <span>
-                        Cần đạt Cấp {selectedItem.quenchingMilestoneLevel} để mở khóa Tôi Lửa (Hiện tại: Cấp {selectedItem.level})
-                      </span>
-                    </div>
-                  )}
-                </div>
-
-                {/* Primary Upgrade Button */}
-                {(() => {
-                  const cost = getItemUpgradeCost(selectedItem);
-                  const canAfford = linhThach >= cost && selectedItem.level < selectedItem.maxLevel;
+                {/* Comparison with currently equipped slot (if inspecting a bag item) */}
+                {!isEquipped(selectedItem) && (() => {
+                  const currentEq = equippedItems[selectedItem.slotKey];
+                  const diff = currentEq
+                    ? selectedItem.baseStatValue - currentEq.baseStatValue
+                    : selectedItem.baseStatValue;
 
                   return (
-                    <div className="pt-2 border-t border-slate-800 flex items-center justify-between">
-                      <div className="text-xs font-tech text-slate-400">
-                        Chi phí: <span className="text-cyan-300 font-bold">{cost.toLocaleString('en-US')} LT</span>
+                    <div className="p-2 rounded-lg bg-[#0E1322] border border-slate-800 text-[11px] font-tech flex items-center justify-between">
+                      <div className="flex items-center gap-1.5 text-slate-400">
+                        <ArrowRightLeft className="w-3.5 h-3.5 text-cyan-400" />
+                        <span>So với đồ đang mặc ({currentEq ? currentEq.name : 'Trống'}):</span>
                       </div>
-
-                      <button
-                        type="button"
-                        disabled={!canAfford}
-                        onClick={() => onUpgradeEquipment?.(selectedItem.id)}
-                        className={`px-4 py-2 rounded-xl text-xs font-tech font-bold transition-all shadow-md ${
-                          canAfford
-                            ? 'bg-amber-400 hover:bg-amber-300 text-slate-950 cursor-pointer shadow-amber-500/20 active:scale-95'
-                            : 'bg-slate-800 text-slate-500 cursor-not-allowed'
+                      <span
+                        className={`font-bold ${
+                          diff > 0
+                            ? 'text-emerald-400'
+                            : diff < 0
+                            ? 'text-red-400'
+                            : 'text-slate-400'
                         }`}
                       >
-                        {selectedItem.level >= selectedItem.maxLevel
-                          ? 'ĐẠT TỐI ĐA'
-                          : `CƯỜNG HÓA +1`}
-                      </button>
+                        {diff > 0 ? `+${diff}` : `${diff}`} {selectedItem.baseStatUnit}
+                      </span>
                     </div>
                   );
                 })()}
+
+                {/* Action Buttons: Equip or Salvage */}
+                <div className="pt-2 border-t border-slate-800 flex items-center gap-2">
+                  {!isEquipped(selectedItem) ? (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => onEquipItem(selectedItem)}
+                        className="flex-1 py-2 px-3 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-tech font-bold text-xs tracking-wider cursor-pointer shadow-md shadow-amber-500/20 active:scale-95 transition-all text-center"
+                      >
+                        TRANG BỊ NGAY
+                      </button>
+
+                      {(() => {
+                        const salvage = getSalvageYield(selectedItem);
+                        return (
+                          <button
+                            type="button"
+                            onClick={() => onSalvageItem(selectedItem)}
+                            className="py-2 px-3 rounded-xl bg-red-950/40 hover:bg-red-900/60 border border-red-500/40 text-red-300 font-tech font-bold text-xs flex items-center gap-1 cursor-pointer transition-colors"
+                            title={`Tách thành +${salvage.linhThach} LT${
+                              salvage.tinhHoa > 0 ? `, +${salvage.tinhHoa} TH` : ''
+                            }`}
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                            <span>Tách (+{salvage.linhThach} LT)</span>
+                          </button>
+                        );
+                      })()}
+                    </>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => onUnequipItem(selectedItem.slotKey)}
+                      className="w-full py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 font-tech font-bold text-xs cursor-pointer transition-colors text-center"
+                    >
+                      THÁO RA TÚI ĐỒ
+                    </button>
+                  )}
+                </div>
               </div>
             )}
           </div>
@@ -448,43 +554,55 @@ export const RightProgressionPanel: React.FC<RightProgressionPanelProps> = ({
                 currentBonusText = `Sát thương: ${cur} DMG (Cấp tới: ${nxt} DMG)`;
               } else if (up.id === 'thunder_quench_oil') {
                 currentBonusText = `Hiện tại: +${up.level} DMG thực tế`;
-              } else if (up.id === 'nine_heavens_bellows') {
-                currentBonusText = `Hiện tại: +${up.level * 10}% tốc độ Hỏa Hầu`;
-              } else {
-                currentBonusText = `Hiện tại: +${up.level} Linh Thạch & +${up.level * 5}% Phá Giáp`;
+              } else if (up.id === 'bellows_inferno') {
+                currentBonusText = `Hiện tại: +${up.level * 4}% tốc độ Hỏa Hầu`;
+              } else if (up.id === 'cosmic_resonance_anvil') {
+                currentBonusText = `Hiện tại: +${Math.floor(up.level / 2)} Linh Thạch & +${Math.floor(
+                  up.level / 4
+                )}% Phá Giáp`;
               }
 
               return (
                 <div
                   key={up.id}
-                  className="p-3 rounded-xl bg-[#080A10] border border-slate-800/90 flex flex-col gap-2"
+                  className="p-3 rounded-xl bg-[#080A10] border border-slate-800 hover:border-slate-700 transition-colors"
                 >
-                  <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-start justify-between gap-2 mb-1.5">
                     <div>
-                      <div className="font-semibold text-sm text-slate-100">{up.name}</div>
-                      <div className="text-xs text-slate-400">{up.subtitle}</div>
+                      <h4 className="font-semibold text-xs text-amber-300 font-tech">
+                        {up.name}
+                      </h4>
+                      <p className="text-[11px] text-slate-400">{up.subtitle}</p>
                     </div>
-                    <span className="font-tech text-xs text-amber-300 font-semibold whitespace-nowrap">
+                    <span className="text-[11px] font-tech text-cyan-400 font-bold whitespace-nowrap">
                       Cấp {up.level}/{up.maxLevel}
                     </span>
                   </div>
 
-                  <div className="flex items-center justify-between pt-1 border-t border-slate-800/70">
+                  <div className="text-[10px] text-slate-400 mb-2 font-mono">
+                    {currentBonusText}
+                  </div>
+
+                  <div className="flex items-center justify-between pt-2 border-t border-slate-800/80">
                     <div className="text-xs font-tech text-slate-300">
-                      <span className="text-cyan-300 font-semibold">{currentBonusText}</span>
+                      Chi phí:{' '}
+                      <span className="text-cyan-300 font-bold">
+                        {cost.toLocaleString('en-US')} LT
+                      </span>
                     </div>
+
                     <button
                       type="button"
                       disabled={!canAfford}
                       onClick={() => onBuyUpgrade(up.id)}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-tech font-bold transition-all whitespace-nowrap shrink-0 ${
+                      className={`px-3 py-1.5 rounded-lg text-xs font-tech font-bold transition-all shadow-sm ${
                         canAfford
-                          ? 'bg-amber-400 hover:bg-amber-300 text-slate-950 cursor-pointer shadow-sm shadow-amber-400/20'
-                          : 'bg-slate-800/80 text-slate-500 cursor-not-allowed'
+                          ? 'bg-amber-400 hover:bg-amber-300 text-slate-950 cursor-pointer shadow-amber-500/20 active:scale-95'
+                          : 'bg-slate-800 text-slate-500 cursor-not-allowed'
                       }`}
                     >
                       {up.level >= up.maxLevel
-                        ? 'TỐI ĐA'
+                        ? 'ĐẠT TỐI ĐA'
                         : `Rèn Cấp · ${cost.toLocaleString('en-US')} LT`}
                     </button>
                   </div>
@@ -498,151 +616,119 @@ export const RightProgressionPanel: React.FC<RightProgressionPanelProps> = ({
         {/* TAB 3: SPIRIT CONSTELLATION NODES */}
         {/* ================================================================= */}
         {activeTab === 'spirit' && (
-          <div className="flex flex-col gap-3">
-            {/* Constellation SVG Map */}
-            <div className="relative rounded-xl bg-[#080A10] border border-slate-800 p-3 overflow-hidden">
-              <div className="text-xs font-tech text-slate-400 mb-1 flex items-center justify-between">
-                <span>Chòm Sao Cửu Trọng Thần Hồn</span>
-                <span className="text-amber-300">Chạm tinh tú để khai mở</span>
+          <div className="space-y-3">
+            <div className="p-3 rounded-xl bg-[#080A10] border border-cyan-500/30 flex items-center justify-between">
+              <div>
+                <div className="text-[10px] text-slate-400 font-tech">Hào Quang Thần Hồn</div>
+                <div className="text-sm font-bold text-cyan-300 font-tech">
+                  x{spiritTotalMult.toFixed(2)} Sát Thương Toàn Bản Thân
+                </div>
               </div>
-
-              <svg viewBox="0 0 100 100" className="w-full h-52">
-                {spiritNodes.map((node) => {
-                  if (!node.requires) return null;
-                  const parent = spiritNodes.find((p) => p.id === node.requires);
-                  if (!parent) return null;
-                  const activeLink = node.unlocked && parent.unlocked;
-                  return (
-                    <line
-                      key={`${parent.id}-${node.id}`}
-                      x1={parent.x}
-                      y1={parent.y}
-                      x2={node.x}
-                      y2={node.y}
-                      stroke={activeLink ? '#00F0FF' : '#334155'}
-                      strokeWidth={activeLink ? '1.2' : '0.8'}
-                      strokeDasharray={activeLink ? undefined : '2 2'}
-                    />
-                  );
-                })}
-
-                {spiritNodes.map((node) => {
-                  const isSelected = selectedNode.id === node.id;
-                  const isTier2Locked = node.tier === 2 && !tier2Unlocked;
-                  const unlockable =
-                    !isTier2Locked && canUnlockSpiritNode(node.id, spiritNodes, tinhHoa, tier2Unlocked);
-
-                  return (
-                    <g
-                      key={node.id}
-                      onClick={() => setSelectedNodeId(node.id)}
-                      className="cursor-pointer"
-                    >
-                      {isSelected && (
-                        <circle
-                          cx={node.x}
-                          cy={node.y}
-                          r="8.5"
-                          fill="none"
-                          stroke="#FFD23F"
-                          strokeWidth="0.9"
-                          strokeDasharray="2 1.5"
-                        />
-                      )}
-                      <circle
-                        cx={node.x}
-                        cy={node.y}
-                        r={node.unlocked ? '5.2' : '4.5'}
-                        fill={
-                          node.unlocked
-                            ? '#00F0FF'
-                            : isTier2Locked
-                            ? '#475569'
-                            : unlockable
-                            ? '#FFD23F'
-                            : '#1E293B'
-                        }
-                        stroke={isSelected ? '#FFFFFF' : '#080A10'}
-                        strokeWidth="1.2"
-                      />
-                      <text
-                        x={node.x}
-                        y={node.y + 10}
-                        textAnchor="middle"
-                        fill={node.unlocked ? '#E2E8F0' : isTier2Locked ? '#64748B' : '#94A3B8'}
-                        fontSize="4.2"
-                        fontWeight="600"
-                      >
-                        {isTier2Locked ? `🔒 ${node.name}` : node.name}
-                      </text>
-                    </g>
-                  );
-                })}
-              </svg>
+              <div className="text-right">
+                <div className="text-[10px] text-slate-400 font-tech">Tinh Hoa Đang Có</div>
+                <div className="text-sm font-bold text-amber-400 font-tech">
+                  {tinhHoa} TH
+                </div>
+              </div>
             </div>
 
-            {/* Selected Node Details Card */}
-            <div className="p-3.5 rounded-xl bg-[#080A10] border border-slate-800 space-y-2">
-              <div className="flex items-center justify-between">
-                <div>
-                  <span className="text-[11px] font-tech text-cyan-400">
-                    {selectedNode.constellation}
-                  </span>
-                  <h4 className="font-semibold text-sm text-slate-100 flex items-center gap-1.5">
-                    {selectedNode.name}
-                    {selectedNode.tier === 2 && (
-                      <span className="text-[10px] px-1.5 py-0.2 rounded bg-purple-500/20 text-purple-300 border border-purple-500/30">
-                        Bậc 2
-                      </span>
-                    )}
-                  </h4>
-                </div>
-                <span className="text-xs font-tech font-bold text-emerald-300">
-                  +{Math.round(selectedNode.bonusMult * 100)}% Công Lực
-                </span>
+            <div className="space-y-2">
+              <div className="text-xs font-tech text-slate-400 font-semibold px-1">
+                CHÒM SAO THẦN HỒN BẬC 1:
               </div>
+              <div className="grid grid-cols-2 gap-2">
+                {spiritNodes
+                  .filter((n) => n.tier === 1)
+                  .map((node) => {
+                    const isSelected = selectedNode.id === node.id;
+                    const canUnlock = canUnlockSpiritNode(
+                      node.id,
+                      spiritNodes,
+                      tinhHoa,
+                      tier2Unlocked
+                    );
 
-              <p className="text-xs text-slate-300 leading-relaxed">
-                {selectedNode.description}
-              </p>
+                    return (
+                      <button
+                        key={node.id}
+                        type="button"
+                        onClick={() => setSelectedNodeId(node.id)}
+                        className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between min-h-[92px] ${
+                          node.unlocked
+                            ? 'bg-cyan-950/20 border-cyan-500/40'
+                            : canUnlock
+                            ? 'bg-amber-950/20 border-amber-500/40 hover:border-amber-400'
+                            : 'bg-slate-900/40 border-slate-800 opacity-60'
+                        } ${isSelected ? 'ring-2 ring-cyan-400 shadow-lg shadow-cyan-500/20' : ''}`}
+                      >
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-[10px] font-tech text-slate-400">
+                            Node #{node.id.split('_')[1]?.toUpperCase()}
+                          </span>
+                          {node.unlocked ? (
+                            <Check className="w-3.5 h-3.5 text-emerald-400" />
+                          ) : (
+                            <Lock className="w-3.5 h-3.5 text-slate-500" />
+                          )}
+                        </div>
 
-              {selectedNode.tier === 2 && !tier2Unlocked && (
-                <div className="flex items-center gap-1.5 text-xs text-amber-300/90 bg-amber-500/10 border border-amber-500/30 rounded-lg p-2">
-                  <Lock className="w-3.5 h-3.5 shrink-0" />
-                  <span>Yêu cầu đạt Cột Mốc 100,000 DMG cá nhân để khai mở Thần Hồn Bậc 2.</span>
-                </div>
-              )}
+                        <div className="font-semibold text-xs text-slate-200 line-clamp-1">
+                          {node.name}
+                        </div>
 
-              <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between">
-                <span className="text-xs font-tech text-slate-400">
-                  {selectedNode.unlocked
-                    ? 'Trạng thái: Đã Khai Mở'
-                    : `Yêu cầu: ${selectedNode.costTinhHoa} Tinh Hoa`}
-                </span>
+                        <div className="text-[10px] font-tech text-cyan-400 mt-1">
+                          +{Math.round(node.bonusMult * 100)}% Công Lực
+                        </div>
+                      </button>
+                    );
+                  })}
+              </div>
+            </div>
 
-                {selectedNode.unlocked ? (
-                  <span className="inline-flex items-center gap-1 text-xs font-tech font-bold text-cyan-300">
-                    <Check className="w-3.5 h-3.5" /> Đã Kích Hoạt
-                  </span>
-                ) : (
-                  <button
-                    type="button"
-                    disabled={
-                      (selectedNode.tier === 2 && !tier2Unlocked) ||
-                      !canUnlockSpiritNode(selectedNode.id, spiritNodes, tinhHoa, tier2Unlocked)
-                    }
-                    onClick={() => onUnlockSpiritNode(selectedNode.id)}
-                    className={`px-3.5 py-1.5 rounded-lg text-xs font-tech font-bold transition-all whitespace-nowrap ${
-                      canUnlockSpiritNode(selectedNode.id, spiritNodes, tinhHoa, tier2Unlocked)
-                        ? 'bg-cyan-400 hover:bg-cyan-300 text-slate-950 cursor-pointer'
-                        : 'bg-slate-800 text-slate-500 cursor-not-allowed'
+            {/* Selected Spirit Node Inspector Card */}
+            {selectedNode && (
+              <div className="p-3.5 rounded-xl bg-[#080A10] border border-cyan-500/40 space-y-2">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-semibold text-sm text-cyan-300 font-tech">
+                    {selectedNode.name}
+                  </h4>
+                  <span
+                    className={`text-[10px] font-tech px-2 py-0.5 rounded ${
+                      selectedNode.unlocked
+                        ? 'bg-emerald-500/20 text-emerald-300'
+                        : 'bg-slate-800 text-slate-400'
                     }`}
                   >
-                    Khai Mở Tinh Hồn
-                  </button>
-                )}
+                    {selectedNode.unlocked ? 'ĐÃ KHAI MỞ' : 'CHƯA MỞ'}
+                  </span>
+                </div>
+
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  {selectedNode.description}
+                </p>
+
+                <div className="flex items-center justify-between pt-2 border-t border-slate-800">
+                  <span className="text-xs font-tech text-amber-300">
+                    Chi phí: <b>{selectedNode.costTinhHoa} Tinh Hoa</b>
+                  </span>
+
+                  {!selectedNode.unlocked && (
+                    <button
+                      type="button"
+                      disabled={!canUnlockSpiritNode(selectedNode.id, spiritNodes, tinhHoa, tier2Unlocked)}
+                      onClick={() => onUnlockSpiritNode(selectedNode.id)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-tech font-bold transition-all shadow-sm ${
+                        canUnlockSpiritNode(selectedNode.id, spiritNodes, tinhHoa, tier2Unlocked)
+                          ? 'bg-cyan-400 hover:bg-cyan-300 text-slate-950 cursor-pointer shadow-cyan-500/20'
+                          : 'bg-slate-800 text-slate-500 cursor-not-allowed'
+                      }`}
+                    >
+                      Khai Mở Node
+                    </button>
+                  )}
+                </div>
               </div>
-            </div>
+            )}
           </div>
         )}
 
@@ -651,55 +737,62 @@ export const RightProgressionPanel: React.FC<RightProgressionPanelProps> = ({
         {/* ================================================================= */}
         {activeTab === 'leaderboard' && (
           <div className="space-y-2">
-            <div className="text-xs text-slate-400 font-tech px-1">
-              Bảng Vàng Cửu Trọng · Xếp hạng theo Sát Thương Tích Lũy
+            <div className="text-[11px] font-tech text-slate-400 px-1 mb-1">
+              Bảng Vàng Vạn Dân · Cửu Trọng Thiên (Cập nhật thời gian thực):
             </div>
-            {leaderboard.map((row, index) => {
-              const dmgVal = Math.round(
-                typeof row.damage === 'number'
-                  ? row.damage
-                  : (row.damageBillions || 0) * 1e9
-              );
+
+            {leaderboard.map((entry, index) => {
+              const isTop3 = index < 3;
+              const medalColors = ['text-amber-400', 'text-slate-300', 'text-amber-600'];
+              const dmgValue =
+                typeof entry.damage === 'number'
+                  ? entry.damage
+                  : (entry.damageBillions || 0) * 1_000_000;
+
               return (
                 <div
-                  key={row.id}
-                  className={`p-3 rounded-xl border flex items-center justify-between gap-2 ${
-                    row.isPlayer
-                      ? 'bg-amber-500/10 border-amber-400/70'
-                      : 'bg-[#080A10] border-slate-800/90'
+                  key={entry.id}
+                  className={`flex items-center justify-between p-2.5 rounded-xl border transition-all ${
+                    entry.isPlayer
+                      ? 'bg-amber-500/10 border-amber-400/50 ring-1 ring-amber-400/30'
+                      : 'bg-[#080A10] border-slate-800'
                   }`}
                 >
-                  <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="flex items-center gap-2.5">
                     <span
-                      className={`w-6 h-6 rounded-md font-tech font-bold text-xs flex items-center justify-center shrink-0 ${
-                        index === 0
-                          ? 'bg-amber-400 text-slate-950'
-                          : index === 1
-                          ? 'bg-cyan-400 text-slate-950'
-                          : index === 2
-                          ? 'bg-orange-400 text-slate-950'
-                          : 'bg-slate-800 text-slate-300'
+                      className={`font-tech text-xs font-bold w-5 text-center ${
+                        isTop3 ? medalColors[index] : 'text-slate-500'
                       }`}
                     >
-                      {index + 1}
+                      #{index + 1}
                     </span>
-                    <div className="min-w-0">
-                      <div
-                        className={`text-xs font-semibold truncate ${
-                          row.isPlayer ? 'text-amber-300' : 'text-slate-100'
-                        }`}
-                      >
-                        {row.name}
+
+                    <div>
+                      <div className="flex items-center gap-1.5">
+                        <span
+                          className={`font-semibold text-xs ${
+                            entry.isPlayer ? 'text-amber-300' : 'text-slate-200'
+                          }`}
+                        >
+                          {entry.name}
+                        </span>
+                        {entry.isPlayer && (
+                          <span className="text-[9px] bg-amber-400 text-slate-950 font-bold px-1.5 py-0.2 rounded font-tech">
+                            BẠN
+                          </span>
+                        )}
                       </div>
-                      <div className="text-[11px] text-slate-400 truncate">{row.sect}</div>
+                      <span className="text-[10px] text-slate-400 font-tech">
+                        {entry.sect}
+                      </span>
                     </div>
                   </div>
 
-                  <div className="text-right font-tech shrink-0">
-                    <div className="text-xs font-bold text-amber-300">
-                      {dmgVal.toLocaleString('en-US')} DMG
+                  <div className="text-right">
+                    <div className="font-tech text-xs font-bold text-cyan-300">
+                      {dmgValue.toLocaleString('en-US')} DMG
                     </div>
-                    <div className="text-[10px] text-slate-400">Sát thương</div>
+                    <span className="text-[9px] text-slate-400 font-tech">Tổng Công Lực</span>
                   </div>
                 </div>
               );
@@ -711,44 +804,12 @@ export const RightProgressionPanel: React.FC<RightProgressionPanelProps> = ({
   );
 
   return (
-    <>
-      {/* Desktop Right Column */}
-      <aside
-        aria-label="Vũ Khí, Nâng Cấp, Cây Thần Hồn và Bảng Vàng"
-        className="hidden lg:flex lg:w-[340px] xl:w-[380px] flex-col p-4 bg-[#111625]/70 border-l border-slate-800/90 shrink-0 overflow-hidden"
-      >
-        {renderPanelContent()}
-      </aside>
-
-      {/* Mobile Portrait Bottom Sheet Drawer */}
-      {mobileDrawerOpen && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-label="Ngăn kéo Vũ Khí và Nâng Cấp"
-          className="fixed inset-0 z-50 lg:hidden flex flex-col justify-end bg-black/70"
-        >
-          <div className="w-full max-h-[85vh] bg-[#111625] border-t border-slate-700 rounded-t-3xl p-4 flex flex-col overflow-hidden">
-            {/* Grab Handle + Header */}
-            <div className="w-10 h-1.5 bg-slate-600 rounded-full mx-auto mb-2 shrink-0" />
-            <div className="flex items-center justify-between mb-3 shrink-0">
-              <h3 className="font-display font-bold text-base text-amber-300">
-                Thần Lò Tiến Hóa · Cửu Trọng Thiên
-              </h3>
-              <button
-                type="button"
-                aria-label="Đóng ngăn kéo"
-                onClick={onCloseMobileDrawer}
-                className="p-2 rounded-lg bg-[#080A10] text-slate-300 hover:text-white cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <div className="flex-1 overflow-y-auto">{renderPanelContent()}</div>
-          </div>
-        </div>
-      )}
-    </>
+    <aside
+      aria-label="Vũ Khí, Nâng Cấp, Cây Thần Hồn và Bảng Vàng"
+      className="h-full flex flex-col p-3 select-none"
+    >
+      {renderPanelContent()}
+    </aside>
   );
 };
+export default RightProgressionPanel;

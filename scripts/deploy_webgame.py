@@ -50,7 +50,7 @@ def deploy():
         f"git remote add origin {repo_remote}",
         "git checkout -B gh-pages",
         "git add -A",
-        'git commit -m "Phase 1: 6-Slot Arsenal & Forge Quenching (Tôi Lửa) System - De-inflated RPG Balance"',
+        'git commit -m "ARPG Loot System: Procedural Item Drops, Prefixes & Affixes, 24-Slot Bag, Salvage System"',
         "git push -u origin gh-pages --force"
     ]
     full_cmd = " && ".join(commands)
@@ -63,7 +63,7 @@ def deploy():
     print("STDOUT:", res.stdout)
     if res.returncode == 0:
         print("\n" + "="*60)
-        print("  XUẤT BẢN PHASE 1 LÊN PHATROI.COM THÀNH CÔNG RỰC RỠ!")
+        print("  XUẤT BẢN HỆ THỐNG DROP ĐỒ & AFFIX LÊN PHATROI.COM THÀNH CÔNG RỰC RỠ!")
         print("="*60)
         print("-> Truy cập ngay:")
         print("   https://phatroi.com/")

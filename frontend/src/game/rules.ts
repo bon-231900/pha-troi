@@ -323,31 +323,49 @@ export function getForgeUpgradeCost(level: number, baseMultiplier: number = 1.0)
 }
 
 // ============================================================================
-// 6-SLOT ARSENAL & QUENCHING (TÔI LỬA) SYSTEM
+// ARPG LOOT SYSTEM: 6-SLOT ARSENAL, PREFIXES, SUFFIXES & PROCEDURAL DROPS
 // ============================================================================
 export type EquipmentSlotKey = 'hammer' | 'anvil' | 'bellows' | 'gauntlets' | 'apron' | 'relic';
 
 export type ItemRarity = 'common' | 'rare' | 'epic' | 'legendary' | 'mythic';
 
-export type QuenchingType = 'none' | 'frost' | 'magma' | 'thunder';
+export const MAX_INVENTORY_SLOTS = 24;
+
+export interface ItemAffix {
+  id: string;
+  type: 'prefix' | 'suffix';
+  name: string;
+  label: string;
+  statKey:
+    | 'flatDamage'
+    | 'damageMultiplier'
+    | 'critChancePct'
+    | 'perfectWindowMs'
+    | 'heatGainPerHit'
+    | 'heatDecayReductionPct'
+    | 'resonanceBonus'
+    | 'linhThachPerHit'
+    | 'afkLinhThachPerMin'
+    | 'essenceDropChancePct'
+    | 'synergyChargeBonusPct';
+  value: number;
+}
 
 export interface EquipmentItem {
   id: string;
   slotKey: EquipmentSlotKey;
-  name: string;
   slotName: string;
+  baseName: string;
+  name: string;
   rarity: ItemRarity;
-  level: number; // 1 to 100
-  maxLevel: number;
-  baseCost: number;
-  costScale: number;
-  coreStatLabel: string;
-  coreStatValue: number;
-  coreStatUnit: string;
-  affixText: string;
+  itemLevel: number;
+  baseStatLabel: string;
+  baseStatValue: number;
+  baseStatUnit: string;
+  prefixes: ItemAffix[];
+  suffixes: ItemAffix[];
   loreDescription: string;
-  quenching: QuenchingType;
-  quenchingMilestoneLevel: number;
+  droppedAt?: number;
 }
 
 export interface ArsenalBonuses {
@@ -356,126 +374,308 @@ export interface ArsenalBonuses {
   resonanceBonus: number;
   heatPerHitBonus: number;
   critChancePct: number;
-  missToGreatChancePct: number;
+  perfectWindowMs: number;
+  heatDecayReductionPct: number;
   dropLinhThachBonus: number;
-  quenchedCount: number;
-  totalArsenalLevel: number;
+  afkLinhThachPerMin: number;
+  essenceDropChancePct: number;
+  synergyChargeBonusPct: number;
+  totalEquippedCount: number;
 }
 
-export const INITIAL_EQUIPMENT: EquipmentItem[] = [
-  {
-    id: 'starter_hammer',
-    slotKey: 'hammer',
-    name: 'Búa Sắt Thiên Thai',
-    slotName: 'Thần Chùy',
-    rarity: 'common',
-    level: 1,
-    maxLevel: 100,
-    baseCost: 15,
-    costScale: 1.15,
-    coreStatLabel: 'Sát Thương Cơ Bản',
-    coreStatValue: 1,
-    coreStatUnit: 'DMG',
-    affixText: '+5% Sát thương Thế Búa Lôi Đỉnh',
-    loreDescription: 'Cây búa sắt thô sơ từ thung lũng Thiên Thai, vết rỉ sét ghi dấu ngày đầu khởi nghĩa phá trời.',
-    quenching: 'none',
-    quenchingMilestoneLevel: 20,
-  },
-  {
-    id: 'starter_anvil',
-    slotKey: 'anvil',
-    name: 'Đe Thép Cổ Vân',
-    slotName: 'Thần Đe',
-    rarity: 'common',
-    level: 1,
-    maxLevel: 100,
-    baseCost: 20,
-    costScale: 1.15,
-    coreStatLabel: 'Mở Rộng Vùng Hoàng Kim',
-    coreStatValue: 5,
-    coreStatUnit: 'ms',
-    affixText: '+1 Điểm tích lũy Phá Giáp mỗi nhát Perfect',
-    loreDescription: 'Khối đe thép tôi qua vạn lớp nước suối mây, bề mặt đanh chắc tạo âm thanh vang dội.',
-    quenching: 'none',
-    quenchingMilestoneLevel: 20,
-  },
-  {
-    id: 'starter_bellows',
-    slotKey: 'bellows',
-    name: 'Ống Bễ Da Hổ Lôi',
-    slotName: 'Hỏa Lò',
-    rarity: 'common',
-    level: 1,
-    maxLevel: 100,
-    baseCost: 25,
-    costScale: 1.16,
-    coreStatLabel: 'Tốc Độ Tích Nhiệt Đe',
-    coreStatValue: 3,
-    coreStatUnit: '°C/hit',
-    affixText: 'Giảm 25% tốc độ nguội của Đe Rèn khi nghỉ tay',
-    loreDescription: 'May từ da thú cổ sơn, mỗi nhịp bễ thổi bùng ngọn lửa rực sáng công trường.',
-    quenching: 'none',
-    quenchingMilestoneLevel: 20,
-  },
-  {
-    id: 'starter_gauntlets',
-    slotKey: 'gauntlets',
-    name: 'Bao Tay Da Thô',
-    slotName: 'Bao Tay Rèn',
-    rarity: 'common',
-    level: 1,
-    maxLevel: 100,
-    baseCost: 30,
-    costScale: 1.16,
-    coreStatLabel: 'Tỷ Lệ Bạo Kích (Crit)',
-    coreStatValue: 5,
-    coreStatUnit: '%',
-    affixText: '10% tỷ lệ chuyển nhịp Trượt (Miss) thành Chuẩn Xác (Great)',
-    loreDescription: 'Bảo vệ lòng bàn tay khỏi những tia tàn tro đỏ rực tóe ra từ mặt đe.',
-    quenching: 'none',
-    quenchingMilestoneLevel: 20,
-  },
-  {
-    id: 'starter_apron',
-    slotKey: 'apron',
-    name: 'Tạp Dề Bì Hộ',
-    slotName: 'Tạp Dề Thiết Hộ',
-    rarity: 'common',
-    level: 1,
-    maxLevel: 100,
-    baseCost: 35,
-    costScale: 1.18,
-    coreStatLabel: 'Sản Lượng Treo Máy (AFK)',
-    coreStatValue: 15,
-    coreStatUnit: 'LT/phút',
-    affixText: 'Kháng 20% chấn động ngược từ phản lực Vòm Trời',
-    loreDescription: 'Tạp dề lót giáp sắt mỏng, che chắn lồng ngực thợ rèn trước xung lực rực lửa.',
-    quenching: 'none',
-    quenchingMilestoneLevel: 20,
-  },
-  {
-    id: 'starter_relic',
-    slotKey: 'relic',
-    name: 'Thạch Bàn Đông Sơn',
-    slotName: 'Định Thiên Pháp Bảo',
-    rarity: 'rare',
-    level: 1,
-    maxLevel: 50,
-    baseCost: 80,
-    costScale: 1.25,
-    coreStatLabel: 'Hào Quang Sát Thương',
-    coreStatValue: 10,
-    coreStatUnit: '%',
-    affixText: 'Khắc 18 chim Lạc: Mỗi 50 nhát Perfect tăng 10% sát thương đồng minh',
-    loreDescription: 'Phiến đá khắc họa cổ văn Đông Sơn, hấp thu khí thiêng đất trời tỏa ánh ngọc bích.',
-    quenching: 'none',
-    quenchingMilestoneLevel: 20,
-  },
+export const SLOT_INFO: Record<EquipmentSlotKey, { name: string; icon: string; statLabel: string; statUnit: string }> = {
+  hammer: { name: 'Thần Chùy', icon: 'Hammer', statLabel: 'Sát Thương Cơ Bản', statUnit: 'DMG' },
+  anvil: { name: 'Thần Đe', icon: 'Shield', statLabel: 'Vùng Hoàng Kim', statUnit: 'ms' },
+  bellows: { name: 'Hỏa Lò', icon: 'Flame', statLabel: 'Tích Nhiệt Đe', statUnit: '°C/hit' },
+  gauntlets: { name: 'Bao Tay Rèn', icon: 'Zap', statLabel: 'Tỷ Lệ Bạo Kích', statUnit: '%' },
+  apron: { name: 'Tạp Dề Thiết Hộ', icon: 'Layers', statLabel: 'Linh Thạch Treo Máy', statUnit: 'LT/phút' },
+  relic: { name: 'Định Thiên Pháp Bảo', icon: 'Sparkles', statLabel: 'Sát Thương Toàn Thể', statUnit: '%' },
+};
+
+interface BaseItemDef {
+  name: string;
+  baseValue: number;
+  lore: string;
+  minRarity: ItemRarity;
+}
+
+const BASE_ITEM_POOL: Record<EquipmentSlotKey, BaseItemDef[]> = {
+  hammer: [
+    { name: 'Búa Sắt Thiên Thai', baseValue: 2, lore: 'Búa sắt thô sơ từ thuở đầu khai lò phá trời.', minRarity: 'common' },
+    { name: 'Búa Thiên Cương', baseValue: 5, lore: 'Đúc từ hợp kim thiên thạch, chùy nặng ngàn cân.', minRarity: 'rare' },
+    { name: 'Chùy Hắc Diệm', baseValue: 10, lore: 'Lửa đen Cửu U cháy mãi trên đầu búa.', minRarity: 'epic' },
+    { name: 'Thần Chùy Lôi Đình', baseValue: 18, lore: 'Mỗi nhát giáng xuống triệu hồi thiên lôi xé toạc màn đêm.', minRarity: 'legendary' },
+    { name: 'Khai Thiên Thần Chùy', baseValue: 32, lore: 'Bảo vật thời Nữ Oa, từng đập vỡ xiềng xích cổ thần.', minRarity: 'mythic' },
+  ],
+  anvil: [
+    { name: 'Đe Thép Cổ Vân', baseValue: 6, lore: 'Mặt đe tôi qua sương mây ngàn năm.', minRarity: 'common' },
+    { name: 'Đe Trọng Lực', baseValue: 12, lore: 'Hút linh khí đất mẹ, giữ phôi thép vững như thái sơn.', minRarity: 'rare' },
+    { name: 'Đe Huyền Thiết', baseValue: 18, lore: 'Rung động cộng hưởng vang dội khắp đại công trường.', minRarity: 'epic' },
+    { name: 'Thần Đe Cửu Trọng', baseValue: 26, lore: 'Âm vang như chuông đồng thức tỉnh vạn linh.', minRarity: 'legendary' },
+    { name: 'Thái Hư Bất Diệt Đe', baseValue: 36, lore: 'Vĩnh viễn không sứt mẻ trước mọi cuồng phong vũ bão.', minRarity: 'mythic' },
+  ],
+  bellows: [
+    { name: 'Ống Bễ Da Hổ Lôi', baseValue: 3, lore: 'May từ da hổ sấm, mỗi nhịp thổi bùng ngọn lửa đỏ.', minRarity: 'common' },
+    { name: 'Ống Bễ Hỏa Phụng', baseValue: 6, lore: 'Lông vũ hỏa phụng giữ nhiệt lò không bao giờ tắt.', minRarity: 'rare' },
+    { name: 'Ống Bễ Hỗn Độn', baseValue: 10, lore: 'Hút gió tám phương thổi vào tâm đe.', minRarity: 'epic' },
+    { name: 'Cửu Thiên Liệt Hỏa Bễ', baseValue: 15, lore: 'Biến mặt đe thành dung nham cuồn cuộn.', minRarity: 'legendary' },
+    { name: 'Thần Phong Hỏa Lò', baseValue: 22, lore: 'Gió thần khai thiên lập địa hun đúc vạn khí.', minRarity: 'mythic' },
+  ],
+  gauntlets: [
+    { name: 'Bao Tay Da Thô', baseValue: 5, lore: 'Che chắn lòng bàn tay khỏi tàn tro rực lửa.', minRarity: 'common' },
+    { name: 'Bao Tay Thiết Giáp', baseValue: 9, lore: 'Lót vảy sắt dẻo dai, giữ chặt cán búa không trượt.', minRarity: 'rare' },
+    { name: 'Bao Tay Vảy Rồng', baseValue: 14, lore: 'Vuốt rồng uốn lượn, tăng sức bộc phát trong gang tấc.', minRarity: 'epic' },
+    { name: 'Lôi Thần Thiết Chưởng', baseValue: 20, lore: 'Tia chớp xanh neon nhảy múa trên từng đầu ngón tay.', minRarity: 'legendary' },
+    { name: 'Chưởng Thiên Thần Giáp', baseValue: 28, lore: 'Cầm nắm càn khôn, nhát búa nào cũng như sấm rền.', minRarity: 'mythic' },
+  ],
+  apron: [
+    { name: 'Tạp Dề Bì Hộ', baseValue: 15, lore: 'Tạp dề da dày dặn chống tia lửa bén.', minRarity: 'common' },
+    { name: 'Tạp Dề Bách Luyện', baseValue: 35, lore: 'Lớp giáp gai hấp thu phản chấn từ vòm trời.', minRarity: 'rare' },
+    { name: 'Tạp Dề Long Lân', baseValue: 65, lore: 'Linh khí tự tuần hoàn sinh sôi tài nguyên ngay khi nghỉ tay.', minRarity: 'epic' },
+    { name: 'Huyền Minh Thiết Hộ', baseValue: 100, lore: 'Băng hỏa bất xâm, bảo bọc linh hồn thợ rèn.', minRarity: 'legendary' },
+    { name: 'Thiên Cương Bất Hoại Y', baseValue: 160, lore: 'Giáp trụ bất diệt trước uy áp của Cổ Thần Cửu U.', minRarity: 'mythic' },
+  ],
+  relic: [
+    { name: 'Thạch Bàn Đông Sơn', baseValue: 6, lore: 'Khắc họa cổ văn người Việt cổ hướng về trời cao.', minRarity: 'common' },
+    { name: 'Ấn Lạc Thần', baseValue: 14, lore: 'Hào quang bảo hộ gia tăng sĩ khí toàn công trường.', minRarity: 'rare' },
+    { name: 'Kính Cửu U', baseValue: 22, lore: 'Phản chiếu điểm yếu nhất trên giáp Thiên Ma.', minRarity: 'epic' },
+    { name: 'Bát Quái Định Thiên Bàn', baseValue: 32, lore: 'Xoay chuyển càn khôn, hội tụ sức mạnh vạn dân.', minRarity: 'legendary' },
+    { name: 'Khai Thiên Ngọc Tỷ', baseValue: 48, lore: 'Thần vật lập lại trật tự cõi hồng hoang.', minRarity: 'mythic' },
+  ],
+};
+
+interface AffixDef {
+  name: string;
+  statKey: ItemAffix['statKey'];
+  labelTemplate: (val: number) => string;
+  minVal: number;
+  maxVal: number;
+  weight: number;
+}
+
+const PREFIX_POOL: AffixDef[] = [
+  { name: 'Sắc Bén', statKey: 'flatDamage', minVal: 1, maxVal: 5, weight: 10, labelTemplate: (v) => `+${v} Sát thương cơ bản` },
+  { name: 'Cuồng Nộ', statKey: 'damageMultiplier', minVal: 0.05, maxVal: 0.25, weight: 8, labelTemplate: (v) => `+${Math.round(v * 100)}% Tổng sát thương` },
+  { name: 'Lôi Điện', statKey: 'critChancePct', minVal: 3, maxVal: 10, weight: 8, labelTemplate: (v) => `+${v}% Tỷ lệ Bạo Kích` },
+  { name: 'Xích Diễm', statKey: 'heatGainPerHit', minVal: 2, maxVal: 7, weight: 8, labelTemplate: (v) => `+${v} °C/hit Hỏa Hầu` },
+  { name: 'Trầm Trọng', statKey: 'resonanceBonus', minVal: 1, maxVal: 2, weight: 7, labelTemplate: (v) => `+${v} Điểm Phá Giáp / nhát` },
+  { name: 'Huyền Ảo', statKey: 'perfectWindowMs', minVal: 5, maxVal: 18, weight: 8, labelTemplate: (v) => `+${v} ms Cửa sổ Hoàng Kim` },
+  { name: 'Kim Cang', statKey: 'heatDecayReductionPct', minVal: 10, maxVal: 30, weight: 7, labelTemplate: (v) => `Giảm ${v}% tốc độ nguội đe` },
+  { name: 'Hoàng Kim', statKey: 'linhThachPerHit', minVal: 1, maxVal: 3, weight: 9, labelTemplate: (v) => `+${v} Linh Thạch mỗi nhát` },
+  { name: 'Thiên Mệnh', statKey: 'damageMultiplier', minVal: 0.2, maxVal: 0.45, weight: 3, labelTemplate: (v) => `+${Math.round(v * 100)}% Công phá Thiên Mệnh` },
 ];
 
-export function getItemUpgradeCost(item: EquipmentItem): number {
-  const safeL = Math.max(1, item.level);
-  return Math.round(item.baseCost * Math.pow(item.costScale, safeL - 1));
+const SUFFIX_POOL: AffixDef[] = [
+  { name: 'chi Bạo Kích', statKey: 'critChancePct', minVal: 4, maxVal: 12, weight: 10, labelTemplate: (v) => `+${v}% Tỷ lệ Bạo Kích` },
+  { name: 'chi Hỏa Hầu', statKey: 'heatDecayReductionPct', minVal: 15, maxVal: 35, weight: 8, labelTemplate: (v) => `Giảm ${v}% nguội đe rèn` },
+  { name: 'chi Phá Giáp', statKey: 'resonanceBonus', minVal: 1, maxVal: 3, weight: 8, labelTemplate: (v) => `+${v} Điểm Phá Giáp` },
+  { name: 'chi Phong Nhịp', statKey: 'perfectWindowMs', minVal: 8, maxVal: 22, weight: 8, labelTemplate: (v) => `+${v} ms Dung sai nhịp gõ` },
+  { name: 'chi Tài Phú', statKey: 'linhThachPerHit', minVal: 2, maxVal: 5, weight: 9, labelTemplate: (v) => `+${v} Linh Thạch rơi` },
+  { name: 'chi Thần Hồn', statKey: 'essenceDropChancePct', minVal: 5, maxVal: 15, weight: 6, labelTemplate: (v) => `+${v}% Tỷ lệ nhặt Tinh Hoa` },
+  { name: 'chi Cực Nhịp', statKey: 'synergyChargeBonusPct', minVal: 10, maxVal: 30, weight: 7, labelTemplate: (v) => `+${v}% Tốc độ nạp Cực Nhịp` },
+  { name: 'chi Hư Không', statKey: 'damageMultiplier', minVal: 0.1, maxVal: 0.35, weight: 5, labelTemplate: (v) => `+${Math.round(v * 100)}% Sát thương Hư Không` },
+];
+
+function pickRandomWeighted<T extends { weight: number }>(items: T[]): T {
+  const total = items.reduce((sum, item) => sum + item.weight, 0);
+  let random = Math.random() * total;
+  for (const item of items) {
+    if (random < item.weight) return item;
+    random -= item.weight;
+  }
+  return items[0];
+}
+
+export function generateProceduralItem(options?: {
+  slotKey?: EquipmentSlotKey;
+  minRarity?: ItemRarity;
+  itemLevel?: number;
+}): EquipmentItem {
+  const slots: EquipmentSlotKey[] = ['hammer', 'anvil', 'bellows', 'gauntlets', 'apron', 'relic'];
+  const slotKey = options?.slotKey || slots[Math.floor(Math.random() * slots.length)];
+  const rarity = options?.minRarity || 'common';
+  const itemLevel = options?.itemLevel || 1;
+
+  // Pick suitable base item
+  const basePool = BASE_ITEM_POOL[slotKey];
+  const eligibleBases = basePool.filter((b) => {
+    const rarityOrder: ItemRarity[] = ['common', 'rare', 'epic', 'legendary', 'mythic'];
+    return rarityOrder.indexOf(b.minRarity) <= rarityOrder.indexOf(rarity);
+  });
+  const baseDef = eligibleBases[eligibleBases.length - 1] || basePool[0];
+
+  // Number of prefixes & suffixes based on rarity
+  let prefixCount = 0;
+  let suffixCount = 0;
+
+  switch (rarity) {
+    case 'mythic':
+      prefixCount = 2;
+      suffixCount = 2;
+      break;
+    case 'legendary':
+      prefixCount = 2;
+      suffixCount = 2;
+      break;
+    case 'epic':
+      prefixCount = Math.random() < 0.5 ? 2 : 1;
+      suffixCount = 3 - prefixCount;
+      break;
+    case 'rare':
+      prefixCount = 1;
+      suffixCount = 1;
+      break;
+    default: // common
+      if (Math.random() < 0.5) prefixCount = 1;
+      else suffixCount = 1;
+      break;
+  }
+
+  const prefixes: ItemAffix[] = [];
+  const suffixes: ItemAffix[] = [];
+  const usedPrefixes = new Set<string>();
+  const usedSuffixes = new Set<string>();
+
+  // Roll prefixes
+  for (let i = 0; i < prefixCount; i++) {
+    const available = PREFIX_POOL.filter((p) => !usedPrefixes.has(p.name));
+    if (available.length === 0) break;
+    const def = pickRandomWeighted(available);
+    usedPrefixes.add(def.name);
+
+    // Roll stat value based on rarity
+    const rarityMult =
+      rarity === 'mythic' ? 1.5 : rarity === 'legendary' ? 1.25 : rarity === 'epic' ? 1.1 : 1.0;
+    const rawVal = def.minVal + Math.random() * (def.maxVal - def.minVal);
+    const finalVal =
+      def.statKey === 'damageMultiplier'
+        ? Number((rawVal * rarityMult).toFixed(2))
+        : Math.round(rawVal * rarityMult);
+
+    prefixes.push({
+      id: `p_${Date.now()}_${i}_${Math.random().toString(36).substring(2, 5)}`,
+      type: 'prefix',
+      name: def.name,
+      label: def.labelTemplate(finalVal),
+      statKey: def.statKey,
+      value: finalVal,
+    });
+  }
+
+  // Roll suffixes
+  for (let i = 0; i < suffixCount; i++) {
+    const available = SUFFIX_POOL.filter((s) => !usedSuffixes.has(s.name));
+    if (available.length === 0) break;
+    const def = pickRandomWeighted(available);
+    usedSuffixes.add(def.name);
+
+    const rarityMult =
+      rarity === 'mythic' ? 1.5 : rarity === 'legendary' ? 1.25 : rarity === 'epic' ? 1.1 : 1.0;
+    const rawVal = def.minVal + Math.random() * (def.maxVal - def.minVal);
+    const finalVal =
+      def.statKey === 'damageMultiplier'
+        ? Number((rawVal * rarityMult).toFixed(2))
+        : Math.round(rawVal * rarityMult);
+
+    suffixes.push({
+      id: `s_${Date.now()}_${i}_${Math.random().toString(36).substring(2, 5)}`,
+      type: 'suffix',
+      name: def.name,
+      label: def.labelTemplate(finalVal),
+      statKey: def.statKey,
+      value: finalVal,
+    });
+  }
+
+  // If mythic, add unique divine blessing
+  if (rarity === 'mythic') {
+    suffixes.push({
+      id: `divine_${Date.now()}`,
+      type: 'suffix',
+      name: 'chi Nữ Oa Chúc Phúc',
+      label: '+35% Sát thương Khai Thiên & +10% Bạo Kích',
+      statKey: 'damageMultiplier',
+      value: 0.35,
+    });
+  }
+
+  // Build full procedurally generated name
+  const prefixStr = prefixes.map((p) => p.name).join(' ');
+  const suffixStr = suffixes.map((s) => s.name).join(' ');
+  const fullItemName = [prefixStr, baseDef.name, suffixStr].filter(Boolean).join(' ');
+
+  const slotMeta = SLOT_INFO[slotKey];
+
+  return {
+    id: `item_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`,
+    slotKey,
+    slotName: slotMeta.name,
+    baseName: baseDef.name,
+    name: fullItemName,
+    rarity,
+    itemLevel,
+    baseStatLabel: slotMeta.statLabel,
+    baseStatValue: baseDef.baseValue,
+    baseStatUnit: slotMeta.statUnit,
+    prefixes,
+    suffixes,
+    loreDescription: baseDef.lore,
+    droppedAt: Date.now(),
+  };
+}
+
+export function rollLootDrop(
+  grade: JudgmentGrade,
+  isOverdrive: boolean = false,
+  isShieldBreak: boolean = false
+): EquipmentItem | null {
+  if (grade === 'miss') return null;
+
+  // Drop chances
+  let dropChance = 0.035; // 3.5% on great
+  if (grade === 'perfect') dropChance = 0.12; // 12% on perfect
+  if (isOverdrive) dropChance = Math.max(dropChance, 0.22); // 22% on overdrive
+  if (isShieldBreak) dropChance = 1.0; // 100% on shield break
+
+  if (Math.random() > dropChance) return null;
+
+  // Roll rarity
+  const roll = Math.random();
+  let rarity: ItemRarity = 'common';
+
+  if (isShieldBreak) {
+    if (roll < 0.08) rarity = 'mythic';
+    else if (roll < 0.35) rarity = 'legendary';
+    else if (roll < 0.80) rarity = 'epic';
+    else rarity = 'rare';
+  } else if (grade === 'perfect' || isOverdrive) {
+    if (roll < 0.01) rarity = 'mythic';
+    else if (roll < 0.06) rarity = 'legendary';
+    else if (roll < 0.24) rarity = 'epic';
+    else if (roll < 0.60) rarity = 'rare';
+    else rarity = 'common';
+  } else {
+    if (roll < 0.03) rarity = 'epic';
+    else if (roll < 0.25) rarity = 'rare';
+    else rarity = 'common';
+  }
+
+  return generateProceduralItem({ minRarity: rarity });
+}
+
+export function getSalvageYield(item: EquipmentItem): { linhThach: number; tinhHoa: number } {
+  switch (item.rarity) {
+    case 'mythic':
+      return { linhThach: 1200, tinhHoa: 8 };
+    case 'legendary':
+      return { linhThach: 400, tinhHoa: 3 };
+    case 'epic':
+      return { linhThach: 120, tinhHoa: 1 };
+    case 'rare':
+      return { linhThach: 45, tinhHoa: 0 };
+    default:
+      return { linhThach: 15, tinhHoa: 0 };
+  }
 }
 
 export function getItemRarityMeta(rarity: ItemRarity) {
@@ -533,111 +733,196 @@ export function getItemRarityMeta(rarity: ItemRarity) {
   }
 }
 
-export function getQuenchingMeta(q: QuenchingType) {
-  switch (q) {
-    case 'frost':
-      return {
-        label: 'Tôi Nước Suối Băng',
-        badge: '❄️ Băng Tinh',
-        color: 'text-cyan-300',
-        bgColor: 'bg-cyan-500/20 border-cyan-400/50',
-        desc: '+25% Linh Thạch rơi mỗi nhát đập',
-        costLT: 100,
-        costTH: 1,
-      };
-    case 'magma':
-      return {
-        label: 'Tôi Dung Nham',
-        badge: '🔥 Dung Nham',
-        color: 'text-orange-400',
-        bgColor: 'bg-orange-500/20 border-orange-400/50',
-        desc: '+20% Sát thương thiêu đốt theo Hỏa Hầu',
-        costLT: 100,
-        costTH: 1,
-      };
-    case 'thunder':
-      return {
-        label: 'Tôi Máu Lôi Thần',
-        badge: '⚡ Lôi Huyết',
-        color: 'text-amber-300',
-        bgColor: 'bg-amber-500/20 border-amber-400/50',
-        desc: '+15% Tỷ lệ nổ sét lan và Bạo Kích',
-        costLT: 150,
-        costTH: 2,
-      };
-    default:
-      return {
-        label: 'Chưa Tôi Lửa',
-        badge: 'Chưa Tôi',
-        color: 'text-slate-400',
-        bgColor: 'bg-slate-800/40 border-slate-700/40',
-        desc: 'Đạt Cấp 20 để mở khóa nghi thức Tôi Lửa',
-        costLT: 0,
-        costTH: 0,
-      };
-  }
-}
+export const INITIAL_EQUIPPED_SLOTS: Record<EquipmentSlotKey, EquipmentItem> = {
+  hammer: {
+    id: 'starter_hammer',
+    slotKey: 'hammer',
+    slotName: 'Thần Chùy',
+    baseName: 'Búa Sắt Thiên Thai',
+    name: 'Sắc Bén Búa Sắt Thiên Thai',
+    rarity: 'common',
+    itemLevel: 1,
+    baseStatLabel: 'Sát Thương Cơ Bản',
+    baseStatValue: 1,
+    baseStatUnit: 'DMG',
+    prefixes: [{ id: 'p_init_1', type: 'prefix', name: 'Sắc Bén', label: '+1 Sát thương cơ bản', statKey: 'flatDamage', value: 1 }],
+    suffixes: [],
+    loreDescription: 'Cây búa sắt thô sơ từ thung lũng Thiên Thai, vết rỉ sét ghi dấu ngày đầu khởi nghĩa phá trời.',
+  },
+  anvil: {
+    id: 'starter_anvil',
+    slotKey: 'anvil',
+    slotName: 'Thần Đe',
+    baseName: 'Đe Thép Cổ Vân',
+    name: 'Đe Thép Cổ Vân chi Phong Nhịp',
+    rarity: 'common',
+    itemLevel: 1,
+    baseStatLabel: 'Vùng Hoàng Kim',
+    baseStatValue: 6,
+    baseStatUnit: 'ms',
+    prefixes: [],
+    suffixes: [{ id: 's_init_1', type: 'suffix', name: 'chi Phong Nhịp', label: '+8 ms Dung sai nhịp gõ', statKey: 'perfectWindowMs', value: 8 }],
+    loreDescription: 'Khối đe thép tôi qua vạn lớp nước suối mây, bề mặt đanh chắc tạo âm vang dội.',
+  },
+  bellows: {
+    id: 'starter_bellows',
+    slotKey: 'bellows',
+    slotName: 'Hỏa Lò',
+    baseName: 'Ống Bễ Da Hổ Lôi',
+    name: 'Xích Diễm Ống Bễ Da Hổ Lôi',
+    rarity: 'common',
+    itemLevel: 1,
+    baseStatLabel: 'Tích Nhiệt Đe',
+    baseStatValue: 3,
+    baseStatUnit: '°C/hit',
+    prefixes: [{ id: 'p_init_2', type: 'prefix', name: 'Xích Diễm', label: '+2 °C/hit Hỏa Hầu', statKey: 'heatGainPerHit', value: 2 }],
+    suffixes: [],
+    loreDescription: 'May từ da hổ sấm, mỗi nhịp thổi bùng ngọn lửa đỏ rực công trường.',
+  },
+  gauntlets: {
+    id: 'starter_gauntlets',
+    slotKey: 'gauntlets',
+    slotName: 'Bao Tay Rèn',
+    baseName: 'Bao Tay Da Thô',
+    name: 'Bao Tay Da Thô chi Bạo Kích',
+    rarity: 'common',
+    itemLevel: 1,
+    baseStatLabel: 'Tỷ Lệ Bạo Kích',
+    baseStatValue: 5,
+    baseStatUnit: '%',
+    prefixes: [],
+    suffixes: [{ id: 's_init_2', type: 'suffix', name: 'chi Bạo Kích', label: '+4% Tỷ lệ Bạo Kích', statKey: 'critChancePct', value: 4 }],
+    loreDescription: 'Bảo vệ lòng bàn tay khỏi những tia tàn tro đỏ rực tóe ra từ mặt đe.',
+  },
+  apron: {
+    id: 'starter_apron',
+    slotKey: 'apron',
+    slotName: 'Tạp Dề Thiết Hộ',
+    baseName: 'Tạp Dề Bì Hộ',
+    name: 'Tạp Dề Bì Hộ',
+    rarity: 'common',
+    itemLevel: 1,
+    baseStatLabel: 'Linh Thạch Treo Máy',
+    baseStatValue: 15,
+    baseStatUnit: 'LT/phút',
+    prefixes: [],
+    suffixes: [],
+    loreDescription: 'Tạp dề lót giáp sắt mỏng, che chắn lồng ngực thợ rèn trước xung lực rực lửa.',
+  },
+  relic: {
+    id: 'starter_relic',
+    slotKey: 'relic',
+    slotName: 'Định Thiên Pháp Bảo',
+    baseName: 'Thạch Bàn Đông Sơn',
+    name: 'Hoàng Kim Thạch Bàn Đông Sơn chi Cực Nhịp',
+    rarity: 'rare',
+    itemLevel: 1,
+    baseStatLabel: 'Sát Thương Toàn Thể',
+    baseStatValue: 6,
+    baseStatUnit: '%',
+    prefixes: [{ id: 'p_init_3', type: 'prefix', name: 'Hoàng Kim', label: '+1 Linh Thạch mỗi nhát', statKey: 'linhThachPerHit', value: 1 }],
+    suffixes: [{ id: 's_init_3', type: 'suffix', name: 'chi Cực Nhịp', label: '+10% Tốc độ nạp Cực Nhịp', statKey: 'synergyChargeBonusPct', value: 10 }],
+    loreDescription: 'Phiến đá khắc họa cổ văn Đông Sơn, hấp thu khí thiêng đất trời tỏa ánh ngọc bích.',
+  },
+};
 
-export function calculateArsenalBonuses(equipment: EquipmentItem[]): ArsenalBonuses {
+export function calculateArsenalBonuses(
+  equipped: Record<EquipmentSlotKey, EquipmentItem | null> | EquipmentItem[]
+): ArsenalBonuses {
   let flatDamage = 0;
   let damageMultiplier = 1.0;
   let resonanceBonus = 0;
   let heatPerHitBonus = 0;
-  let critChancePct = 0;
-  let missToGreatChancePct = 0;
+  let critChancePct = 5;
+  let perfectWindowMs = 0;
+  let heatDecayReductionPct = 0;
   let dropLinhThachBonus = 0;
-  let quenchedCount = 0;
-  let totalArsenalLevel = 0;
+  let afkLinhThachPerMin = 0;
+  let essenceDropChancePct = 0;
+  let synergyChargeBonusPct = 0;
+  let totalEquippedCount = 0;
 
-  for (const item of equipment) {
-    totalArsenalLevel += item.level;
-    if (item.quenching !== 'none') quenchedCount += 1;
+  const items: EquipmentItem[] = Array.isArray(equipped)
+    ? equipped.filter(Boolean)
+    : (Object.values(equipped).filter(Boolean) as EquipmentItem[]);
+
+  for (const item of items) {
+    totalEquippedCount += 1;
 
     switch (item.slotKey) {
-      case 'hammer': {
-        flatDamage += (item.level - 1) * 2;
-        if (item.quenching === 'thunder') flatDamage += 5;
+      case 'hammer':
+        flatDamage += item.baseStatValue;
         break;
-      }
-      case 'anvil': {
-        resonanceBonus += Math.floor(item.level / 5);
-        if (item.quenching === 'frost') dropLinhThachBonus += 2;
+      case 'anvil':
+        perfectWindowMs += item.baseStatValue;
         break;
-      }
-      case 'bellows': {
-        heatPerHitBonus += Math.floor(item.level / 4);
-        if (item.quenching === 'magma') damageMultiplier += 0.15;
+      case 'bellows':
+        heatPerHitBonus += item.baseStatValue;
         break;
-      }
-      case 'gauntlets': {
-        critChancePct += Math.min(50, 5 + item.level);
-        missToGreatChancePct += 15;
-        if (item.quenching === 'thunder') critChancePct += 10;
+      case 'gauntlets':
+        critChancePct += item.baseStatValue;
         break;
-      }
-      case 'apron': {
-        dropLinhThachBonus += Math.floor(item.level / 3);
-        if (item.quenching === 'frost') dropLinhThachBonus += 3;
+      case 'apron':
+        afkLinhThachPerMin += item.baseStatValue;
         break;
-      }
-      case 'relic': {
-        damageMultiplier += item.level * 0.02;
-        if (item.quenching === 'magma') damageMultiplier += 0.2;
+      case 'relic':
+        damageMultiplier += item.baseStatValue / 100;
         break;
+    }
+
+    const allAffixes = [...item.prefixes, ...item.suffixes];
+    for (const aff of allAffixes) {
+      switch (aff.statKey) {
+        case 'flatDamage':
+          flatDamage += aff.value;
+          break;
+        case 'damageMultiplier':
+          damageMultiplier += aff.value;
+          break;
+        case 'critChancePct':
+          critChancePct += aff.value;
+          break;
+        case 'perfectWindowMs':
+          perfectWindowMs += aff.value;
+          break;
+        case 'heatGainPerHit':
+          heatPerHitBonus += aff.value;
+          break;
+        case 'heatDecayReductionPct':
+          heatDecayReductionPct += aff.value;
+          break;
+        case 'resonanceBonus':
+          resonanceBonus += aff.value;
+          break;
+        case 'linhThachPerHit':
+          dropLinhThachBonus += aff.value;
+          break;
+        case 'afkLinhThachPerMin':
+          afkLinhThachPerMin += aff.value;
+          break;
+        case 'essenceDropChancePct':
+          essenceDropChancePct += aff.value;
+          break;
+        case 'synergyChargeBonusPct':
+          synergyChargeBonusPct += aff.value;
+          break;
       }
     }
   }
 
   return {
-    flatDamage,
+    flatDamage: Math.round(flatDamage),
     damageMultiplier: Number(damageMultiplier.toFixed(2)),
-    resonanceBonus,
-    heatPerHitBonus,
-    critChancePct,
-    missToGreatChancePct,
-    dropLinhThachBonus,
-    quenchedCount,
-    totalArsenalLevel,
+    resonanceBonus: Math.round(resonanceBonus),
+    heatPerHitBonus: Math.round(heatPerHitBonus),
+    critChancePct: Math.min(80, Math.round(critChancePct)),
+    perfectWindowMs: Math.round(perfectWindowMs),
+    heatDecayReductionPct: Math.min(75, Math.round(heatDecayReductionPct)),
+    dropLinhThachBonus: Math.round(dropLinhThachBonus),
+    afkLinhThachPerMin: Math.round(afkLinhThachPerMin),
+    essenceDropChancePct: Math.round(essenceDropChancePct),
+    synergyChargeBonusPct: Math.round(synergyChargeBonusPct),
+    totalEquippedCount,
   };
 }
 

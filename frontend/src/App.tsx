@@ -26,10 +26,13 @@ import {
   ContributionTier,
   formatInteger,
   EquipmentItem,
-  INITIAL_EQUIPMENT,
-  QuenchingType,
-  getItemUpgradeCost,
-  getQuenchingMeta,
+  EquipmentSlotKey,
+  ItemRarity,
+  INITIAL_EQUIPPED_SLOTS,
+  MAX_INVENTORY_SLOTS,
+  rollLootDrop,
+  getSalvageYield,
+  getItemRarityMeta,
   calculateArsenalBonuses,
 } from './game/rules';
 import { soundEngine } from './game/audio';
@@ -217,18 +220,31 @@ export default function App() {
     return 0;
   });
 
-  // 6-Slot Arsenal State (Phase 1)
-  const [equipment, setEquipment] = useState<EquipmentItem[]>(() => {
+  // ARPG Equipment & Backpack State (Procedural Drops & Affixes)
+  const [equippedItems, setEquippedItems] = useState<Record<EquipmentSlotKey, EquipmentItem | null>>(() => {
     try {
       const s = safeStorage.getItem('phatroi_save_v6');
       if (s) {
         const parsed = JSON.parse(s);
-        if (Array.isArray(parsed.equipment) && parsed.equipment.length > 0) {
-          return parsed.equipment;
+        if (parsed.equippedItems && typeof parsed.equippedItems === 'object') {
+          return parsed.equippedItems;
         }
       }
     } catch {}
-    return INITIAL_EQUIPMENT;
+    return INITIAL_EQUIPPED_SLOTS;
+  });
+
+  const [inventory, setInventory] = useState<EquipmentItem[]>(() => {
+    try {
+      const s = safeStorage.getItem('phatroi_save_v6');
+      if (s) {
+        const parsed = JSON.parse(s);
+        if (Array.isArray(parsed.inventory)) {
+          return parsed.inventory;
+        }
+      }
+    } catch {}
+    return [];
   });
 
   // UI & Feedback State
@@ -306,7 +322,8 @@ export default function App() {
           tinhHoa,
           upgrades,
           spiritNodes,
-          equipment,
+          equippedItems,
+          inventory,
           playerTotalDamage,
           claimedMilestones,
           lastActiveTimestamp: Date.now(),
@@ -321,7 +338,7 @@ export default function App() {
       clearInterval(timer);
       window.removeEventListener('beforeunload', saveState);
     };
-  }, [bossHp, linhThach, tinhHoa, upgrades, spiritNodes, equipment, playerTotalDamage, claimedMilestones]);
+  }, [bossHp, linhThach, tinhHoa, upgrades, spiritNodes, equippedItems, inventory, playerTotalDamage, claimedMilestones]);
 
   // Connect to Multiplayer Gateway (Offline Fallback if server unreachable)
   useEffect(() => {
@@ -475,7 +492,7 @@ export default function App() {
   const spiritBonusMult = calculateSpiritMultiplier(spiritNodes);
   const currentSeal = getAtmosphericSealLayer(bossHp, BOSS_FLOOR_1_MAX_HP);
   const tier2Unlocked = playerTotalDamage >= 100_000 || claimedMilestones.includes('tier_3');
-  const arsenalBonuses = calculateArsenalBonuses(equipment);
+  const arsenalBonuses = calculateArsenalBonuses(equippedItems);
 
   // Player Strike Handler
   const handleHeroStrike = useCallback(
@@ -605,6 +622,38 @@ export default function App() {
           }
           return nextHp;
         });
+
+        // 9. Procedural ARPG Loot Drop Check
+        const droppedItem = rollLootDrop(
+          grade === 'PERFECT' ? 'perfect' : 'great',
+          outcome.triggeredOverdrive || overdriveActive,
+          isShieldBroken
+        );
+        if (droppedItem) {
+          setInventory((prevInv) => {
+            if (prevInv.length >= MAX_INVENTORY_SLOTS) {
+              appendCombatLog(
+                `⚠️ [TÚI ĐỒ ĐẦY] Rơi [${droppedItem.name}] nhưng rương đã kín chỗ (${MAX_INVENTORY_SLOTS}/${MAX_INVENTORY_SLOTS})! Hãy phân giải bớt.`,
+                'red'
+              );
+              return prevInv;
+            }
+            const rMeta = getItemRarityMeta(droppedItem.rarity);
+            soundEngine.playGlobalBurstFanfare();
+            canvasHandleRef.current?.spawnCombatText(
+              `🎁 RƠI ${rMeta.label.toUpperCase()}!`,
+              droppedItem.name,
+              rMeta.hex,
+              '#FFFFFF',
+              true
+            );
+            appendCombatLog(
+              `🎁 [RƠI TRANG BỊ] Bạn vừa nhặt được [${droppedItem.name}] (${rMeta.label})! Đã chuyển vào Túi Đồ.`,
+              droppedItem.rarity === 'mythic' || droppedItem.rarity === 'legendary' ? 'gold' : 'cyan'
+            );
+            return [droppedItem, ...prevInv];
+          });
+        }
       }
 
       feedbackCounterRef.current += 1;
@@ -714,61 +763,95 @@ export default function App() {
     [spiritNodes, tinhHoa, tier2Unlocked, appendCombatLog]
   );
 
-  // 6-Slot Arsenal (Phase 1): Cường Hóa & Tôi Lửa Handlers
-  const handleUpgradeEquipment = useCallback(
-    (itemId: string) => {
-      const targetItem = equipment.find((it) => it.id === itemId);
-      if (!targetItem) return;
-      if (targetItem.level >= targetItem.maxLevel) {
-        appendCombatLog(`[${targetItem.name}] đã đạt cấp tối đa (${targetItem.maxLevel})!`, 'cyan');
-        return;
-      }
-      const cost = getItemUpgradeCost(targetItem);
-      if (linhThach < cost) {
-        appendCombatLog(`Không đủ Linh Thạch (cần ${cost.toLocaleString('en-US')} LT) để cường hóa!`, 'red');
-        return;
-      }
-      setLinhThach((lt) => lt - cost);
-      setEquipment((prev) =>
-        prev.map((it) => (it.id === itemId ? { ...it, level: it.level + 1 } : it))
-      );
+  // ARPG Equipment & Backpack Handlers (Equip, Unequip, Salvage, Quick Salvage)
+  const handleEquipItem = useCallback(
+    (item: EquipmentItem) => {
+      const currentEquipped = equippedItems[item.slotKey];
+      setEquippedItems((prev) => ({
+        ...prev,
+        [item.slotKey]: item,
+      }));
+      setInventory((prev) => {
+        const withoutItem = prev.filter((it) => it.id !== item.id);
+        return currentEquipped ? [currentEquipped, ...withoutItem] : withoutItem;
+      });
       soundEngine.playStanceSwitch('E');
-      appendCombatLog(
-        `Cường hóa thành công: [${targetItem.name}] lên Cấp ${targetItem.level + 1}! (+${targetItem.coreStatValue * (targetItem.level + 1)} ${targetItem.coreStatUnit})`,
-        'gold'
-      );
+      appendCombatLog(`⚔️ Đã trang bị: [${item.name}]!`, 'gold');
     },
-    [equipment, linhThach, appendCombatLog]
+    [equippedItems, appendCombatLog]
   );
 
-  const handleQuenchEquipment = useCallback(
-    (itemId: string, quenching: QuenchingType) => {
-      const targetItem = equipment.find((it) => it.id === itemId);
-      if (!targetItem) return;
-      if (targetItem.level < targetItem.quenchingMilestoneLevel) {
-        appendCombatLog(`Trang bị chưa đạt Cấp ${targetItem.quenchingMilestoneLevel} để Tôi Lửa!`, 'red');
+  const handleUnequipItem = useCallback(
+    (slotKey: EquipmentSlotKey) => {
+      const item = equippedItems[slotKey];
+      if (!item) return;
+      if (inventory.length >= MAX_INVENTORY_SLOTS) {
+        appendCombatLog('Túi đồ đã đầy, không thể tháo trang bị!', 'red');
         return;
       }
-      const qMeta = getQuenchingMeta(quenching);
-      if (linhThach < qMeta.costLT || tinhHoa < qMeta.costTH) {
-        appendCombatLog(
-          `Cần ${qMeta.costLT} Linh Thạch & ${qMeta.costTH} Tinh Hoa để Tôi Lửa (${qMeta.label})!`,
-          'red'
-        );
-        return;
+      setEquippedItems((prev) => ({
+        ...prev,
+        [slotKey]: null,
+      }));
+      setInventory((prev) => [item, ...prev]);
+      soundEngine.playStanceSwitch('Q');
+      appendCombatLog(`Đã tháo [${item.name}] về túi đồ.`, 'cyan');
+    },
+    [equippedItems, inventory.length, appendCombatLog]
+  );
+
+  const handleSalvageItem = useCallback(
+    (item: EquipmentItem) => {
+      const yieldReward = getSalvageYield(item);
+      setLinhThach((prev) => prev + yieldReward.linhThach);
+      if (yieldReward.tinhHoa > 0) {
+        setTinhHoa((prev) => prev + yieldReward.tinhHoa);
       }
-      setLinhThach((lt) => lt - qMeta.costLT);
-      setTinhHoa((th) => th - qMeta.costTH);
-      setEquipment((prev) =>
-        prev.map((it) => (it.id === itemId ? { ...it, quenching } : it))
-      );
-      soundEngine.playGlobalBurstFanfare();
+      if (equippedItems[item.slotKey]?.id === item.id) {
+        setEquippedItems((prev) => ({
+          ...prev,
+          [item.slotKey]: null,
+        }));
+      } else {
+        setInventory((prev) => prev.filter((it) => it.id !== item.id));
+      }
+      soundEngine.playStanceSwitch('W');
       appendCombatLog(
-        `🔥 [TÔI LỬA HOÀN TẤT] [${targetItem.name}] đã được tôi luyện bằng ${qMeta.label}! ${qMeta.desc}`,
+        `♻️ Phân giải [${item.name}]: Thu được +${yieldReward.linhThach} Linh Thạch${
+          yieldReward.tinhHoa > 0 ? `, +${yieldReward.tinhHoa} Tinh Hoa` : ''
+        }!`,
         'gold'
       );
     },
-    [equipment, linhThach, tinhHoa, appendCombatLog]
+    [equippedItems, appendCombatLog]
+  );
+
+  const handleQuickSalvage = useCallback(
+    (rarities: ItemRarity[]) => {
+      const targetItems = inventory.filter((it) => rarities.includes(it.rarity));
+      if (targetItems.length === 0) return;
+
+      let totalLT = 0;
+      let totalTH = 0;
+      targetItems.forEach((it) => {
+        const r = getSalvageYield(it);
+        totalLT += r.linhThach;
+        totalTH += r.tinhHoa;
+      });
+
+      setLinhThach((prev) => prev + totalLT);
+      if (totalTH > 0) setTinhHoa((prev) => prev + totalTH);
+
+      setInventory((prev) => prev.filter((it) => !rarities.includes(it.rarity)));
+      soundEngine.playGlobalBurstFanfare();
+      appendCombatLog(
+        `♻️ [PHÂN GIẢI NHANH] Đã tách ${targetItems.length} món trang bị! Thu được +${totalLT.toLocaleString(
+          'en-US'
+        )} Linh Thạch${totalTH > 0 ? `, +${totalTH} Tinh Hoa` : ''}!`,
+        'cyan'
+      );
+    },
+    [inventory, appendCombatLog]
   );
 
   // Claim Personal Contribution Tier Handler
@@ -1139,7 +1222,8 @@ export default function App() {
         </div>
         <div className="flex-1 overflow-y-auto">
           <RightProgressionPanel
-            equipment={equipment}
+            equippedItems={equippedItems}
+            inventory={inventory}
             upgrades={upgrades}
             spiritNodes={spiritNodes}
             linhThach={linhThach}
@@ -1150,8 +1234,10 @@ export default function App() {
             onCloseMobileDrawer={() => setRightPanelOpen(false)}
             onBuyUpgrade={handleBuyUpgrade}
             onUnlockSpiritNode={handleUnlockSpiritNode}
-            onUpgradeEquipment={handleUpgradeEquipment}
-            onQuenchEquipment={handleQuenchEquipment}
+            onEquipItem={handleEquipItem}
+            onUnequipItem={handleUnequipItem}
+            onSalvageItem={handleSalvageItem}
+            onQuickSalvage={handleQuickSalvage}
           />
         </div>
       </div>
