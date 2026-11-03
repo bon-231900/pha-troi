@@ -26,7 +26,7 @@ import {
   CommunityPanoramicForgeCanvas,
   CommunityPanoramicForgeCanvasHandle,
 } from './components/CommunityPanoramicForgeCanvas';
-import { Shield, Hammer, X, Zap, Flame, Sparkles } from 'lucide-react';
+import { Shield, Hammer, X, Zap, Flame, Sparkles, Eye, EyeOff } from 'lucide-react';
 
 type GameState = 'title' | 'playing' | 'paused' | 'gameover';
 
@@ -99,6 +99,23 @@ export default function App() {
   // Side Panels Collapsed State (Default closed for 100% unobstructed community panorama)
   const [leftPanelOpen, setLeftPanelOpen] = useState<boolean>(false);
   const [rightPanelOpen, setRightPanelOpen] = useState<boolean>(false);
+
+  // Bottom HUD Visibility State (Can be toggled via H or button to not obstruct hero)
+  const [hudVisible, setHudVisible] = useState<boolean>(() => {
+    try {
+      const saved = safeStorage.getItem('phatroi_hud_visible');
+      if (saved !== null) return saved === 'true';
+    } catch {}
+    return true;
+  });
+
+  const toggleHudVisibility = useCallback(() => {
+    setHudVisible((prev) => {
+      const next = !prev;
+      safeStorage.setItem('phatroi_hud_visible', String(next));
+      return next;
+    });
+  }, []);
 
   // Network & Loading State
   const [isOffline, setIsOffline] = useState<boolean>(true);
@@ -646,6 +663,12 @@ export default function App() {
         return;
       }
 
+      if (e.code === 'KeyH') {
+        e.preventDefault();
+        toggleHudVisibility();
+        return;
+      }
+
       if (gameState !== 'playing') return;
 
       if (e.code === 'Space') {
@@ -778,34 +801,20 @@ export default function App() {
         <span className="hidden sm:inline">Lò Rèn & Thần Hồn</span>
       </button>
 
-      {/* 3. CENTER-BOTTOM ERGONOMIC HUD: Strike Feedback, 4 Stances, Overdrive, Strike Button */}
-      <div className="fixed bottom-3 inset-x-0 z-20 flex flex-col items-center gap-2 pointer-events-none px-4">
-        {/* Floating Strike Grade Feedback */}
-        {lastFeedback && (
-          <div className="animate-feedback pointer-events-none text-center">
-            <div
-              className={`font-display text-base md:text-xl font-extrabold tracking-wider ${
-                lastFeedback.grade === 'PERFECT'
-                  ? 'text-amber-300 drop-shadow-[0_0_12px_rgba(255,160,0,0.8)]'
-                  : 'text-cyan-300'
-              }`}
-            >
-              {lastFeedback.labelVn}{' '}
-              {lastFeedback.multiplier > 0 ? `· x${lastFeedback.multiplier.toFixed(1)}` : ''}
-            </div>
-            {lastFeedback.damageBillions > 0 && (
-              <div className="font-tech text-xs md:text-sm font-bold text-red-400">
-                -{lastFeedback.damageBillions.toFixed(3)}B HP
-              </div>
-            )}
-          </div>
-        )}
-
+      {/* 3. CORNER HUD DOCKS (Positioned at corners to leave the Center Hero & Anvil 100% Unobstructed) */}
+      {/* 3A. Bottom-Left Dock: 4 Hammer Stances + Overdrive 8/8 Bar */}
+      <div
+        className={`fixed bottom-3 left-3 sm:left-5 z-20 flex flex-col gap-1.5 pointer-events-auto max-w-[310px] sm:max-w-[360px] transition-all duration-300 ${
+          hudVisible
+            ? 'opacity-100 translate-y-0'
+            : 'opacity-0 translate-y-6 pointer-events-none'
+        }`}
+      >
         {/* 4 Hammer Stances Bar (Q - W - E - R) */}
         <div
           role="group"
           aria-label="4 Thế Búa Q W E R"
-          className="pointer-events-auto w-full max-w-[480px] grid grid-cols-4 gap-1.5 sm:gap-2"
+          className="flex items-center gap-1 sm:gap-1.5 p-1 rounded-xl bg-slate-950/85 border border-slate-800/90 backdrop-blur-md shadow-lg"
         >
           {stanceKeys.map((k) => {
             const st = HAMMER_STANCES[k];
@@ -815,27 +824,22 @@ export default function App() {
                 key={k}
                 type="button"
                 onClick={() => handleSelectStance(k)}
-                className={`relative flex flex-col items-center p-1.5 sm:p-2 rounded-xl border transition-all cursor-pointer ${
+                className={`flex items-center gap-1 px-2 py-1.5 rounded-lg border transition-all cursor-pointer ${
                   isSelected
-                    ? 'bg-slate-900/90 border-amber-400 shadow-md shadow-amber-500/25 scale-[1.03]'
-                    : 'bg-slate-950/70 border-slate-800 hover:border-slate-700 text-slate-400'
+                    ? 'bg-slate-900 border-amber-400 text-white shadow-sm shadow-amber-500/25'
+                    : 'bg-slate-950/70 border-slate-800 hover:border-slate-700 text-slate-400 hover:text-slate-200'
                 }`}
+                title={`Phím [${k}] · ${st.name} (${st.title})`}
               >
-                <div className="flex items-center gap-1 mb-0.5">
-                  <span
-                    className="w-4 h-4 sm:w-5 sm:h-5 rounded text-[10px] sm:text-xs font-tech font-bold flex items-center justify-center text-slate-950"
-                    style={{ backgroundColor: st.color }}
-                  >
-                    {k}
-                  </span>
-                  {k === 'Q' && <Zap className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-cyan-400" />}
-                  {k === 'W' && <Flame className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-red-400" />}
-                  {k === 'E' && <Shield className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-purple-400" />}
-                  {k === 'R' && <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-emerald-400" />}
-                </div>
-                <div className="text-[10px] sm:text-[11px] font-semibold text-slate-100 whitespace-nowrap truncate max-w-full">
+                <span
+                  className="w-4 h-4 rounded text-[10px] font-tech font-bold flex items-center justify-center text-slate-950"
+                  style={{ backgroundColor: st.color }}
+                >
+                  {k}
+                </span>
+                <span className="hidden sm:inline text-xs font-semibold whitespace-nowrap">
                   {st.name}
-                </div>
+                </span>
               </button>
             );
           })}
@@ -843,33 +847,31 @@ export default function App() {
 
         {/* Overdrive 8/8 Bar */}
         <div
-          className={`pointer-events-auto w-full max-w-[480px] rounded-xl px-3 py-1.5 border backdrop-blur-md transition-colors ${
+          className={`rounded-xl px-2.5 py-1.5 border backdrop-blur-md transition-colors ${
             overdriveActive
-              ? 'bg-cyan-500/20 border-cyan-400 shadow-lg shadow-cyan-400/20'
-              : 'bg-slate-950/75 border-slate-800/80'
+              ? 'bg-cyan-500/20 border-cyan-400 shadow-md shadow-cyan-400/20'
+              : 'bg-slate-950/85 border-slate-800/90'
           }`}
         >
-          <div className="flex items-center justify-between text-[11px] font-tech mb-1">
-            <span className={overdriveActive ? 'text-cyan-300 font-bold' : 'text-slate-300'}>
+          <div className="flex items-center justify-between text-[10px] sm:text-[11px] font-tech mb-1">
+            <span className={overdriveActive ? 'text-cyan-300 font-bold' : 'text-slate-400'}>
               {overdriveActive
                 ? `LÔI ĐÌNH QUÁ TẢI (${overdriveTimeLeft.toFixed(1)}s)`
-                : 'Thanh Overdrive · Tích 8/8 Chuỗi'}
+                : 'Overdrive · Chuỗi 8/8'}
             </span>
             <span className="font-bold text-amber-300">
-              {overdriveActive
-                ? 'SÁT THƯƠNG x2.0'
-                : `${overdriveCharge.toFixed(1)} / ${OVERDRIVE_MAX}`}
+              {overdriveActive ? 'x2.0 DMG' : `${overdriveCharge.toFixed(1)}/8`}
             </span>
           </div>
 
-          <div className="grid grid-cols-8 gap-1">
+          <div className="grid grid-cols-8 gap-0.5 sm:gap-1">
             {Array.from({ length: OVERDRIVE_MAX }).map((_, idx) => {
               const filled = overdriveActive || overdriveCharge >= idx + 1;
               const half = !filled && overdriveCharge >= idx + 0.5;
               return (
                 <div
                   key={idx}
-                  className={`h-2 rounded-sm transition-all ${
+                  className={`h-1.5 rounded-sm transition-all ${
                     overdriveActive
                       ? 'bg-cyan-400 shadow-sm shadow-cyan-400/60'
                       : filled
@@ -883,17 +885,43 @@ export default function App() {
             })}
           </div>
         </div>
+      </div>
 
-        {/* Central Spacebar / Tap Interaction Trigger */}
-        <div className="pointer-events-auto flex items-center justify-center">
+      {/* 3B. Bottom-Right Controls: Primary Strike Trigger + Toggle HUD Button */}
+      <div className="fixed bottom-3 right-3 sm:right-5 z-20 flex items-center gap-2 pointer-events-auto">
+        {hudVisible && (
           <button
             type="button"
             onClick={() => handleHeroStrike(false)}
-            className="px-6 py-2.5 rounded-full bg-gradient-to-r from-amber-500/20 via-orange-500/20 to-amber-500/20 hover:from-amber-500/30 hover:to-amber-500/30 border border-amber-500/50 text-xs sm:text-sm font-tech font-bold text-amber-300 tracking-wider shadow-lg hover:border-amber-400 transition-all cursor-pointer active:scale-95"
+            className="px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl bg-gradient-to-r from-amber-500/20 via-orange-500/20 to-amber-500/20 hover:from-amber-500/30 hover:to-amber-500/30 border border-amber-500/50 text-xs sm:text-sm font-tech font-bold text-amber-300 tracking-wider shadow-lg hover:border-amber-400 transition-all cursor-pointer active:scale-95 whitespace-nowrap"
           >
-            NỆN BÚA PHÁ TRỜI [SPACE / CLICK]
+            NỆN BÚA [SPACE]
           </button>
-        </div>
+        )}
+
+        {/* Toggle HUD Button [Phím H] */}
+        <button
+          type="button"
+          onClick={toggleHudVisibility}
+          className={`flex items-center gap-1.5 px-3 py-2 sm:py-2.5 rounded-xl backdrop-blur-md border text-xs font-tech font-bold tracking-wider cursor-pointer transition-all shadow-lg ${
+            !hudVisible
+              ? 'bg-amber-400 text-slate-950 border-amber-300 shadow-amber-500/25'
+              : 'bg-slate-950/85 hover:bg-slate-900 border-slate-800 text-slate-300 hover:text-amber-300'
+          }`}
+          title={hudVisible ? 'Ẩn thanh điều khiển [Phím H]' : 'Hiện thanh điều khiển [Phím H]'}
+        >
+          {hudVisible ? (
+            <>
+              <EyeOff className="w-4 h-4 text-slate-400" />
+              <span className="hidden md:inline">Ẩn HUD [H]</span>
+            </>
+          ) : (
+            <>
+              <Eye className="w-4 h-4 text-slate-950" />
+              <span>Hiện HUD [H]</span>
+            </>
+          )}
+        </button>
       </div>
 
       {/* 4. SLIDE-OUT DRAWER 1 (LEFT): THẾ TRẬN, NHẬT KÝ CHIẾN TRƯỜNG & CHAT */}
