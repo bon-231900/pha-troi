@@ -383,12 +383,12 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
         text,
         subtext,
         x: heroX,
-        y: heroBaseY - 142,
-        vy: -65,
+        y: heroBaseY - 178,
+        vy: -72,
         color,
         glowColor,
         ageSec: 0,
-        durationSec: 1.25,
+        durationSec: 1.35,
         scale: isGolden ? 1.18 : 1.0,
       });
     };
