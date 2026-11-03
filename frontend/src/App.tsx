@@ -1,5 +1,5 @@
 // Release build: silhouette-live-1793696800
-const APP_BUILD_VER = '20261103-multiplayer-p2p-v7';
+const APP_BUILD_VER = '20261103-multiplayer-p2p-v8';
 console.log('App build version:', APP_BUILD_VER);
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {

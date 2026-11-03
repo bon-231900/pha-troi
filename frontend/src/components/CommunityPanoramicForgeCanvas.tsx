@@ -466,12 +466,13 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
         const targetX = viewW * (0.28 + (peer.xNorm - 0.5) * 0.44 + (Math.random() - 0.5) * 0.12);
         const targetY = viewH * (0.11 + Math.random() * 0.16);
 
+        // Subdued ambient lightning for remote players (non-laggy, slender)
         const bolt = generate2DLightningBolt(
           anvilX,
           anvilY,
           targetX,
           targetY,
-          true,
+          false,
           Math.floor((elapsedSec * 1000 + slot * 313) % 99999)
         );
         const palette = HERO_STANCE_PALETTES[payload.stance] || HERO_STANCE_PALETTES.Q;
@@ -484,27 +485,15 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
           rimHex: palette.rimHex,
           coreHex: palette.coreHex,
           ageSec: 0,
-          durationSec: 0.45,
+          durationSec: 0.22,
           impactX: targetX,
           impactY: targetY,
         });
 
-        spawnAnvilSparkBurst(anvilX, anvilY, 24, palette.sparkHex, true);
+        // Minimal sparks (4 subtle sparks, non-hero)
+        spawnAnvilSparkBurst(anvilX, anvilY, 4, palette.sparkHex, false);
 
-        // Put floating combat text directly on the REMOTE PEER's terrace anvil, NOT over the local Main Hero!
-        floatingTexts.push({
-          id: textIdCounter++,
-          text: payload.isCrit ? 'BẠO KÍCH!' : payload.isGolden ? 'HOÀNG KIM' : 'CHUẨN XÁC',
-          subtext: `-${payload.damage} DMG`,
-          x: anvilX,
-          y: anvilY - 34 * peer.scale,
-          vy: -48,
-          color: palette.rimHex,
-          glowColor: palette.coreHex,
-          ageSec: 0,
-          durationSec: 1.25,
-          scale: peer.scale * 0.9,
-        });
+        // Người khác gõ: KHÔNG hiển thị chữ bay (floating text) để tối ưu hiệu năng và chống rối màn hình
       }
     };
 
