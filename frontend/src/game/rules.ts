@@ -801,5 +801,1019 @@ export function advanceVaultCrack(
   };
 }
 
+// ============================================================================
+// BÚA THẦN HƯ ẢNH (PHANTOM ASTRAL HAMMER) & VÒNG TRẬN PHÁP CỔ TỰ (RUNIC ASTROLABE)
+// ============================================================================
+export const PHANTOM_HAMMER_DOWNSTROKE_SEC = 0.085;
+export const PHANTOM_HAMMER_REBOUND_SEC = 0.34;
+export const PHANTOM_HAMMER_TOTAL_SEC =
+  PHANTOM_HAMMER_DOWNSTROKE_SEC + PHANTOM_HAMMER_REBOUND_SEC;
 
+export const ASTROLABE_RING_BASE_SPEEDS: readonly [number, number, number] = [
+  0.42, // Inner Gold Solar Ring (CW)
+  -0.68, // Middle Cyan Lightning Ring (CCW)
+  0.31, // Outer Dual Celestial Ring (CW)
+];
 
+export type PhantomHammerPhase = 'IDLE' | 'DESCENDING' | 'IMPACT' | 'REBOUND_DISSOLVE';
+
+export interface PhantomHammerFrameState {
+  active: boolean;
+  phase: PhantomHammerPhase;
+  swingAngleRad: number; // 1.15 rad raised -> 0.0 rad impact on anvil -> 0.48 rad rebound
+  heightOffset: number; // +2.2m above anvil -> 0.0m impact -> +0.75m dissolve
+  scale: number;
+  opacity: number;
+  fresnelBoost: number;
+  hasTriggeredLightning: boolean;
+}
+
+/**
+ * Evaluates the Colossal Phantom Astral Hammer (Búa Thần Hư Ảnh) at `elapsedStrikeSec`:
+ * - 0 <= t < 0.085s: Slams down from the heavens onto the anvil face BEFORE the lightning pillar shoots up.
+ * - t >= 0.085s: Impact occurs on the anvil face, triggering the upward cyan lightning pillar, then rebounds & dissolves.
+ */
+export function evaluatePhantomHammerStrike(elapsedStrikeSec: number): PhantomHammerFrameState {
+  if (elapsedStrikeSec < 0 || elapsedStrikeSec >= PHANTOM_HAMMER_TOTAL_SEC) {
+    return {
+      active: false,
+      phase: 'IDLE',
+      swingAngleRad: 1.15,
+      heightOffset: 2.2,
+      scale: 0.85,
+      opacity: 0.0,
+      fresnelBoost: 1.0,
+      hasTriggeredLightning: false,
+    };
+  }
+
+  if (elapsedStrikeSec < PHANTOM_HAMMER_DOWNSTROKE_SEC) {
+    const t = Math.max(0, Math.min(1, elapsedStrikeSec / PHANTOM_HAMMER_DOWNSTROKE_SEC));
+    // Accelerated power slam curve (cubic ease-in)
+    const slamEase = t * t * (3.0 - 2.0 * t);
+    const fastDrop = Math.pow(t, 1.65);
+
+    return {
+      active: true,
+      phase: 'DESCENDING',
+      swingAngleRad: 1.18 * (1.0 - fastDrop),
+      heightOffset: 2.15 * (1.0 - fastDrop),
+      scale: 0.92 + 0.16 * slamEase,
+      opacity: Math.min(1.0, 0.35 + t * 0.95),
+      fresnelBoost: 1.4 + t * 1.8,
+      hasTriggeredLightning: false,
+    };
+  }
+
+  const reboundElapsed = elapsedStrikeSec - PHANTOM_HAMMER_DOWNSTROKE_SEC;
+  const r = Math.max(0, Math.min(1, reboundElapsed / PHANTOM_HAMMER_REBOUND_SEC));
+  const easeOut = 1.0 - Math.pow(1.0 - r, 2.2);
+  const fadeOut = Math.pow(1.0 - r, 1.55);
+
+  return {
+    active: true,
+    phase: r < 0.16 ? 'IMPACT' : 'REBOUND_DISSOLVE',
+    swingAngleRad: 0.46 * easeOut,
+    heightOffset: 0.72 * easeOut,
+    scale: 1.08 - 0.12 * easeOut,
+    opacity: Number(fadeOut.toFixed(4)),
+    fresnelBoost: 3.2 * fadeOut + 0.8,
+    hasTriggeredLightning: true,
+  };
+}
+
+export interface AstrolabeRingsState {
+  anglesRad: [number, number, number]; // Counter-rotating [CW, CCW, CW]
+  emissiveIntensity: number;
+  speedMultiplier: number;
+}
+
+/**
+ * Computes counter-rotating angles and emissive intensity for the 3-Ring Runic Astrolabe
+ * surrounding the Anvil Pedestal, scaling with uCrack (0.0 -> 1.0) and strikeFlash.
+ */
+export function evaluateAstrolabeRings(
+  elapsedSec: number,
+  uCrack: number,
+  strikeFlash: number = 0
+): AstrolabeRingsState {
+  const clampedCrack = Math.max(0.0, Math.min(1.0, uCrack));
+  const clampedFlash = Math.max(0.0, strikeFlash);
+  const speedMultiplier = Number((1.0 + clampedCrack * 2.4 + clampedFlash * 1.8).toFixed(4));
+  const effectiveTime = Math.max(0, elapsedSec) * (1.0 + clampedCrack * 1.15);
+
+  const anglesRad: [number, number, number] = [
+    Number((effectiveTime * ASTROLABE_RING_BASE_SPEEDS[0]).toFixed(4)),
+    Number((effectiveTime * ASTROLABE_RING_BASE_SPEEDS[1]).toFixed(4)),
+    Number((effectiveTime * ASTROLABE_RING_BASE_SPEEDS[2]).toFixed(4)),
+  ];
+
+  const emissiveIntensity = Number(
+    (0.85 + Math.pow(clampedCrack, 0.85) * 2.35 + clampedFlash * 1.9).toFixed(4)
+  );
+
+  return {
+    anglesRad,
+    emissiveIntensity,
+    speedMultiplier,
+  };
+}
+
+// ============================================================================
+// SÉT PHÂN NHÁNH 3D THỰC THỤ (5 PROCEDURAL 3D JAGGED LIGHTNING ARCHETYPES)
+// - Midpoint Displacement / Fractal 3D Lightning
+// - 5 distinct visual forms sharing the Cyan (#00F0FF) & Imperial Gold (#FFD23F / #FF9E00) palette
+// - Each strike randomly picks one of the 5 archetypes and generates ascending trunks +
+//   mid-air fractal forks + Vault Creeper bolts crawling across the Sky Dome Voronoi cracks
+// ============================================================================
+export type LightningArchetypeId =
+  | 'FRACTAL_CROWN'
+  | 'TWIN_DRAGON_HELIX'
+  | 'CELESTIAL_CAGE'
+  | 'CHAIN_TEMPEST'
+  | 'SPEAR_OF_JUDGMENT';
+
+export interface LightningArchetypeMeta {
+  id: LightningArchetypeId;
+  nameVn: string;
+  subtitleVn: string;
+  trunkCount: number;
+  forkCount: number;
+  creeperCount: number;
+  jitterAmplitude: number;
+  goldRatio: number; // 0..1 mix of gold vs cyan bolts
+}
+
+export const LIGHTNING_ARCHETYPES: readonly LightningArchetypeMeta[] = [
+  {
+    id: 'FRACTAL_CROWN',
+    nameVn: 'Thiên Lôi Phân Nhánh',
+    subtitleVn: 'Trụ sét chính kết hợp 7 nhánh sét phân cực & rễ sét bò lan vòm trời',
+    trunkCount: 2,
+    forkCount: 6,
+    creeperCount: 7,
+    jitterAmplitude: 0.78,
+    goldRatio: 0.3,
+  },
+  {
+    id: 'TWIN_DRAGON_HELIX',
+    nameVn: 'Song Long Lôi Xoắn',
+    subtitleVn: 'Hai luồng thần lôi Lam – Kim xoắn kép cùng tia sét bắc cầu',
+    trunkCount: 2,
+    forkCount: 6,
+    creeperCount: 6,
+    jitterAmplitude: 0.52,
+    goldRatio: 0.5,
+  },
+  {
+    id: 'CELESTIAL_CAGE',
+    nameVn: 'Bát Hoang Lôi Ngục',
+    subtitleVn: '6 cột lôi điện uốn vòm từ trận pháp hội tụ lên đỉnh Thiên Môn',
+    trunkCount: 6,
+    forkCount: 4,
+    creeperCount: 8,
+    jitterAmplitude: 0.68,
+    goldRatio: 0.38,
+  },
+  {
+    id: 'CHAIN_TEMPEST',
+    nameVn: 'Liên Hoàn Lôi Vũ',
+    subtitleVn: '5 luồng sét gấp khúc chữ Z phóng đa điểm nảy qua không trung',
+    trunkCount: 5,
+    forkCount: 5,
+    creeperCount: 7,
+    jitterAmplitude: 1.05,
+    goldRatio: 0.35,
+  },
+  {
+    id: 'SPEAR_OF_JUDGMENT',
+    nameVn: 'Thiên Phạt Lôi Thương',
+    subtitleVn: 'Đại thương lôi điện hội tụ, nổ tung thành hoa sét 8 cánh trên vòm đá',
+    trunkCount: 4,
+    forkCount: 5,
+    creeperCount: 8,
+    jitterAmplitude: 0.42,
+    goldRatio: 0.45,
+  },
+];
+
+export type Vec3Tuple = [number, number, number];
+
+export type LightningBoltTier = 'TRUNK' | 'FORK' | 'VAULT_CREEPER';
+
+export interface ProceduralLightningBolt3D {
+  tier: LightningBoltTier;
+  points: Vec3Tuple[];
+  widthStart: number;
+  widthEnd: number;
+  colorMix: number; // 0.0 = Pure Cyan (#00F0FF), 1.0 = Imperial Fire Gold (#FFD23F / #FF9E00)
+  progressStart: number; // 0..1 normalized timing along the 0.1s strike
+  progressEnd: number;
+}
+
+export interface ProceduralLightningBurst3D {
+  archetype: LightningArchetypeMeta;
+  bolts: ProceduralLightningBolt3D[];
+  trunkBoltCount: number;
+  forkBoltCount: number;
+  creeperBoltCount: number;
+}
+
+function seededRand(seedObj: { s: number }): number {
+  seedObj.s = (seedObj.s * 1664525 + 1013904223) >>> 0;
+  return (seedObj.s & 0xfffffff) / 0x10000000;
+}
+
+/**
+ * Picks a random LightningArchetypeMeta, avoiding repeating `previousId` consecutively.
+ */
+export function selectRandomLightningArchetype(
+  previousId?: LightningArchetypeId | null,
+  randomVal: number = Math.random()
+): LightningArchetypeMeta {
+  const candidates = previousId
+    ? LIGHTNING_ARCHETYPES.filter((a) => a.id !== previousId)
+    : LIGHTNING_ARCHETYPES;
+  const idx = Math.min(
+    candidates.length - 1,
+    Math.max(0, Math.floor(randomVal * candidates.length))
+  );
+  return candidates[idx];
+}
+
+/**
+ * Generates a 3D jagged polyline between `start` and `end` using recursive Midpoint Displacement
+ * (subdivisions = 3 -> 9 points; subdivisions = 4 -> 17 points) with optional arch/helix offset.
+ */
+export function midpointDisplacement3D(
+  start: Vec3Tuple,
+  end: Vec3Tuple,
+  subdivisions: number,
+  jitterAmp: number,
+  seedObj: { s: number }
+): Vec3Tuple[] {
+  let pts: Vec3Tuple[] = [start, end];
+  let amp = jitterAmp;
+
+  for (let step = 0; step < subdivisions; step++) {
+    const nextPts: Vec3Tuple[] = [pts[0]];
+    for (let i = 0; i < pts.length - 1; i++) {
+      const a = pts[i];
+      const b = pts[i + 1];
+      const mx = (a[0] + b[0]) * 0.5 + (seededRand(seedObj) - 0.5) * 2.0 * amp;
+      const my = (a[1] + b[1]) * 0.5 + (seededRand(seedObj) - 0.5) * 1.1 * amp;
+      const mz = (a[2] + b[2]) * 0.5 + (seededRand(seedObj) - 0.5) * 1.6 * amp;
+      nextPts.push([mx, my, mz], b);
+    }
+    pts = nextPts;
+    amp *= 0.54;
+  }
+
+  return pts;
+}
+
+/**
+ * Generates a complete 3D jagged lightning burst for any of the 5 archetypes:
+ * 1. Ascending Trunks (Anvil -> Sky Vault Zenith)
+ * 2. Mid-Air Fractal Forks (5-8 jagged branches splitting off into the sky)
+ * 3. Vault Creeper Bolts (6-8 jagged arcs crawling across the curved Sky Dome Voronoi cracks)
+ */
+export function generateProcedural3DLightning(
+  archetypeId: LightningArchetypeId,
+  anvilPos: Vec3Tuple = [0, -2.02, 0.65],
+  zenithPos: Vec3Tuple = [0, 5.4, -3.8],
+  uCrack: number = 0.5,
+  seed: number = Math.floor(Math.random() * 999999) + 1
+): ProceduralLightningBurst3D {
+  const archetype =
+    LIGHTNING_ARCHETYPES.find((a) => a.id === archetypeId) ?? LIGHTNING_ARCHETYPES[0];
+  const seedObj = { s: (seed ^ 0x9e3779b9) >>> 0 };
+  const bolts: ProceduralLightningBolt3D[] = [];
+
+  const dx = zenithPos[0] - anvilPos[0];
+  const dy = zenithPos[1] - anvilPos[1];
+  const dz = zenithPos[2] - anvilPos[2];
+
+  // 1. ASCENDING TRUNKS (Shaped according to the specific Archetype)
+  const mainTrunkPaths: Vec3Tuple[][] = [];
+
+  for (let t = 0; t < archetype.trunkCount; t++) {
+    const isGold = t % 2 === 1 || seededRand(seedObj) < archetype.goldRatio;
+    const colorMix = isGold ? 0.88 : 0.05;
+
+    if (archetype.id === 'TWIN_DRAGON_HELIX') {
+      // Double Helix: Two dragon bolts coiling 2.5 turns around the central axis + midpoint jitter
+      const segs = 18;
+      const phaseOffset = t * Math.PI;
+      const pts: Vec3Tuple[] = [];
+      for (let s = 0; s <= segs; s++) {
+        const u = s / segs;
+        const envelope = Math.sin(u * Math.PI); // 0 at ends, 1 in middle
+        const coilRadius = (0.55 + uCrack * 0.35) * envelope;
+        const angle = u * Math.PI * 5.0 + phaseOffset;
+        const jx = (seededRand(seedObj) - 0.5) * 0.28 * envelope;
+        const jy = (seededRand(seedObj) - 0.5) * 0.18 * envelope;
+        const jz = (seededRand(seedObj) - 0.5) * 0.28 * envelope;
+        pts.push([
+          anvilPos[0] + dx * u + Math.cos(angle) * coilRadius + jx,
+          anvilPos[1] + dy * u + jy,
+          anvilPos[2] + dz * u + Math.sin(angle) * coilRadius + jz,
+        ]);
+      }
+      mainTrunkPaths.push(pts);
+      bolts.push({
+        tier: 'TRUNK',
+        points: pts,
+        widthStart: 0.24,
+        widthEnd: 0.14,
+        colorMix,
+        progressStart: 0.0,
+        progressEnd: 0.65,
+      });
+    } else if (archetype.id === 'CELESTIAL_CAGE') {
+      // 6 wide arched cage pillars erupting from the Astrolabe perimeter around the anvil and converging at Zenith
+      const cageAngle = (t / archetype.trunkCount) * Math.PI * 2 + (seededRand(seedObj) - 0.5) * 0.25;
+      const baseStart: Vec3Tuple = [
+        anvilPos[0] + Math.cos(cageAngle) * 1.45,
+        anvilPos[1] + 0.05,
+        anvilPos[2] + Math.sin(cageAngle) * 0.85,
+      ];
+      const rawPts = midpointDisplacement3D(baseStart, zenithPos, 4, archetype.jitterAmplitude, seedObj);
+      // Bow the midpoints outward to form a grand arched thunder cage
+      const bowedPts: Vec3Tuple[] = rawPts.map((pt, idx) => {
+        const u = idx / (rawPts.length - 1);
+        const arch = Math.sin(u * Math.PI) * (1.85 + uCrack * 0.65);
+        return [
+          pt[0] + Math.cos(cageAngle) * arch,
+          pt[1] + Math.sin(u * Math.PI) * 0.45,
+          pt[2] + Math.sin(cageAngle) * arch * 0.55,
+        ];
+      });
+      mainTrunkPaths.push(bowedPts);
+      bolts.push({
+        tier: 'TRUNK',
+        points: bowedPts,
+        widthStart: 0.19,
+        widthEnd: 0.12,
+        colorMix,
+        progressStart: 0.0,
+        progressEnd: 0.68,
+      });
+    } else if (archetype.id === 'CHAIN_TEMPEST') {
+      // Multi-Node Zigzag Ricochet bolts bouncing across mid-air relay nodes to a cluster around Zenith
+      const targetSpread = 0.35 + (t === 0 ? 0 : 1.35);
+      const targetAngle = (t / archetype.trunkCount) * Math.PI * 2 + seededRand(seedObj) * 0.5;
+      const endPt: Vec3Tuple = [
+        zenithPos[0] + Math.cos(targetAngle) * targetSpread,
+        zenithPos[1] + Math.sin(targetAngle) * targetSpread * 0.45,
+        zenithPos[2] - Math.abs(Math.sin(targetAngle)) * 0.5,
+      ];
+      const pts = midpointDisplacement3D(anvilPos, endPt, 4, archetype.jitterAmplitude, seedObj);
+      mainTrunkPaths.push(pts);
+      bolts.push({
+        tier: 'TRUNK',
+        points: pts,
+        widthStart: 0.21,
+        widthEnd: 0.12,
+        colorMix,
+        progressStart: 0.0,
+        progressEnd: 0.64,
+      });
+    } else if (archetype.id === 'SPEAR_OF_JUDGMENT') {
+      // Tightly braided high-density thunder spear converging on Zenith
+      const startOffsetAngle = (t / archetype.trunkCount) * Math.PI * 2;
+      const startPt: Vec3Tuple = [
+        anvilPos[0] + Math.cos(startOffsetAngle) * 0.38,
+        anvilPos[1],
+        anvilPos[2] + Math.sin(startOffsetAngle) * 0.38,
+      ];
+      const pts = midpointDisplacement3D(startPt, zenithPos, 4, archetype.jitterAmplitude, seedObj);
+      mainTrunkPaths.push(pts);
+      bolts.push({
+        tier: 'TRUNK',
+        points: pts,
+        widthStart: 0.26,
+        widthEnd: 0.18,
+        colorMix,
+        progressStart: 0.0,
+        progressEnd: 0.6,
+      });
+    } else {
+      // FRACTAL_CROWN: Classic jagged central fractal bolt
+      const pts = midpointDisplacement3D(
+        anvilPos,
+        zenithPos,
+        4,
+        archetype.jitterAmplitude * (t === 0 ? 0.85 : 1.15),
+        seedObj
+      );
+      mainTrunkPaths.push(pts);
+      bolts.push({
+        tier: 'TRUNK',
+        points: pts,
+        widthStart: t === 0 ? 0.26 : 0.17,
+        widthEnd: t === 0 ? 0.15 : 0.1,
+        colorMix,
+        progressStart: 0.0,
+        progressEnd: 0.62,
+      });
+    }
+  }
+
+  // 2. MID-AIR FRACTAL FORKS (5–8 jagged branches splitting outward from the trunks)
+  for (let f = 0; f < archetype.forkCount; f++) {
+    const parentTrunk = mainTrunkPaths[f % mainTrunkPaths.length];
+    const branchIdx = Math.max(
+      2,
+      Math.min(parentTrunk.length - 3, Math.floor((0.25 + (f / archetype.forkCount) * 0.55) * parentTrunk.length))
+    );
+    const forkOrigin = parentTrunk[branchIdx];
+    const sideSign = f % 2 === 0 ? 1 : -1;
+    const reachX = sideSign * (1.35 + seededRand(seedObj) * 2.4);
+    const reachY = 1.1 + seededRand(seedObj) * 1.9;
+    const reachZ = -0.6 - seededRand(seedObj) * 1.6;
+
+    const forkEnd: Vec3Tuple = [
+      forkOrigin[0] + reachX,
+      forkOrigin[1] + reachY,
+      forkOrigin[2] + reachZ,
+    ];
+    const forkPts = midpointDisplacement3D(forkOrigin, forkEnd, 3, 0.52, seedObj);
+    const isGold = seededRand(seedObj) < archetype.goldRatio;
+
+    bolts.push({
+      tier: 'FORK',
+      points: forkPts,
+      widthStart: 0.14,
+      widthEnd: 0.035,
+      colorMix: isGold ? 0.92 : 0.1,
+      progressStart: 0.18 + (f / archetype.forkCount) * 0.25,
+      progressEnd: 0.78,
+    });
+  }
+
+  // 3. VAULT CREEPER BOLTS (6–8 jagged Voronoi lightning tendrils crawling across the Sky Dome upon impact)
+  const creeperSpread = 3.2 + uCrack * 3.6;
+  for (let c = 0; c < archetype.creeperCount; c++) {
+    const baseAngle =
+      (c / archetype.creeperCount) * Math.PI * 2 + (seededRand(seedObj) - 0.5) * 0.35;
+    const dist = creeperSpread * (0.72 + seededRand(seedObj) * 0.45);
+
+    // Follow the concave inner curvature of the Sky Dome around zenithPos = (0, 5.4, -3.8)
+    const cx = zenithPos[0] + Math.cos(baseAngle) * dist * 1.25;
+    const cy = zenithPos[1] + Math.sin(baseAngle) * dist * 0.65 - (dist * dist) * 0.045;
+    const cz = zenithPos[2] - Math.sin(baseAngle) * dist * 0.35 - (dist * dist) * 0.035;
+
+    const creeperPts = midpointDisplacement3D(
+      zenithPos,
+      [cx, cy, cz],
+      4,
+      0.62 + uCrack * 0.35,
+      seedObj
+    );
+    const isGold = c % 2 === 1 || seededRand(seedObj) < archetype.goldRatio;
+
+    bolts.push({
+      tier: 'VAULT_CREEPER',
+      points: creeperPts,
+      widthStart: 0.16,
+      widthEnd: 0.03,
+      colorMix: isGold ? 0.95 : 0.08,
+      progressStart: 0.52,
+      progressEnd: 1.0,
+    });
+  }
+
+  return {
+    archetype,
+    bolts,
+    trunkBoltCount: archetype.trunkCount,
+    forkBoltCount: archetype.forkCount,
+    creeperBoltCount: archetype.creeperCount,
+  };
+}
+
+// ============================================================================
+// 11. CINEMATIC POST-PROCESSING: SCREEN-SPACE SHOCKWAVE & CHROMATIC ABERRATION
+// ============================================================================
+
+export const POST_FX_SHOCKWAVE_DURATION_SEC = 0.56;
+
+export interface CinematicPostFxState {
+  active: boolean;
+  /** Normalized progress (0..1) of the post-processing impact wave */
+  progress: number;
+  /** Expanding radial UV radius (0..1.25) from the Anvil impact center */
+  anvilShockRadius: number;
+  /** UV refraction warp intensity for the Anvil shockwave ring */
+  anvilShockStrength: number;
+  /** Expanding radial UV radius (0..1.05) from the Sky Vault Zenith impact center */
+  zenithShockRadius: number;
+  /** UV refraction warp intensity for the Zenith shockwave ring */
+  zenithShockStrength: number;
+  /** Radial RGB channel split offset intensity (Chromatic Aberration) */
+  chromaticAberration: number;
+  /** Brief screen-space radial compression pulse right at hammer contact */
+  impactZoomPulse: number;
+  /** Luminous cyan-gold prismatic air-compression crest brightness */
+  crestGlowIntensity: number;
+}
+
+/**
+ * Evaluates the screen-space refractive shockwave distortion and radial RGB
+ * chromatic aberration triggered at the exact moment the Phantom Hammer strikes the Anvil.
+ */
+export function evaluateCinematicPostFx(
+  impactElapsedSec: number,
+  uCrack: number,
+  isShattered = false
+): CinematicPostFxState {
+  const clampedCrack = Math.max(0, Math.min(1, uCrack));
+  const baseCa = isShattered ? 0.0042 : 0.0012 + clampedCrack * 0.0026;
+
+  if (impactElapsedSec < 0 || impactElapsedSec > POST_FX_SHOCKWAVE_DURATION_SEC) {
+    return {
+      active: false,
+      progress: 0,
+      anvilShockRadius: 0,
+      anvilShockStrength: 0,
+      zenithShockRadius: 0,
+      zenithShockStrength: 0,
+      chromaticAberration: Number(baseCa.toFixed(5)),
+      impactZoomPulse: 0,
+      crestGlowIntensity: 0,
+    };
+  }
+
+  const progress = Math.max(0, Math.min(1, impactElapsedSec / POST_FX_SHOCKWAVE_DURATION_SEC));
+  const crackBoost = 1.0 + clampedCrack * 0.55;
+  const shatterBoost = isShattered ? 1.4 : 1.0;
+
+  // 1. Primary Anvil Screen-Space Shockwave (expands immediately at t = 0.0s from Anvil face)
+  const anvilEase = 1.0 - Math.pow(1.0 - progress, 2.35);
+  const anvilShockRadius = 0.04 + anvilEase * 1.18;
+  const anvilRampIn = Math.sin(Math.min(1.0, progress / 0.14) * (Math.PI * 0.5));
+  const anvilEnvelope = anvilRampIn * Math.pow(1.0 - progress, 1.45);
+  const anvilShockStrength = 0.068 * anvilEnvelope * crackBoost * shatterBoost;
+
+  // 2. Secondary Sky Vault Zenith Screen-Space Shockwave (triggered ~0.075s later when lightning hits zenith)
+  const zenithDelay = 0.075;
+  const zenithProg =
+    impactElapsedSec > zenithDelay
+      ? Math.max(
+          0,
+          Math.min(
+            1,
+            (impactElapsedSec - zenithDelay) / (POST_FX_SHOCKWAVE_DURATION_SEC - zenithDelay)
+          )
+        )
+      : 0;
+  const zenithEase = 1.0 - Math.pow(1.0 - zenithProg, 2.15);
+  const zenithShockRadius = zenithProg > 0 ? 0.05 + zenithEase * 0.98 : 0;
+  const zenithRampIn =
+    zenithProg > 0 ? Math.sin(Math.min(1.0, zenithProg / 0.16) * (Math.PI * 0.5)) : 0;
+  const zenithEnvelope = zenithRampIn * Math.pow(1.0 - zenithProg, 1.5);
+  const zenithShockStrength = 0.052 * zenithEnvelope * crackBoost * shatterBoost;
+
+  // 3. Radial Chromatic Aberration (R/G/B split peaking on hammer impact and decaying smoothly)
+  const caDecay = Math.pow(1.0 - progress, 1.65);
+  const caSpike = Math.exp(-impactElapsedSec * 14.0) * 0.012;
+  const chromaticAberration =
+    baseCa + (0.022 * caDecay + caSpike) * crackBoost * (isShattered ? 1.35 : 1.0);
+
+  // 4. Radial Impact Micro-Zoom Pulse & Prismatic Air-Compression Crest
+  const impactZoomPulse =
+    Math.sin(Math.min(1.0, progress / 0.28) * Math.PI) *
+    Math.pow(1.0 - progress, 1.8) *
+    0.026 *
+    crackBoost;
+  const crestGlowIntensity = Math.pow(1.0 - progress, 1.35) * (0.88 + clampedCrack * 0.52);
+
+  return {
+    active: true,
+    progress: Number(progress.toFixed(4)),
+    anvilShockRadius: Number(anvilShockRadius.toFixed(4)),
+    anvilShockStrength: Number(anvilShockStrength.toFixed(5)),
+    zenithShockRadius: Number(zenithShockRadius.toFixed(4)),
+    zenithShockStrength: Number(zenithShockStrength.toFixed(5)),
+    chromaticAberration: Number(chromaticAberration.toFixed(5)),
+    impactZoomPulse: Number(impactZoomPulse.toFixed(5)),
+    crestGlowIntensity: Number(crestGlowIntensity.toFixed(4)),
+  };
+}
+
+// ============================================================================
+// 12. PANORAMIC 2D CANVAS: "PHÁ TRỜI: ĐẠI CÔNG TRƯỜNG VẠN DÂN"
+// ============================================================================
+
+export const PANORAMA_SKY_RATIO = 0.65;
+export const PANORAMA_GROUND_RATIO = 0.35;
+export const HERO_STRIKE_DOWNSTROKE_SEC = 0.1;
+export const HERO_STRIKE_TOTAL_SEC = 0.32;
+export const SCREEN_SHAKE_DURATION_SEC = 0.15;
+export const PANORAMA_BOSS_MAX_HP = 10000;
+
+export type HeroStanceKey = 'Q' | 'W' | 'E' | 'R';
+
+export interface HeroStancePalette {
+  key: HeroStanceKey;
+  id: 'THUNDER' | 'FIRE' | 'GRAVITY' | 'MYSTIC';
+  nameVn: string;
+  subtitleVn: string;
+  rimHex: string;
+  glowRgba: string;
+  coreHex: string;
+  sparkHex: string;
+}
+
+export const HERO_STANCE_PALETTES: Record<HeroStanceKey, HeroStancePalette> = {
+  Q: {
+    key: 'Q',
+    id: 'THUNDER',
+    nameVn: 'Lôi Đỉnh',
+    subtitleVn: 'Xanh Lôi Điện · Tốc Kích Vòm Trời',
+    rimHex: '#00F0FF',
+    glowRgba: 'rgba(0, 240, 255, 0.55)',
+    coreHex: '#E6FEFF',
+    sparkHex: '#FFD166',
+  },
+  W: {
+    key: 'W',
+    id: 'FIRE',
+    nameVn: 'Viêm Dương',
+    subtitleVn: 'Đỏ Viêm Dương · Thiêu Đốt Thiên Thạch',
+    rimHex: '#FF471A',
+    glowRgba: 'rgba(255, 71, 26, 0.58)',
+    coreHex: '#FFF0D4',
+    sparkHex: '#FFB703',
+  },
+  E: {
+    key: 'E',
+    id: 'GRAVITY',
+    nameVn: 'Trọng Lực',
+    subtitleVn: 'Tím Trọng Lực · Chấn Động Không Gian',
+    rimHex: '#B85CFF',
+    glowRgba: 'rgba(184, 92, 255, 0.56)',
+    coreHex: '#F5E8FF',
+    sparkHex: '#E0AAFF',
+  },
+  R: {
+    key: 'R',
+    id: 'MYSTIC',
+    nameVn: 'Huyền Âm',
+    subtitleVn: 'Ngọc Bích Huyền Âm · Cộng Hưởng Vạn Dân',
+    rimHex: '#10E8A5',
+    glowRgba: 'rgba(16, 232, 165, 0.55)',
+    coreHex: '#E2FFF5',
+    sparkHex: '#80FFDB',
+  },
+};
+
+export interface PeerBlacksmithActor {
+  id: string;
+  label: string;
+  /** Normalized X across the panoramic basalt plateau (0.05..0.95), avoiding 0.43..0.57 center hero stage */
+  xNorm: number;
+  /** Normalized Y on the bottom 35% plateau (0.68..0.89) */
+  yNorm: number;
+  /** Terrace row depth (0 = back upper quartz step, 1 = mid step, 2 = foreground flank) */
+  terraceRow: 0 | 1 | 2;
+  /** Visual scale factor based on terrace depth */
+  scale: number;
+  /** Facing direction (1 = toward center-right, -1 = toward center-left) */
+  facing: 1 | -1;
+  /** Autonomous strike cycle period in seconds */
+  strikePeriodSec: number;
+  /** Phase offset in seconds so peers strike in lively staggered waves */
+  strikeOffsetSec: number;
+  /** Lightning tint for peer co-op network */
+  beamColorHex: string;
+}
+
+const PEER_BADGE_NUMBERS = [
+  4120, 8901, 2049, 7734, 1508, 6392, 9410, 3185, 5602, 8219,
+  1074, 4826, 7190, 3942, 6015, 9284, 2761, 5340, 8647, 1933,
+  7451, 3098, 6812, 4509,
+];
+
+/**
+ * Generates 12 to 24 online peer blacksmiths positioned along the stepped
+ * basalt and quartz terraces behind and flanking the Main Hero.
+ */
+export function createPeerBlacksmithTroupe(count = 18): PeerBlacksmithActor[] {
+  const clampedCount = Math.max(12, Math.min(24, Math.floor(count)));
+  const peers: PeerBlacksmithActor[] = [];
+
+  for (let i = 0; i < clampedCount; i++) {
+    const isLeftWing = i % 2 === 0;
+    const wingIndex = Math.floor(i / 2);
+    const wingsPerSide = Math.ceil(clampedCount / 2);
+    const terraceRow = (i % 3) as 0 | 1 | 2;
+
+    // Spread evenly across left wing (0.06 .. 0.39) and right wing (0.61 .. 0.94)
+    const t = wingsPerSide > 1 ? wingIndex / (wingsPerSide - 1) : 0.5;
+    const xNorm = isLeftWing
+      ? 0.06 + t * 0.33 + (terraceRow - 1) * 0.012
+      : 0.61 + t * 0.33 - (terraceRow - 1) * 0.012;
+
+    // Stepped quartz terraces within the bottom 35% (yNorm from 0.685 to 0.855)
+    const rowBaseY = terraceRow === 0 ? 0.695 : terraceRow === 1 ? 0.76 : 0.83;
+    const yJitter = ((i * 37) % 9 - 4) * 0.0035;
+    const yNorm = Number((rowBaseY + yJitter).toFixed(4));
+
+    const scale = terraceRow === 0 ? 0.48 : terraceRow === 1 ? 0.6 : 0.72;
+    const badgeNum = PEER_BADGE_NUMBERS[i % PEER_BADGE_NUMBERS.length];
+
+    peers.push({
+      id: `peer-${badgeNum}`,
+      label: `Thợ Rèn #${badgeNum}`,
+      xNorm: Number(xNorm.toFixed(4)),
+      yNorm,
+      terraceRow,
+      scale,
+      facing: isLeftWing ? 1 : -1,
+      strikePeriodSec: Number((1.45 + ((i * 29) % 13) * 0.11).toFixed(2)),
+      strikeOffsetSec: Number((((i * 43) % 17) * 0.14).toFixed(2)),
+      beamColorHex: i % 3 === 0 ? '#7CE8FF' : i % 3 === 1 ? '#C4F5FF' : '#99D6FF',
+    });
+  }
+
+  // Sort back-to-front by yNorm for painter's algorithm rendering
+  return peers.sort((a, b) => a.yNorm - b.yNorm);
+}
+
+export interface Point2D {
+  x: number;
+  y: number;
+}
+
+export interface Procedural2DLightningBolt {
+  mainPoints: Point2D[];
+  branches: Point2D[][];
+  isHero: boolean;
+}
+
+/**
+ * Generates a realistic 2D jagged lightning bolt between (x1, y1) on the anvil
+ * and (x2, y2) on the Sky Vault using midpoint displacement and fractal branching.
+ */
+export function generate2DLightningBolt(
+  x1: number,
+  y1: number,
+  x2: number,
+  y2: number,
+  isHero: boolean,
+  seed = Math.random() * 10000
+): Procedural2DLightningBolt {
+  let s = Math.floor(seed) || 1337;
+  const nextRand = () => {
+    s = (s * 1664525 + 1013904223) % 4294967296;
+    return s / 4294967296;
+  };
+
+  const subdivide = (
+    ax: number,
+    ay: number,
+    bx: number,
+    by: number,
+    depth: number,
+    displace: number
+  ): Point2D[] => {
+    if (depth <= 0) {
+      return [
+        { x: ax, y: ay },
+        { x: bx, y: by },
+      ];
+    }
+    const mx = (ax + bx) * 0.5;
+    const my = (ay + by) * 0.5;
+    const dx = bx - ax;
+    const dy = by - ay;
+    const len = Math.hypot(dx, dy) || 1;
+    // Perpendicular normal in 2D
+    const nx = -dy / len;
+    const ny = dx / len;
+    const offset = (nextRand() - 0.5) * 2 * displace;
+    const px = mx + nx * offset;
+    const py = my + ny * offset * 0.35;
+
+    const left = subdivide(ax, ay, px, py, depth - 1, displace * 0.54);
+    const right = subdivide(px, py, bx, by, depth - 1, displace * 0.54);
+    return [...left.slice(0, -1), ...right];
+  };
+
+  const totalDist = Math.hypot(x2 - x1, y2 - y1);
+  const trunkDepth = isHero ? 5 : 4;
+  const trunkJitter = totalDist * (isHero ? 0.16 : 0.11);
+  const mainPoints = subdivide(x1, y1, x2, y2, trunkDepth, trunkJitter);
+
+  const branches: Point2D[][] = [];
+  const branchCount = isHero ? 5 : 2;
+
+  for (let b = 0; b < branchCount; b++) {
+    if (!mainPoints || mainPoints.length < 2) continue;
+    const safeIdx = Math.max(
+      0,
+      Math.min(
+        mainPoints.length - 1,
+        Math.floor(mainPoints.length * (0.2 + (b / branchCount) * 0.62))
+      )
+    );
+    const startPt = mainPoints[safeIdx];
+    if (!startPt || typeof startPt.x !== 'number' || typeof startPt.y !== 'number') continue;
+    const side = (b % 2 === 0 ? 1 : -1) * (nextRand() > 0.2 ? 1 : -1);
+    const branchSpanX = side * totalDist * (isHero ? 0.14 + nextRand() * 0.14 : 0.08 + nextRand() * 0.08);
+    const branchSpanY = -totalDist * (0.12 + nextRand() * 0.16);
+    const endX = startPt.x + branchSpanX;
+    const endY = Math.max(24, startPt.y + branchSpanY);
+
+    branches.push(
+      subdivide(startPt.x, startPt.y, endX, endY, isHero ? 3 : 2, totalDist * 0.055)
+    );
+  }
+
+  return {
+    mainPoints,
+    branches,
+    isHero,
+  };
+}
+
+export interface Hero2DStrikePose {
+  phase: 'IDLE' | 'DOWNSTROKE' | 'IMPACT' | 'RECOVERY';
+  /** Hammer angle in radians: negative = raised behind head, +1.15 = slammed onto anvil */
+  hammerAngleRad: number;
+  /** Vertical torso breathing / slam offset in pixels */
+  torsoOffsetY: number;
+  /** Squash & stretch X/Y factors */
+  scaleX: number;
+  scaleY: number;
+  /** Rim-light intensity multiplier */
+  rimIntensity: number;
+}
+
+/**
+ * Evaluates the Main Hero's 2D silhouette animation pose:
+ * - Idle state: gentle breathing bob
+ * - Strike state: 0.1s explosive downstroke onto the anvil followed by 0.22s rebound
+ */
+export function evaluateHero2DStrikePose(
+  strikeElapsedSec: number,
+  idleTimeSec: number
+): Hero2DStrikePose {
+  if (strikeElapsedSec < 0 || strikeElapsedSec > HERO_STRIKE_TOTAL_SEC) {
+    const breath = Math.sin(idleTimeSec * 2.8);
+    return {
+      phase: 'IDLE',
+      hammerAngleRad: -0.78 + breath * 0.06,
+      torsoOffsetY: breath * 2.5,
+      scaleX: 1.0 - breath * 0.015,
+      scaleY: 1.0 + breath * 0.018,
+      rimIntensity: 1.0 + Math.sin(idleTimeSec * 4.2) * 0.12,
+    };
+  }
+
+  if (strikeElapsedSec <= HERO_STRIKE_DOWNSTROKE_SEC) {
+    const p = Math.max(0, Math.min(1, strikeElapsedSec / HERO_STRIKE_DOWNSTROKE_SEC));
+    // Fast windup snap in first 20%, then explosive slam down to anvil (+1.15 rad) by p = 0.9..1.0
+    const downP = Math.min(1, Math.max(0, (p - 0.2) / 0.72));
+    const slamCurve = p < 0.2 ? -1.35 - (p / 0.2) * 0.35 : -1.7 + Math.pow(downP, 1.55) * 2.85;
+    return {
+      phase: p >= 0.82 ? 'IMPACT' : 'DOWNSTROKE',
+      hammerAngleRad: Number(slamCurve.toFixed(4)),
+      torsoOffsetY: p < 0.2 ? -5 * (p / 0.2) : 9 * downP,
+      scaleX: p >= 0.82 ? 1.14 : 0.92,
+      scaleY: p >= 0.82 ? 0.88 : 1.09,
+      rimIntensity: 2.2,
+    };
+  }
+
+  const recProg =
+    (strikeElapsedSec - HERO_STRIKE_DOWNSTROKE_SEC) /
+    (HERO_STRIKE_TOTAL_SEC - HERO_STRIKE_DOWNSTROKE_SEC);
+  const easeOut = 1 - Math.pow(1 - Math.min(1, recProg), 2.2);
+  const angle = 1.15 * (1 - easeOut) + -0.78 * easeOut;
+
+  return {
+    phase: recProg < 0.18 ? 'IMPACT' : 'RECOVERY',
+    hammerAngleRad: Number(angle.toFixed(4)),
+    torsoOffsetY: 9 * (1 - easeOut),
+    scaleX: 1.0 + 0.12 * (1 - easeOut),
+    scaleY: 1.0 - 0.1 * (1 - easeOut),
+    rimIntensity: 2.2 - easeOut * 1.1,
+  };
+}
+
+export interface PanoramaBossDamageResult {
+  nextHp: number;
+  damageDealt: number;
+  crackProgress: number;
+  isDefeated: boolean;
+}
+
+export function applyPanoramaSkyStrikeDamage(
+  currentHp: number,
+  maxHp: number,
+  isHero: boolean,
+  rhythmMultiplier = 3.5
+): PanoramaBossDamageResult {
+  const safeMax = Math.max(1, maxHp);
+  const baseDmg = isHero ? 140 : 12;
+  const damageDealt = Math.round(baseDmg * (isHero ? rhythmMultiplier : 1.0));
+  const nextHp = Math.max(0, currentHp - damageDealt);
+  const crackProgress = Number(Math.max(0, Math.min(1, 1 - nextHp / safeMax)).toFixed(4));
+
+  return {
+    nextHp,
+    damageDealt,
+    crackProgress,
+    isDefeated: nextHp <= 0,
+  };
+}
+
+export interface SkyCrackBranch {
+  points: Point2D[]; // Normalized coordinates (x: 0..1, y: 0..0.62)
+  threshold: number; // Crack progress (0..1) at which this branch ignites
+  weight: number;
+}
+
+/**
+ * Pre-generates the deterministic tectonic fissure tree across the top 65% Sky Vault
+ * so cracks spread organically from the Zenith as Boss HP drops from 100% to 0%.
+ */
+export function createSkyVaultCrackTree(): SkyCrackBranch[] {
+  const branches: SkyCrackBranch[] = [];
+  let seed = 90210;
+  const rand = () => {
+    seed = (seed * 1664525 + 1013904223) % 4294967296;
+    return seed / 4294967296;
+  };
+
+  const subdivideCrack = (
+    ax: number,
+    ay: number,
+    bx: number,
+    by: number,
+    depth: number,
+    disp: number
+  ): Point2D[] => {
+    if (depth <= 0) {
+      return [
+        { x: ax, y: ay },
+        { x: bx, y: by },
+      ];
+    }
+    const mx = (ax + bx) * 0.5;
+    const my = (ay + by) * 0.5;
+    const dx = bx - ax;
+    const dy = by - ay;
+    const len = Math.hypot(dx, dy) || 1;
+    const nx = -dy / len;
+    const ny = dx / len;
+    const off = (rand() - 0.5) * 2 * disp;
+    const px = Math.max(0.03, Math.min(0.97, mx + nx * off));
+    const py = Math.max(0.03, Math.min(0.61, my + ny * off));
+    const left = subdivideCrack(ax, ay, px, py, depth - 1, disp * 0.55);
+    const right = subdivideCrack(px, py, bx, by, depth - 1, disp * 0.55);
+    return [...left.slice(0, -1), ...right];
+  };
+
+  const zenithX = 0.5;
+  const zenithY = 0.14;
+  const primaryRayCount = 14;
+
+  for (let i = 0; i < primaryRayCount; i++) {
+    const baseAngle = -Math.PI * 0.06 + (i / (primaryRayCount - 1)) * (Math.PI * 1.12);
+    const maxLen = 0.25 + (i % 3) * 0.11 + rand() * 0.08;
+    const endX = Math.max(0.05, Math.min(0.95, zenithX + Math.cos(baseAngle) * maxLen * 1.38));
+    const endY = Math.max(0.04, Math.min(0.59, zenithY + Math.sin(baseAngle) * maxLen * 0.88));
+
+    const pts = subdivideCrack(zenithX, zenithY, endX, endY, 4, 0.042);
+
+    branches.push({
+      points: pts,
+      threshold: (i % 4) * 0.05,
+      weight: 2.8,
+    });
+
+    // Spawn jagged secondary sub-fissure forks along the main crack
+    const forkIndices = [5, 10, 13];
+    for (const fIdx of forkIndices) {
+      if (fIdx >= pts.length) continue;
+      const origin = pts[fIdx];
+      const forkSign = (i + fIdx) % 2 === 0 ? 1 : -1;
+      const forkAngle = baseAngle + forkSign * (0.52 + rand() * 0.42);
+      const forkLen = 0.09 + rand() * 0.08;
+      const fx = Math.max(0.03, Math.min(0.97, origin.x + Math.cos(forkAngle) * forkLen * 1.25));
+      const fy = Math.max(0.03, Math.min(0.61, origin.y + Math.sin(forkAngle) * forkLen));
+      const forkPts = subdivideCrack(origin.x, origin.y, fx, fy, 3, 0.022);
+      branches.push({
+        points: forkPts,
+        threshold: Math.min(0.9, (fIdx / pts.length) * 0.65 + (i % 3) * 0.08),
+        weight: 1.45,
+      });
+    }
+  }
+
+  return branches;
+}

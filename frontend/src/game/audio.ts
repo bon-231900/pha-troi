@@ -4,6 +4,11 @@ class CelestialAudioEngine {
   private ctx: AudioContext | null = null;
   public muted: boolean = false;
 
+  public toggleMute(): boolean {
+    this.muted = !this.muted;
+    return this.muted;
+  }
+
   private ensureContext(): AudioContext | null {
     if (this.muted || typeof window === 'undefined') return null;
     try {

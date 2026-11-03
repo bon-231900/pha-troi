@@ -5,17 +5,13 @@ import {
   INITIAL_SPIRIT_NODES,
   ForgeUpgrade,
   SpiritNode,
-  judgeRhythmWave,
   calculateStrikeOutcome,
   calculateBasePowerBillions,
   calculateSpiritMultiplier,
   getUpgradeCost,
   canUnlockSpiritNode,
   HAMMER_STANCES,
-  TARGET_RIM_PROGRESS,
   OVERDRIVE_MAX,
-  computeCrackProgress,
-  CRACK_INCREMENT_PER_STRIKE,
 } from './game/rules';
 import { soundEngine } from './game/audio';
 import { safeStorage } from './game/storage';
@@ -26,7 +22,10 @@ import { RightProgressionPanel, LeaderboardEntry } from './components/RightProgr
 import { StatusModal } from './components/StatusModal';
 import { LoadingScreen } from './components/LoadingScreen';
 import { MultiplayerClient } from './game/multiplayer';
-import { CelestialVaultStage3D, CelestialVaultStage3DHandle } from './components/CelestialVaultStage3D';
+import {
+  CommunityPanoramicForgeCanvas,
+  CommunityPanoramicForgeCanvasHandle,
+} from './components/CommunityPanoramicForgeCanvas';
 import { Shield, Hammer, X, Zap, Flame, Sparkles } from 'lucide-react';
 
 type GameState = 'title' | 'playing' | 'paused' | 'gameover';
@@ -97,7 +96,7 @@ export default function App() {
   const [overdriveActive, setOverdriveActive] = useState<boolean>(false);
   const [overdriveTimeLeft, setOverdriveTimeLeft] = useState<number>(0);
 
-  // Side Panels Collapsed State (Default closed for maximum 3D immersion)
+  // Side Panels Collapsed State (Default closed for 100% unobstructed community panorama)
   const [leftPanelOpen, setLeftPanelOpen] = useState<boolean>(false);
   const [rightPanelOpen, setRightPanelOpen] = useState<boolean>(false);
 
@@ -151,7 +150,8 @@ export default function App() {
       const s = safeStorage.getItem('phatroi_save_v5');
       if (s) {
         const parsed = JSON.parse(s);
-        if (typeof parsed.playerTotalDamageBillions === 'number') return parsed.playerTotalDamageBillions;
+        if (typeof parsed.playerTotalDamageBillions === 'number')
+          return parsed.playerTotalDamageBillions;
       }
     } catch {}
     return 4.25;
@@ -165,28 +165,9 @@ export default function App() {
     multiplier: number;
     damageBillions: number;
   } | null>(null);
-  const [floatingHits, setFloatingHits] = useState<
-    Array<{
-      id: number;
-      grade: 'PERFECT' | 'GREAT' | 'GOOD' | 'MISS';
-      title: string;
-      damageText?: string;
-      xOffset: number;
-      createdAt: number;
-    }>
-  >([]);
+
   const lastMilestonePercentRef = useRef<number>(100);
   const [muted, setMuted] = useState<boolean>(false);
-
-  // Auto-cleanup floating hit particles older than 900ms
-  useEffect(() => {
-    if (floatingHits.length === 0) return;
-    const timer = setTimeout(() => {
-      const now = Date.now();
-      setFloatingHits((prev) => prev.filter((h) => now - h.createdAt < 900));
-    }, 150);
-    return () => clearTimeout(timer);
-  }, [floatingHits]);
 
   // Global user interaction listener to unlock AudioContext on first tap
   useEffect(() => {
@@ -217,14 +198,12 @@ export default function App() {
   ]);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>(INITIAL_CHAT);
 
-  // 3D Celestial Vault Stage Ref & Rhythm progress
-  const vaultStageRef = useRef<CelestialVaultStage3DHandle | null>(null);
-  const waveProgressRef = useRef<number>(TARGET_RIM_PROGRESS - 0.04);
+  // Panoramic Canvas Ref
+  const canvasHandleRef = useRef<CommunityPanoramicForgeCanvasHandle | null>(null);
   const feedbackCounterRef = useRef<number>(1);
   const logCounterRef = useRef<number>(10);
   const mpClientRef = useRef<MultiplayerClient | null>(null);
 
-  // Callback declared first to prevent TDZ (Temporal Dead Zone)
   const appendCombatLog = useCallback(
     (text: string, tone: CombatLogEntry['tone'] = 'neutral') => {
       logCounterRef.current += 1;
@@ -237,7 +216,7 @@ export default function App() {
     []
   );
 
-  // Sync document.body.dataset.state for Ultra Mode verification
+  // Sync document.body.dataset.state
   useEffect(() => {
     document.body.dataset.state = gameState;
   }, [gameState]);
@@ -266,7 +245,7 @@ export default function App() {
     };
   }, [linhThach, tinhHoa, upgrades, spiritNodes, playerTotalDamageBillions]);
 
-  // Connect to Multiplayer Gateway (Local ws or wss://api.phatroi.com)
+  // Connect to Multiplayer Gateway (Offline Fallback if server unreachable)
   useEffect(() => {
     const mp = new MultiplayerClient({
       onConnected: (districtId) => {
@@ -325,7 +304,6 @@ export default function App() {
     if (document.activeElement instanceof HTMLElement) {
       document.activeElement.blur();
     }
-    waveProgressRef.current = TARGET_RIM_PROGRESS - 0.04;
     document.body.dataset.state = 'playing';
     setGameState('playing');
   }, []);
@@ -344,14 +322,13 @@ export default function App() {
     setOverdriveCharge(0);
     setOverdriveActive(false);
     setOverdriveTimeLeft(0);
-    waveProgressRef.current = TARGET_RIM_PROGRESS - 0.04;
-    vaultStageRef.current?.reset();
+    canvasHandleRef.current?.reset();
     document.body.dataset.state = 'playing';
     setGameState('playing');
     appendCombatLog('Lò rèn tái khởi động! Vạn dân đồng loạt giáng búa!', 'gold');
   }, [appendCombatLog]);
 
-  // 1-second interval for Global Beat Bar, Overdrive countdown, and Allied DPS
+  // Periodic co-op raid loop
   useEffect(() => {
     if (gameState !== 'playing') return;
 
@@ -371,7 +348,9 @@ export default function App() {
       setBossHpBillions((prevHp) => {
         const alliedChip = 0.24;
         const nextHp = Math.max(1.0, Number((prevHp - alliedChip).toFixed(3)));
-        setBossTrailHpBillions((prevTrail) => Math.max(nextHp, Number((prevTrail - 0.45).toFixed(3))));
+        setBossTrailHpBillions((prevTrail) =>
+          Math.max(nextHp, Number((prevTrail - 0.45).toFixed(3)))
+        );
         return nextHp;
       });
 
@@ -387,19 +366,156 @@ export default function App() {
   const basePowerBillions = calculateBasePowerBillions(upgrades);
   const spiritBonusMult = calculateSpiritMultiplier(spiritNodes);
 
-  // Crack progress calculated from Boss HP
-  const crackProgress = computeCrackProgress(bossHpBillions, BOSS_MAX_HP);
-
   // Player Strike Handler
-  const handleStrike = useCallback(() => {
-    if (gameState !== 'playing') return;
+  const handleHeroStrike = useCallback(
+    (forceGolden = false) => {
+      if (gameState !== 'playing') {
+        if (gameState === 'title') startGame();
+        return;
+      }
 
-    const currentProg = waveProgressRef.current;
-    const judgment = judgeRhythmWave(currentProg);
+      // Generous rhythm judgment: forceGolden or default perfect/great
+      const isGoldenHit = forceGolden || Math.random() < 0.45;
+      const grade = isGoldenHit ? 'PERFECT' : 'GREAT';
 
-    const outcome = calculateStrikeOutcome({
-      grade: judgment.grade,
-      stance: activeStance,
+      const outcome = calculateStrikeOutcome({
+        grade,
+        stance: activeStance,
+        basePowerBillions,
+        combo,
+        overdriveCharge,
+        overdriveActive,
+        bossShieldPct,
+        spiritBonusMult,
+        globalBurstActive,
+      });
+
+      // 1. Trigger Panoramic Canvas 2D Strike Visuals
+      canvasHandleRef.current?.triggerHeroStrike(isGoldenHit);
+
+      // 2. Spawn Floating Text in Canvas
+      const stanceData = HAMMER_STANCES[activeStance];
+      canvasHandleRef.current?.spawnCombatText(
+        isGoldenHit ? 'HOÀNG KIM! x3.5' : 'CHUẨN XÁC! x2.0',
+        `${stanceData.name.toUpperCase()} · -${outcome.damageBillions.toFixed(2)}B HP`,
+        isGoldenHit ? '#FFD166' : stanceData.color,
+        isGoldenHit ? '#FF9E00' : stanceData.color,
+        isGoldenHit
+      );
+
+      // 3. Audio & Haptics
+      soundEngine.playAnvilStrike(
+        grade,
+        activeStance,
+        combo >= 5 || overdriveActive
+      );
+
+      // 4. Send strike to multiplayer gateway queue
+      mpClientRef.current?.recordStrike({
+        stance: activeStance,
+        quality: grade,
+        damage: outcome.damageBillions,
+        resonance: activeStance === 'E' ? 3 : 1,
+        offsetMs: 0,
+        isCrit: outcome.triggeredOverdrive || overdriveActive || isGoldenHit,
+      });
+
+      // 5. Update Combo & Overdrive
+      setCombo(outcome.nextCombo);
+      setMaxCombo((prev) => Math.max(prev, outcome.nextCombo));
+      if (grade === 'PERFECT') {
+        setPerfectCount((prev) => prev + 1);
+      }
+
+      setOverdriveCharge(outcome.nextOverdriveCharge);
+      if (outcome.triggeredOverdrive) {
+        setOverdriveActive(true);
+        setOverdriveTimeLeft(8.0);
+        appendCombatLog(
+          'LÔI ĐÌNH QUÁ TẢI 8/8! Toàn bộ Đe Thần rực sáng bão điện, Sát Thương x2.0!',
+          'cyan'
+        );
+      }
+
+      // 6. Resources & Damage
+      if (outcome.damageBillions > 0) {
+        setLinhThach((prev) => prev + outcome.linhThachEarned);
+        if (outcome.tinhHoaEarned > 0) {
+          setTinhHoa((prev) => prev + outcome.tinhHoaEarned);
+        }
+        setPlayerTotalDamageBillions((prev) =>
+          Number((prev + outcome.damageBillions).toFixed(3))
+        );
+
+        setBossShieldPct((prevShield) => {
+          const nextShield = Math.max(
+            0,
+            Number((prevShield - outcome.shieldDepletion).toFixed(2))
+          );
+          if (prevShield > 0 && nextShield === 0) {
+            appendCombatLog(
+              'GIÁP NĂNG LƯỢNG TAN VỠ! Sát thương toàn server lên Boss tăng x1.5!',
+              'gold'
+            );
+          }
+          return nextShield;
+        });
+
+        setGlobalSynergyPct((prevSyn) =>
+          Math.min(100, Number((prevSyn + outcome.synergyGain).toFixed(1)))
+        );
+
+        setBossHpBillions((prevHp) => {
+          const nextHp = Math.max(
+            0,
+            Number((prevHp - outcome.damageBillions).toFixed(3))
+          );
+
+          const nextPct = (nextHp / BOSS_MAX_HP) * 100;
+          const currentMilestone = Math.floor(nextPct / 10) * 10;
+          const lastMilestone = Math.floor(lastMilestonePercentRef.current / 10) * 10;
+
+          if (currentMilestone < lastMilestone && nextHp > 0) {
+            lastMilestonePercentRef.current = currentMilestone;
+            appendCombatLog(
+              `[THIÊN CẤM CHẤN ĐỘNG] Máu Ma Đế phá vỡ mốc ${currentMilestone}%! Vòm trời Cửu Trọng nứt toác, bão lửa tuôn trào!`,
+              'gold'
+            );
+          }
+
+          if (nextHp <= 0) {
+            setGameState('gameover');
+            soundEngine.playGlobalBurstFanfare();
+          }
+          return nextHp;
+        });
+      }
+
+      feedbackCounterRef.current += 1;
+      setLastFeedback({
+        id: feedbackCounterRef.current,
+        grade,
+        labelVn: isGoldenHit ? 'HOÀNG KIM' : 'CHUẨN XÁC',
+        multiplier: outcome.displayMultiplier,
+        damageBillions: outcome.damageBillions,
+      });
+
+      if (isGoldenHit) {
+        appendCombatLog(
+          `Nhịp Hoàng Kim [${activeStance}]! Giáng -${outcome.damageBillions.toFixed(2)}B HP (x${outcome.displayMultiplier.toFixed(1)})`,
+          'gold'
+        );
+      } else {
+        appendCombatLog(
+          `Nhịp Chuẩn Xác [${activeStance}]! Giáng -${outcome.damageBillions.toFixed(2)}B HP`,
+          'neutral'
+        );
+      }
+    },
+    [
+      gameState,
+      startGame,
+      activeStance,
       basePowerBillions,
       combo,
       overdriveCharge,
@@ -407,134 +523,9 @@ export default function App() {
       bossShieldPct,
       spiritBonusMult,
       globalBurstActive,
-    });
-
-    // Trigger 3D Stage Lightning Pillar, Shockwave, and Shader advance
-    vaultStageRef.current?.strike(judgment.grade, activeStance);
-
-    // Send strike to Multiplayer Gateway batch queue
-    mpClientRef.current?.recordStrike({
-      stance: activeStance,
-      quality: judgment.grade,
-      damage: outcome.damageBillions,
-      resonance: activeStance === 'E' ? 3 : 1,
-      offsetMs: Math.round((currentProg - TARGET_RIM_PROGRESS) * 1000),
-      isCrit: outcome.triggeredOverdrive || overdriveActive || judgment.grade === 'PERFECT',
-    });
-
-    waveProgressRef.current = 0.62;
-
-    setCombo(outcome.nextCombo);
-    setMaxCombo((prev) => Math.max(prev, outcome.nextCombo));
-    if (judgment.grade === 'PERFECT') {
-      setPerfectCount((prev) => prev + 1);
-    }
-
-    setOverdriveCharge(outcome.nextOverdriveCharge);
-    if (outcome.triggeredOverdrive) {
-      setOverdriveActive(true);
-      setOverdriveTimeLeft(8.0);
-      vaultStageRef.current?.triggerMilestoneBurst?.(1.5);
-      appendCombatLog('LÔI ĐÌNH QUÁ TẢI 8/8! Toàn bộ Đe Thần rực sáng bão điện, Sát Thương x2.0!', 'cyan');
-    }
-
-    if (outcome.damageBillions > 0) {
-      setLinhThach((prev) => prev + outcome.linhThachEarned);
-      if (outcome.tinhHoaEarned > 0) {
-        setTinhHoa((prev) => prev + outcome.tinhHoaEarned);
-      }
-      setPlayerTotalDamageBillions((prev) => Number((prev + outcome.damageBillions).toFixed(3)));
-
-      setBossShieldPct((prevShield) => {
-        const nextShield = Math.max(0, Number((prevShield - outcome.shieldDepletion).toFixed(2)));
-        if (prevShield > 0 && nextShield === 0) {
-          appendCombatLog('GIÁP NĂNG LƯỢNG TAN VỠ! Sát thương toàn server lên Boss tăng x1.5!', 'gold');
-        }
-        return nextShield;
-      });
-
-      setGlobalSynergyPct((prevSyn) => Math.min(100, Number((prevSyn + outcome.synergyGain).toFixed(1))));
-
-      setBossHpBillions((prevHp) => {
-        const nextHp = Math.max(0, Number((prevHp - outcome.damageBillions).toFixed(3)));
-
-        // Check 10% milestone drop
-        const nextPct = (nextHp / BOSS_MAX_HP) * 100;
-        const currentMilestone = Math.floor(nextPct / 10) * 10;
-        const lastMilestone = Math.floor(lastMilestonePercentRef.current / 10) * 10;
-
-        if (currentMilestone < lastMilestone && nextHp > 0) {
-          lastMilestonePercentRef.current = currentMilestone;
-          vaultStageRef.current?.triggerMilestoneBurst?.(1.3);
-          appendCombatLog(
-            `[THIÊN CẤM CHẤN ĐỘNG] Máu Ma Đế phá vỡ mốc ${currentMilestone}%! Vòm trời Cửu Trọng nứt toác, bão lửa tuôn trào!`,
-            'gold'
-          );
-        }
-
-        if (nextHp <= 0) {
-          vaultStageRef.current?.triggerGrandShatter();
-          setGameState('gameover');
-        }
-        return nextHp;
-      });
-    }
-
-    if (judgment.grade === 'PERFECT') {
-      appendCombatLog(
-        `Nhịp Hoàng Kim [${activeStance}]! Giáng -${outcome.damageBillions.toFixed(2)}B HP (x${outcome.displayMultiplier.toFixed(1)})`,
-        'gold'
-      );
-    } else if (judgment.grade === 'GREAT') {
-      appendCombatLog(`Nhịp Chuẩn Xác [${activeStance}]! Giáng -${outcome.damageBillions.toFixed(2)}B HP`, 'neutral');
-    } else {
-      appendCombatLog('Trượt nhịp! Búa xì khói đen, đứt chuỗi Combo.', 'red');
-    }
-
-    feedbackCounterRef.current += 1;
-    const hitId = feedbackCounterRef.current;
-
-    let hitTitle = 'GÕ ẤM';
-    if (judgment.grade === 'PERFECT') {
-      hitTitle = `HOÀNG KIM! x${outcome.displayMultiplier.toFixed(1)}`;
-    } else if (judgment.grade === 'GREAT') {
-      hitTitle = `CHUẨN XÁC! x${outcome.displayMultiplier.toFixed(1)}`;
-    } else if (judgment.grade === 'GOOD') {
-      hitTitle = 'GÕ ẤM';
-    } else {
-      hitTitle = 'LỆCH NHỊP';
-    }
-
-    const newHit = {
-      id: hitId,
-      grade: judgment.grade as any,
-      title: hitTitle,
-      damageText: outcome.damageBillions > 0 ? `-${outcome.damageBillions.toFixed(2)}B HP` : undefined,
-      xOffset: (Math.random() - 0.5) * 36,
-      createdAt: Date.now(),
-    };
-
-    setFloatingHits((prev) => [...prev.slice(-6), newHit]);
-
-    setLastFeedback({
-      id: hitId,
-      grade: judgment.grade,
-      labelVn: judgment.labelVn,
-      multiplier: outcome.displayMultiplier,
-      damageBillions: outcome.damageBillions,
-    });
-  }, [
-    gameState,
-    activeStance,
-    basePowerBillions,
-    combo,
-    overdriveCharge,
-    overdriveActive,
-    bossShieldPct,
-    spiritBonusMult,
-    globalBurstActive,
-    appendCombatLog,
-  ]);
+      appendCombatLog,
+    ]
+  );
 
   const handleSelectStance = useCallback(
     (stance: StanceKey) => {
@@ -585,7 +576,9 @@ export default function App() {
       const target = spiritNodes.find((n) => n.id === nodeId);
       if (!target) return;
       setTinhHoa((th) => th - target.costTinhHoa);
-      setSpiritNodes((prev) => prev.map((n) => (n.id === nodeId ? { ...n, unlocked: true } : n)));
+      setSpiritNodes((prev) =>
+        prev.map((n) => (n.id === nodeId ? { ...n, unlocked: true } : n))
+      );
       soundEngine.playGlobalBurstFanfare();
       appendCombatLog(
         `Khai mở Chòm Sao Thần Hồn: ${target.name} (+${Math.round(target.bonusMult * 100)}% Công Lực)!`,
@@ -608,7 +601,7 @@ export default function App() {
     ]);
   }, []);
 
-  // Keyboard Shortcuts (Space, Q/W/E/R, P/Esc, M, [ and ] for Side Panels)
+  // Keyboard Shortcuts: Space, Q/W/E/R, P/Esc, M, [ and ]
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
@@ -625,7 +618,9 @@ export default function App() {
 
       if (e.code === 'KeyP' || e.code === 'Escape') {
         e.preventDefault();
-        setGameState((prev) => (prev === 'playing' ? 'paused' : prev === 'paused' ? 'playing' : prev));
+        setGameState((prev) =>
+          prev === 'playing' ? 'paused' : prev === 'paused' ? 'playing' : prev
+        );
         return;
       }
 
@@ -655,7 +650,7 @@ export default function App() {
 
       if (e.code === 'Space') {
         e.preventDefault();
-        handleStrike();
+        handleHeroStrike(false);
       } else if (e.code === 'KeyQ') {
         e.preventDefault();
         handleSelectStance('Q');
@@ -673,9 +668,8 @@ export default function App() {
 
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [gameState, startGame, handleStrike, handleSelectStance]);
+  }, [gameState, startGame, handleHeroStrike, handleSelectStance]);
 
-  // Live Sorted Leaderboard
   const leaderboard: LeaderboardEntry[] = [
     ...INITIAL_RIVALS,
     {
@@ -691,28 +685,33 @@ export default function App() {
 
   return (
     <div
-      className="relative min-h-screen h-screen w-screen overflow-hidden bg-[#04060C] text-slate-100 select-none"
+      className="relative min-h-screen h-screen w-screen overflow-hidden bg-[#04060C] text-slate-100 select-none font-sans"
       data-stance={activeStance}
       data-overdrive={overdriveActive ? 'true' : 'false'}
+      data-state={gameState}
     >
       {/* 0. Forge Atmospheric Loading Screen */}
       {isLoading && <LoadingScreen onLoaded={() => setIsLoading(false)} />}
 
-      {/* 1. THE MAIN 3D PLAYABLE SCENE: Colossal Cracking Sky Vault + Minimalist Forged Anvil */}
+      {/* 1. MAIN PLAYABLE SCENE: Panoramic 2D Community Canvas (18 Online Blacksmiths + Cracking Sky Vault) */}
       <div className="fixed inset-0 w-full h-full z-0 pointer-events-auto">
-        <CelestialVaultStage3D
-          ref={vaultStageRef}
-          crackProgress={crackProgress}
+        <CommunityPanoramicForgeCanvas
+          ref={canvasHandleRef}
+          bossHp={bossHpBillions}
+          bossMaxHp={BOSS_MAX_HP}
           activeStance={activeStance}
-          overdriveActive={overdriveActive}
-          onStrike={() => {}}
+          gameState={gameState}
+          onHeroStrikeAction={() => handleHeroStrike(false)}
+          onPeerAutonomousDamage={(chip) => {
+            setBossHpBillions((prev) => Math.max(0, Number((prev - chip * 0.05).toFixed(3))));
+          }}
         />
       </div>
 
       {/* Title Screen Overlay */}
       {gameState === 'title' && <TitleScreenModal onStart={startGame} />}
 
-      {/* Top Translucent Boss Raid Header */}
+      {/* Top Boss Raid Header */}
       <div className="fixed top-0 inset-x-0 z-20 pointer-events-auto">
         <TopBossHeader
           bossName="Cửu U Thiên Ma Đế · Hắc Diên Cự Thần"
@@ -734,7 +733,9 @@ export default function App() {
               return next;
             });
           }}
-          onPause={() => setGameState((prev) => (prev === 'playing' ? 'paused' : 'playing'))}
+          onPause={() =>
+            setGameState((prev) => (prev === 'playing' ? 'paused' : 'playing'))
+          }
           onRestart={resetGame}
           onTriggerGlobalBurst={handleTriggerGlobalBurst}
         />
@@ -748,7 +749,7 @@ export default function App() {
           e.stopPropagation();
           setLeftPanelOpen((prev) => !prev);
         }}
-        className={`fixed left-3 top-20 z-50 flex items-center gap-1.5 px-3 py-2 rounded-xl backdrop-blur-md border text-xs font-tech font-bold tracking-wider cursor-pointer transition-all shadow-lg ${
+        className={`fixed left-3 top-20 z-30 flex items-center gap-1.5 px-3 py-2 rounded-xl backdrop-blur-md border text-xs font-tech font-bold tracking-wider cursor-pointer transition-all shadow-lg ${
           leftPanelOpen
             ? 'bg-amber-400 text-slate-950 border-amber-300 shadow-amber-500/25'
             : 'bg-slate-950/80 hover:bg-slate-900 border-amber-500/30 text-amber-300 hover:text-amber-200'
@@ -766,7 +767,7 @@ export default function App() {
           e.stopPropagation();
           setRightPanelOpen((prev) => !prev);
         }}
-        className={`fixed right-3 top-20 z-50 flex items-center gap-1.5 px-3 py-2 rounded-xl backdrop-blur-md border text-xs font-tech font-bold tracking-wider cursor-pointer transition-all shadow-lg ${
+        className={`fixed right-3 top-20 z-30 flex items-center gap-1.5 px-3 py-2 rounded-xl backdrop-blur-md border text-xs font-tech font-bold tracking-wider cursor-pointer transition-all shadow-lg ${
           rightPanelOpen
             ? 'bg-amber-400 text-slate-950 border-amber-300 shadow-amber-500/25'
             : 'bg-slate-950/80 hover:bg-slate-900 border-amber-500/30 text-amber-300 hover:text-amber-200'
@@ -777,44 +778,6 @@ export default function App() {
         <span className="hidden sm:inline">Lò Rèn & Thần Hồn</span>
       </button>
 
-      {/* 2.5. FLOATING HIT TEXT JUICE (Rises directly from the Anvil Core) */}
-      <div className="fixed inset-x-0 bottom-[30%] sm:bottom-[34%] md:bottom-[38%] z-30 flex items-center justify-center pointer-events-none select-none">
-        <div className="relative flex items-center justify-center">
-          {floatingHits.map((hit) => {
-            const isPerfect = hit.grade === 'PERFECT';
-            const isGreat = hit.grade === 'GREAT';
-            const isGood = hit.grade === 'GOOD';
-
-            return (
-              <div
-                key={hit.id}
-                className="absolute flex flex-col items-center justify-center pointer-events-none animate-hit-float whitespace-nowrap"
-                style={{ transform: `translateX(${hit.xOffset}px)` }}
-              >
-                <div
-                  className={`font-display font-black text-xl sm:text-2xl md:text-3xl tracking-widest uppercase ${
-                    isPerfect
-                      ? 'text-amber-300 drop-shadow-[0_0_20px_rgba(255,170,0,0.95)]'
-                      : isGreat
-                      ? 'text-cyan-300 drop-shadow-[0_0_14px_rgba(0,240,255,0.85)]'
-                      : isGood
-                      ? 'text-slate-100 drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]'
-                      : 'text-slate-400'
-                  }`}
-                >
-                  {hit.title}
-                </div>
-                {hit.damageText && (
-                  <div className="font-tech text-xs sm:text-sm font-bold text-red-400 drop-shadow-[0_0_8px_rgba(248,113,113,0.8)] mt-0.5">
-                    {hit.damageText}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
       {/* 3. CENTER-BOTTOM ERGONOMIC HUD: Strike Feedback, 4 Stances, Overdrive, Strike Button */}
       <div className="fixed bottom-3 inset-x-0 z-20 flex flex-col items-center gap-2 pointer-events-none px-4">
         {/* Floating Strike Grade Feedback */}
@@ -824,9 +787,7 @@ export default function App() {
               className={`font-display text-base md:text-xl font-extrabold tracking-wider ${
                 lastFeedback.grade === 'PERFECT'
                   ? 'text-amber-300 drop-shadow-[0_0_12px_rgba(255,160,0,0.8)]'
-                  : lastFeedback.grade === 'GREAT'
-                  ? 'text-cyan-300'
-                  : 'text-slate-400'
+                  : 'text-cyan-300'
               }`}
             >
               {lastFeedback.labelVn}{' '}
@@ -883,7 +844,9 @@ export default function App() {
         {/* Overdrive 8/8 Bar */}
         <div
           className={`pointer-events-auto w-full max-w-[480px] rounded-xl px-3 py-1.5 border backdrop-blur-md transition-colors ${
-            overdriveActive ? 'bg-cyan-500/20 border-cyan-400 shadow-lg shadow-cyan-400/20' : 'bg-slate-950/75 border-slate-800/80'
+            overdriveActive
+              ? 'bg-cyan-500/20 border-cyan-400 shadow-lg shadow-cyan-400/20'
+              : 'bg-slate-950/75 border-slate-800/80'
           }`}
         >
           <div className="flex items-center justify-between text-[11px] font-tech mb-1">
@@ -893,7 +856,9 @@ export default function App() {
                 : 'Thanh Overdrive · Tích 8/8 Chuỗi'}
             </span>
             <span className="font-bold text-amber-300">
-              {overdriveActive ? 'SÁT THƯƠNG x2.0' : `${overdriveCharge.toFixed(1)} / ${OVERDRIVE_MAX}`}
+              {overdriveActive
+                ? 'SÁT THƯƠNG x2.0'
+                : `${overdriveCharge.toFixed(1)} / ${OVERDRIVE_MAX}`}
             </span>
           </div>
 
@@ -923,18 +888,17 @@ export default function App() {
         <div className="pointer-events-auto flex items-center justify-center">
           <button
             type="button"
-            onClick={handleStrike}
-            className="px-5 py-2.5 rounded-full bg-slate-950/80 hover:bg-slate-900 border border-amber-500/40 text-xs sm:text-sm font-tech text-slate-100 tracking-wider shadow-lg hover:border-amber-400 transition-all cursor-pointer"
+            onClick={() => handleHeroStrike(false)}
+            className="px-6 py-2.5 rounded-full bg-gradient-to-r from-amber-500/20 via-orange-500/20 to-amber-500/20 hover:from-amber-500/30 hover:to-amber-500/30 border border-amber-500/50 text-xs sm:text-sm font-tech font-bold text-amber-300 tracking-wider shadow-lg hover:border-amber-400 transition-all cursor-pointer active:scale-95"
           >
-            Nhấn <span className="text-cyan-300 font-bold">SPACEBAR</span> hoặc{' '}
-            <span className="text-amber-300 font-bold">CHẠM ĐE</span> để Phóng Sét (+0.05 uCrack)
+            NỆN BÚA PHÁ TRỜI [SPACE / CLICK]
           </button>
         </div>
       </div>
 
       {/* 4. SLIDE-OUT DRAWER 1 (LEFT): THẾ TRẬN, NHẬT KÝ CHIẾN TRƯỜNG & CHAT */}
       <div
-        className={`fixed inset-y-0 left-0 z-40 w-full sm:w-[380px] md:w-[420px] bg-slate-950/92 border-r border-amber-500/30 backdrop-blur-xl shadow-2xl transform transition-transform duration-300 ease-in-out flex flex-col ${
+        className={`fixed inset-y-0 left-0 z-40 w-full sm:w-[380px] md:w-[420px] bg-slate-950/95 border-r border-amber-500/30 backdrop-blur-xl shadow-2xl transform transition-transform duration-300 ease-in-out flex flex-col ${
           leftPanelOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
@@ -957,7 +921,7 @@ export default function App() {
             playerTotalDamageBillions={playerTotalDamageBillions}
             perfectCount={perfectCount}
             maxCombo={maxCombo}
-            serverDpsBillions={5.70 + basePowerBillions}
+            serverDpsBillions={5.7 + basePowerBillions}
             combatLogs={combatLogs}
             chatMessages={chatMessages}
             onSendChat={handleSendChat}
@@ -967,7 +931,7 @@ export default function App() {
 
       {/* 5. SLIDE-OUT DRAWER 2 (RIGHT): NÂNG CẤP, THẦN HỒN & BẢNG VÀNG */}
       <div
-        className={`fixed inset-y-0 right-0 z-40 w-full sm:w-[400px] md:w-[440px] bg-slate-950/92 border-l border-amber-500/30 backdrop-blur-xl shadow-2xl transform transition-transform duration-300 ease-in-out flex flex-col ${
+        className={`fixed inset-y-0 right-0 z-40 w-full sm:w-[400px] md:w-[440px] bg-slate-950/95 border-l border-amber-500/30 backdrop-blur-xl shadow-2xl transform transition-transform duration-300 ease-in-out flex flex-col ${
           rightPanelOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
@@ -1002,7 +966,7 @@ export default function App() {
       {/* Backdrop Dimmer when either side drawer is open */}
       {(leftPanelOpen || rightPanelOpen) && (
         <div
-          className="fixed inset-0 z-35 bg-black/40 backdrop-blur-[2px] transition-opacity cursor-pointer"
+          className="fixed inset-0 z-35 bg-black/50 backdrop-blur-[2px] transition-opacity cursor-pointer"
           onClick={() => {
             setLeftPanelOpen(false);
             setRightPanelOpen(false);
