@@ -165,7 +165,41 @@ export default function App() {
     multiplier: number;
     damageBillions: number;
   } | null>(null);
+  const [floatingHits, setFloatingHits] = useState<
+    Array<{
+      id: number;
+      grade: 'PERFECT' | 'GREAT' | 'GOOD' | 'MISS';
+      title: string;
+      damageText?: string;
+      xOffset: number;
+      createdAt: number;
+    }>
+  >([]);
+  const lastMilestonePercentRef = useRef<number>(100);
   const [muted, setMuted] = useState<boolean>(false);
+
+  // Auto-cleanup floating hit particles older than 900ms
+  useEffect(() => {
+    if (floatingHits.length === 0) return;
+    const timer = setTimeout(() => {
+      const now = Date.now();
+      setFloatingHits((prev) => prev.filter((h) => now - h.createdAt < 900));
+    }, 150);
+    return () => clearTimeout(timer);
+  }, [floatingHits]);
+
+  // Global user interaction listener to unlock AudioContext on first tap
+  useEffect(() => {
+    const handleFirstGesture = () => {
+      soundEngine.unlockAudio();
+    };
+    window.addEventListener('pointerdown', handleFirstGesture, { once: true });
+    window.addEventListener('keydown', handleFirstGesture, { once: true });
+    return () => {
+      window.removeEventListener('pointerdown', handleFirstGesture);
+      window.removeEventListener('keydown', handleFirstGesture);
+    };
+  }, []);
 
   const [combatLogs, setCombatLogs] = useState<CombatLogEntry[]>([
     {
@@ -286,6 +320,8 @@ export default function App() {
   }, [appendCombatLog]);
 
   const startGame = useCallback(() => {
+    soundEngine.unlockAudio();
+    soundEngine.playAnvilStrike('PERFECT', 'Q', false);
     if (document.activeElement instanceof HTMLElement) {
       document.activeElement.blur();
     }
@@ -398,6 +434,7 @@ export default function App() {
     if (outcome.triggeredOverdrive) {
       setOverdriveActive(true);
       setOverdriveTimeLeft(8.0);
+      vaultStageRef.current?.triggerMilestoneBurst?.(1.5);
       appendCombatLog('LÔI ĐÌNH QUÁ TẢI 8/8! Toàn bộ Đe Thần rực sáng bão điện, Sát Thương x2.0!', 'cyan');
     }
 
@@ -420,6 +457,21 @@ export default function App() {
 
       setBossHpBillions((prevHp) => {
         const nextHp = Math.max(0, Number((prevHp - outcome.damageBillions).toFixed(3)));
+
+        // Check 10% milestone drop
+        const nextPct = (nextHp / BOSS_MAX_HP) * 100;
+        const currentMilestone = Math.floor(nextPct / 10) * 10;
+        const lastMilestone = Math.floor(lastMilestonePercentRef.current / 10) * 10;
+
+        if (currentMilestone < lastMilestone && nextHp > 0) {
+          lastMilestonePercentRef.current = currentMilestone;
+          vaultStageRef.current?.triggerMilestoneBurst?.(1.3);
+          appendCombatLog(
+            `[THIÊN CẤM CHẤN ĐỘNG] Máu Ma Đế phá vỡ mốc ${currentMilestone}%! Vòm trời Cửu Trọng nứt toác, bão lửa tuôn trào!`,
+            'gold'
+          );
+        }
+
         if (nextHp <= 0) {
           vaultStageRef.current?.triggerGrandShatter();
           setGameState('gameover');
@@ -440,8 +492,32 @@ export default function App() {
     }
 
     feedbackCounterRef.current += 1;
+    const hitId = feedbackCounterRef.current;
+
+    let hitTitle = 'GÕ ẤM';
+    if (judgment.grade === 'PERFECT') {
+      hitTitle = `HOÀNG KIM! x${outcome.displayMultiplier.toFixed(1)}`;
+    } else if (judgment.grade === 'GREAT') {
+      hitTitle = `CHUẨN XÁC! x${outcome.displayMultiplier.toFixed(1)}`;
+    } else if (judgment.grade === 'GOOD') {
+      hitTitle = 'GÕ ẤM';
+    } else {
+      hitTitle = 'LỆCH NHỊP';
+    }
+
+    const newHit = {
+      id: hitId,
+      grade: judgment.grade as any,
+      title: hitTitle,
+      damageText: outcome.damageBillions > 0 ? `-${outcome.damageBillions.toFixed(2)}B HP` : undefined,
+      xOffset: (Math.random() - 0.5) * 36,
+      createdAt: Date.now(),
+    };
+
+    setFloatingHits((prev) => [...prev.slice(-6), newHit]);
+
     setLastFeedback({
-      id: feedbackCounterRef.current,
+      id: hitId,
       grade: judgment.grade,
       labelVn: judgment.labelVn,
       multiplier: outcome.displayMultiplier,
@@ -700,6 +776,44 @@ export default function App() {
         <Hammer className="w-4 h-4 text-amber-400" />
         <span className="hidden sm:inline">Lò Rèn & Thần Hồn</span>
       </button>
+
+      {/* 2.5. FLOATING HIT TEXT JUICE (Rises directly from the Anvil Core) */}
+      <div className="fixed inset-x-0 bottom-[30%] sm:bottom-[34%] md:bottom-[38%] z-30 flex items-center justify-center pointer-events-none select-none">
+        <div className="relative flex items-center justify-center">
+          {floatingHits.map((hit) => {
+            const isPerfect = hit.grade === 'PERFECT';
+            const isGreat = hit.grade === 'GREAT';
+            const isGood = hit.grade === 'GOOD';
+
+            return (
+              <div
+                key={hit.id}
+                className="absolute flex flex-col items-center justify-center pointer-events-none animate-hit-float whitespace-nowrap"
+                style={{ transform: `translateX(${hit.xOffset}px)` }}
+              >
+                <div
+                  className={`font-display font-black text-xl sm:text-2xl md:text-3xl tracking-widest uppercase ${
+                    isPerfect
+                      ? 'text-amber-300 drop-shadow-[0_0_20px_rgba(255,170,0,0.95)]'
+                      : isGreat
+                      ? 'text-cyan-300 drop-shadow-[0_0_14px_rgba(0,240,255,0.85)]'
+                      : isGood
+                      ? 'text-slate-100 drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]'
+                      : 'text-slate-400'
+                  }`}
+                >
+                  {hit.title}
+                </div>
+                {hit.damageText && (
+                  <div className="font-tech text-xs sm:text-sm font-bold text-red-400 drop-shadow-[0_0_8px_rgba(248,113,113,0.8)] mt-0.5">
+                    {hit.damageText}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
 
       {/* 3. CENTER-BOTTOM ERGONOMIC HUD: Strike Feedback, 4 Stances, Overdrive, Strike Button */}
       <div className="fixed bottom-3 inset-x-0 z-20 flex flex-col items-center gap-2 pointer-events-none px-4">

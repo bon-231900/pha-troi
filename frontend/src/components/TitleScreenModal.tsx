@@ -1,10 +1,16 @@
 import React from 'react';
+import { soundEngine } from '../game/audio';
 
 interface TitleScreenModalProps {
   onStart: () => void;
 }
 
 export const TitleScreenModal: React.FC<TitleScreenModalProps> = ({ onStart }) => {
+  const handleStart = () => {
+    soundEngine.unlockAudio();
+    soundEngine.playAnvilStrike('PERFECT', 'Q', false);
+    onStart();
+  };
   return (
     <div
       className="fixed inset-0 z-50 flex flex-col items-center justify-between p-6 md:p-12 overflow-hidden bg-[#080A10]"
@@ -110,7 +116,7 @@ export const TitleScreenModal: React.FC<TitleScreenModalProps> = ({ onStart }) =
         <button
           type="button"
           data-start="true"
-          onClick={onStart}
+          onClick={handleStart}
           className="px-8 py-4 rounded-xl bg-amber-400 hover:bg-amber-300 active:scale-95 text-slate-950 font-display font-bold text-base md:text-lg tracking-wider transition-all cursor-pointer shadow-lg shadow-amber-500/25 whitespace-nowrap shrink-0"
         >
           KHAI LÒ PHÁ TRỜI

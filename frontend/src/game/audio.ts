@@ -22,6 +22,22 @@ class CelestialAudioEngine {
     }
   }
 
+  public unlockAudio(): Promise<void> {
+    if (typeof window === 'undefined') return Promise.resolve();
+    try {
+      if (!this.ctx) {
+        const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+        if (AudioCtx) {
+          this.ctx = new AudioCtx();
+        }
+      }
+      if (this.ctx && this.ctx.state === 'suspended') {
+        return this.ctx.resume().then(() => {});
+      }
+    } catch {}
+    return Promise.resolve();
+  }
+
   public triggerHaptic(pattern: number | number[]) {
     if (this.muted || typeof navigator === 'undefined' || !navigator.vibrate) return;
     try {

@@ -149,11 +149,11 @@ const CELESTIAL_VAULT_FRAGMENT_SHADER = `
     stoneColor += vec3(1.0, 0.58, 0.08) * reliefHighlight * 0.42;
 
     // 2. 3D VORONOI CROW'S-FOOT FRACTURES (Uniform uCrack: 0.0 -> 1.0)
-    float effectiveCrack = max(0.03, uCrack);
+    float effectiveCrack = max(0.04, uCrack);
 
-    // Radial reach from the zenith impact point outward across the vault
-    float maxReach = mix(0.16, 1.55, pow(effectiveCrack, 0.78));
-    float radialMask = smoothstep(maxReach, max(0.0, maxReach - 0.32), zenithDist);
+    // Radial reach from the zenith impact point outward across the vault (broad dynamic spread)
+    float maxReach = mix(0.55, 1.95, pow(effectiveCrack, 0.52));
+    float radialMask = smoothstep(maxReach, max(0.0, maxReach - 0.42), zenithDist);
 
     vec3 warp = 0.085 * vec3(
       sin(dir.y * 18.0 + dir.z * 13.0),
@@ -169,30 +169,31 @@ const CELESTIAL_VAULT_FRAGMENT_SHADER = `
     float edge2 = vSecondary.y - vSecondary.x;
     float edge3 = vMicro.y - vMicro.x;
 
-    float width1 = mix(0.018, 0.135, pow(effectiveCrack, 1.25));
-    float width2 = mix(0.008, 0.078, pow(effectiveCrack, 1.4));
-    float width3 = mix(0.002, 0.045, effectiveCrack * effectiveCrack);
+    // Bold, clearly visible fissures right from early % HP loss
+    float width1 = mix(0.045, 0.220, pow(effectiveCrack, 0.82));
+    float width2 = mix(0.022, 0.125, pow(effectiveCrack, 0.92));
+    float width3 = mix(0.008, 0.065, effectiveCrack);
 
     float crack1 = smoothstep(width1, width1 * 0.08, edge1) * radialMask;
-    float crack2 = smoothstep(width2, width2 * 0.10, edge2) * radialMask * smoothstep(0.08, 0.6, effectiveCrack);
-    float crack3 = smoothstep(width3, 0.0, edge3) * radialMask * smoothstep(0.25, 0.9, effectiveCrack);
+    float crack2 = smoothstep(width2, width2 * 0.10, edge2) * radialMask * smoothstep(0.04, 0.5, effectiveCrack);
+    float crack3 = smoothstep(width3, 0.0, edge3) * radialMask * smoothstep(0.12, 0.8, effectiveCrack);
 
-    float zenithScar = smoothstep(0.11 + effectiveCrack * 0.12, 0.0, zenithDist) *
-                       smoothstep(width1 * 1.6, 0.0, edge1);
+    float zenithScar = smoothstep(0.14 + effectiveCrack * 0.18, 0.0, zenithDist) *
+                       smoothstep(width1 * 1.8, 0.0, edge1);
 
-    float totalCrack = clamp(crack1 + crack2 * 0.8 + crack3 * 0.55 + zenithScar, 0.0, 1.0);
+    float totalCrack = clamp(crack1 + crack2 * 0.85 + crack3 * 0.6 + zenithScar, 0.0, 1.0);
 
-    float magmaHalo = exp(-edge1 * mix(26.0, 8.5, effectiveCrack)) * radialMask * (0.35 + effectiveCrack * 0.95);
+    float magmaHalo = exp(-edge1 * mix(22.0, 7.5, effectiveCrack)) * radialMask * (0.45 + effectiveCrack * 1.25);
 
-    vec3 deepEmber = vec3(0.92, 0.28, 0.02);
+    vec3 deepEmber = vec3(0.95, 0.25, 0.02);
     vec3 fireGold = vec3(1.0, 0.62, 0.0);    // #FF9E00
     vec3 solarGold = vec3(1.0, 0.85, 0.28);
     vec3 whiteHot = vec3(1.0, 0.98, 0.90);
 
-    float luminanceBoost = 1.35 + uCrack * 2.4 + uStrikeFlash * 1.5;
-    vec3 crackEmission = mix(deepEmber, fireGold, smoothstep(0.0, 0.45, totalCrack));
-    crackEmission = mix(crackEmission, solarGold, smoothstep(0.4, 0.8, totalCrack));
-    crackEmission = mix(crackEmission, whiteHot, pow(totalCrack, 2.4));
+    float luminanceBoost = 1.6 + uCrack * 3.8 + uStrikeFlash * 2.4;
+    vec3 crackEmission = mix(deepEmber, fireGold, smoothstep(0.0, 0.35, totalCrack));
+    crackEmission = mix(crackEmission, solarGold, smoothstep(0.3, 0.7, totalCrack));
+    crackEmission = mix(crackEmission, whiteHot, pow(totalCrack, 1.8));
     crackEmission *= luminanceBoost;
 
     // 3. RADIAL SHOCKWAVE
@@ -601,6 +602,7 @@ const SHARD_CRYSTAL_FRAGMENT_SHADER = `
 export interface CelestialVaultStage3DHandle {
   strike: (grade?: string, stance?: StanceKey) => void;
   triggerGrandShatter: () => void;
+  triggerMilestoneBurst?: (intensity?: number) => void;
   reset: () => void;
   setCrack: (val: number) => void;
   getStats: () => {
@@ -625,12 +627,14 @@ export const CelestialVaultStage3D = forwardRef<
 >(({ crackProgress, activeStance = 'Q', overdriveActive = false, onStrike, onGrandShatter, onResetVault }, ref) => {
   const mountRef = useRef<HTMLDivElement | null>(null);
   const [webglError, setWebglError] = React.useState<string | null>(null);
+  const [toastDismissed, setToastDismissed] = React.useState<boolean>(false);
 
   const crackRef = useRef<number>(crackProgress);
   const shatteredRef = useRef<boolean>(false);
   const triggerStrikeRef = useRef<((grade?: string, stance?: StanceKey) => void) | null>(null);
   const resetVaultRef = useRef<(() => void) | null>(null);
   const triggerGrandShatterRef = useRef<(() => void) | null>(null);
+  const triggerMilestoneBurstRef = useRef<((intensity?: number) => void) | null>(null);
 
   // Sync external crackProgress prop to internal ref
   useEffect(() => {
@@ -645,6 +649,9 @@ export const CelestialVaultStage3D = forwardRef<
     },
     triggerGrandShatter: () => {
       triggerGrandShatterRef.current?.();
+    },
+    triggerMilestoneBurst: (intensity) => {
+      triggerMilestoneBurstRef.current?.(intensity);
     },
     reset: () => {
       resetVaultRef.current?.();
@@ -667,6 +674,151 @@ export const CelestialVaultStage3D = forwardRef<
     const container = mountRef.current;
     if (!container) return;
 
+    // Helper: Initialize 2D Canvas Fallback so the anvil is never blocked on devices without WebGL
+    const setup2DFallback = () => {
+      setWebglError(
+        'Đang chạy ở chế độ 2D Tinh gọn. Hãy bật Tăng tốc phần cứng trong cài đặt trình duyệt để xem vòm trời 3D.'
+      );
+      const canvas2d = document.createElement('canvas');
+      const w = Math.max(320, container.clientWidth || window.innerWidth);
+      const h = Math.max(320, container.clientHeight || window.innerHeight);
+      canvas2d.width = w;
+      canvas2d.height = h;
+      canvas2d.style.width = '100%';
+      canvas2d.style.height = '100%';
+      canvas2d.style.display = 'block';
+      container.innerHTML = '';
+      container.appendChild(canvas2d);
+      const ctx = canvas2d.getContext('2d');
+
+      let animId = 0;
+      let shockwaveRadius = 0;
+      let shockwaveAlpha = 0;
+      const sparks2d: Array<{ x: number; y: number; vx: number; vy: number; life: number; color: string }> = [];
+
+      const render2d = () => {
+        if (!ctx) return;
+        const curW = canvas2d.width;
+        const curH = canvas2d.height;
+
+        // Cosmic starfield background
+        const grad = ctx.createRadialGradient(curW / 2, curH * 0.4, 20, curW / 2, curH * 0.5, curW * 0.7);
+        grad.addColorStop(0, '#162238');
+        grad.addColorStop(0.5, '#0c1220');
+        grad.addColorStop(1, '#04060c');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, curW, curH);
+
+        // Sky Cracks
+        const currentCrack = crackRef.current;
+        const crackCount = Math.floor(4 + currentCrack * 18);
+        ctx.strokeStyle = `rgba(255, 158, 0, ${0.4 + currentCrack * 0.6})`;
+        ctx.lineWidth = 1.5 + currentCrack * 3;
+        ctx.shadowColor = '#ff9e00';
+        ctx.shadowBlur = 10 + currentCrack * 15;
+        for (let i = 0; i < crackCount; i++) {
+          const angle = (i / crackCount) * Math.PI * 1.2 + Math.PI * 0.9;
+          const length = (curW * 0.25) * (0.4 + currentCrack * 0.6);
+          ctx.beginPath();
+          ctx.moveTo(curW / 2, curH * 0.15);
+          const cx = curW / 2 + Math.cos(angle) * (length * 0.5) + Math.sin(i * 3) * 20;
+          const cy = curH * 0.15 + Math.sin(angle) * (length * 0.5);
+          const ex = curW / 2 + Math.cos(angle) * length;
+          const ey = curH * 0.15 + Math.sin(angle) * length;
+          ctx.quadraticCurveTo(cx, cy, ex, ey);
+          ctx.stroke();
+        }
+        ctx.shadowBlur = 0;
+
+        // Anvil Pedestal
+        const anvilX = curW / 2;
+        const anvilY = curH * 0.72;
+        ctx.fillStyle = '#0f172a';
+        ctx.strokeStyle = '#f59e0b';
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.moveTo(anvilX - 90, anvilY + 50);
+        ctx.lineTo(anvilX + 90, anvilY + 50);
+        ctx.lineTo(anvilX + 65, anvilY - 10);
+        ctx.lineTo(anvilX + 110, anvilY - 10);
+        ctx.lineTo(anvilX + 90, anvilY - 35);
+        ctx.lineTo(anvilX - 100, anvilY - 35);
+        ctx.lineTo(anvilX - 70, anvilY - 10);
+        ctx.lineTo(anvilX - 65, anvilY - 10);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        // Anvil Rune Glow
+        ctx.fillStyle = '#f59e0b';
+        ctx.shadowColor = '#f59e0b';
+        ctx.shadowBlur = 12;
+        ctx.fillRect(anvilX - 45, anvilY - 26, 90, 4);
+        ctx.shadowBlur = 0;
+
+        // Shockwave
+        if (shockwaveAlpha > 0.01) {
+          ctx.strokeStyle = `rgba(0, 240, 255, ${shockwaveAlpha})`;
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          ctx.arc(anvilX, anvilY - 35, shockwaveRadius, 0, Math.PI * 2);
+          ctx.stroke();
+          shockwaveRadius += 4.5;
+          shockwaveAlpha *= 0.88;
+        }
+
+        // Sparks
+        for (let i = sparks2d.length - 1; i >= 0; i--) {
+          const s = sparks2d[i];
+          s.x += s.vx;
+          s.y += s.vy;
+          s.vy += 0.25;
+          s.life -= 0.025;
+          if (s.life <= 0) {
+            sparks2d.splice(i, 1);
+            continue;
+          }
+          ctx.fillStyle = s.color;
+          ctx.fillRect(s.x, s.y, 3, 3);
+        }
+
+        animId = requestAnimationFrame(render2d);
+      };
+      animId = requestAnimationFrame(render2d);
+
+      triggerStrikeRef.current = (grade = 'PERFECT', stance = activeStance) => {
+        soundEngine.playAnvilStrike(grade as any, stance, overdriveActive);
+        shockwaveRadius = 15;
+        shockwaveAlpha = 1.0;
+        const anvilX = canvas2d.width / 2;
+        const anvilY = canvas2d.height * 0.72 - 35;
+        const colors = ['#f59e0b', '#fbbf24', '#00f0ff', '#ffffff'];
+        for (let i = 0; i < 28; i++) {
+          const ang = Math.random() * Math.PI - Math.PI;
+          const spd = Math.random() * 8 + 2;
+          sparks2d.push({
+            x: anvilX + (Math.random() - 0.5) * 30,
+            y: anvilY,
+            vx: Math.cos(ang) * spd,
+            vy: Math.sin(ang) * spd - 2,
+            life: 1.0,
+            color: colors[Math.floor(Math.random() * colors.length)],
+          });
+        }
+        onStrike?.();
+      };
+
+      triggerMilestoneBurstRef.current = () => {
+        shockwaveRadius = 25;
+        shockwaveAlpha = 1.5;
+        soundEngine.playGlobalBurstFanfare();
+      };
+
+      return () => {
+        cancelAnimationFrame(animId);
+      };
+    };
+
     // Safety probe: verify WebGL support before instantiating Three.js
     const probe = document.createElement('canvas');
     const gl =
@@ -674,10 +826,7 @@ export const CelestialVaultStage3D = forwardRef<
       probe.getContext('webgl') ||
       probe.getContext('experimental-webgl');
     if (!gl) {
-      setWebglError(
-        'Thiết bị hoặc trình duyệt chưa hỗ trợ WebGL. Vui lòng bật Tăng tốc phần cứng (Hardware Acceleration) trong Cài đặt.'
-      );
-      return;
+      return setup2DFallback();
     }
 
     // 1. Scene, Camera & Renderer
@@ -728,11 +877,8 @@ export const CelestialVaultStage3D = forwardRef<
       scene.environment = envTarget.texture;
       pmremGenerator.dispose();
     } catch (err) {
-      console.warn('[CelestialVaultStage3D] WebGLRenderer creation failed:', err);
-      setWebglError(
-        'Không thể khởi tạo môi trường đồ họa WebGL. Vui lòng bật Tăng tốc phần cứng trong cài đặt trình duyệt để tiếp tục.'
-      );
-      return;
+      console.warn('[CelestialVaultStage3D] WebGLRenderer creation failed, using 2D fallback:', err);
+      return setup2DFallback();
     }
 
     // 2. Lighting
@@ -1330,6 +1476,23 @@ export const CelestialVaultStage3D = forwardRef<
       }
     };
 
+    const executeMilestoneBurst = (intensity: number = 1.0) => {
+      if (shatteredRef.current) return;
+      // 1. Launch radiant sky lightning pillar & sky flash
+      lightningTimer = 0;
+      lightningGroup.visible = true;
+      strikeFlash = 2.4 * intensity;
+      cameraShake = 0.55 * intensity;
+
+      // 2. Play thunderous sound burst
+      soundEngine.playGlobalBurstFanfare();
+
+      // 3. Flurry of falling embers and stone debris showering down toward anvil
+      spawnFallingEmbersAndSparks(elapsed, Math.round(55 * intensity), true);
+      spawnFallingEmbersAndSparks(elapsed, Math.round(40 * intensity), false);
+      spawnFallingStoneDebris(Math.round(15 * intensity));
+    };
+
     const resetVault = () => {
       crackRef.current = 0.0;
       shatteredRef.current = false;
@@ -1353,6 +1516,7 @@ export const CelestialVaultStage3D = forwardRef<
     triggerStrikeRef.current = executeStrike;
     resetVaultRef.current = resetVault;
     triggerGrandShatterRef.current = executeGrandShatter;
+    triggerMilestoneBurstRef.current = executeMilestoneBurst;
 
     // Window global debug API
     (window as unknown as Record<string, unknown>).__celestialVault = {
@@ -1583,45 +1747,43 @@ export const CelestialVaultStage3D = forwardRef<
     };
   }, []);
 
-  if (webglError) {
-    return (
-      <div className="w-full h-full flex flex-col items-center justify-center bg-[#070b14] text-slate-200 p-6 text-center select-none relative overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,158,0,0.12)_0%,transparent_70%)] pointer-events-none" />
-        <div className="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 mb-4 shadow-[0_0_24px_rgba(255,158,0,0.2)]">
-          <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-            />
-          </svg>
-        </div>
-        <h3 className="text-xl font-bold text-amber-300 font-cinzel mb-2 tracking-wide">
-          CẦN BẬT TĂNG TỐC PHẦN CỨNG (WEBGL)
-        </h3>
-        <p className="max-w-md text-xs text-slate-400 leading-relaxed mb-6 font-mono">
-          {webglError}
-        </p>
-        <div className="text-left bg-black/40 border border-slate-800 rounded-lg p-3.5 max-w-sm w-full mb-6 text-[11px] text-slate-400 font-mono space-y-1.5">
-          <p className="text-amber-400 font-bold mb-1">Hướng dẫn kích hoạt nhanh:</p>
-          <p>
-            • <span className="text-slate-200">Chrome/Edge:</span> Cài đặt → Hệ thống → Bật "Sử dụng tính năng tăng tốc đồ họa khi có sẵn" (Hardware acceleration).
-          </p>
-          <p>
-            • <span className="text-slate-200">Zalo/FB/TikTok WebView:</span> Nhấn nút (...) ở góc và chọn "Mở bằng trình duyệt ngoài" (Safari / Chrome).
-          </p>
-        </div>
-        <button
-          type="button"
-          onClick={() => window.location.reload()}
-          className="px-6 py-2.5 bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-black font-bold text-xs uppercase tracking-widest rounded-lg shadow-[0_0_20px_rgba(255,158,0,0.4)] transition-all cursor-pointer active:scale-95"
+  return (
+    <div className="relative w-full h-full">
+      <div ref={mountRef} className="w-full h-full" />
+      {webglError && !toastDismissed && (
+        <aside
+          role="status"
+          aria-live="polite"
+          className="fixed top-20 right-4 sm:right-6 z-40 max-w-sm w-[calc(100vw-2rem)] bg-[#0c1220]/95 border border-amber-500/40 rounded-xl p-3 shadow-2xl backdrop-blur-md flex items-start gap-3 text-left"
         >
-          Tải Lại Trang
-        </button>
-      </div>
-    );
-  }
-
-  return <div ref={mountRef} className="w-full h-full" />;
+          <div className="w-7 h-7 rounded-lg bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0 text-xs mt-0.5">
+            ⚠️
+          </div>
+          <div className="flex-1 min-w-0 pr-1">
+            <div className="text-xs font-bold text-amber-300 font-tech uppercase tracking-wide">
+              Chế Độ 2D (Chưa Bật WebGL)
+            </div>
+            <p className="text-[11px] text-slate-300 font-sans leading-tight mt-0.5">
+              Đang chạy ở chế độ 2D tinh gọn. Bật <b>Tăng tốc phần cứng</b> trong cài đặt trình duyệt để xem vòm trời 3D.
+            </p>
+            <button
+              type="button"
+              onClick={() => window.location.reload()}
+              className="mt-1.5 text-[10px] font-mono font-bold text-amber-400 hover:text-amber-300 underline cursor-pointer"
+            >
+              Tải lại trang sau khi bật
+            </button>
+          </div>
+          <button
+            type="button"
+            onClick={() => setToastDismissed(true)}
+            className="text-slate-400 hover:text-slate-100 p-1 rounded hover:bg-white/10 text-xs transition cursor-pointer"
+            title="Đóng thông báo"
+          >
+            ✕
+          </button>
+        </aside>
+      )}
+    </div>
+  );
 });
