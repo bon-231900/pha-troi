@@ -106,15 +106,15 @@ export const TopBossHeader: React.FC<TopBossHeaderProps> = ({
       {/* 2. Center Capsule: VÒM TRỜI THIẾT VÂN (Ultra-Compact Floating Bar - Zero Sky Obstruction) */}
       <div
         aria-label="Thanh máu Vòm Trời Thiết Vân"
-        className="pointer-events-auto flex-1 max-w-sm sm:max-w-lg mx-auto bg-[#070A14]/90 border border-amber-500/40 px-3 py-1.5 rounded-xl shadow-[0_8px_25px_rgba(0,0,0,0.8)] backdrop-blur-md"
+        className="pointer-events-auto flex-1 max-w-md sm:max-w-xl md:max-w-2xl mx-auto bg-[#070A14]/90 border border-amber-500/40 px-3.5 py-1.5 rounded-xl shadow-[0_8px_25px_rgba(0,0,0,0.8)] backdrop-blur-md"
       >
         <div className="flex items-center justify-between gap-2 mb-1">
-          <div className="flex items-center gap-1.5 min-w-0">
+          <div className="flex items-center gap-1.5 shrink-0">
             <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse shrink-0" />
-            <span className="font-display text-[11px] sm:text-xs font-bold tracking-wider text-amber-300 uppercase truncate">
+            <span className="font-display text-[11px] sm:text-xs font-bold tracking-wider text-amber-300 uppercase whitespace-nowrap">
               {bossName}
             </span>
-            <span className="hidden sm:inline px-1.5 py-0.2 rounded bg-amber-500/20 border border-amber-500/40 text-[9px] font-tech text-amber-300">
+            <span className="hidden sm:inline px-1.5 py-0.2 rounded bg-amber-500/20 border border-amber-500/40 text-[9px] font-tech text-amber-300 whitespace-nowrap">
               {seal.shortName} (-{seal.damageReductionPct}%)
             </span>
           </div>
