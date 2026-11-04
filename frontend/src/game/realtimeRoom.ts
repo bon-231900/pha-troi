@@ -40,12 +40,30 @@ export interface RemoteChatMessage {
   timestamp: number;
 }
 
+export interface WorldStateSyncMessage {
+  [key: string]: any;
+  senderId: string;
+  senderName: string;
+  vaultId: number;
+  bossHp: number;
+  bossTrailHp: number;
+  serverFurnaceHeat: number;
+  serverAnvilHp: number;
+  activeArmorBreakPoints: number;
+  isShieldBroken: boolean;
+  shieldBreakTimeLeft: number;
+  timestamp: number;
+  isLeader?: boolean;
+}
+
 export interface RealtimeRoomCallbacks {
   onPeerJoined?: (peer: PeerPresence) => void;
   onPeerLeft?: (peerId: string) => void;
   onRemoteStrike?: (strike: RemoteStrikeMessage) => void;
   onRemoteChat?: (chat: RemoteChatMessage) => void;
   onPeersChange?: (peers: PeerPresence[]) => void;
+  onWorldStateSync?: (state: WorldStateSyncMessage) => void;
+  onRequestWorldState?: () => WorldStateSyncMessage | null;
 }
 
 const BROADCAST_CHANNEL_NAME = 'phatroi_celestial_room_v1';
@@ -64,6 +82,8 @@ export class RealtimeRoomClient {
   private sendP2PStrike: ((data: RemoteStrikeMessage) => void) | null = null;
   private sendP2PPresence: ((data: PeerPresence) => void) | null = null;
   private sendP2PChat: ((data: RemoteChatMessage) => void) | null = null;
+  private sendP2PWorldSync: ((data: WorldStateSyncMessage) => void) | null = null;
+  private sendP2PWorldReq: ((data: { peerId: string }) => void) | null = null;
 
   private heartbeatTimer: ReturnType<typeof setInterval> | null = null;
   private pruneTimer: ReturnType<typeof setInterval> | null = null;
@@ -141,6 +161,20 @@ export class RealtimeRoomClient {
         }
       };
 
+      const worldSyncAction = this.p2pRoom.makeAction<WorldStateSyncMessage>('world_sync');
+      worldSyncAction.onMessage = (data) => {
+        if (data && data.senderId !== this.localPlayerId) {
+          this.handleIncomingWorldSync(data);
+        }
+      };
+
+      const worldReqAction = this.p2pRoom.makeAction<{ peerId: string }>('world_req');
+      worldReqAction.onMessage = (data) => {
+        if (data && data.peerId !== this.localPlayerId) {
+          this.handleIncomingWorldReq();
+        }
+      };
+
       this.sendP2PStrike = (data: RemoteStrikeMessage) => {
         strikeAction.send(data).catch(() => {});
       };
@@ -150,11 +184,22 @@ export class RealtimeRoomClient {
       this.sendP2PChat = (data: RemoteChatMessage) => {
         chatAction.send(data).catch(() => {});
       };
+      this.sendP2PWorldSync = (data: WorldStateSyncMessage) => {
+        worldSyncAction.send(data).catch(() => {});
+      };
+      this.sendP2PWorldReq = (data: { peerId: string }) => {
+        worldReqAction.send(data).catch(() => {});
+      };
 
       this.p2pRoom.onPeerJoin = (peerId) => {
         console.log('[RealtimeRoom] P2P Peer connected:', peerId);
         // Send our presence immediately to newly joined peer
         this.broadcastPresence();
+        // If we are leader or established peer, send our world state to the newcomer
+        const state = this.callbacks.onRequestWorldState?.();
+        if (state) {
+          this.broadcastWorldState(state);
+        }
       };
 
       this.p2pRoom.onPeerLeave = (peerId) => {
@@ -303,6 +348,10 @@ export class RealtimeRoomClient {
       this.handleIncomingStrike(payload);
     } else if (type === 'chat' && payload && payload.peerId !== this.localPlayerId) {
       this.handleIncomingChat(payload);
+    } else if (type === 'world_sync' && payload && payload.senderId !== this.localPlayerId) {
+      this.handleIncomingWorldSync(payload);
+    } else if (type === 'world_req' && payload && payload.peerId !== this.localPlayerId) {
+      this.handleIncomingWorldReq();
     }
   }
 
@@ -317,6 +366,11 @@ export class RealtimeRoomClient {
       this.callbacks.onPeerJoined?.(peer);
       // Immediately reply with our presence so the new peer knows about us right away
       this.broadcastPresence();
+      // Send current world state to new peer
+      const state = this.callbacks.onRequestWorldState?.();
+      if (state) {
+        this.broadcastWorldState(state);
+      }
     }
     this.callbacks.onPeersChange?.(Array.from(this.peers.values()));
   }
@@ -345,6 +399,67 @@ export class RealtimeRoomClient {
 
   private handleIncomingChat(chat: RemoteChatMessage) {
     this.callbacks.onRemoteChat?.(chat);
+  }
+
+  private handleIncomingWorldSync(state: WorldStateSyncMessage) {
+    this.callbacks.onWorldStateSync?.(state);
+  }
+
+  private handleIncomingWorldReq() {
+    const currentState = this.callbacks.onRequestWorldState?.();
+    if (currentState) {
+      this.broadcastWorldState(currentState);
+    }
+  }
+
+  public broadcastWorldState(state: Partial<WorldStateSyncMessage>) {
+    const packet: WorldStateSyncMessage = {
+      senderId: this.localPlayerId,
+      senderName: this.localPlayerName,
+      vaultId: state.vaultId ?? 1,
+      bossHp: state.bossHp ?? 1_500_000_000,
+      bossTrailHp: state.bossTrailHp ?? state.bossHp ?? 1_500_000_000,
+      serverFurnaceHeat: state.serverFurnaceHeat ?? 1500,
+      serverAnvilHp: state.serverAnvilHp ?? 10000,
+      activeArmorBreakPoints: state.activeArmorBreakPoints ?? 0,
+      isShieldBroken: state.isShieldBroken ?? false,
+      shieldBreakTimeLeft: state.shieldBreakTimeLeft ?? 0,
+      timestamp: Date.now(),
+      isLeader: this.isLeader(),
+    };
+
+    // 1. Local BroadcastChannel (0ms to other tabs on same machine)
+    try {
+      this.broadcastChannel?.postMessage({
+        type: 'world_sync',
+        payload: packet,
+      });
+    } catch {}
+
+    // 2. WebRTC P2P DataChannel (cross-browser and cross-device)
+    try {
+      this.sendP2PWorldSync?.(packet);
+    } catch {}
+  }
+
+  public requestWorldState() {
+    const packet = { peerId: this.localPlayerId };
+
+    try {
+      this.broadcastChannel?.postMessage({
+        type: 'world_req',
+        payload: packet,
+      });
+    } catch {}
+
+    try {
+      this.sendP2PWorldReq?.(packet);
+    } catch {}
+  }
+
+  public isLeader(): boolean {
+    const allIds = [this.localPlayerId, ...Array.from(this.peers.keys())].sort();
+    return allIds[0] === this.localPlayerId;
   }
 
   private handlePeerLeave(peerId: string) {

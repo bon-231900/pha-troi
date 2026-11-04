@@ -6,6 +6,7 @@ import {
   RealtimeRoomClient,
   PeerPresence,
   RemoteStrikeMessage,
+  WorldStateSyncMessage,
 } from './game/realtimeRoom';
 import {
   StanceKey,
@@ -290,6 +291,7 @@ export default function App() {
   const [phaseCheckTimeLeft, setPhaseCheckTimeLeft] = useState<number>(0);
   const triggeredPhaseChecksRef = useRef<Record<string, boolean>>({});
   const anvilStrikeTickCounterRef = useRef<number>(0);
+  const hasReceivedInitialSyncRef = useRef<boolean>(false);
 
   // ARPG Equipment & Backpack State (Procedural Drops & Affixes)
   const [equippedItems, setEquippedItems] = useState<Record<EquipmentSlotKey, EquipmentItem | null>>(() => {
@@ -349,6 +351,36 @@ export default function App() {
     } catch {}
     return 1;
   });
+
+  const latestWorldStateRef = useRef<WorldStateSyncMessage>({
+    senderId: '',
+    senderName: '',
+    vaultId: 1,
+    bossHp,
+    bossTrailHp,
+    serverFurnaceHeat,
+    serverAnvilHp,
+    activeArmorBreakPoints,
+    isShieldBroken,
+    shieldBreakTimeLeft,
+    timestamp: Date.now(),
+  });
+
+  useEffect(() => {
+    latestWorldStateRef.current = {
+      senderId: '',
+      senderName: '',
+      vaultId: currentVaultId,
+      bossHp,
+      bossTrailHp,
+      serverFurnaceHeat,
+      serverAnvilHp,
+      activeArmorBreakPoints,
+      isShieldBroken,
+      shieldBreakTimeLeft,
+      timestamp: Date.now(),
+    };
+  }, [currentVaultId, bossHp, bossTrailHp, serverFurnaceHeat, serverAnvilHp, activeArmorBreakPoints, isShieldBroken, shieldBreakTimeLeft]);
 
   const [userGuildId, setUserGuildId] = useState<string>(() => {
     try {
@@ -527,6 +559,10 @@ export default function App() {
           'gold'
         );
         soundEngine.playComboStreakSound?.(4);
+        // If we are room leader, proactively send world state to the newcomer
+        if (room.isLeader()) {
+          room.broadcastWorldState(latestWorldStateRef.current);
+        }
       },
       onPeerLeft: (peerId) => {
         appendCombatLog('🍂 Một đồng môn vừa tạm lui về hậu phương nghỉ ngơi.', 'neutral');
@@ -558,12 +594,77 @@ export default function App() {
         setActiveForgersCount(peers.length > 0 ? peers.length + 1 : 480);
         setIsOffline(peers.length === 0);
       },
+      onRequestWorldState: () => latestWorldStateRef.current,
+      onWorldStateSync: (state) => {
+        if (!state || typeof state.bossHp !== 'number') return;
+
+        // Synchronize vault tier if remote peer is on another tier
+        if (typeof state.vaultId === 'number' && state.vaultId >= 1 && state.vaultId <= 9) {
+          setCurrentVaultId((prevVault) => (prevVault !== state.vaultId ? state.vaultId : prevVault));
+        }
+
+        // Synchronize Boss HP: snap if drift > 15 HP or on initial room sync
+        setBossHp((localHp) => {
+          const diff = Math.abs(localHp - state.bossHp);
+          if (diff > 15 || !hasReceivedInitialSyncRef.current) {
+            hasReceivedInitialSyncRef.current = true;
+            setBossTrailHp(state.bossTrailHp || state.bossHp);
+            return state.bossHp;
+          }
+          return localHp;
+        });
+
+        // Synchronize Server Furnace Heat
+        if (typeof state.serverFurnaceHeat === 'number') {
+          setServerFurnaceHeat((localHeat) => {
+            if (Math.abs(localHeat - state.serverFurnaceHeat) > 20 || !hasReceivedInitialSyncRef.current) {
+              return state.serverFurnaceHeat;
+            }
+            return localHeat;
+          });
+        }
+
+        // Synchronize Server Anvil HP
+        if (typeof state.serverAnvilHp === 'number') {
+          setServerAnvilHp((localAnvil) => {
+            if (Math.abs(localAnvil - state.serverAnvilHp) > 20 || !hasReceivedInitialSyncRef.current) {
+              return state.serverAnvilHp;
+            }
+            return localAnvil;
+          });
+        }
+
+        // Synchronize Active Armor Break Points
+        if (typeof state.activeArmorBreakPoints === 'number') {
+          setActiveArmorBreakPoints((localBreak) => {
+            if (Math.abs(localBreak - state.activeArmorBreakPoints) > 5 || !hasReceivedInitialSyncRef.current) {
+              return state.activeArmorBreakPoints;
+            }
+            return localBreak;
+          });
+        }
+
+        // Synchronize Shield Break status
+        if (typeof state.isShieldBroken === 'boolean') {
+          setIsShieldBroken(state.isShieldBroken);
+          if (typeof state.shieldBreakTimeLeft === 'number') {
+            setShieldBreakTimeLeft(state.shieldBreakTimeLeft);
+          }
+        }
+      },
     });
 
     realtimeRoomRef.current = room;
     room.init(userGuildId, activeStance, currentVaultId);
 
+    // Actively request world state from any active peer on mount
+    room.requestWorldState();
+    const syncT1 = setTimeout(() => room.requestWorldState(), 600);
+    const syncT2 = setTimeout(() => room.requestWorldState(), 1800);
+
     return () => {
+      clearTimeout(syncT1);
+      clearTimeout(syncT2);
       mp.disconnect();
       room.destroy();
     };
@@ -674,6 +775,13 @@ export default function App() {
           });
           return 0;
         });
+      }
+
+      // 2B-Sync: Room Leader periodic world state broadcast (every 2.5s)
+      if (anvilStrikeTickCounterRef.current % 5 === 0) {
+        if (realtimeRoomRef.current?.isLeader()) {
+          realtimeRoomRef.current.broadcastWorldState(latestWorldStateRef.current);
+        }
       }
 
       // 2C. World Raid: Global Server Furnace vs Celestial Chill
