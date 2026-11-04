@@ -257,13 +257,13 @@ export default {
           });
         }
 
-        // Tạo hồ sơ mới & liên kết tiến trình Guest hiện tại lên Cloud
+        // Tạo hồ sơ mới & khởi tạo tài khoản mới độc lập hoàn toàn với chế độ Khách
         const newProfile: PlayerProfileRecord = {
           google_id: userSub,
           email: userEmail,
           display_name: userName || 'Thợ Rèn Google',
           avatar_url: userPicture || '',
-          save_data: localSaveData || '{}',
+          save_data: '{}',
           last_sync_at: now,
           created_at: now,
         };

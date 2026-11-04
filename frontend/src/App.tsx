@@ -115,6 +115,25 @@ function getTimeString(): string {
   return `${mins}:${secs}`;
 }
 
+function getInitialSaveString(): string | null {
+  try {
+    const storedProfileStr = safeStorage.getItem('phatroi_google_profile');
+    if (storedProfileStr) {
+      const prof = JSON.parse(storedProfileStr);
+      if (prof?.googleId) {
+        const accSave = safeStorage.getItem(`phatroi_account_${prof.googleId}`);
+        if (accSave && accSave.length > 50 && accSave !== '{}') {
+          return accSave;
+        }
+        return null;
+      }
+    }
+    return safeStorage.getItem('phatroi_guest_save') || safeStorage.getItem('phatroi_save_v6');
+  } catch {
+    return null;
+  }
+}
+
 export default function App() {
   const [gameState, setGameState] = useState<GameState>(() => {
     if (typeof window !== 'undefined') {
@@ -129,7 +148,7 @@ export default function App() {
   // Boss & Multiplayer Raid State (De-inflated RPG integer numbers)
   const [bossHp, setBossHp] = useState<number>(() => {
     try {
-      const s = safeStorage.getItem('phatroi_save_v6');
+      const s = getInitialSaveString();
       if (s) {
         const parsed = JSON.parse(s);
         const vaultId = typeof parsed.currentVaultId === 'number' && parsed.currentVaultId >= 1 && parsed.currentVaultId <= 9 ? parsed.currentVaultId : 1;
@@ -178,7 +197,7 @@ export default function App() {
   const [stanceWeave, setStanceWeave] = useState<{ previousStance: StanceKey; timeLeftSec: number } | null>(null);
   const [claimedMilestones, setClaimedMilestones] = useState<string[]>(() => {
     try {
-      const s = safeStorage.getItem('phatroi_save_v6');
+      const s = getInitialSaveString();
       if (s) {
         const parsed = JSON.parse(s);
         if (Array.isArray(parsed.claimedMilestones)) return parsed.claimedMilestones;
@@ -224,7 +243,7 @@ export default function App() {
   // Resources & Progression: Starting at 0 LT per design spec
   const [linhThach, setLinhThach] = useState<number>(() => {
     try {
-      const s = safeStorage.getItem('phatroi_save_v6');
+      const s = getInitialSaveString();
       if (s) {
         const parsed = JSON.parse(s);
         if (typeof parsed.linhThach === 'number') return parsed.linhThach;
@@ -234,7 +253,7 @@ export default function App() {
   });
   const [tinhHoa, setTinhHoa] = useState<number>(() => {
     try {
-      const s = safeStorage.getItem('phatroi_save_v6');
+      const s = getInitialSaveString();
       if (s) {
         const parsed = JSON.parse(s);
         if (typeof parsed.tinhHoa === 'number') return parsed.tinhHoa;
@@ -244,7 +263,7 @@ export default function App() {
   });
   const [upgrades, setUpgrades] = useState<ForgeUpgrade[]>(() => {
     try {
-      const s = safeStorage.getItem('phatroi_save_v6');
+      const s = getInitialSaveString();
       if (s) {
         const parsed = JSON.parse(s);
         if (Array.isArray(parsed.upgrades)) return parsed.upgrades;
@@ -254,7 +273,7 @@ export default function App() {
   });
   const [spiritNodes, setSpiritNodes] = useState<SpiritNode[]>(() => {
     try {
-      const s = safeStorage.getItem('phatroi_save_v6');
+      const s = getInitialSaveString();
       if (s) {
         const parsed = JSON.parse(s);
         if (Array.isArray(parsed.spiritNodes)) return parsed.spiritNodes;
@@ -264,7 +283,7 @@ export default function App() {
   });
   const [playerTotalDamage, setPlayerTotalDamage] = useState<number>(() => {
     try {
-      const s = safeStorage.getItem('phatroi_save_v6');
+      const s = getInitialSaveString();
       if (s) {
         const parsed = JSON.parse(s);
         if (typeof parsed.playerTotalDamage === 'number') return parsed.playerTotalDamage;
@@ -276,7 +295,7 @@ export default function App() {
   // World Raid v3.1 Mechanics States
   const [serverFurnaceHeat, setServerFurnaceHeat] = useState<number>(() => {
     try {
-      const s = safeStorage.getItem('phatroi_save_v6');
+      const s = getInitialSaveString();
       if (s) {
         const parsed = JSON.parse(s);
         if (typeof parsed.serverFurnaceHeat === 'number') return parsed.serverFurnaceHeat;
@@ -287,7 +306,7 @@ export default function App() {
 
   const [serverAnvilHp, setServerAnvilHp] = useState<number>(() => {
     try {
-      const s = safeStorage.getItem('phatroi_save_v6');
+      const s = getInitialSaveString();
       if (s) {
         const parsed = JSON.parse(s);
         if (typeof parsed.serverAnvilHp === 'number') return parsed.serverAnvilHp;
@@ -301,7 +320,7 @@ export default function App() {
 
   const [raidContributionScore, setRaidContributionScore] = useState<number>(() => {
     try {
-      const s = safeStorage.getItem('phatroi_save_v6');
+      const s = getInitialSaveString();
       if (s) {
         const parsed = JSON.parse(s);
         if (typeof parsed.raidContributionScore === 'number') return parsed.raidContributionScore;
@@ -319,7 +338,7 @@ export default function App() {
   // ARPG Equipment & Backpack State (Procedural Drops & Affixes)
   const [equippedItems, setEquippedItems] = useState<Record<EquipmentSlotKey, EquipmentItem | null>>(() => {
     try {
-      const s = safeStorage.getItem('phatroi_save_v6');
+      const s = getInitialSaveString();
       if (s) {
         const parsed = JSON.parse(s);
         if (parsed.equippedItems && typeof parsed.equippedItems === 'object') {
@@ -332,7 +351,7 @@ export default function App() {
 
   const [inventory, setInventory] = useState<EquipmentItem[]>(() => {
     try {
-      const s = safeStorage.getItem('phatroi_save_v6');
+      const s = getInitialSaveString();
       if (s) {
         const parsed = JSON.parse(s);
         if (Array.isArray(parsed.inventory)) {
@@ -346,7 +365,7 @@ export default function App() {
   // Phase 2: Kỹ Pháp Tứ Thế & Stance Skills Progression
   const [stanceSkills, setStanceSkills] = useState<StanceSkillNode[]>(() => {
     try {
-      const s = safeStorage.getItem('phatroi_save_v6');
+      const s = getInitialSaveString();
       if (s) {
         const parsed = JSON.parse(s);
         if (Array.isArray(parsed.stanceSkills) && parsed.stanceSkills.length === INITIAL_STANCE_SKILLS.length) {
@@ -364,7 +383,7 @@ export default function App() {
   // Phase 3: Cửu Trọng Thiên & Phường Rèn Vạn Dân & Đại Hỏa Lò
   const [currentVaultId, setCurrentVaultId] = useState<number>(() => {
     try {
-      const s = safeStorage.getItem('phatroi_save_v6');
+      const s = getInitialSaveString();
       if (s) {
         const parsed = JSON.parse(s);
         if (typeof parsed.currentVaultId === 'number' && parsed.currentVaultId >= 1 && parsed.currentVaultId <= 9) {
@@ -407,7 +426,7 @@ export default function App() {
 
   const [userGuildId, setUserGuildId] = useState<string>(() => {
     try {
-      const s = safeStorage.getItem('phatroi_save_v6');
+      const s = getInitialSaveString();
       if (s) {
         const parsed = JSON.parse(s);
         if (typeof parsed.userGuildId === 'string' && BLACKSMITH_GUILDS.some((g) => g.id === parsed.userGuildId)) {
@@ -420,7 +439,7 @@ export default function App() {
 
   const [guildHearths, setGuildHearths] = useState<Record<string, { level: number; exp: number }>>(() => {
     try {
-      const s = safeStorage.getItem('phatroi_save_v6');
+      const s = getInitialSaveString();
       if (s) {
         const parsed = JSON.parse(s);
         if (parsed.guildHearths && typeof parsed.guildHearths === 'object') {
@@ -503,7 +522,7 @@ export default function App() {
     document.body.dataset.state = gameState;
   }, [gameState]);
 
-  // Auto-save progression to safeStorage (v6)
+  // Auto-save progression to safeStorage (Account vs Guest slot separation)
   useEffect(() => {
     const saveState = () => {
       try {
@@ -526,7 +545,12 @@ export default function App() {
           raidContributionScore,
           lastActiveTimestamp: Date.now(),
         };
-        safeStorage.setItem('phatroi_save_v6', JSON.stringify(payload));
+        const activeKey = googleUser ? `phatroi_account_${googleUser.googleId}` : 'phatroi_guest_save';
+        safeStorage.setItem(activeKey, JSON.stringify(payload));
+        // Also keep legacy key synced only if guest
+        if (!googleUser) {
+          safeStorage.setItem('phatroi_save_v6', JSON.stringify(payload));
+        }
       } catch {}
     };
 
@@ -536,7 +560,7 @@ export default function App() {
       clearInterval(timer);
       window.removeEventListener('beforeunload', saveState);
     };
-  }, [bossHp, linhThach, tinhHoa, upgrades, spiritNodes, stanceSkills, equippedItems, inventory, playerTotalDamage, claimedMilestones, currentVaultId, userGuildId, guildHearths, serverFurnaceHeat, serverAnvilHp, raidContributionScore]);
+  }, [googleUser, bossHp, linhThach, tinhHoa, upgrades, spiritNodes, stanceSkills, equippedItems, inventory, playerTotalDamage, claimedMilestones, currentVaultId, userGuildId, guildHearths, serverFurnaceHeat, serverAnvilHp, raidContributionScore]);
 
   // Connect to Multiplayer Gateway (Offline Fallback if server unreachable)
   useEffect(() => {
@@ -834,54 +858,142 @@ export default function App() {
     appendCombatLog('Lò rèn tái khởi động! Vạn dân đồng loạt giáng búa vào Tầng 1!', 'gold');
   }, [appendCombatLog]);
 
-  // Google Sign-In & Cloud Save Integration
-  useEffect(() => {
-    const getLocalSaveJson = () => {
-      try {
-        return safeStorage.getItem('phatroi_save_v6') || '{}';
-      } catch {
-        return '{}';
+  // Helper to load save payload into React state
+  const loadSaveData = useCallback((saveJsonStr: string) => {
+    try {
+      const parsed = JSON.parse(saveJsonStr);
+      if (typeof parsed.linhThach === 'number') setLinhThach(parsed.linhThach);
+      if (typeof parsed.tinhHoa === 'number') setTinhHoa(parsed.tinhHoa);
+      if (Array.isArray(parsed.upgrades)) setUpgrades(parsed.upgrades);
+      if (Array.isArray(parsed.spiritNodes)) setSpiritNodes(parsed.spiritNodes);
+      if (Array.isArray(parsed.stanceSkills)) setStanceSkills(parsed.stanceSkills);
+      if (parsed.equippedItems && typeof parsed.equippedItems === 'object') setEquippedItems(parsed.equippedItems);
+      if (Array.isArray(parsed.inventory)) setInventory(parsed.inventory);
+      if (typeof parsed.playerTotalDamage === 'number') setPlayerTotalDamage(parsed.playerTotalDamage);
+      if (typeof parsed.raidContributionScore === 'number') setRaidContributionScore(parsed.raidContributionScore);
+      if (typeof parsed.currentVaultId === 'number' && parsed.currentVaultId >= 1) setCurrentVaultId(parsed.currentVaultId);
+      if (Array.isArray(parsed.claimedMilestones)) setClaimedMilestones(parsed.claimedMilestones);
+      if (parsed.guildHearths && typeof parsed.guildHearths === 'object') setGuildHearths(parsed.guildHearths);
+      if (typeof parsed.userGuildId === 'string' && BLACKSMITH_GUILDS.some((g) => g.id === parsed.userGuildId)) {
+        setUserGuildId(parsed.userGuildId);
       }
-    };
+    } catch (e) {
+      console.error('[Load Save Error]', e);
+    }
+  }, []);
 
-    googleAuthService.initGsi(getLocalSaveJson);
+  // Helper to reset to fresh starting character (Level 1, empty bag, starter gear)
+  const resetToFreshCharacter = useCallback(() => {
+    setLinhThach(0);
+    setTinhHoa(0);
+    setUpgrades(INITIAL_UPGRADES);
+    setSpiritNodes(INITIAL_SPIRIT_NODES);
+    setStanceSkills(INITIAL_STANCE_SKILLS);
+    setEquippedItems(INITIAL_EQUIPPED_SLOTS);
+    setInventory([]);
+    setPlayerTotalDamage(0);
+    setRaidContributionScore(0);
+    setCurrentVaultId(1);
+    setClaimedMilestones([]);
+    setGuildHearths({});
+    setUserGuildId('thiet_hai');
+  }, []);
+
+  // Google Sign-In & Cloud Save Integration (Strict Account vs Guest Separation)
+  useEffect(() => {
+    googleAuthService.initGsi(() => '');
 
     googleAuthService.onLogin((profile, remoteSaveData) => {
+      // 1. Lưu giữ nguyên vẹn dữ liệu Chế Độ Khách hiện tại vào slot khách (độc lập tuyệt đối)
+      try {
+        const guestPayload = {
+          bossHp,
+          linhThach,
+          tinhHoa,
+          upgrades,
+          spiritNodes,
+          stanceSkills,
+          equippedItems,
+          inventory,
+          playerTotalDamage,
+          claimedMilestones,
+          currentVaultId,
+          userGuildId,
+          guildHearths,
+          serverFurnaceHeat,
+          serverAnvilHp,
+          raidContributionScore,
+          lastActiveTimestamp: Date.now(),
+        };
+        safeStorage.setItem('phatroi_guest_save', JSON.stringify(guestPayload));
+      } catch {}
+
       setGoogleUser(profile);
-      appendCombatLog(`☁️ [GOOGLE CLOUD] Đăng nhập thành công tài khoản [${profile.name}]!`, 'gold');
 
-      if (remoteSaveData && remoteSaveData.length > 50) {
-        try {
-          const parsed = JSON.parse(remoteSaveData);
-          if (typeof parsed.linhThach === 'number') setLinhThach(parsed.linhThach);
-          if (typeof parsed.tinhHoa === 'number') setTinhHoa(parsed.tinhHoa);
-          if (Array.isArray(parsed.upgrades)) setUpgrades(parsed.upgrades);
-          if (Array.isArray(parsed.spiritNodes)) setSpiritNodes(parsed.spiritNodes);
-          if (Array.isArray(parsed.stanceSkills)) setStanceSkills(parsed.stanceSkills);
-          if (parsed.equippedItems && typeof parsed.equippedItems === 'object') setEquippedItems(parsed.equippedItems);
-          if (Array.isArray(parsed.inventory)) setInventory(parsed.inventory);
-          if (typeof parsed.playerTotalDamage === 'number') setPlayerTotalDamage(parsed.playerTotalDamage);
-          if (typeof parsed.raidContributionScore === 'number') setRaidContributionScore(parsed.raidContributionScore);
-          if (typeof parsed.currentVaultId === 'number' && parsed.currentVaultId >= 1) setCurrentVaultId(parsed.currentVaultId);
-          safeStorage.setItem('phatroi_save_v6', remoteSaveData);
-          appendCombatLog('🎉 Đã phục hồi toàn bộ Búa, Đe & Túi đồ từ Đám mây Cloudflare D1!', 'cyan');
-        } catch (e) {
-          console.error('[Restore Save Error]', e);
-        }
+      const accountKey = `phatroi_account_${profile.googleId}`;
+      const localAccountCache = safeStorage.getItem(accountKey);
+
+      // 2. Kiểm tra dữ liệu đám mây của tài khoản Google này
+      const hasCloudData = remoteSaveData && remoteSaveData.length > 50 && remoteSaveData !== '{}';
+      const hasLocalAccountData = localAccountCache && localAccountCache.length > 50 && localAccountCache !== '{}';
+
+      if (hasCloudData) {
+        // Đã từng chơi trên tài khoản Google này -> nạp lại toàn bộ tiến độ của tài khoản
+        loadSaveData(remoteSaveData);
+        safeStorage.setItem(accountKey, remoteSaveData);
+        appendCombatLog(`🎉 [TÀI KHOẢN] Đã nạp thành công tiến độ đám mây của [${profile.name}]!`, 'cyan');
+      } else if (hasLocalAccountData) {
+        loadSaveData(localAccountCache);
+        googleAuthService.pushCloudSave(localAccountCache);
+        appendCombatLog(`🎉 [TÀI KHOẢN] Đã nạp tiến độ tài khoản [${profile.name}]!`, 'cyan');
       } else {
-        const localData = getLocalSaveJson();
-        googleAuthService.pushCloudSave(localData);
-        appendCombatLog('🛡️ Tiến độ hiện tại của bạn đã được sao lưu vĩnh viễn lên Mây!', 'cyan');
+        // Tài khoản Google mới tinh -> BẮT ĐẦU TỪ ĐẦU (Tách rời 100% với Khách)
+        resetToFreshCharacter();
+        const freshPayload = {
+          bossHp: BOSS_FLOOR_1_MAX_HP,
+          linhThach: 0,
+          tinhHoa: 0,
+          upgrades: INITIAL_UPGRADES,
+          spiritNodes: INITIAL_SPIRIT_NODES,
+          stanceSkills: INITIAL_STANCE_SKILLS,
+          equippedItems: INITIAL_EQUIPPED_SLOTS,
+          inventory: [],
+          playerTotalDamage: 0,
+          claimedMilestones: [],
+          currentVaultId: 1,
+          userGuildId: 'thiet_hai',
+          guildHearths: {},
+          serverFurnaceHeat: 0,
+          serverAnvilHp: 10000,
+          raidContributionScore: 0,
+          lastActiveTimestamp: Date.now(),
+        };
+        const freshStr = JSON.stringify(freshPayload);
+        safeStorage.setItem(accountKey, freshStr);
+        googleAuthService.pushCloudSave(freshStr);
+        appendCombatLog(`✨ [TÀI KHOẢN MỚI] Chào mừng [${profile.name}]! Đã khởi tạo nhân vật tân thủ tách biệt hoàn toàn.`, 'gold');
       }
-    });
-  }, [appendCombatLog]);
 
-  // Periodic Auto Cloud Save (Every 30s when logged in)
+      // Auto-transition into playing if currently at title screen
+      setGameState((st) => {
+        if (st === 'title') {
+          soundEngine.unlockAudio();
+          soundEngine.playAnvilStrike('PERFECT', 'Q', false);
+          document.body.dataset.state = 'playing';
+          return 'playing';
+        }
+        return st;
+      });
+    });
+  }, [appendCombatLog, bossHp, linhThach, tinhHoa, upgrades, spiritNodes, stanceSkills, equippedItems, inventory, playerTotalDamage, claimedMilestones, currentVaultId, userGuildId, guildHearths, serverFurnaceHeat, serverAnvilHp, raidContributionScore, loadSaveData, resetToFreshCharacter]);
+
+  // Periodic Auto Cloud Save (Every 30s when logged in with Google)
   useEffect(() => {
     if (!googleUser) return;
     const timer = setInterval(() => {
       try {
-        const saveStr = safeStorage.getItem('phatroi_save_v6');
+        const key = `phatroi_account_${googleUser.googleId}`;
+        const saveStr = safeStorage.getItem(key);
         if (saveStr) {
           googleAuthService.pushCloudSave(saveStr);
         }
@@ -895,10 +1007,47 @@ export default function App() {
   }, []);
 
   const handleGoogleLogout = useCallback(() => {
+    // Lưu lại tiến độ tài khoản Google trước khi đăng xuất
+    if (googleUser) {
+      try {
+        const accountPayload = {
+          bossHp,
+          linhThach,
+          tinhHoa,
+          upgrades,
+          spiritNodes,
+          stanceSkills,
+          equippedItems,
+          inventory,
+          playerTotalDamage,
+          claimedMilestones,
+          currentVaultId,
+          userGuildId,
+          guildHearths,
+          serverFurnaceHeat,
+          serverAnvilHp,
+          raidContributionScore,
+          lastActiveTimestamp: Date.now(),
+        };
+        const str = JSON.stringify(accountPayload);
+        safeStorage.setItem(`phatroi_account_${googleUser.googleId}`, str);
+        googleAuthService.pushCloudSave(str);
+      } catch {}
+    }
+
     googleAuthService.logout();
     setGoogleUser(null);
-    appendCombatLog('Đã đăng xuất tài khoản Google.', 'neutral');
-  }, [appendCombatLog]);
+
+    // Khôi phục lại toàn bộ dữ liệu Chế Độ Khách
+    const guestSave = safeStorage.getItem('phatroi_guest_save') || safeStorage.getItem('phatroi_save_v6');
+    if (guestSave) {
+      loadSaveData(guestSave);
+      appendCombatLog('Đã đăng xuất Google. Khôi phục lại dữ liệu nhân vật Chế Độ Khách.', 'neutral');
+    } else {
+      resetToFreshCharacter();
+    }
+    setGameState('title');
+  }, [googleUser, bossHp, linhThach, tinhHoa, upgrades, spiritNodes, stanceSkills, equippedItems, inventory, playerTotalDamage, claimedMilestones, currentVaultId, userGuildId, guildHearths, serverFurnaceHeat, serverAnvilHp, raidContributionScore, loadSaveData, resetToFreshCharacter, appendCombatLog]);
 
   // Periodic co-op raid loop & Simulation Tick (Runs every 500ms)
   useEffect(() => {
@@ -1913,7 +2062,13 @@ export default function App() {
       </div>
 
       {/* Title Screen Overlay */}
-      {gameState === 'title' && <TitleScreenModal onStart={startGame} />}
+      {gameState === 'title' && (
+        <TitleScreenModal
+          onStart={startGame}
+          googleProfile={googleUser}
+          onGoogleLogin={handleGoogleLogin}
+        />
+      )}
 
       {/* Top Floating Diegetic Sky Health Header (Zero Sky Obstruction) */}
       <TopBossHeader
