@@ -42,6 +42,18 @@ def deploy():
     if os.path.exists(git_dir):
         subprocess.run(f'rd /s /q "{git_dir}"', shell=True)
 
+    # Cache buster trên index.html để Cloudflare không cache nhầm 404
+    index_html = os.path.join(GAME_DIR, "index.html")
+    if os.path.exists(index_html):
+        with open(index_html, "r", encoding="utf-8") as f:
+            content = f.read()
+        import time, re
+        ts = int(time.time())
+        content = re.sub(r'(\./assets/[^"?]+\.(?:js|css))(?:\?v=\d+)?', rf'\1?v={ts}', content)
+        with open(index_html, "w", encoding="utf-8") as f:
+            f.write(content)
+        print(f"    -> Đã đánh dấu Cache Buster: ?v={ts} vào index.html")
+
     print("[2/2] Đang đẩy lên nhánh gh-pages của GitHub (phatroi.com)...")
     commands = [
         "git init",
@@ -50,7 +62,7 @@ def deploy():
         f"git remote add origin {repo_remote}",
         "git checkout -B gh-pages",
         "git add -A",
-        'git commit -m "ARPG Loot System: Procedural Item Drops, Prefixes & Affixes, 24-Slot Bag, Salvage System"',
+        'git commit -m "Visual Upgrade: AAA Xianxia Title Screen with Original Calligraphy Logo & 16:9 Celestial Splash Art"',
         "git push -u origin gh-pages --force"
     ]
     full_cmd = " && ".join(commands)
@@ -63,7 +75,7 @@ def deploy():
     print("STDOUT:", res.stdout)
     if res.returncode == 0:
         print("\n" + "="*60)
-        print("  XUẤT BẢN HỆ THỐNG DROP ĐỒ & AFFIX LÊN PHATROI.COM THÀNH CÔNG RỰC RỠ!")
+        print("  XUẤT BẢN GIAO DIỆN MỞ ĐẦU THƯ PHÁP CỔ PHONG LÊN PHATROI.COM THÀNH CÔNG RỰC RỠ!")
         print("="*60)
         print("-> Truy cập ngay:")
         print("   https://phatroi.com/")

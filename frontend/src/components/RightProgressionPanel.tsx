@@ -14,6 +14,8 @@ import {
   getItemRarityMeta,
   getSalvageYield,
   calculateArsenalBonuses,
+  checkForgeEquilibrium,
+  EQUIPMENT_SETS,
   ForgerRank,
   FORGER_RANKS,
   getForgerRank,
@@ -121,7 +123,7 @@ export const RightProgressionPanel: React.FC<RightProgressionPanelProps> = ({
     spiritNodes.find((n) => n.id === selectedNodeId) || spiritNodes[0];
   const spiritTotalMult = calculateSpiritMultiplier(spiritNodes);
 
-  const arsenalBonuses = calculateArsenalBonuses(equippedItems);
+  const arsenalBonuses = calculateArsenalBonuses(equippedItems, upgrades);
 
   // Helper: check if item is currently equipped
   const isEquipped = (item: EquipmentItem | null): boolean => {
@@ -630,7 +632,9 @@ export const RightProgressionPanel: React.FC<RightProgressionPanelProps> = ({
           <div className="space-y-2.5">
             {upgrades.map((up) => {
               const cost = getUpgradeCost(up);
-              const canAfford = linhThach >= cost && up.level < up.maxLevel;
+              const eqCheck = checkForgeEquilibrium(upgrades, up.id);
+              const isEqLocked = !eqCheck.allowed;
+              const canAfford = linhThach >= cost && up.level < up.maxLevel && !isEqLocked;
 
               let currentBonusText = '';
               if (up.id === 'celestial_hammer_core') {
@@ -667,6 +671,12 @@ export const RightProgressionPanel: React.FC<RightProgressionPanelProps> = ({
                   <div className="text-[10px] text-slate-400 mb-2 font-mono">
                     {currentBonusText}
                   </div>
+
+                  {isEqLocked && (
+                    <div className="text-[10px] text-red-400 font-tech mb-2 px-2 py-1 rounded bg-red-950/30 border border-red-500/30">
+                      🔒 Lệch Cấp Lò Rèn (hơn 15 cấp so với Cấp {eqCheck.minLevel}). Hãy nâng cấp các hạng mục khác!
+                    </div>
+                  )}
 
                   <div className="flex items-center justify-between pt-2 border-t border-slate-800/80">
                     <div className="text-xs font-tech text-slate-300">

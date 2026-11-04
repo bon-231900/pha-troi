@@ -9,6 +9,7 @@ import { safeStorage } from './storage';
 import { StanceKey } from './rules';
 
 export interface PeerPresence {
+  [key: string]: any;
   id: string;
   name: string;
   guildId: string;
@@ -18,6 +19,7 @@ export interface PeerPresence {
 }
 
 export interface RemoteStrikeMessage {
+  [key: string]: any;
   peerId: string;
   name: string;
   slotIndex: number;
@@ -29,6 +31,7 @@ export interface RemoteStrikeMessage {
 }
 
 export interface RemoteChatMessage {
+  [key: string]: any;
   id: string;
   peerId: string;
   author: string;

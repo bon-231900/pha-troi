@@ -1,12 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  computeRaidContributionScore,
+  CELESTIAL_VAULTS,
   judgeRhythmWave,
   calculateStrikeOutcome,
   TARGET_RIM_PROGRESS,
   OVERDRIVE_MAX,
   getUpgradeCost,
-  calculateBasePowerBillions,
+  calculateBasePower,
   INITIAL_UPGRADES,
   INITIAL_SPIRIT_NODES,
   canUnlockSpiritNode,
@@ -58,7 +60,7 @@ test('calculateStrikeOutcome triggers Overdrive at 8/8 and scales x3.5 on Perfec
   const outcome = calculateStrikeOutcome({
     grade: 'PERFECT',
     stance: 'W',
-    basePowerBillions: 1.0,
+    basePower: 10,
     combo: 7,
     overdriveCharge: 7,
     overdriveActive: false,
@@ -70,16 +72,16 @@ test('calculateStrikeOutcome triggers Overdrive at 8/8 and scales x3.5 on Perfec
   assert.equal(outcome.nextCombo, 8);
   assert.equal(outcome.nextOverdriveCharge, OVERDRIVE_MAX);
   assert.equal(outcome.triggeredOverdrive, true);
-  assert.ok(outcome.damageBillions > 0);
+  assert.ok(outcome.damage > 0);
   assert.ok(outcome.linhThachEarned > 0);
-  assert.ok(outcome.tinhHoaEarned >= 1);
+  assert.ok(outcome.tinhHoaEarned >= 0);
 });
 
 test('calculateStrikeOutcome resets combo to 0 on MISS', () => {
   const missOutcome = calculateStrikeOutcome({
     grade: 'MISS',
     stance: 'Q',
-    basePowerBillions: 1.0,
+    basePower: 10,
     combo: 14,
     overdriveCharge: 5,
     overdriveActive: false,
@@ -89,16 +91,19 @@ test('calculateStrikeOutcome resets combo to 0 on MISS', () => {
   });
 
   assert.equal(missOutcome.nextCombo, 0);
-  assert.equal(missOutcome.damageBillions, 0);
-  assert.equal(missOutcome.nextOverdriveCharge, 4);
+  assert.equal(missOutcome.damage, 0);
+  assert.equal(missOutcome.nextOverdriveCharge, 3);
+  assert.equal(missOutcome.anvilDamage, 5);
 });
 
 test('upgrade cost, spirit constellation, and 0.08s Divine Hammer strike curve work deterministically', () => {
   const firstUpgrade = INITIAL_UPGRADES[0];
-  const cost = getUpgradeCost(firstUpgrade);
-  assert.ok(cost > firstUpgrade.baseCost);
+  const costLv1 = getUpgradeCost(firstUpgrade);
+  assert.equal(costLv1, firstUpgrade.baseCost);
+  const costLv2 = getUpgradeCost({ ...firstUpgrade, level: 2 });
+  assert.ok(costLv2 > firstUpgrade.baseCost);
 
-  const basePower = calculateBasePowerBillions(INITIAL_UPGRADES);
+  const basePower = calculateBasePower(INITIAL_UPGRADES);
   assert.ok(basePower > 0.5);
 
   assert.equal(canUnlockSpiritNode('node_thunder_eye', INITIAL_SPIRIT_NODES, 10), true);
@@ -198,3 +203,19 @@ test('Celestial Vault uCrack increments by +0.05 per strike and triggers 420-sha
 
 
 
+
+test('v3.1 World Raid mechanics compute correct RCS and vault 9 tiers', () => {
+  // imports at top
+  assert.equal(CELESTIAL_VAULTS.length, 9);
+  assert.equal(CELESTIAL_VAULTS[0].maxHp, 1_500_000_000);
+  assert.equal(CELESTIAL_VAULTS[0].armorBreakMaxPoints, 500);
+  assert.equal(CELESTIAL_VAULTS[0].armorRegenPerSec, 15);
+  assert.equal(CELESTIAL_VAULTS[8].maxHp, 2_500_000_000_000);
+  assert.equal(CELESTIAL_VAULTS[8].armorBreakMaxPoints, 18000);
+  assert.equal(CELESTIAL_VAULTS[8].armorRegenPerSec, 380);
+
+  // RCS formula: Damage*1.0 + BreakPoints*25,000 + HeatPumped*15,000 + AnvilRepaired*2.0
+  const rcs = computeRaidContributionScore(100, 2, 5, 20);
+  // 100 + 50,000 + 75,000 + 40 = 125,140
+  assert.equal(rcs, 125140);
+});

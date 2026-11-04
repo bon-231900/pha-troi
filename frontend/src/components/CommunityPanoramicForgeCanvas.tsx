@@ -124,6 +124,7 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
 ) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const heroSpriteSheetRef = useRef<HTMLImageElement | null>(null);
 
   // Up-to-date refs for 60 FPS animation loop (never triggers effect restart)
   const bossHpRef = useRef<number>(bossHp);
@@ -188,6 +189,14 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
 
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
+
+    if (!heroSpriteSheetRef.current) {
+      const img = new Image();
+      const base = import.meta.env.BASE_URL || './';
+      const cleanBase = base.endsWith('/') ? base : base + '/';
+      img.src = `${cleanBase}assets/art/hero_spritesheet_strip.webp`;
+      heroSpriteSheetRef.current = img;
+    }
 
     let viewW = Math.max(320, container.clientWidth || window.innerWidth);
     let viewH = Math.max(320, container.clientHeight || window.innerHeight);
@@ -581,6 +590,85 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
         ctx.globalAlpha = 0.32;
       } else {
         ctx.globalAlpha = 1.0;
+      }
+
+      // ----------------------------------------------------------------------
+      // SPECIAL RENDER: MAIN HERO 2D XIANXIA SPRITE SHEET (NHẤT NIỆM TIÊU DAO)
+      // ----------------------------------------------------------------------
+      if (isMainHero && heroSpriteSheetRef.current && heroSpriteSheetRef.current.complete && heroSpriteSheetRef.current.naturalWidth > 0) {
+        const sheet = heroSpriteSheetRef.current;
+        const FRAME_W = 360;
+        const FRAME_H = 480;
+
+        // Map strike timer to 6 action frames (0: Ready, 1: Windup, 2: Downstroke, 3: Impact, 4: Rebound, 5: Recover)
+        let frameIdx = 0;
+        if (heroStrikeTimer >= 0) {
+          const p = Math.min(1, heroStrikeTimer / HERO_STRIKE_TOTAL_SEC);
+          if (p < 0.18) frameIdx = 1;      // Windup (Tích lôi)
+          else if (p < 0.40) frameIdx = 2; // Downstroke (Vung búa xé gió)
+          else if (p < 0.62) frameIdx = 3; // Impact (Nện phát nổ sấm sét)
+          else if (p < 0.82) frameIdx = 4; // Rebound (Nảy búa khói tiên)
+          else frameIdx = 5;               // Recover (Hồi thế)
+        }
+
+        // Ground Forge Aura Ring
+        ctx.save();
+        ctx.fillStyle = rimHex;
+        ctx.globalAlpha = 0.22;
+        ctx.beginPath();
+        ctx.ellipse(14 * facing, 0, 92, 18, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+
+        // Render Frame from Sprite Sheet
+        const sx = frameIdx * FRAME_W;
+        const sy = 0;
+        const sw = FRAME_W;
+        const sh = FRAME_H;
+
+        const renderScale = 0.44;
+        const dw = FRAME_W * renderScale;
+        const dh = FRAME_H * renderScale;
+        const baseLineY = 430 * renderScale; // anchor to feet baseline
+
+        const spriteLeft = -76 * facing - (facing === 1 ? 0 : dw);
+        const spriteTop = -baseLineY;
+
+        ctx.save();
+        // Dynamic Stance Aura Glow
+        ctx.shadowColor = rimHex;
+        ctx.shadowBlur = frameIdx === 3 ? 24 : 10;
+        ctx.drawImage(sheet, sx, sy, sw, sh, spriteLeft, spriteTop, dw, dh);
+        ctx.restore();
+
+        // Overhead Title Badge
+        if (label) {
+          ctx.save();
+          const labelY = -152 + torsoOffsetY * 0.4;
+          ctx.font = '700 13px "Chakra Petch", sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+
+          const textMetrics = ctx.measureText(label);
+          const padX = 8;
+          const boxW = textMetrics.width + padX * 2;
+          const boxH = 22;
+
+          ctx.fillStyle = 'rgba(6, 10, 20, 0.88)';
+          ctx.strokeStyle = rimHex;
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          ctx.roundRect(-boxW * 0.5, labelY - boxH * 0.5, boxW, boxH, 4);
+          ctx.fill();
+          ctx.stroke();
+
+          ctx.fillStyle = coreHex;
+          ctx.fillText(label, 0, labelY);
+          ctx.restore();
+        }
+
+        ctx.restore();
+        return;
       }
 
       // 1. Ground Forge Aura Ring under feet + Anvil

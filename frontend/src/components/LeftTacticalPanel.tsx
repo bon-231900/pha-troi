@@ -63,6 +63,7 @@ interface LeftTacticalPanelProps {
   guildHearths?: Record<string, { level: number; exp: number }>;
   onDonateHearth?: (guildId: string, amount: number) => void;
   linhThach?: number;
+  stanceWeave?: { previousStance: StanceKey; timeLeftSec: number } | null;
 }
 
 export const LeftTacticalPanel: React.FC<LeftTacticalPanelProps> = ({
@@ -85,6 +86,7 @@ export const LeftTacticalPanel: React.FC<LeftTacticalPanelProps> = ({
   guildHearths = {},
   onDonateHearth,
   linhThach = 0,
+  stanceWeave,
 }) => {
   const [activeTab, setActiveTab] = useState<'tactical' | 'guild' | 'vaults'>('tactical');
   const [inputText, setInputText] = useState('');
@@ -206,6 +208,18 @@ export const LeftTacticalPanel: React.FC<LeftTacticalPanelProps> = ({
                 DPS Server: {serverDps.toLocaleString('en-US')} DMG/s
               </span>
             </div>
+
+            {stanceWeave && (
+              <div className="mb-2.5 p-2 rounded-lg bg-amber-500/15 border border-amber-400/40 flex items-center justify-between animate-pulse">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-amber-300 font-bold text-xs">✦ CHUYỂN THẾ:</span>
+                  <span className="text-[11px] text-amber-100">Kế thừa 50% uy lực [{stanceWeave.previousStance}]</span>
+                </div>
+                <span className="px-2 py-0.5 rounded-full bg-amber-400 text-slate-950 font-bold text-xs font-mono">
+                  {stanceWeave.timeLeftSec}s
+                </span>
+              </div>
+            )}
 
             <div className="p-2.5 rounded-lg bg-[#111625] border border-slate-800/80 mb-2.5">
               <div className="text-[11px] text-slate-400 mb-0.5">Thế Búa Đang Vận Dụng</div>
@@ -625,6 +639,26 @@ export const LeftTacticalPanel: React.FC<LeftTacticalPanelProps> = ({
                   <div className="text-[11px] font-tech text-slate-300 mb-2">
                     Boss: <b className="text-amber-200">{vault.bossName}</b>
                     <span className="text-slate-400 text-[10px] block truncate">{vault.bossTitle}</span>
+                  </div>
+
+                  {/* World Raid v3.1 Mechanics Breakdown */}
+                  <div className="grid grid-cols-2 gap-1 text-[9px] font-tech bg-slate-950/60 p-2 rounded-lg border border-slate-800/80 mb-2">
+                    <div>
+                      <span className="text-slate-400">Quy mô: </span>
+                      <span className="text-cyan-300 font-semibold">{vault.recommendedPlayers}</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-400">Phá Giáp: </span>
+                      <span className="text-purple-300 font-semibold">{vault.armorBreakMaxPoints} pt (-{vault.armorRegenPerSec}/s)</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-400">Hàn Khí: </span>
+                      <span className="text-amber-300 font-semibold">{vault.serverChillPerSec > 0 ? `+${vault.serverChillPerSec}` : vault.serverChillPerSec}°C/s ({vault.meltingThreshold}°C)</span>
+                    </div>
+                    <div className="truncate" title={vault.wipeMechanicDesc}>
+                      <span className="text-slate-400">Đại Chiêu: </span>
+                      <span className="text-rose-400 font-semibold">{vault.wipeMechanicName}</span>
+                    </div>
                   </div>
 
                   <p className="text-[10px] text-slate-400 italic mb-2 line-clamp-2">

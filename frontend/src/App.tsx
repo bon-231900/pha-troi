@@ -9,6 +9,7 @@ import {
 } from './game/realtimeRoom';
 import {
   StanceKey,
+  JudgmentGrade,
   INITIAL_UPGRADES,
   INITIAL_SPIRIT_NODES,
   ForgeUpgrade,
@@ -42,6 +43,7 @@ import {
   getSalvageYield,
   getItemRarityMeta,
   calculateArsenalBonuses,
+  checkForgeEquilibrium,
   ForgerRank,
   FORGER_RANKS,
   getForgerRank,
@@ -149,6 +151,7 @@ export default function App() {
   const [resonanceStrikes, setResonanceStrikes] = useState<number>(0); // 0 - 50 strikes
   const [isShieldBroken, setIsShieldBroken] = useState<boolean>(false);
   const [shieldBreakTimeLeft, setShieldBreakTimeLeft] = useState<number>(0);
+  const [stanceWeave, setStanceWeave] = useState<{ previousStance: StanceKey; timeLeftSec: number } | null>(null);
   const [claimedMilestones, setClaimedMilestones] = useState<string[]>(() => {
     try {
       const s = safeStorage.getItem('phatroi_save_v6');
@@ -245,6 +248,48 @@ export default function App() {
     } catch {}
     return 0;
   });
+
+  // World Raid v3.1 Mechanics States
+  const [serverFurnaceHeat, setServerFurnaceHeat] = useState<number>(() => {
+    try {
+      const s = safeStorage.getItem('phatroi_save_v6');
+      if (s) {
+        const parsed = JSON.parse(s);
+        if (typeof parsed.serverFurnaceHeat === 'number') return parsed.serverFurnaceHeat;
+      }
+    } catch {}
+    return 1500;
+  });
+
+  const [serverAnvilHp, setServerAnvilHp] = useState<number>(() => {
+    try {
+      const s = safeStorage.getItem('phatroi_save_v6');
+      if (s) {
+        const parsed = JSON.parse(s);
+        if (typeof parsed.serverAnvilHp === 'number') return parsed.serverAnvilHp;
+      }
+    } catch {}
+    return 10000;
+  });
+
+  const [activeArmorBreakPoints, setActiveArmorBreakPoints] = useState<number>(0);
+  const [armorRegenFrozenTime, setArmorRegenFrozenTime] = useState<number>(0);
+
+  const [raidContributionScore, setRaidContributionScore] = useState<number>(() => {
+    try {
+      const s = safeStorage.getItem('phatroi_save_v6');
+      if (s) {
+        const parsed = JSON.parse(s);
+        if (typeof parsed.raidContributionScore === 'number') return parsed.raidContributionScore;
+      }
+    } catch {}
+    return 0;
+  });
+
+  const [phaseCheckActive, setPhaseCheckActive] = useState<boolean>(false);
+  const [phaseCheckTimeLeft, setPhaseCheckTimeLeft] = useState<number>(0);
+  const triggeredPhaseChecksRef = useRef<Record<string, boolean>>({});
+  const anvilStrikeTickCounterRef = useRef<number>(0);
 
   // ARPG Equipment & Backpack State (Procedural Drops & Affixes)
   const [equippedItems, setEquippedItems] = useState<Record<EquipmentSlotKey, EquipmentItem | null>>(() => {
@@ -421,6 +466,9 @@ export default function App() {
           currentVaultId,
           userGuildId,
           guildHearths,
+          serverFurnaceHeat,
+          serverAnvilHp,
+          raidContributionScore,
           lastActiveTimestamp: Date.now(),
         };
         safeStorage.setItem('phatroi_save_v6', JSON.stringify(payload));
@@ -433,7 +481,7 @@ export default function App() {
       clearInterval(timer);
       window.removeEventListener('beforeunload', saveState);
     };
-  }, [bossHp, linhThach, tinhHoa, upgrades, spiritNodes, stanceSkills, equippedItems, inventory, playerTotalDamage, claimedMilestones, currentVaultId, userGuildId, guildHearths]);
+  }, [bossHp, linhThach, tinhHoa, upgrades, spiritNodes, stanceSkills, equippedItems, inventory, playerTotalDamage, claimedMilestones, currentVaultId, userGuildId, guildHearths, serverFurnaceHeat, serverAnvilHp, raidContributionScore]);
 
   // Connect to Multiplayer Gateway (Offline Fallback if server unreachable)
   useEffect(() => {
@@ -481,7 +529,7 @@ export default function App() {
         soundEngine.playComboStreakSound?.(4);
       },
       onPeerLeft: (peerId) => {
-        appendCombatLog('🍂 Một đồng môn vừa tạm lui về hậu phương nghỉ ngơi.', 'slate');
+        appendCombatLog('🍂 Một đồng môn vừa tạm lui về hậu phương nghỉ ngơi.', 'neutral');
       },
       onRemoteStrike: (strike) => {
         canvasHandleRef.current?.triggerRemotePeerStrike(strike);
@@ -506,7 +554,7 @@ export default function App() {
       },
       onPeersChange: (peers) => {
         setOnlinePeers(peers);
-        canvasHandleRef.current?.updateRemotePeers(peers);
+        canvasHandleRef.current?.updateRemotePeers(peers.map((p) => ({ peerId: p.id, name: p.name, guildId: p.guildId, stance: p.stance, slotIndex: p.slotIndex })));
         setActiveForgersCount(peers.length > 0 ? peers.length + 1 : 480);
         setIsOffline(peers.length === 0);
       },
@@ -543,6 +591,13 @@ export default function App() {
     setShieldBreakTimeLeft(0);
     setResonanceStrikes(0);
     setAnvilHeat(100);
+    setActiveArmorBreakPoints(0);
+    setArmorRegenFrozenTime(0);
+    setServerFurnaceHeat(vault.meltingThreshold);
+    setServerAnvilHp(10000);
+    setPhaseCheckActive(false);
+    setPhaseCheckTimeLeft(0);
+    triggeredPhaseChecksRef.current = {};
     setGlobalCountdownSec(180);
     setGlobalSynergyPct(74.0);
     setGlobalBurstActive(false);
@@ -561,6 +616,10 @@ export default function App() {
     if (gameState !== 'playing') return;
 
     const timer = setInterval(() => {
+      const vault = getCelestialVault(currentVaultId);
+      anvilStrikeTickCounterRef.current += 1;
+      const is10sTick = anvilStrikeTickCounterRef.current % 20 === 0;
+
       // 1. Overdrive cooldown
       setOverdriveTimeLeft((prev) => {
         if (prev <= 0) return 0;
@@ -573,13 +632,89 @@ export default function App() {
       });
 
       // 2. Shield break countdown (30s)
+      setStanceWeave((prev) => {
+        if (!prev) return null;
+        if (prev.timeLeftSec <= 1) return null;
+        return { ...prev, timeLeftSec: prev.timeLeftSec - 1 };
+      });
+
       setShieldBreakTimeLeft((prev) => {
         if (prev <= 0) return 0;
         const next = Math.max(0, prev - 0.5);
         if (next === 0) {
           setIsShieldBroken(false);
           setBossShieldPct(100.0);
-          appendCombatLog('Vòm Trời tái lập Giáp Năng Lượng! Tiếp tục tích 50 nhát để Phá Giáp.', 'cyan');
+          appendCombatLog('Vòm Trời tái lập Giáp Năng Lượng! Tiếp tục hợp lực Phá Giáp.', 'cyan');
+        }
+        return next;
+      });
+
+      // 2B. World Raid: Active Armor Regeneration vs Troupe Breakers
+      if (!isShieldBroken) {
+        setArmorRegenFrozenTime((frozenSec) => {
+          if (frozenSec > 0) return Math.max(0, frozenSec - 0.5);
+          const regenDecay = vault.armorRegenPerSec * 0.5;
+          const breakerCount = Math.max(1, Math.round(activeForgersCount * 0.25));
+          const breakerGain = breakerCount * (0.8 + Math.random() * 0.4) * 0.5;
+          const netBreakGain = breakerGain - regenDecay;
+
+          setActiveArmorBreakPoints((prev) => {
+            const next = Math.max(0, Math.min(vault.armorBreakMaxPoints, prev + netBreakGain));
+            if (next >= vault.armorBreakMaxPoints) {
+              setIsShieldBroken(true);
+              setShieldBreakTimeLeft(SHIELD_BREAK_DURATION_SEC);
+              soundEngine.playGlobalBurstFanfare();
+              appendCombatLog(
+                `⚡ [WORLD RAID] ĐẠI CÔNG TRƯỜNG PHÁ GIÁP THÀNH CÔNG! Bầu trời ${vault.name} nứt toác, toàn server x1.5 sát thương!`,
+                'gold'
+              );
+              return 0;
+            }
+            return next;
+          });
+          return 0;
+        });
+      }
+
+      // 2C. World Raid: Global Server Furnace vs Celestial Chill
+      const chillDelta = vault.serverChillPerSec * 0.5;
+      const melterCount = Math.max(1, Math.round(activeForgersCount * 0.25));
+      const melterHeat = melterCount * (2.2 + Math.random() * 1.2) * 0.5;
+      const netServerHeat = melterHeat + chillDelta;
+      setServerFurnaceHeat((prev) => Math.max(0, Math.min(10000, Math.round(prev + netServerHeat))));
+
+      // 2D. World Raid: Great Server Anvil Durability & Wipe Check
+      const healerCount = Math.max(1, Math.round(activeForgersCount * 0.20));
+      const healerRepair = Math.round(healerCount * (0.5 + Math.random() * 0.4) * 0.5);
+      const skyAnvilStrikeDmg = is10sTick ? Math.floor(150 + Math.random() * 120) : 0;
+      if (is10sTick) {
+        appendCombatLog(`⚡ [THIÊN LÔI PHẠT ĐE] Bầu trời giáng sấm sét gây -${skyAnvilStrikeDmg} HP vào Đại Đe Thần!`, 'cyan');
+      }
+
+      setServerAnvilHp((prev) => {
+        const next = Math.min(10000, prev + healerRepair - skyAnvilStrikeDmg);
+        if (next <= 0) {
+          // RAID WIPE TRIGGERED!
+          setBossHp((hp) => Math.min(vault.maxHp, Math.round(hp + vault.maxHp * 0.15)));
+          appendCombatLog(
+            `⚠️ [RAID WIPE · THIÊN KIẾP PHẢN PHỆ] ĐẠI ĐE THẦN ĐÃ VỠ VỤN! Bầu trời hấp thu linh khí và hồi phục 15% HP!`,
+            'gold'
+          );
+          soundEngine.playGlobalBurstFanfare();
+          return 5000;
+        }
+        return next;
+      });
+
+      // 2E. World Raid: Phase Check (Tứ Trụ Khai Thiên) Countdown
+      setPhaseCheckTimeLeft((prev) => {
+        if (prev <= 0) return 0;
+        const next = Math.max(0, prev - 0.5);
+        if (next === 0) {
+          setPhaseCheckActive(false);
+          appendCombatLog(`✨ [TỨ TRỤ KHAI THIÊN] Vượt qua Thiên Đạo Phán Quyết! Toàn server nhận thưởng cống hiến!`, 'gold');
+          setLinhThach((lt) => lt + 1500);
+          setTinhHoa((th) => th + 8);
         }
         return next;
       });
@@ -608,7 +743,7 @@ export default function App() {
         setBossTrailHp((prevTrail) => Math.max(nextHp, prevTrail - 1200));
 
         // Check Atmospheric Seal Layer transitions (75%, 50%, 25%)
-        const currentSeal = getAtmosphericSealLayer(nextHp, BOSS_FLOOR_1_MAX_HP);
+        const currentSeal = getAtmosphericSealLayer(nextHp, vault.maxHp);
         if (currentSeal.id > lastSealLayerIdRef.current) {
           lastSealLayerIdRef.current = currentSeal.id;
           soundEngine.playGlobalBurstFanfare();
@@ -621,6 +756,22 @@ export default function App() {
             `💥 [THIÊN HÀNG VŨ LỘ] Vòm Trời bị phá sập một tầng! Tiến vào ${currentSeal.name}! Mọi thợ rèn nhận +1,000 LT & +5 Tinh Hoa!`,
             'gold'
           );
+        }
+
+        // World Raid: Tứ Trụ Khai Thiên (Phase Checks at 75%, 50%, 25%)
+        const hpRatio = nextHp / vault.maxHp;
+        for (const milestone of [0.75, 0.50, 0.25]) {
+          const checkKey = `${vault.id}_${milestone}`;
+          if (hpRatio <= milestone && !triggeredPhaseChecksRef.current[checkKey]) {
+            triggeredPhaseChecksRef.current[checkKey] = true;
+            setPhaseCheckActive(true);
+            setPhaseCheckTimeLeft(30);
+            soundEngine.playGlobalBurstFanfare();
+            appendCombatLog(
+              `⚡ [TỨ TRỤ KHAI THIÊN] Vòm Trời tụt xuống ${(milestone * 100).toFixed(0)}% HP! 4 Lõi Phong Ấn khai mở trong 30 giây!`,
+              'gold'
+            );
+          }
         }
 
         if (nextHp <= 0) {
@@ -644,8 +795,9 @@ export default function App() {
   const currentVault = getCelestialVault(currentVaultId);
   const currentSeal = getAtmosphericSealLayer(bossHp, currentVault.maxHp);
   const tier2Unlocked = playerTotalDamage >= 100_000 || claimedMilestones.includes('tier_3');
-  const arsenalBonuses = calculateArsenalBonuses(equippedItems);
-  const forgerRank = getForgerRank(playerTotalDamage);
+  const arsenalBonuses = calculateArsenalBonuses(equippedItems, upgrades);
+  const effectiveRankScore = Math.max(playerTotalDamage, raidContributionScore);
+  const forgerRank = getForgerRank(effectiveRankScore);
   const currentGuild = getGuild(userGuildId);
 
   // Player Strike Handler
@@ -656,11 +808,12 @@ export default function App() {
         return;
       }
 
-      // Rhythm judgment: forceGolden or default perfect/great
-      const isGoldenHit = forceGolden || Math.random() < 0.45;
-      const grade = isGoldenHit ? 'PERFECT' : 'GREAT';
+      // Rhythm judgment: true skill timing or Overdrive burst (No more 45% RNG auto-crit!)
+      const isGoldenHit = forceGolden || overdriveActive || (combo >= 5 && Math.random() < 0.15);
+      const grade: JudgmentGrade = isGoldenHit ? 'PERFECT' : 'GREAT';
 
-      const forgerRank = getForgerRank(playerTotalDamage);
+      const effectiveRankScore = Math.max(playerTotalDamage, raidContributionScore);
+  const forgerRank = getForgerRank(effectiveRankScore);
       const stanceSkillBonuses = calculateStanceSkillBonuses(stanceSkills, activeStance);
 
       const outcome = calculateStrikeOutcome({
@@ -679,6 +832,11 @@ export default function App() {
         arsenalBonuses,
         stanceSkillBonuses,
         forgerRankMultiplier: forgerRank.damageMultiplier,
+        currentFloorId: currentVaultId,
+        stanceWeave,
+        serverFurnaceHeat,
+        vaultMeltingThreshold: currentVault.meltingThreshold,
+        isFrozenSky: serverFurnaceHeat < currentVault.meltingThreshold,
       });
 
       // 1. Trigger Panoramic Canvas 2D Strike Visuals
@@ -687,13 +845,19 @@ export default function App() {
       // 2. Spawn Floating Text in Canvas (Pure Integer RPG numbers: -1 DMG, -3 DMG, -12 DMG)
       const stanceData = HAMMER_STANCES[activeStance];
       const isCritHit = outcome.isCrit;
-      const combatGradeLabel = isCritHit
-        ? `BẠO KÍCH! x${outcome.displayMultiplier}`
+      const isGlancingHit = outcome.isGlancingHit;
+
+      const combatGradeLabel = isGlancingHit
+        ? 'DỘI BÚA! (LÒ NGUỘI) x0.6'
+        : isCritHit
+        ? `⚡ BẠO KÍCH! x${outcome.displayMultiplier}`
         : isGoldenHit
-        ? 'HOÀNG KIM! x3.0'
+        ? `HOÀNG KIM! x${outcome.displayMultiplier}`
         : 'CHUẨN XÁC! x1.0';
 
-      const combatGradeColor = isCritHit
+      const combatGradeColor = isGlancingHit
+        ? '#EF4444'
+        : isCritHit
         ? '#00F0FF'
         : isGoldenHit
         ? '#FFD166'
@@ -723,16 +887,31 @@ export default function App() {
         setBurnStacks((prev) => Math.min(80, prev + addedBurn));
       }
 
-      // 5. Update Phá Giáp Resonance
+      // 4C. World Raid: Update Server Furnace Heat, Anvil Repair & Frozen Regen
+      if (outcome.serverHeatGain !== 0) {
+        setServerFurnaceHeat((prev) => Math.max(0, Math.min(10000, prev + outcome.serverHeatGain)));
+      }
+      if (outcome.anvilRepairGain > 0) {
+        setServerAnvilHp((prev) => Math.min(10000, prev + outcome.anvilRepairGain));
+      }
+      if (outcome.anvilDamage > 0) {
+        setServerAnvilHp((prev) => Math.max(0, prev - outcome.anvilDamage));
+      }
+      if (outcome.freezeRegenSec > 0) {
+        setArmorRegenFrozenTime((t) => Math.min(5, t + outcome.freezeRegenSec));
+      }
+      setRaidContributionScore((rcs) => rcs + outcome.raidContributionGain);
+
+      // 5. Update Phá Giáp Resonance (Active Armor Break Points)
       if (!isShieldBroken) {
-        setResonanceStrikes((prev) => {
-          const next = prev + outcome.resonanceGain;
-          if (next >= RESONANCE_MAX_STRIKES) {
+        setActiveArmorBreakPoints((prev) => {
+          const next = prev + outcome.armorBreakGain;
+          if (next >= currentVault.armorBreakMaxPoints) {
             setIsShieldBroken(true);
             setShieldBreakTimeLeft(SHIELD_BREAK_DURATION_SEC);
             soundEngine.playGlobalBurstFanfare();
             appendCombatLog(
-              '⚡ GIÁP NĂNG LƯỢNG TAN VỠ! Sát thương toàn server lên Boss tăng x1.5 trong 30 giây!',
+              `⚡ GIÁP BẦU TRỜI TAN VỠ! Toàn server dồn sát thương x1.5 trong 30 giây!`,
               'gold'
             );
 
@@ -890,7 +1069,7 @@ export default function App() {
 
         // 9. Procedural ARPG Loot Drop Check
         const droppedItem = rollLootDrop(
-          grade === 'PERFECT' ? 'perfect' : 'great',
+          grade,
           outcome.triggeredOverdrive || overdriveActive,
           isShieldBroken
         );
@@ -930,7 +1109,12 @@ export default function App() {
         damage: outcome.damage,
       });
 
-      if (isCritHit) {
+      if (isGlancingHit) {
+        appendCombatLog(
+          `⚠️ [DỘI BÚA] Lực Chùy quá cao so với Nhiệt Lò (${arsenalBonuses.coreStats.str} > 2.5x ${arsenalBonuses.coreStats.int})! Sát thương giảm 35%!`,
+          'red'
+        );
+      } else if (isCritHit) {
         appendCombatLog(
           `⚡ [BẠO KÍCH BAO TAY] [${activeStance}] giáng -${outcome.damage} DMG! (+${outcome.linhThachEarned} LT)`,
           'cyan'
@@ -974,6 +1158,15 @@ export default function App() {
 
   const handleSelectStance = useCallback(
     (stance: StanceKey) => {
+      if (stance === activeStance) return;
+      if (combo >= 4) {
+        setStanceWeave({ previousStance: activeStance, timeLeftSec: 6 });
+        soundEngine.playComboStreakSound?.(5);
+        appendCombatLog(
+          `✦ [KÍCH HOẠT CHUYỂN THẾ] Giữ lại 50% uy lực [${activeStance}] trong 6 giây!`,
+          'gold'
+        );
+      }
       setActiveStance(stance);
       realtimeRoomRef.current?.updateIdentity(stance, userGuildId);
       soundEngine.playStanceSwitch(stance);
@@ -982,7 +1175,7 @@ export default function App() {
         'cyan'
       );
     },
-    [appendCombatLog]
+    [activeStance, combo, userGuildId, appendCombatLog]
   );
 
   const handleTriggerGlobalBurst = useCallback(() => {
@@ -1134,6 +1327,16 @@ export default function App() {
 
   const handleBuyUpgrade = useCallback(
     (upgradeId: string) => {
+      const eqCheck = checkForgeEquilibrium(upgrades, upgradeId);
+      if (!eqCheck.allowed) {
+        soundEngine.playComboStreakSound?.(1);
+        appendCombatLog(
+          `🔒 ${eqCheck.reason}`,
+          'red'
+        );
+        return;
+      }
+
       setUpgrades((prev) =>
         prev.map((u) => {
           if (u.id !== upgradeId) return u;
@@ -1146,7 +1349,7 @@ export default function App() {
         })
       );
     },
-    [linhThach, appendCombatLog]
+    [linhThach, upgrades, appendCombatLog]
   );
 
   const handleUnlockSpiritNode = useCallback(
@@ -1427,6 +1630,18 @@ export default function App() {
         isShieldBroken={isShieldBroken}
         shieldBreakTimeLeft={shieldBreakTimeLeft}
         currentSealLayer={currentSeal}
+        serverFurnaceHeat={serverFurnaceHeat}
+        vaultMeltingThreshold={currentVault.meltingThreshold}
+        serverChillRate={currentVault.serverChillPerSec}
+        serverAnvilHp={serverAnvilHp}
+        serverAnvilMaxHp={10000}
+        activeArmorBreakPoints={Math.round(activeArmorBreakPoints)}
+        armorBreakMaxPoints={currentVault.armorBreakMaxPoints}
+        armorRegenRate={currentVault.armorRegenPerSec}
+        isArmorRegenFrozen={armorRegenFrozenTime > 0}
+        raidContributionScore={raidContributionScore}
+        phaseCheckActive={phaseCheckActive}
+        phaseCheckTimeLeft={Math.ceil(phaseCheckTimeLeft)}
         muted={muted}
         onToggleMute={() => {
           setMuted((prev) => {
@@ -1438,7 +1653,6 @@ export default function App() {
         onPause={() =>
           setGameState((prev) => (prev === 'playing' ? 'paused' : 'playing'))
         }
-        onRestart={resetGame}
         onTriggerGlobalBurst={handleTriggerGlobalBurst}
         leftPanelOpen={leftPanelOpen}
         onToggleLeftPanel={() => setLeftPanelOpen((prev) => !prev)}
@@ -1680,8 +1894,8 @@ export default function App() {
           maxCombo={maxCombo}
           perfectCount={perfectCount}
           onResume={() => setGameState('playing')}
-          onRestart={resetGame}
           onReturnTitle={() => setGameState('title')}
+          onRestart={startGame}
         />
       )}
     </div>

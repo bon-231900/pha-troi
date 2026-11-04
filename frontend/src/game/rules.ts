@@ -171,7 +171,7 @@ export function judgeRhythmWave(progress: number): JudgmentResult {
 // ============================================================================
 // BALANCE OVERHAUL: DE-INFLATION RPG BASELINE & COMMUNITY RAID MODEL
 // ============================================================================
-export const BOSS_FLOOR_1_MAX_HP = 500_000_000; // 500 Triệu HP (Vòm Trời Thiết Vân - Tầng 1)
+export const BOSS_FLOOR_1_MAX_HP = 1_500_000_000; // 1.5 Tỷ HP (Vòm Trời Thiết Vân - Tầng 1 · World Raid Edition)
 export const BOSS_FLOOR_NAME = 'Vòm Trời Thiết Vân · Tầng 1';
 
 export const RESONANCE_MAX_STRIKES = 50; // Tích 50 nhát -> Vỡ giáp 30s
@@ -331,6 +331,65 @@ export type ItemRarity = 'common' | 'rare' | 'epic' | 'legendary' | 'mythic';
 
 export const MAX_INVENTORY_SLOTS = 24;
 
+export type EquipmentSetId = 'set_thunder' | 'set_fire' | 'set_gravity' | 'set_mystic';
+
+export interface EquipmentSetDef {
+  id: EquipmentSetId;
+  name: string;
+  stanceKey: StanceKey;
+  color: string;
+  twoPieceBonusDesc: string;
+  fourPieceBonusDesc: string;
+  sixPieceBonusDesc: string;
+}
+
+export const EQUIPMENT_SETS: Record<EquipmentSetId, EquipmentSetDef> = {
+  set_thunder: {
+    id: 'set_thunder',
+    name: 'Thiên Lôi Phá Khởi',
+    stanceKey: 'Q',
+    color: '#00F0FF',
+    twoPieceBonusDesc: '+12% Nạp Cực Nhịp (SPI) & +8 ms Cửa Sổ Hoàng Kim',
+    fourPieceBonusDesc: 'Vào Overdrive tăng +25% Phá Phách (PEN) trong 8s',
+    sixPieceBonusDesc: 'Chuỗi Hoàng Kim tăng sát thương Sét Lan +8%/nhát (tối đa +80%)',
+  },
+  set_fire: {
+    id: 'set_fire',
+    name: 'Xích Diễm Phần Thiên',
+    stanceKey: 'W',
+    color: '#FF3B30',
+    twoPieceBonusDesc: '+4°C Hỏa Hẩu/hit (INT) & giảm 30% tốc độ nguội lò',
+    fourPieceBonusDesc: 'Sát thương Thiêu Đốt (Tro Tàn) có thể Bạo Kích theo 50% DEX Crit Rate',
+    sixPieceBonusDesc: 'Khi Hỏa Hẩu >= 800°C, đòn đánh bỏ qua thêm 20% Giáp Boss',
+  },
+  set_gravity: {
+    id: 'set_gravity',
+    name: 'Thái Sơn Trọng Áp',
+    stanceKey: 'E',
+    color: '#A855F7',
+    twoPieceBonusDesc: '+20% Lực Chùy (STR) & +1 Điểm Phá Giáp/hit',
+    fourPieceBonusDesc: 'Chuyển hóa 25% Phá Phách (PEN) thành Sát Thương Bạo Kích',
+    sixPieceBonusDesc: 'Gõ vào Boss Vỡ Giáp gây nổ chấn động bằng 180% tổng STR + PEN',
+  },
+  set_mystic: {
+    id: 'set_mystic',
+    name: 'Huyền Âm Vạn Dân',
+    stanceKey: 'R',
+    color: '#10B981',
+    twoPieceBonusDesc: '+30% Sản Lượng Linh Thạch & +15% Cộng Hưởng (SPI)',
+    fourPieceBonusDesc: 'Nhát gõ Hoàng Kim hồi +1°C Hỏa Hẩu & tăng +10% DMG thợ rèn lân cận',
+    sixPieceBonusDesc: 'Kéo dài trạng thái Vỡ Giáp +5s & nhân đôi tỷ lệ rơi Tinh Hoa (TH)',
+  },
+};
+
+export interface CoreStats {
+  str: number; // Lực Chùy (Damage base + Stance E scaling)
+  dex: number; // Chuẩn Xác (Crit chance, Crit dmg, Golden window)
+  int: number; // Nhiệt Lực (Heating speed, Max heat, Burn DoT)
+  pen: number; // Phá Phách (Armor break points, Direct Pierce %)
+  spi: number; // Cộng Hưởng (Overdrive speed, drops, sync)
+}
+
 export interface ItemAffix {
   id: string;
   type: 'prefix' | 'suffix';
@@ -369,6 +428,8 @@ export interface EquipmentItem {
   loreDescription: string;
   droppedAt?: number;
   quench?: QuenchType;
+  setId?: EquipmentSetId;
+  setName?: string;
 }
 
 export interface ArsenalBonuses {
@@ -384,6 +445,12 @@ export interface ArsenalBonuses {
   essenceDropChancePct: number;
   synergyChargeBonusPct: number;
   totalEquippedCount: number;
+  coreStats: CoreStats;
+  setCounts: Record<EquipmentSetId, number>;
+  activeSetPerks: string[];
+  glancingHitPenalty: boolean;
+  critRateEffective: number;
+  piercePct: number;
 }
 
 export const SLOT_INFO: Record<EquipmentSlotKey, { name: string; icon: string; statLabel: string; statUnit: string }> = {
@@ -609,7 +676,7 @@ export function generateProceduralItem(options?: {
 
   const slotMeta = SLOT_INFO[slotKey];
 
-  return {
+  const ret: EquipmentItem = {
     id: `item_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`,
     slotKey,
     slotName: slotMeta.name,
@@ -624,7 +691,12 @@ export function generateProceduralItem(options?: {
     suffixes,
     loreDescription: baseDef.lore,
     droppedAt: Date.now(),
+    setId: (['set_thunder', 'set_fire', 'set_gravity', 'set_mystic'] as EquipmentSetId[])[Math.floor(Math.random() * 4)],
   };
+  if (ret.setId) {
+    ret.setName = EQUIPMENT_SETS[ret.setId].name;
+  }
+  return ret;
 }
 
 export function rollLootDrop(
@@ -632,11 +704,11 @@ export function rollLootDrop(
   isOverdrive: boolean = false,
   isShieldBreak: boolean = false
 ): EquipmentItem | null {
-  if (grade === 'miss') return null;
+  if (grade === 'MISS') return null;
 
   // Drop chances
   let dropChance = 0.035; // 3.5% on great
-  if (grade === 'perfect') dropChance = 0.12; // 12% on perfect
+  if (grade === 'PERFECT') dropChance = 0.12; // 12% on perfect
   if (isOverdrive) dropChance = Math.max(dropChance, 0.22); // 22% on overdrive
   if (isShieldBreak) dropChance = 1.0; // 100% on shield break
 
@@ -651,7 +723,7 @@ export function rollLootDrop(
     else if (roll < 0.35) rarity = 'legendary';
     else if (roll < 0.80) rarity = 'epic';
     else rarity = 'rare';
-  } else if (grade === 'perfect' || isOverdrive) {
+  } else if (grade === 'PERFECT' || isOverdrive) {
     if (roll < 0.01) rarity = 'mythic';
     else if (roll < 0.06) rarity = 'legendary';
     else if (roll < 0.24) rarity = 'epic';
@@ -751,6 +823,8 @@ export const INITIAL_EQUIPPED_SLOTS: Record<EquipmentSlotKey, EquipmentItem> = {
     prefixes: [{ id: 'p_init_1', type: 'prefix', name: 'Sắc Bén', label: '+1 Sát thương cơ bản', statKey: 'flatDamage', value: 1 }],
     suffixes: [],
     loreDescription: 'Cây búa sắt thô sơ từ thung lũng Thiên Thai, vết rỉ sét ghi dấu ngày đầu khởi nghĩa phá trời.',
+    setId: 'set_gravity',
+    setName: 'Thái Sơn Trọng Áp',
   },
   anvil: {
     id: 'starter_anvil',
@@ -766,6 +840,8 @@ export const INITIAL_EQUIPPED_SLOTS: Record<EquipmentSlotKey, EquipmentItem> = {
     prefixes: [],
     suffixes: [{ id: 's_init_1', type: 'suffix', name: 'chi Phong Nhịp', label: '+8 ms Dung sai nhịp gõ', statKey: 'perfectWindowMs', value: 8 }],
     loreDescription: 'Khối đe thép tôi qua vạn lớp nước suối mây, bề mặt đanh chắc tạo âm vang dội.',
+    setId: 'set_mystic',
+    setName: 'Huyền Âm Vạn Dân',
   },
   bellows: {
     id: 'starter_bellows',
@@ -781,6 +857,8 @@ export const INITIAL_EQUIPPED_SLOTS: Record<EquipmentSlotKey, EquipmentItem> = {
     prefixes: [{ id: 'p_init_2', type: 'prefix', name: 'Xích Diễm', label: '+2 °C/hit Hỏa Hầu', statKey: 'heatGainPerHit', value: 2 }],
     suffixes: [],
     loreDescription: 'May từ da hổ sấm, mỗi nhịp thổi bùng ngọn lửa đỏ rực công trường.',
+    setId: 'set_fire',
+    setName: 'Xích Diễm Phần Thiên',
   },
   gauntlets: {
     id: 'starter_gauntlets',
@@ -791,11 +869,13 @@ export const INITIAL_EQUIPPED_SLOTS: Record<EquipmentSlotKey, EquipmentItem> = {
     rarity: 'common',
     itemLevel: 1,
     baseStatLabel: 'Tỷ Lệ Bạo Kích',
-    baseStatValue: 5,
+    baseStatValue: 2,
     baseStatUnit: '%',
     prefixes: [],
-    suffixes: [{ id: 's_init_2', type: 'suffix', name: 'chi Bạo Kích', label: '+4% Tỷ lệ Bạo Kích', statKey: 'critChancePct', value: 4 }],
+    suffixes: [{ id: 's_init_2', type: 'suffix', name: 'chi Bạo Kích', label: '+2% Tỷ lệ Bạo Kích', statKey: 'critChancePct', value: 2 }],
     loreDescription: 'Bảo vệ lòng bàn tay khỏi những tia tàn tro đỏ rực tóe ra từ mặt đe.',
+    setId: 'set_thunder',
+    setName: 'Thiên Lôi Phá Khởi',
   },
   apron: {
     id: 'starter_apron',
@@ -811,32 +891,37 @@ export const INITIAL_EQUIPPED_SLOTS: Record<EquipmentSlotKey, EquipmentItem> = {
     prefixes: [],
     suffixes: [],
     loreDescription: 'Tạp dề lót giáp sắt mỏng, che chắn lồng ngực thợ rèn trước xung lực rực lửa.',
+    setId: 'set_mystic',
+    setName: 'Huyền Âm Vạn Dân',
   },
   relic: {
     id: 'starter_relic',
     slotKey: 'relic',
     slotName: 'Định Thiên Pháp Bảo',
     baseName: 'Thạch Bàn Đông Sơn',
-    name: 'Hoàng Kim Thạch Bàn Đông Sơn chi Cực Nhịp',
-    rarity: 'rare',
+    name: 'Thạch Bàn Đông Sơn',
+    rarity: 'common',
     itemLevel: 1,
     baseStatLabel: 'Sát Thương Toàn Thể',
-    baseStatValue: 6,
+    baseStatValue: 5,
     baseStatUnit: '%',
-    prefixes: [{ id: 'p_init_3', type: 'prefix', name: 'Hoàng Kim', label: '+1 Linh Thạch mỗi nhát', statKey: 'linhThachPerHit', value: 1 }],
-    suffixes: [{ id: 's_init_3', type: 'suffix', name: 'chi Cực Nhịp', label: '+10% Tốc độ nạp Cực Nhịp', statKey: 'synergyChargeBonusPct', value: 10 }],
-    loreDescription: 'Phiến đá khắc họa cổ văn Đông Sơn, hấp thu khí thiêng đất trời tỏa ánh ngọc bích.',
+    prefixes: [],
+    suffixes: [],
+    loreDescription: 'Mảnh thạch bàn khắc họa chim Lạc sải cánh, tượng trưng cho ý chí người thợ rèn Việt cổ.',
+    setId: 'set_thunder',
+    setName: 'Thiên Lôi Phá Khởi',
   },
 };
 
 export function calculateArsenalBonuses(
-  equipped: Record<EquipmentSlotKey, EquipmentItem | null> | EquipmentItem[]
+  equipped: Record<EquipmentSlotKey, EquipmentItem | null> | EquipmentItem[],
+  upgrades?: ForgeUpgrade[]
 ): ArsenalBonuses {
   let flatDamage = 0;
   let damageMultiplier = 1.0;
   let resonanceBonus = 0;
   let heatPerHitBonus = 0;
-  let critChancePct = 5;
+  let critChancePct = 3; // Base character crit rate: 3%
   let perfectWindowMs = 0;
   let heatDecayReductionPct = 0;
   let dropLinhThachBonus = 0;
@@ -845,12 +930,22 @@ export function calculateArsenalBonuses(
   let synergyChargeBonusPct = 0;
   let totalEquippedCount = 0;
 
+  const setCounts: Record<EquipmentSetId, number> = {
+    set_thunder: 0,
+    set_fire: 0,
+    set_gravity: 0,
+    set_mystic: 0,
+  };
+
   const items: EquipmentItem[] = Array.isArray(equipped)
     ? equipped.filter(Boolean)
     : (Object.values(equipped).filter(Boolean) as EquipmentItem[]);
 
   for (const item of items) {
     totalEquippedCount += 1;
+    if (item.setId && item.setId in setCounts) {
+      setCounts[item.setId] += 1;
+    }
 
     switch (item.slotKey) {
       case 'hammer':
@@ -873,7 +968,6 @@ export function calculateArsenalBonuses(
         break;
     }
 
-    // Phase 3: Elemental Tempering Quench Bonus
     if (item.quench) {
       if (item.quench === 'ice') {
         essenceDropChancePct += 15;
@@ -881,7 +975,7 @@ export function calculateArsenalBonuses(
       } else if (item.quench === 'magma') {
         flatDamage += 8;
       } else if (item.quench === 'thunder') {
-        critChancePct += 12;
+        critChancePct += 8;
       }
     }
 
@@ -925,20 +1019,125 @@ export function calculateArsenalBonuses(
     }
   }
 
+  // Active Set Perks evaluation (2 / 4 / 6 Món)
+  const activeSetPerks: string[] = [];
+  if (setCounts.set_thunder >= 2) {
+    synergyChargeBonusPct += 12;
+    perfectWindowMs += 8;
+    activeSetPerks.push('Thiên Lôi 2/6: +12% Nạp Cực Nhịp (SPI) & +8 ms Cửa Sổ Hoàng Kim');
+  }
+  if (setCounts.set_thunder >= 4) {
+    activeSetPerks.push('Thiên Lôi 4/6: Vào Overdrive tăng +25% Phá Phách (PEN)');
+  }
+  if (setCounts.set_thunder >= 6) {
+    activeSetPerks.push('Thiên Lôi 6/6: Chuỗi Hoàng Kim tăng sát thương Sét Lan +8%/nhát (tối đa +80%)');
+  }
+
+  if (setCounts.set_fire >= 2) {
+    heatPerHitBonus += 4;
+    heatDecayReductionPct += 30;
+    activeSetPerks.push('Xích Diễm 2/6: +4°C Hỏa Hẩu/hit (INT) & giảm 30% tốc độ nguội lò');
+  }
+  if (setCounts.set_fire >= 4) {
+    activeSetPerks.push('Xích Diễm 4/6: Sát thương Thiêu Đốt (Tro Tàn) có thể Bạo Kích');
+  }
+  if (setCounts.set_fire >= 6) {
+    activeSetPerks.push('Xích Diễm 6/6: Khi Hỏa Hẩu >= 800°C, đòn đánh bỏ qua thêm 20% Giáp Boss');
+  }
+
+  if (setCounts.set_gravity >= 2) {
+    activeSetPerks.push('Thái Sơn 2/6: +20% Lực Chùy (STR) & +1 Điểm Phá Giáp/hit');
+  }
+  if (setCounts.set_gravity >= 4) {
+    activeSetPerks.push('Thái Sơn 4/6: Chuyển hóa 25% Phá Phách (PEN) thành Sát Thương Bạo Kích');
+  }
+  if (setCounts.set_gravity >= 6) {
+    activeSetPerks.push('Thái Sơn 6/6: Gõ vào Boss Vỡ Giáp gây nổ chấn động bằng 180% tổng STR + PEN');
+  }
+
+  if (setCounts.set_mystic >= 2) {
+    dropLinhThachBonus += 3;
+    activeSetPerks.push('Huyền Âm 2/6: +30% Sản Lượng Linh Thạch & +15% Cộng Hưởng (SPI)');
+  }
+  if (setCounts.set_mystic >= 4) {
+    activeSetPerks.push('Huyền Âm 4/6: Hoàng Kim hồi +1°C Hỏa Hẩu & tăng +10% DMG thợ rèn lân cận');
+  }
+  if (setCounts.set_mystic >= 6) {
+    activeSetPerks.push('Huyền Âm 6/6: Kéo dài trạng thái Vỡ Giáp +5s & nhân đôi tỷ lệ rơi Tinh Hoa');
+  }
+
+  // Ngũ Đại Thuộc Tính Rèn (Core Stats)
+  const hammerLvl = upgrades?.find((u) => u.id === 'celestial_hammer_core')?.level ?? 1;
+  const quenchLvl = upgrades?.find((u) => u.id === 'thunder_quench_oil')?.level ?? 0;
+  const bellowsLvl = upgrades?.find((u) => u.id === 'nine_heavens_bellows')?.level ?? 0;
+  const anvilLvl = upgrades?.find((u) => u.id === 'ancient_anvil_rune')?.level ?? 0;
+
+  let rawSTR = hammerLvl * 2 + flatDamage + 5;
+  if (setCounts.set_gravity >= 2) {
+    rawSTR = Math.round(rawSTR * 1.2);
+  }
+
+  const rawDEX = Math.round(critChancePct * 3 + perfectWindowMs);
+  const rawINT = bellowsLvl * 3 + heatPerHitBonus * 4 + 10;
+  const rawPEN = quenchLvl * 2 + anvilLvl * 2 + Math.round(flatDamage * 0.5) + (setCounts.set_gravity >= 2 ? 5 : 0);
+  let rawSPI = Math.round(synergyChargeBonusPct + resonanceBonus * 2 + afkLinhThachPerMin * 0.4 + 10);
+  if (setCounts.set_mystic >= 2) {
+    rawSPI = Math.round(rawSPI * 1.15);
+  }
+
+  // Soft Cap 1: Crit Rate (55% Soft Cap, Hard Cap 80%)
+  const rawCrit = Math.round(critChancePct);
+  const critRateEffective = rawCrit <= 55 ? rawCrit : Math.min(80, Math.round(55 + (rawCrit - 55) * 0.5));
+
+  // Soft Cap 2: Golden Window (+30 ms max)
+  const cappedPerfectWindowMs = Math.min(30, Math.round(perfectWindowMs));
+
+  // Glancing Hit (Dội Búa): If STR > 2.5 * INT
+  const glancingHitPenalty = rawSTR > 2.5 * Math.max(1, rawINT);
+
+  // Penetration percentage
+  const piercePct = Math.min(0.65, Number((rawPEN / (rawPEN + 50)).toFixed(3)));
+
   return {
     flatDamage: Math.round(flatDamage),
     damageMultiplier: Number(damageMultiplier.toFixed(2)),
     resonanceBonus: Math.round(resonanceBonus),
     heatPerHitBonus: Math.round(heatPerHitBonus),
-    critChancePct: Math.min(80, Math.round(critChancePct)),
-    perfectWindowMs: Math.round(perfectWindowMs),
+    critChancePct: critRateEffective,
+    perfectWindowMs: cappedPerfectWindowMs,
     heatDecayReductionPct: Math.min(75, Math.round(heatDecayReductionPct)),
     dropLinhThachBonus: Math.round(dropLinhThachBonus),
     afkLinhThachPerMin: Math.round(afkLinhThachPerMin),
     essenceDropChancePct: Math.round(essenceDropChancePct),
     synergyChargeBonusPct: Math.round(synergyChargeBonusPct),
     totalEquippedCount,
+    coreStats: {
+      str: rawSTR,
+      dex: rawDEX,
+      int: rawINT,
+      pen: rawPEN,
+      spi: rawSPI,
+    },
+    setCounts,
+    activeSetPerks,
+    glancingHitPenalty,
+    critRateEffective,
+    piercePct,
   };
+}
+
+export function computeRaidContributionScore(
+  damage: number,
+  armorBreakPoints: number,
+  heatPumped: number,
+  anvilRepaired: number
+): number {
+  return Math.round(
+    damage * 1.0 +
+    armorBreakPoints * 25_000 +
+    heatPumped * 15_000 +
+    anvilRepaired * 2.0
+  );
 }
 
 export interface StrikeInput {
@@ -957,19 +1156,34 @@ export interface StrikeInput {
   arsenalBonuses?: ArsenalBonuses;
   stanceSkillBonuses?: Record<string, number>;
   forgerRankMultiplier?: number;
+  currentFloorId?: number;
+  stanceWeave?: { previousStance: StanceKey; timeLeftSec: number } | null;
+  serverFurnaceHeat?: number;
+  vaultMeltingThreshold?: number;
+  isFrozenSky?: boolean;
 }
 
 export interface StrikeOutcome {
-  damage: number; // Integer DMG (1, 3, 12, 36, 50, 175...)
+  damage: number;
   displayMultiplier: number;
   nextCombo: number;
   nextOverdriveCharge: number;
   triggeredOverdrive: boolean;
-  heatGain: number; // +15°C for great, +30°C for perfect
-  resonanceGain: number; // +1 (or +2 for stance E)
-  linhThachEarned: number; // 1-2 for great, 5 for perfect
+  heatGain: number;
+  resonanceGain: number;
+  linhThachEarned: number;
   tinhHoaEarned: number;
   isCrit?: boolean;
+  isGolden?: boolean;
+  isGlancingHit?: boolean;
+  effectivePiercePct?: number;
+  armorBreakGain: number;
+  serverHeatGain: number;
+  anvilRepairGain: number;
+  freezeRegenSec: number;
+  anvilDamage: number;
+  raidContributionGain: number;
+  isFrozenSky?: boolean;
 }
 
 export function calculateStrikeOutcome(input: StrikeInput): StrikeOutcome {
@@ -980,21 +1194,31 @@ export function calculateStrikeOutcome(input: StrikeInput): StrikeOutcome {
       damage: 0,
       displayMultiplier: 0,
       nextCombo: 0,
-      nextOverdriveCharge: Math.max(0, input.overdriveCharge - 1),
+      nextOverdriveCharge: Math.max(0, input.overdriveCharge - 2),
       triggeredOverdrive: false,
-      heatGain: -10,
+      heatGain: -50,
       resonanceGain: 0,
       linhThachEarned: 0,
       tinhHoaEarned: 0,
+      armorBreakGain: 0,
+      serverHeatGain: -50,
+      anvilRepairGain: 0,
+      freezeRegenSec: 0,
+      anvilDamage: 5,
+      raidContributionGain: 0,
+      isGlancingHit: false,
     };
   }
 
-  const isPerfect = input.grade === 'PERFECT';
-  const gradeMult = isPerfect ? (input.basePower >= 50 ? 3.5 : 3.0) : 1.0;
-  const nextCombo = input.combo + 1;
-  const comboScaling = 1 + Math.min(nextCombo, 50) * 0.01; // max +50% at 50 combo
+  const isGolden = input.grade === 'PERFECT';
+  const isGreat = input.grade === 'GREAT';
 
-  const chargeGain = isPerfect ? 1 : 0.5;
+  // 1. Timing Multiplier (Hoàng Kim x2.5 / x3.2 streak, Thuần Thục x1.25, Chuẩn Xác x1.0)
+  const timingMult = isGolden ? (input.combo >= 5 ? 3.2 : 2.5) : isGreat ? 1.25 : 1.0;
+  const nextCombo = input.combo + 1;
+
+  // 2. Overdrive Charging
+  const chargeGain = isGolden ? 1 : 0.5;
   let nextOverdriveCharge = input.overdriveCharge;
   let triggeredOverdrive = false;
 
@@ -1009,75 +1233,160 @@ export function calculateStrikeOutcome(input: StrikeInput): StrikeOutcome {
   const overdriveMult = isOverdriveNow ? 2.0 : 1.0;
   const globalBurstMult = input.globalBurstActive ? 2.0 : 1.0;
 
-  // Anvil Heat Multiplier: +5% per 100°C above 100°C
-  const currentHeat = Math.max(100, Math.min(1000, input.anvilHeat ?? 100));
-  const heatSteps = Math.floor((currentHeat - 100) / 100);
-  const heatMult = 1 + heatSteps * 0.05; // 100°C = 1.0, 1000°C = 1.45
-
-  // Shield Broken state gives 1.5x vulnerability
-  const shieldBreakMult = input.isShieldBroken || input.bossShieldPct <= 0 ? 1.5 : 1.0;
-
-  // Atmospheric seal layer damage reduction ratio:
-  const reduction = input.sealDamageReductionPct ?? 80;
-  const sealScale = (100 - reduction) / 20; // Layer 1: 1.0, Layer 2: 2.0, Layer 3: 3.0, Layer 4: 5.0
-
-  // Arsenal Bonuses integration
+  // 3. Core Stats & Thermal Synchronization (M_Thermal)
   const arsenal = input.arsenalBonuses;
-  const effectiveBasePower = input.basePower + (arsenal ? arsenal.flatDamage : 0);
-  const arsenalDamageMultiplier = arsenal ? arsenal.damageMultiplier : 1.0;
+  const str = arsenal?.coreStats.str ?? input.basePower;
+  const dex = arsenal?.coreStats.dex ?? 10;
+  const intStat = arsenal?.coreStats.int ?? 10;
+  const pen = arsenal?.coreStats.pen ?? 10;
 
-  // Check Arsenal & Stance Skill Crit
+  const currentHeat = Math.max(100, Math.min(1000, input.anvilHeat ?? 100));
+  let thermalMult = currentHeat < 400 ? 0.8 : currentHeat <= 700 ? 1.15 : 1.35;
+
+  // Glancing Hit (Dội Búa): If STR > 2.5 * INT
+  const isGlancingHit = str > 2.5 * Math.max(1, intStat);
+  if (isGlancingHit) {
+    thermalMult *= 0.65; // -35% damage penalty on glancing hits
+  }
+
+  // 4. Critical Strike (DEX Scaling & Soft Cap 55% -> 80%)
   const stanceBonuses = input.stanceSkillBonuses;
   const stanceCritAdd = stanceBonuses ? stanceBonuses.critChanceAdd ?? 0 : 0;
-  const critChance = (arsenal ? arsenal.critChancePct : 5) + stanceCritAdd;
+  const critChance = Math.min(80, (arsenal ? arsenal.critRateEffective : 5) + stanceCritAdd);
   const isCrit = Math.random() * 100 < critChance;
-  const critMultOverride = stanceBonuses ? stanceBonuses.critMultOverride ?? 0 : 0;
-  const critMult = isCrit ? (critMultOverride > 0 ? critMultOverride : 1.5) : 1.0;
 
-  const stanceDamageMult = stanceBonuses ? stanceBonuses.damageMult ?? 1.0 : 1.0;
+  let critMult = 1.0;
+  if (isCrit) {
+    const override = stanceBonuses ? stanceBonuses.critMultOverride ?? 0 : 0;
+    critMult = override > 0 ? override : input.stance === 'E' ? 2.2 : 2.0;
+  }
+
+  // 5. Boss Armor & Direct Penetration (Hyperbolic formula)
+  const floorId = input.currentFloorId ?? 1;
+  const kFloor = floorId <= 2 ? 50 : floorId <= 5 ? 80 : floorId <= 7 ? 120 : 160;
+  let basePierce = Math.min(0.65, pen / (pen + kFloor));
+
+  // Set Bonus: Xích Diễm 6/6 grants +20% armor ignore when Heat >= 800°C
+  if ((arsenal?.setCounts.set_fire ?? 0) >= 6 && currentHeat >= 800) {
+    basePierce = Math.min(0.85, basePierce + 0.20);
+  }
+
+  const baseBossArmor = (input.sealDamageReductionPct ?? 80) / 100;
+  let armorFactor = 1.0;
+
+  if (input.isShieldBroken || input.bossShieldPct <= 0) {
+    armorFactor = 1.5; // 1.5x vulnerability on shield break
+  } else {
+    const effectiveReduction = baseBossArmor * (1 - basePierce);
+    armorFactor = Math.max(0.04, 1 - effectiveReduction);
+
+    // Stat neglect penalty on Floors 4-9
+    if (floorId >= 4 && pen < floorId * 8) {
+      armorFactor *= 0.5;
+    }
+  }
+
+  // 6. Stance Weaving (Combo Chuyển Thế)
+  let stanceMult = stanceCfg.damageMult;
+  if (input.stanceWeave) {
+    const prevCfg = HAMMER_STANCES[input.stanceWeave.previousStance];
+    stanceMult += (prevCfg.damageMult - 1.0) * 0.5;
+  }
+
+  const effectiveBasePower = input.basePower + (arsenal ? arsenal.flatDamage : 0) + Math.round(pen * 0.2);
   const forgerRankMult = input.forgerRankMultiplier ?? 1.0;
 
-  // Calculate final damage with physical weight
+  // 7. Final Damage Equation
   const rawDamage =
     effectiveBasePower *
-    gradeMult *
-    stanceCfg.damageMult *
-    comboScaling *
+    timingMult *
+    thermalMult *
+    critMult *
     overdriveMult *
     globalBurstMult *
-    heatMult *
-    shieldBreakMult *
-    input.spiritBonusMult *
-    sealScale *
-    arsenalDamageMultiplier *
-    stanceDamageMult *
     forgerRankMult *
-    critMult;
+    input.spiritBonusMult *
+    stanceMult *
+    armorFactor;
 
-  // At Level 1, min damage is 1 on great, 3 on perfect
-  const minDmg = isPerfect ? 3 : 1;
-  const finalDamage = Math.max(minDmg, Math.round(rawDamage));
+  const finalDamage = Math.max(isGolden ? 3 : 1, Math.round(rawDamage));
 
-  // Linh Thach drops: 1-2 on great, 5 on perfect + Arsenal drop bonus
-  const baseLinhThach = isPerfect ? 5 : Math.random() < 0.5 ? 1 : 2;
+  // 8. Loot & Drops
+  const baseLinhThach = isGolden || isCrit ? 4 : isGreat ? 2 : 1;
   const extraLTDrops = arsenal ? arsenal.dropLinhThachBonus : 0;
   const linhThachEarned = Math.round(
     (baseLinhThach + extraLTDrops) * (isOverdriveNow ? 2 : 1) * (stanceBonuses?.linhThachMult ?? 1.0)
   );
 
-  // Tinh Hoa drop: rare chance on perfect
-  const baseTingHoaChance = 0.15 * (stanceBonuses?.essenceDropMult ?? 1.0);
-  const tinhHoaEarned = isPerfect && Math.random() < baseTingHoaChance ? 1 : 0;
+  const tinhHoaChance = (isGolden || isCrit ? 0.20 : 0.08) * (stanceBonuses?.essenceDropMult ?? 1.0);
+  const tinhHoaEarned = Math.random() < tinhHoaChance ? 1 : 0;
 
   // Heat & Resonance
   const extraHeat = (arsenal ? arsenal.heatPerHitBonus : 0) + (stanceBonuses?.heatGainAdd ?? 0);
-  const heatGain = (isPerfect ? 30 : 15) + extraHeat;
-  const extraResonance = (arsenal ? arsenal.resonanceBonus : 0) + (stanceBonuses?.resonanceAdd ?? 0);
-  const resonanceGain = Math.round((input.stance === 'E' ? 2 : 1) + extraResonance);
+  const heatGain = (isGolden ? 25 : 12) + extraHeat;
+
+  let baseResonance = input.stance === 'E' ? 2 : 1;
+  if ((arsenal?.setCounts.set_gravity ?? 0) >= 2) baseResonance += 1;
+  const resonanceGain = Math.round(baseResonance + (arsenal ? arsenal.resonanceBonus : 0));
+
+  // 9. World Raid Edition (v3.1) Calculations
+  const isFrozenSky = input.isFrozenSky ?? (
+    input.serverFurnaceHeat !== undefined && input.vaultMeltingThreshold !== undefined
+      ? input.serverFurnaceHeat < input.vaultMeltingThreshold
+      : false
+  );
+
+  // A. Phá Giáp (Armor Break Points)
+  let baseBreakGain = input.stance === 'E'
+    ? (isGolden ? 8 : 4) + Math.round(pen * 0.15)
+    : (isGolden ? 2 : 1) + Math.round(pen * 0.05);
+  if ((arsenal?.setCounts.set_gravity ?? 0) >= 2) {
+    baseBreakGain += 2;
+  }
+  if (isFrozenSky) {
+    baseBreakGain = Math.max(1, Math.round(baseBreakGain * 0.6));
+  }
+  const armorBreakGain = baseBreakGain;
+
+  // B. Đại Hỏa Hẩu Server (Heat Pumped)
+  let baseServerHeat = input.stance === 'W'
+    ? (isGolden ? 25 : 12) + Math.round(intStat * 0.25)
+    : (isGolden ? 6 : 2);
+  if ((arsenal?.setCounts.set_fire ?? 0) >= 6 && input.stance === 'W') {
+    baseServerHeat *= 2.0;
+  }
+  const serverHeatGain = Math.round(baseServerHeat);
+
+  // C. Độ Bền Đại Đe Server (Anvil Repair)
+  let baseAnvilRepair = input.stance === 'R'
+    ? (isGolden ? 20 : 8) + Math.round((arsenal?.coreStats.spi ?? 10) * 0.2)
+    : 0;
+  if ((arsenal?.setCounts.set_mystic ?? 0) >= 4 && isGolden && input.stance === 'R') {
+    baseAnvilRepair += 15;
+  }
+  const anvilRepairGain = Math.round(baseAnvilRepair);
+
+  // D. Đóng Băng Tự Hồi Giáp (Set Thái Sơn 6/6)
+  const freezeRegenSec = (input.stance === 'E' && (arsenal?.setCounts.set_gravity ?? 0) >= 6 && isGolden) ? 0.5 : 0;
+
+  // E. Anvil Damage from Glancing hit
+  const anvilDamage = isGlancingHit ? 3 : 0;
+
+  // F. Raid Contribution Score (RCS)
+  const raidContributionGain = computeRaidContributionScore(
+    finalDamage,
+    armorBreakGain,
+    serverHeatGain,
+    anvilRepairGain
+  );
+
+  const displayMultiplier = Number(
+    (timingMult * (isOverdriveNow ? 2 : 1) * (isCrit ? 2 : 1) * (isGlancingHit ? 0.65 : 1)).toFixed(1)
+  );
 
   return {
     damage: finalDamage,
-    displayMultiplier: Number((gradeMult * (isOverdriveNow ? 2 : 1) * (isCrit ? 1.5 : 1)).toFixed(1)),
+    displayMultiplier,
     nextCombo,
     nextOverdriveCharge,
     triggeredOverdrive,
@@ -1086,6 +1395,16 @@ export function calculateStrikeOutcome(input: StrikeInput): StrikeOutcome {
     linhThachEarned,
     tinhHoaEarned,
     isCrit,
+    isGolden,
+    isGlancingHit,
+    effectivePiercePct: Math.round(basePierce * 100),
+    armorBreakGain,
+    serverHeatGain,
+    anvilRepairGain,
+    freezeRegenSec,
+    anvilDamage,
+    raidContributionGain,
+    isFrozenSky,
   };
 }
 
@@ -1104,41 +1423,41 @@ export const INITIAL_UPGRADES: ForgeUpgrade[] = [
   {
     id: 'celestial_hammer_core',
     name: 'Búa Rèn Thiên Cương',
-    subtitle: 'Nâng cấp bậc búa · Tăng sát thương gốc lên 4, 12, 35, 50 DMG',
+    subtitle: 'Tăng Lực Chùy (STR) & Sát Thương Gốc (Cấp 1-100)',
     level: 1,
-    maxLevel: 50,
+    maxLevel: 100,
     baseCost: 10,
-    costScale: 1.35,
+    costScale: 1.18,
     powerPerLevel: 1,
   },
   {
     id: 'thunder_quench_oil',
     name: 'Dầu Tôi Lôi Đình',
-    subtitle: '+1 DMG thực tế cho mỗi nhát búa giáng xuống',
+    subtitle: 'Tăng Phá Phách (PEN) & Xuyên Giáp Trực Tiếp (Cấp 1-100)',
     level: 0,
-    maxLevel: 30,
-    baseCost: 25,
-    costScale: 1.35,
+    maxLevel: 100,
+    baseCost: 20,
+    costScale: 1.20,
     powerPerLevel: 1,
   },
   {
     id: 'nine_heavens_bellows',
     name: 'Ống Bễ Cửu Trọng',
-    subtitle: 'Tăng tốc độ đốt nóng Đe Rèn & tăng sát thương Hỏa Hầu',
+    subtitle: 'Tăng Nhiệt Lực (INT) & Hỏa Hầu Tối Đa (Cấp 1-100)',
     level: 0,
-    maxLevel: 25,
-    baseCost: 60,
-    costScale: 1.4,
+    maxLevel: 100,
+    baseCost: 35,
+    costScale: 1.22,
     powerPerLevel: 1,
   },
   {
     id: 'ancient_anvil_rune',
     name: 'Cổ Văn Mặt Đe',
-    subtitle: '+1 Linh Thạch rơi mỗi nhát & tích Phá Giáp nhanh hơn',
+    subtitle: 'Tăng Phá Giáp, Linh Thạch & Chống Dội Búa (Cấp 1-100)',
     level: 0,
-    maxLevel: 20,
-    baseCost: 120,
-    costScale: 1.45,
+    maxLevel: 100,
+    baseCost: 50,
+    costScale: 1.25,
     powerPerLevel: 1,
   },
 ];
@@ -1148,6 +1467,29 @@ export function getUpgradeCost(upgrade: ForgeUpgrade): number {
     return getForgeUpgradeCost(upgrade.level, 1.0);
   }
   return Math.round(upgrade.baseCost * Math.pow(upgrade.costScale, upgrade.level));
+}
+
+export function checkForgeEquilibrium(
+  upgrades: ForgeUpgrade[],
+  targetUpgradeId: string
+): { allowed: boolean; minLevel: number; maxLevel: number; maxAllowedLevel: number; reason?: string } {
+  const currentLevels = upgrades.map((u) => u.level);
+  const minLevel = Math.min(...currentLevels);
+  const target = upgrades.find((u) => u.id === targetUpgradeId);
+  if (!target) return { allowed: false, minLevel, maxLevel: minLevel, maxAllowedLevel: minLevel + 15 };
+
+  const nextLevel = target.level + 1;
+  const maxAllowedLevel = minLevel + 15;
+  if (nextLevel > maxAllowedLevel) {
+    return {
+      allowed: false,
+      minLevel,
+      maxLevel: Math.max(...currentLevels),
+      maxAllowedLevel,
+      reason: `Ràng buộc Đồng Bộ Lò Rèn: Cấp cao nhất không được vượt quá cấp thấp nhất (Cấp ${minLevel}) quá 15 cấp! Hãy nâng cấp các hạng mục khác để giữ cân bằng lò rèn.`,
+    };
+  }
+  return { allowed: true, minLevel, maxLevel: Math.max(...currentLevels), maxAllowedLevel };
 }
 
 export function calculateBasePower(upgrades: ForgeUpgrade[]): number {
@@ -1288,7 +1630,7 @@ export const FORGER_RANKS: ForgerRank[] = [
   {
     id: 'rank_1',
     tier: 1,
-    title: 'Thiết Đồ (Apprentice)',
+    title: 'Tân Thủ Thợ Rèn (Apprentice)',
     badge: '🔨',
     damageRequired: 0,
     bonusDesc: 'Tân thủ khai lò tại thung lũng Thiên Thai.',
@@ -1299,7 +1641,7 @@ export const FORGER_RANKS: ForgerRank[] = [
   {
     id: 'rank_2',
     tier: 2,
-    title: 'Hỏa Tượng (Furnace Smith)',
+    title: 'Thợ Rèn Tập Sự (Furnace Smith)',
     badge: '🔥',
     damageRequired: 10_000,
     bonusDesc: 'Tăng vĩnh viễn +5% Sát thương & +10% Tinh Hoa rơi.',
@@ -1310,7 +1652,7 @@ export const FORGER_RANKS: ForgerRank[] = [
   {
     id: 'rank_3',
     tier: 3,
-    title: 'Cổ Đúc Sư (Ancient Forger)',
+    title: 'Thợ Rèn Chuyên Nghiệp (Ancient Forger)',
     badge: '⚡',
     damageRequired: 100_000,
     bonusDesc: 'Tăng vĩnh viễn +12% Sát thương & mở khóa Kỹ Pháp Tầng 4 & 5.',
@@ -1321,13 +1663,79 @@ export const FORGER_RANKS: ForgerRank[] = [
   {
     id: 'rank_4',
     tier: 4,
-    title: 'Trảm Thiên Thần Tượng (Heaven Breaker Master)',
+    title: 'Tông Sư Phá Thiên (Heaven Breaker Master)',
     badge: '👑',
     damageRequired: 1_000_000,
     bonusDesc: 'Được tạc tượng đá. Tăng vĩnh viễn +25% Sát thương & +50% Tốc độ nạp Cực Nhịp!',
     damageMultiplier: 1.25,
     essenceBonusPct: 50,
     synergyRateBonusPct: 50,
+  },
+  {
+    id: 'rank_5',
+    tier: 5,
+    title: 'Đại Tông Sư Luyện Khí (Grand Artificer)',
+    badge: '🌟',
+    damageRequired: 10_000_000,
+    bonusDesc: 'Tăng vĩnh viễn +45% Sát thương & mở Ô Khảm Tinh Thể Bậc 1.',
+    damageMultiplier: 1.45,
+    essenceBonusPct: 75,
+    synergyRateBonusPct: 70,
+  },
+  {
+    id: 'rank_6',
+    tier: 6,
+    title: 'Thần Tượng Chưởng Lò (Furnace Sovereign)',
+    badge: '⚔️',
+    damageRequired: 50_000_000,
+    bonusDesc: 'Tăng vĩnh viễn +75% Sát thương & +2 Điểm Phá Giáp mỗi nhát gõ.',
+    damageMultiplier: 1.75,
+    essenceBonusPct: 100,
+    synergyRateBonusPct: 90,
+  },
+  {
+    id: 'rank_7',
+    tier: 7,
+    title: 'Thiên Công Khai Vật (Celestial Artificer)',
+    badge: '🌌',
+    damageRequired: 250_000_000,
+    bonusDesc: 'Tăng vĩnh viễn +120% Sát thương & mở khóa Thiên Phú Đa Thế (Cross-Stance).',
+    damageMultiplier: 2.2,
+    essenceBonusPct: 150,
+    synergyRateBonusPct: 120,
+  },
+  {
+    id: 'rank_8',
+    tier: 8,
+    title: 'Chí Tôn Đúc Thần (Divine Forge Paragon)',
+    badge: '💎',
+    damageRequired: 1_000_000_000,
+    bonusDesc: 'Tăng vĩnh viễn +180% Sát thương & bỏ qua 15% Kháng Giảm Sát Thương của Cổ Thần.',
+    damageMultiplier: 2.8,
+    essenceBonusPct: 200,
+    synergyRateBonusPct: 160,
+  },
+  {
+    id: 'rank_9',
+    tier: 9,
+    title: 'Vạn Cổ Phá Trời (Eternal Skybreaker)',
+    badge: '🪐',
+    damageRequired: 5_000_000_000,
+    bonusDesc: 'Tăng vĩnh viễn +280% Sát thương & kích hoạt Hào Quang Bất Diệt toàn server.',
+    damageMultiplier: 3.8,
+    essenceBonusPct: 300,
+    synergyRateBonusPct: 220,
+  },
+  {
+    id: 'rank_10',
+    tier: 10,
+    title: 'Hỗn Độn Khai Thiên (Chaos Primordial)',
+    badge: '🔱',
+    damageRequired: 10_000_000_000,
+    bonusDesc: 'Đỉnh phong tạo hóa. Tăng vĩnh viễn +450% Sát thương & mở khóa Chuyển Sinh Thợ Rèn.',
+    damageMultiplier: 5.5,
+    essenceBonusPct: 500,
+    synergyRateBonusPct: 300,
   },
 ];
 
@@ -1690,6 +2098,13 @@ export interface CelestialVault {
   bossTitle: string;
   maxHp: number; // Integer RPG HP
   damageReductionPct: number;
+  recommendedPlayers: string;
+  armorBreakMaxPoints: number;
+  armorRegenPerSec: number;
+  serverChillPerSec: number;
+  meltingThreshold: number;
+  wipeMechanicName: string;
+  wipeMechanicDesc: string;
   skyTheme: {
     bgGradient: string;
     crackColor: string;
@@ -1708,8 +2123,15 @@ export const CELESTIAL_VAULTS: CelestialVault[] = [
     title: 'Tầng 1 · Giáp Sắt Mây Đen',
     bossName: 'Hắc Diệm Thao Thiết',
     bossTitle: 'Cổ Thần Cửu U · Thôn Phệ Vạn Vật',
-    maxHp: 500_000_000,
+    maxHp: 1_500_000_000,
     damageReductionPct: 80,
+    recommendedPlayers: '10 – 15 người (Raid Nhập Môn)',
+    armorBreakMaxPoints: 500,
+    armorRegenPerSec: 15,
+    serverChillPerSec: -60,
+    meltingThreshold: 1500,
+    wipeMechanicName: 'Mây Đen Thôn Phệ',
+    wipeMechanicDesc: 'Mỗi 45 giây hút 30% Linh Thạch rớt ra nếu không có ít nhất 3 người hệ [R] gõ Hoàng Kim liên tiếp.',
     skyTheme: {
       bgGradient: 'from-slate-950 via-[#0a0f1d] to-[#121927]',
       crackColor: '#FF9E00',
@@ -1726,8 +2148,15 @@ export const CELESTIAL_VAULTS: CelestialVault[] = [
     title: 'Tầng 2 · Đồng Rỉ Đông Sơn',
     bossName: 'Trấn Thiên Lạc Thần',
     bossTitle: 'Hộ Giới Thần Tướng · Trấn Áp Cổ Cương',
-    maxHp: 1_200_000_000,
+    maxHp: 4_500_000_000,
     damageReductionPct: 82,
+    recommendedPlayers: '15 – 25 người (Raid Sơ Cấp)',
+    armorBreakMaxPoints: 1000,
+    armorRegenPerSec: 30,
+    serverChillPerSec: -100,
+    meltingThreshold: 2200,
+    wipeMechanicName: 'Đồng Rỉ Hóa Thạch',
+    wipeMechanicDesc: 'Cứ 10 nhát gõ cùng 1 Thế Búa làm kẹt đe cá nhân; buộc đội hình phải đảo Thế hoặc nhận buff giải rỉ từ đồng đội.',
     skyTheme: {
       bgGradient: 'from-[#1a120b] via-[#24170d] to-[#3a2310]',
       crackColor: '#F59E0B',
@@ -1743,8 +2172,15 @@ export const CELESTIAL_VAULTS: CelestialVault[] = [
     title: 'Tầng 3 · Bão Plasma Tím',
     bossName: 'Ứng Lôi Chân Quân',
     bossTitle: 'Thiên Cấm Lôi Thần · Chưởng Quản Tử Lôi',
-    maxHp: 2_500_000_000,
+    maxHp: 12_000_000_000,
     damageReductionPct: 85,
+    recommendedPlayers: '25 – 35 người (Raid Trung Cấp)',
+    armorBreakMaxPoints: 1800,
+    armorRegenPerSec: 55,
+    serverChillPerSec: -160,
+    meltingThreshold: 3000,
+    wipeMechanicName: 'Bão Plasma Tím',
+    wipeMechanicDesc: 'Đánh sét ngẫu nhiên vào 10 thợ rèn DPS cao nhất; nhóm [Q] Lôi Đỉnh phải gõ Perfect để thu lôi hộ đồng đội.',
     skyTheme: {
       bgGradient: 'from-[#140b24] via-[#1f1038] to-[#2c134d]',
       crackColor: '#C084FC',
@@ -1760,8 +2196,15 @@ export const CELESTIAL_VAULTS: CelestialVault[] = [
     title: 'Tầng 4 · Kính Băng Cực Độ',
     bossName: 'Huyền Minh Băng Hoàng',
     bossTitle: 'Tuyết Vực Thần Tước · Đóng Băng Hư Không',
-    maxHp: 5_000_000_000,
+    maxHp: 30_000_000_000,
     damageReductionPct: 88,
+    recommendedPlayers: '35 – 50 người (Raid Trung Cấp)',
+    armorBreakMaxPoints: 2800,
+    armorRegenPerSec: 85,
+    serverChillPerSec: -320,
+    meltingThreshold: 4200,
+    wipeMechanicName: 'Kính Băng Cực Độ',
+    wipeMechanicDesc: 'Đóng băng Đại Hỏa Hẩu cực nhanh; cần ít nhất 12–15 Thợ Rèn [W] Viêm Dương quạt lửa liên tục mới giữ được lò.',
     skyTheme: {
       bgGradient: 'from-[#081826] via-[#0d273d] to-[#123654]',
       crackColor: '#38BDF8',
@@ -1777,8 +2220,15 @@ export const CELESTIAL_VAULTS: CelestialVault[] = [
     title: 'Tầng 5 · Nham Thạch Núi Lửa',
     bossName: 'Chúc Dung Ma Thần',
     bossTitle: 'Hỏa Cực Chi Chủ · Phần Diệt Cửu Châu',
-    maxHp: 10_000_000_000,
+    maxHp: 75_000_000_000,
     damageReductionPct: 90,
+    recommendedPlayers: '45 – 60 người (Raid Cao Cấp)',
+    armorBreakMaxPoints: 4200,
+    armorRegenPerSec: 120,
+    serverChillPerSec: 250,
+    meltingThreshold: 8500,
+    wipeMechanicName: 'Nham Thạch Núi Lửa',
+    wipeMechanicDesc: 'Tự động bơm nhiệt làm nổ Đại Hỏa Hẩu; cần ít nhất 12 Thợ Rèn [R] Huyền Âm xả nhiệt điều hòa lò cho cả server.',
     skyTheme: {
       bgGradient: 'from-[#260b08] via-[#3d120d] to-[#541812]',
       crackColor: '#EF4444',
@@ -1794,8 +2244,15 @@ export const CELESTIAL_VAULTS: CelestialVault[] = [
     title: 'Tầng 6 · Biển Trời Nghịch',
     bossName: 'Côn Bằng Hóa Minh',
     bossTitle: 'Cự Thú Thâm Uyên · Thôn Thiên Nạp Địa',
-    maxHp: 20_000_000_000,
+    maxHp: 180_000_000_000,
     damageReductionPct: 92,
+    recommendedPlayers: '60 – 75 người (Raid Cao Cấp)',
+    armorBreakMaxPoints: 6000,
+    armorRegenPerSec: 165,
+    serverChillPerSec: -450,
+    meltingThreshold: 5500,
+    wipeMechanicName: 'Sóng Thần Nghịch Lưu',
+    wipeMechanicDesc: 'Cuốn trôi 50% thanh Overdrive của toàn server mỗi 30 giây nếu nhóm [E] Trọng Lực không dựng Tường Chấn Động.',
     skyTheme: {
       bgGradient: 'from-[#06181f] via-[#0b2834] to-[#103b4d]',
       crackColor: '#06B6D4',
@@ -1811,8 +2268,15 @@ export const CELESTIAL_VAULTS: CelestialVault[] = [
     title: 'Tầng 7 · Trận Đồ Phong Cấm',
     bossName: 'Vô Cực Cơ Quan Tôn',
     bossTitle: 'Thái Cổ Khôi Lỗi · Trận Nhãn Vạn Cổ',
-    maxHp: 40_000_000_000,
+    maxHp: 420_000_000_000,
     damageReductionPct: 94,
+    recommendedPlayers: '75 – 90 người (Raid Tinh Anh)',
+    armorBreakMaxPoints: 8500,
+    armorRegenPerSec: 220,
+    serverChillPerSec: -600,
+    meltingThreshold: 6500,
+    wipeMechanicName: 'Bát Quái Phong Cấm',
+    wipeMechanicDesc: 'Boss khóa ngẫu nhiên 1 Thế Búa toàn server mỗi 40 giây và yêu cầu 3 Thế Búa còn lại gõ đồng bộ theo tỷ lệ 1:1:1.',
     skyTheme: {
       bgGradient: 'from-[#181a0b] via-[#262912] to-[#363a18]',
       crackColor: '#84CC16',
@@ -1828,8 +2292,15 @@ export const CELESTIAL_VAULTS: CelestialVault[] = [
     title: 'Tầng 8 · Hố Đen Vũ Trụ',
     bossName: 'Thôn Thiên Ma Thú',
     bossTitle: 'Dị Thứ Nguyên Thần · Thôn Hấp Tinh Tú',
-    maxHp: 80_000_000_000,
+    maxHp: 950_000_000_000,
     damageReductionPct: 95,
+    recommendedPlayers: '90 – 110 người (Raid Đại Chiến)',
+    armorBreakMaxPoints: 12000,
+    armorRegenPerSec: 280,
+    serverChillPerSec: -750,
+    meltingThreshold: 7500,
+    wipeMechanicName: 'Hố Đen Thôn Phệ',
+    wipeMechanicDesc: 'Hút máu từ mọi nhát gõ trượt (mỗi nhát Miss của bất kỳ ai làm Boss hồi +0.05% HP); đòi hỏi cả trăm người giữ DEX chuẩn.',
     skyTheme: {
       bgGradient: 'from-[#090614] via-[#120d26] to-[#1c133b]',
       crackColor: '#818CF8',
@@ -1843,10 +2314,17 @@ export const CELESTIAL_VAULTS: CelestialVault[] = [
     id: 9,
     name: 'Hỗn Độn Thiên',
     title: 'Tầng 9 · Con Mắt Thiên Đạo',
-    bossName: 'Cửu U Tối Cao Chi Nhãn',
+    bossName: 'Cửu U Tối Cao Chi Nhân',
     bossTitle: 'Nguồn Cội Hắc Ám · Chúa Tể Cửu U',
-    maxHp: 150_000_000_000,
+    maxHp: 2_500_000_000_000,
     damageReductionPct: 96,
+    recommendedPlayers: '100 – 150+ người (Vạn Dân Quyết Chiến)',
+    armorBreakMaxPoints: 18000,
+    armorRegenPerSec: 380,
+    serverChillPerSec: -950,
+    meltingThreshold: 8800,
+    wipeMechanicName: 'Con Mắt Thiên Đạo (Enrage 60 phút)',
+    wipeMechanicDesc: 'Yêu cầu kích hoạt liên hoàn Vạn Dân Tam Điểm Lôi Hỏa từ ít nhất 100 người chơi chia đều 4 Phường Rèn để xuyên thủng Hỗn Độn.',
     skyTheme: {
       bgGradient: 'from-[#1f0510] via-[#33081a] to-[#470a25]',
       crackColor: '#F43F5E',
