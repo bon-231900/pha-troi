@@ -2716,6 +2716,10 @@ export function calculateStanceSkillBonuses(
     hasMasterPerk: 0,
   };
 
+  if (!Array.isArray(skills)) {
+    return bonuses;
+  }
+
   const unlockedSkills = skills.filter((s) => s.unlocked && s.stance === activeStance);
   for (const s of unlockedSkills) {
     switch (s.bonusType) {

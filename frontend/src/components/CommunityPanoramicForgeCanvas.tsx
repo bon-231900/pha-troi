@@ -10,12 +10,7 @@ import {
   HERO_STRIKE_TOTAL_SEC,
   SCREEN_SHAKE_DURATION_SEC,
   HERO_STANCE_PALETTES,
-  createPeerBlacksmithTroupe,
-  generate2DLightningBolt,
-  evaluateHero2DStrikePose,
-  createSkyVaultCrackTree,
   type StanceKey,
-  type PeerBlacksmithActor,
   type Point2D,
 } from '../game/rules';
 
@@ -62,17 +57,12 @@ export interface CommunityPanoramicForgeCanvasProps {
   className?: string;
 }
 
-interface ActiveLightningBeam2D {
-  id: number;
-  mainPoints: Point2D[];
-  branches: Point2D[][];
-  isHero: boolean;
-  rimHex: string;
-  coreHex: string;
-  ageSec: number;
-  durationSec: number;
-  impactX: number;
-  impactY: number;
+interface ActiveLightningBolt2D {
+  segments: Point2D[];
+  alpha: number;
+  decay: number;
+  color: string;
+  lineWidth: number;
 }
 
 interface SparkParticle2D {
@@ -103,9 +93,303 @@ interface FloatingCombatText2D {
   scale: number;
 }
 
-const SKY_CRACK_TREE = createSkyVaultCrackTree();
-const INITIAL_PEER_TROUPE = createPeerBlacksmithTroupe(18);
-const MAX_SPARK_POOL = 420;
+interface Shockwave2D {
+  x: number;
+  y: number;
+  radius: number;
+  maxRadius: number;
+  alpha: number;
+  color: string;
+}
+
+const MAX_SPARK_POOL = 360;
+
+// Tiên Hiệp Daoist Plaque Color Palettes
+const PLAQUE_PALETTES: Record<string, {
+  gold: string;
+  rim: string;
+  glow: string;
+  gem: string;
+  text: string;
+  bg1: string;
+  bg2: string;
+}> = {
+  hero: {
+    gold: '#FFD700',
+    rim: '#F59E0B',
+    glow: '#00F0FF',
+    gem: '#00F0FF',
+    text: '#FFFFFF',
+    bg1: 'rgba(12, 18, 36, 0.96)',
+    bg2: 'rgba(4, 7, 16, 0.98)',
+  },
+  thunder: {
+    gold: '#7DD3FC',
+    rim: '#00F0FF',
+    glow: '#00F0FF',
+    gem: '#38BDF8',
+    text: '#E0F2FE',
+    bg1: 'rgba(8, 18, 36, 0.95)',
+    bg2: 'rgba(3, 8, 20, 0.98)',
+  },
+  fire: {
+    gold: '#FDE68A',
+    rim: '#FF7700',
+    glow: '#FF5500',
+    gem: '#FB923C',
+    text: '#FED7AA',
+    bg1: 'rgba(28, 12, 8, 0.95)',
+    bg2: 'rgba(12, 4, 3, 0.98)',
+  },
+  mystic: {
+    gold: '#A7F3D0',
+    rim: '#10B981',
+    glow: '#10B981',
+    gem: '#34D399',
+    text: '#D1FAE5',
+    bg1: 'rgba(6, 26, 18, 0.95)',
+    bg2: 'rgba(2, 12, 8, 0.98)',
+  },
+  gravity: {
+    gold: '#E9D5FF',
+    rim: '#A855F7',
+    glow: '#C084FC',
+    gem: '#C084FC',
+    text: '#F3E8FF',
+    bg1: 'rgba(20, 10, 32, 0.95)',
+    bg2: 'rgba(8, 4, 16, 0.98)',
+  },
+};
+
+const STANCE_TO_SECT: Record<string, string> = {
+  Q: 'thunder',
+  W: 'fire',
+  E: 'gravity',
+  R: 'mystic',
+  thunder: 'thunder',
+  fire: 'fire',
+  gravity: 'gravity',
+  mystic: 'mystic',
+};
+
+const SECT_COLORS: Record<string, { glow: string; light: string; spark: string }> = {
+  thunder: { glow: '#00F0FF', light: '#38BDF8', spark: '#E0F2FE' },
+  fire: { glow: '#FF5500', light: '#FB923C', spark: '#FED7AA' },
+  gravity: { glow: '#A855F7', light: '#C084FC', spark: '#F3E8FF' },
+  mystic: { glow: '#10B981', light: '#34D399', spark: '#D1FAE5' },
+};
+
+// Procedural Tiên Hiệp Daoist Plaque Renderer
+function drawXianxiaPlaque(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  text: string,
+  stanceKey = 'thunder',
+  isHero = false,
+  isReal = true
+) {
+  ctx.save();
+  ctx.translate(x, y);
+
+  const sect = STANCE_TO_SECT[stanceKey] || 'thunder';
+  const pal = isHero ? PLAQUE_PALETTES.hero : (PLAQUE_PALETTES[sect] || PLAQUE_PALETTES.thunder);
+
+  ctx.font = isHero
+    ? '700 15px "Charm", "Caveat", cursive'
+    : '700 13.5px "Charm", "Caveat", cursive';
+  const tw = ctx.measureText(text).width;
+
+  // Harmonious compact width
+  const padX = isHero ? 20 : 16;
+  const bw = Math.max(isHero ? 150 : 124, tw + padX * 2);
+  const bh = isHero ? 25 : 23;
+  const halfW = bw * 0.5;
+  const halfH = bh * 0.5;
+
+  if (!isReal) {
+    ctx.globalAlpha = 0.55;
+  }
+
+  // 1. Soft Shadow
+  ctx.save();
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
+  ctx.filter = 'blur(6px)';
+  ctx.beginPath();
+  ctx.roundRect(-halfW - 5, -halfH - 2, bw + 10, bh + 7, 6);
+  ctx.fill();
+  ctx.restore();
+
+  // 2. Swallowtail Daoist Plaque Body
+  const chamfer = isHero ? 8 : 6;
+  const wingNotch = isHero ? 7 : 5;
+
+  ctx.save();
+  const bodyGrad = ctx.createLinearGradient(0, -halfH, 0, halfH);
+  bodyGrad.addColorStop(0, pal.bg1);
+  bodyGrad.addColorStop(1, pal.bg2);
+  ctx.fillStyle = bodyGrad;
+
+  ctx.beginPath();
+  ctx.moveTo(-halfW + chamfer, -halfH);
+  ctx.lineTo(halfW - chamfer, -halfH);
+  ctx.lineTo(halfW, -halfH + chamfer);
+  ctx.lineTo(halfW + wingNotch, 0); // Right swallowtail wing
+  ctx.lineTo(halfW, halfH - chamfer);
+  ctx.lineTo(halfW - chamfer, halfH);
+  ctx.lineTo(-halfW + chamfer, halfH);
+  ctx.lineTo(-halfW, halfH - chamfer);
+  ctx.lineTo(-halfW - wingNotch, 0); // Left swallowtail wing
+  ctx.lineTo(-halfW, -halfH + chamfer);
+  ctx.closePath();
+  ctx.fill();
+
+  // Plaque Rim
+  ctx.strokeStyle = isReal ? pal.rim : 'rgba(148, 163, 184, 0.4)';
+  ctx.lineWidth = isHero ? 1.7 : 1.2;
+  if (isReal) {
+    ctx.shadowColor = pal.glow;
+    ctx.shadowBlur = isHero ? 9 : 5;
+  }
+  ctx.stroke();
+  ctx.restore();
+
+  // 3. Inner Engraved Filigree Line
+  if (isReal) {
+    ctx.save();
+    ctx.strokeStyle = pal.gold;
+    ctx.lineWidth = 0.85;
+    ctx.globalAlpha = 0.42;
+    const inPad = 3.0;
+    ctx.beginPath();
+    ctx.moveTo(-halfW + chamfer + inPad, -halfH + inPad);
+    ctx.lineTo(halfW - chamfer - inPad, -halfH + inPad);
+    ctx.lineTo(halfW - inPad, -halfH + chamfer + inPad);
+    ctx.lineTo(halfW + wingNotch - inPad, 0);
+    ctx.lineTo(halfW - inPad, halfH - chamfer - inPad);
+    ctx.lineTo(halfW - chamfer - inPad, halfH - inPad);
+    ctx.lineTo(-halfW + chamfer + inPad, halfH - inPad);
+    ctx.lineTo(-halfW + inPad, halfH - chamfer - inPad);
+    ctx.lineTo(-halfW - wingNotch + inPad, 0);
+    ctx.lineTo(-halfW + inPad, -halfH + chamfer + inPad);
+    ctx.closePath();
+    ctx.stroke();
+    ctx.restore();
+
+    // 4. Cloud Curls on Wingtips with Gem Insets
+    ctx.save();
+    ctx.strokeStyle = pal.gold;
+    ctx.lineWidth = 1.2;
+    ctx.lineCap = 'round';
+    ctx.shadowColor = pal.glow;
+    ctx.shadowBlur = 4;
+
+    // Left cloud curl
+    ctx.beginPath();
+    ctx.moveTo(-halfW + 3, -halfH + 3);
+    ctx.quadraticCurveTo(-halfW - 6, -halfH - 2, -halfW - wingNotch - 3, 0);
+    ctx.quadraticCurveTo(-halfW - 6, halfH + 2, -halfW + 3, halfH - 3);
+    ctx.stroke();
+    ctx.fillStyle = pal.gem;
+    ctx.beginPath();
+    ctx.arc(-halfW - 2, 0, isHero ? 2.5 : 2.0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Right cloud curl
+    ctx.beginPath();
+    ctx.moveTo(halfW - 3, -halfH + 3);
+    ctx.quadraticCurveTo(halfW + 6, -halfH - 2, halfW + wingNotch + 3, 0);
+    ctx.quadraticCurveTo(halfW + 6, halfH + 2, halfW - 3, halfH - 3);
+    ctx.stroke();
+    ctx.fillStyle = pal.gem;
+    ctx.beginPath();
+    ctx.arc(halfW + 2, 0, isHero ? 2.5 : 2.0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+
+    // 5. Top Crest Diamond & Bottom Knot Notch
+    ctx.save();
+    ctx.fillStyle = pal.gold;
+    ctx.beginPath();
+    ctx.moveTo(0, -halfH - (isHero ? 5 : 4));
+    ctx.lineTo(isHero ? 4.5 : 3.5, -halfH);
+    ctx.lineTo(0, -halfH + (isHero ? 4.5 : 3.5));
+    ctx.lineTo(-(isHero ? 4.5 : 3.5), -halfH);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.fillStyle = pal.gem;
+    ctx.beginPath();
+    ctx.arc(0, -halfH, isHero ? 2.0 : 1.5, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = pal.gold;
+    ctx.beginPath();
+    ctx.moveTo(-3, halfH);
+    ctx.lineTo(0, halfH + (isHero ? 3.5 : 2.5));
+    ctx.lineTo(3, halfH);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  }
+
+  // 6. True Tiên Hiệp Handwritten Calligraphy Text
+  ctx.save();
+  ctx.font = isHero
+    ? '700 15px "Charm", "Caveat", cursive'
+    : '700 13.5px "Charm", "Caveat", cursive';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillStyle = isReal ? pal.text : 'rgba(148, 163, 184, 0.75)';
+  if (isReal) {
+    ctx.shadowColor = pal.glow;
+    ctx.shadowBlur = isHero ? 7 : 4;
+  }
+  ctx.fillText(text, 0, 1);
+  ctx.restore();
+
+  ctx.restore();
+}
+
+// Background troupe (Tier 1 & 2 ambient shadows)
+const AMBIENT_BOTS = [
+  { id: 'b1', xNorm: 0.08, tier: 1, scale: 0.16, facing: 1, speed: 0.92, phase: 0.12, label: 'Tàn Ảnh #11' },
+  { id: 'b2', xNorm: 0.19, tier: 1, scale: 0.16, facing: 1, speed: 1.08, phase: 0.45, label: 'Tàn Ảnh #12' },
+  { id: 'b3', xNorm: 0.30, tier: 1, scale: 0.16, facing: 1, speed: 0.95, phase: 0.78, label: 'Tàn Ảnh #13' },
+  { id: 'b4', xNorm: 0.41, tier: 1, scale: 0.16, facing: 1, speed: 1.15, phase: 0.23, label: 'Tàn Ảnh #14' },
+  { id: 'b5', xNorm: 0.59, tier: 1, scale: 0.16, facing: -1, speed: 1.02, phase: 0.85, label: 'Tàn Ảnh #15' },
+  { id: 'b6', xNorm: 0.70, tier: 1, scale: 0.16, facing: -1, speed: 1.12, phase: 0.38, label: 'Tàn Ảnh #16' },
+  { id: 'b7', xNorm: 0.81, tier: 1, scale: 0.16, facing: -1, speed: 0.90, phase: 0.65, label: 'Tàn Ảnh #17' },
+  { id: 'b8', xNorm: 0.92, tier: 1, scale: 0.16, facing: -1, speed: 1.20, phase: 0.19, label: 'Tàn Ảnh #18' },
+
+  { id: 'b9', xNorm: 0.18, tier: 2, scale: 0.22, facing: 1, speed: 1.00, phase: 0.35, label: 'Tàn Ảnh #21' },
+  { id: 'b10', xNorm: 0.30, tier: 2, scale: 0.22, facing: 1, speed: 1.18, phase: 0.68, label: 'Tàn Ảnh #22' },
+  { id: 'b11', xNorm: 0.70, tier: 2, scale: 0.22, facing: -1, speed: 0.96, phase: 0.52, label: 'Tàn Ảnh #23' },
+  { id: 'b12', xNorm: 0.82, tier: 2, scale: 0.22, facing: -1, speed: 1.05, phase: 0.91, label: 'Tàn Ảnh #24' },
+];
+
+// Tier 3: Frontline Peer Blacksmith Slots (Flanking Main Hero)
+interface PeerSlotConfig {
+  id: number;
+  xNorm: number;
+  yOffset: number;
+  scale: number;
+  facing: 1 | -1;
+  speed: number;
+  phase: number;
+  isReal: boolean;
+  name: string;
+  stance: StanceKey;
+}
+
+const DEFAULT_PEER_SLOTS: PeerSlotConfig[] = [
+  { id: 0, xNorm: 0.12, yOffset: 6, scale: 0.34, facing: 1, speed: 1.15, phase: 0.1, isReal: false, name: 'Tàn Ảnh #01', stance: 'Q' },
+  { id: 1, xNorm: 0.24, yOffset: 2, scale: 0.35, facing: 1, speed: 0.95, phase: 0.35, isReal: true, name: '★ Tiêu Viêm', stance: 'W' },
+  { id: 2, xNorm: 0.36, yOffset: 0, scale: 0.36, facing: 1, speed: 1.05, phase: 0.7, isReal: true, name: '★ Thạch Hạo', stance: 'Q' },
+  { id: 3, xNorm: 0.64, yOffset: 0, scale: 0.36, facing: -1, speed: 1.0, phase: 0.55, isReal: true, name: '★ Hàn Lập', stance: 'R' },
+  { id: 4, xNorm: 0.76, yOffset: 2, scale: 0.35, facing: -1, speed: 1.2, phase: 0.85, isReal: true, name: '★ Diệp Phàm', stance: 'E' },
+  { id: 5, xNorm: 0.88, yOffset: 6, scale: 0.34, facing: -1, speed: 1.1, phase: 0.65, isReal: false, name: 'Tàn Ảnh #06', stance: 'W' },
+];
 
 export const CommunityPanoramicForgeCanvas = forwardRef<
   CommunityPanoramicForgeCanvasHandle,
@@ -124,9 +408,8 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
 ) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const heroSpriteSheetRef = useRef<HTMLImageElement | null>(null);
 
-  // Up-to-date refs for 60 FPS animation loop (never triggers effect restart)
+  // Up-to-date refs for 60 FPS animation loop (no effect recreation)
   const bossHpRef = useRef<number>(bossHp);
   const bossMaxHpRef = useRef<number>(bossMaxHp);
   const activeStanceRef = useRef<StanceKey>(activeStance);
@@ -177,6 +460,9 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
   );
 
   const handleCanvasClick = useCallback(() => {
+    if (document.activeElement instanceof HTMLElement && document.activeElement !== document.body) {
+      document.activeElement.blur();
+    }
     if (gameStateRef.current === 'playing' || gameStateRef.current === 'title') {
       onHeroStrikeActionRef.current?.(false);
     }
@@ -190,13 +476,49 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    if (!heroSpriteSheetRef.current) {
-      const img = new Image();
-      const base = import.meta.env.BASE_URL || './';
-      const cleanBase = base.endsWith('/') ? base : base + '/';
-      img.src = `${cleanBase}assets/art/hero_spritesheet_strip.webp`;
-      heroSpriteSheetRef.current = img;
+    // Load fonts
+    if (document.fonts) {
+      document.fonts.load('700 15px "Charm"');
+      document.fonts.load('700 13.5px "Charm"');
+      document.fonts.load('700 14px "Caveat"');
     }
+
+    const base = import.meta.env.BASE_URL || './';
+    const cleanBase = base.endsWith('/') ? base : base + '/';
+
+    // -------------------------------------------------------------------------
+    // ASSET LOADING
+    // -------------------------------------------------------------------------
+    interface AssetItem {
+      src: string;
+      img: HTMLImageElement;
+      loaded: boolean;
+    }
+
+    const assets: Record<string, AssetItem> = {
+      sky1: { src: `${cleanBase}assets/art/sky_states/sky_state_1_pristine.webp`, img: new Image(), loaded: false },
+      sky2: { src: `${cleanBase}assets/art/sky_states/sky_state_2_incipient.webp`, img: new Image(), loaded: false },
+      sky3: { src: `${cleanBase}assets/art/sky_states/sky_state_3_spreading.webp`, img: new Image(), loaded: false },
+      sky4: { src: `${cleanBase}assets/art/sky_states/sky_state_4_severe.webp`, img: new Image(), loaded: false },
+      sky5: { src: `${cleanBase}assets/art/sky_states/sky_state_5_cataclysm.webp`, img: new Image(), loaded: false },
+      sky6: { src: `${cleanBase}assets/art/sky_states/sky_state_6_shattered.webp`, img: new Image(), loaded: false },
+      moon: { src: `${cleanBase}assets/art/sky_celestial_moon.webp`, img: new Image(), loaded: false },
+      aurora: { src: `${cleanBase}assets/art/sky_aurora_nebula.webp`, img: new Image(), loaded: false },
+      clouds: { src: `${cleanBase}assets/art/sky_drifting_clouds.webp`, img: new Image(), loaded: false },
+      mountains: { src: `${cleanBase}assets/art/bg_distant_mountains_clean.webp`, img: new Image(), loaded: false },
+      pedestal: { src: `${cleanBase}assets/art/single_forger_pedestal.webp`, img: new Image(), loaded: false },
+      mainAltar: { src: `${cleanBase}assets/art/altar_platform.webp`, img: new Image(), loaded: false },
+      peerSheet: { src: `${cleanBase}assets/art/peer_blacksmith_strip.webp`, img: new Image(), loaded: false },
+      peerShadowSheet: { src: `${cleanBase}assets/art/peer_blacksmith_shadow_strip.webp`, img: new Image(), loaded: false },
+      heroSheet: { src: `${cleanBase}assets/art/hero_spritesheet_strip.webp`, img: new Image(), loaded: false },
+    };
+
+    Object.values(assets).forEach((asset) => {
+      asset.img.src = asset.src;
+      asset.img.onload = () => {
+        asset.loaded = true;
+      };
+    });
 
     let viewW = Math.max(320, container.clientWidth || window.innerWidth);
     let viewH = Math.max(320, container.clientHeight || window.innerHeight);
@@ -215,20 +537,51 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
     const ro = new ResizeObserver(resizeCanvas);
     ro.observe(container);
 
-    let elapsedSec = 0;
+    // Mouse Parallax Tracking
+    let targetMouseX = 0;
+    let targetMouseY = 0;
+    let currentMouseX = 0;
+    let currentMouseY = 0;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const rect = container.getBoundingClientRect();
+      const nx = ((e.clientX - rect.left) / viewW - 0.5) * 2;
+      const ny = ((e.clientY - rect.top) / viewH - 0.5) * 2;
+      targetMouseX = Math.max(-1, Math.min(1, nx));
+      targetMouseY = Math.max(-1, Math.min(1, ny));
+    };
+    window.addEventListener('mousemove', handleMouseMove);
+
+    // Stars field
+    const stars: Array<{ x: number; y: number; size: number; baseAlpha: number; twinkleSpeed: number; phase: number }> = [];
+    for (let i = 0; i < 110; i++) {
+      stars.push({
+        x: Math.random(),
+        y: Math.random() * 0.65,
+        size: 0.8 + Math.random() * 1.8,
+        baseAlpha: 0.25 + Math.random() * 0.7,
+        twinkleSpeed: 0.002 + Math.random() * 0.005,
+        phase: Math.random() * Math.PI * 2,
+      });
+    }
+
+    // Dynamic Peer Slots (6 frontline pedestals)
+    const peerSlots: PeerSlotConfig[] = DEFAULT_PEER_SLOTS.map((s) => ({ ...s }));
+    const peerStrikeTimers = new Float32Array(peerSlots.length).fill(-1);
+    const lastImpactFlags = new Array(peerSlots.length).fill(false);
+
+    // Remote Players Map
+    const remotePeersMap = new Map<number, RemotePeerInfo>();
+
+    // Timers & VFX
     let heroStrikeTimer = -1;
-    let screenShakeTimer = -1;
-    let skyImpactFlash = 0;
+    let screenShake = 0;
+    let flashIntensity = 0;
     let rhythmPhase = 0.72;
-    let hitstopTimer = 0;
-    let boltIdCounter = 1;
     let textIdCounter = 1;
 
-    const peerActors: PeerBlacksmithActor[] = INITIAL_PEER_TROUPE.map((p) => ({ ...p }));
-    const peerLastCycleIndex = new Int32Array(peerActors.length).fill(-1);
-    const peerActiveStrikeTimers = new Float32Array(peerActors.length).fill(-1);
-
-    const activeBeams: ActiveLightningBeam2D[] = [];
+    const lightningBolts: ActiveLightningBolt2D[] = [];
+    const shockwaves: Shockwave2D[] = [];
     const floatingTexts: FloatingCombatText2D[] = [];
 
     const sparkPool: SparkParticle2D[] = Array.from({ length: MAX_SPARK_POOL }, () => ({
@@ -271,138 +624,82 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
       p.isAsh = isAsh;
     };
 
-    const spawnAnvilSparkBurst = (
-      originX: number,
-      originY: number,
-      count: number,
-      primaryHex: string,
-      isHero: boolean
-    ) => {
-      for (let i = 0; i < count; i++) {
-        const angle = -Math.PI * (0.12 + Math.random() * 0.76);
-        const speed = (isHero ? 180 : 95) + Math.random() * (isHero ? 340 : 140);
-        const colorChoice =
-          i % 3 === 0 ? '#FFF8D6' : i % 3 === 1 ? primaryHex : '#FF9E00';
-        spawnParticle(
-          originX + (Math.random() - 0.5) * (isHero ? 26 : 10),
-          originY,
-          Math.cos(angle) * speed,
-          Math.sin(angle) * speed - (isHero ? 60 : 20),
-          isHero ? 2.4 + Math.random() * 3.2 : 1.4 + Math.random() * 1.8,
-          colorChoice,
-          0.42 + Math.random() * 0.48,
-          false
-        );
+    const spawnLightningBolt = (targetX: number, targetY: number, color = '#00F0FF', power = 1.0) => {
+      const startX = targetX + (Math.random() - 0.5) * 90;
+      const startY = viewH * 0.08;
+      const segments: Point2D[] = [];
+      const steps = 7;
+      let currX = startX;
+      let currY = startY;
+      segments.push({ x: currX, y: currY });
+
+      for (let s = 1; s < steps; s++) {
+        const frac = s / steps;
+        const idealX = startX + (targetX - startX) * frac;
+        const idealY = startY + (targetY - startY) * frac;
+        currX = idealX + (Math.random() - 0.5) * 42;
+        currY = idealY + (Math.random() - 0.5) * 22;
+        segments.push({ x: currX, y: currY });
       }
-    };
+      segments.push({ x: targetX, y: targetY });
 
-    const spawnSkyMetallicAsh = (impactX: number, impactY: number, count: number) => {
-      for (let i = 0; i < count; i++) {
-        const spreadX = impactX + (Math.random() - 0.5) * viewW * 0.42;
-        const spreadY = impactY + (Math.random() - 0.3) * viewH * 0.22;
-        const ashColor =
-          i % 3 === 0 ? '#FFD166' : i % 3 === 1 ? '#FF7B29' : '#90E0EF';
-        spawnParticle(
-          spreadX,
-          Math.max(20, spreadY),
-          (Math.random() - 0.5) * 38,
-          42 + Math.random() * 88,
-          1.8 + Math.random() * 2.8,
-          ashColor,
-          1.4 + Math.random() * 1.5,
-          true
-        );
-      }
-    };
-
-    const triggerPeerStrike = (peerIndex: number) => {
-      const peer = peerActors[peerIndex];
-      if (!peer) return;
-      peerActiveStrikeTimers[peerIndex] = 0;
-
-      const px = peer.xNorm * viewW;
-      const py = peer.yNorm * viewH;
-      const anvilX = px + peer.facing * 20 * peer.scale;
-      const anvilY = py - 14 * peer.scale;
-
-      const targetX = viewW * (0.28 + (peer.xNorm - 0.5) * 0.44 + (Math.random() - 0.5) * 0.12);
-      const targetY = viewH * (0.11 + Math.random() * 0.16);
-
-      const bolt = generate2DLightningBolt(
-        anvilX,
-        anvilY,
-        targetX,
-        targetY,
-        false,
-        Math.floor((elapsedSec * 1000 + peerIndex * 313) % 99999)
-      );
-
-      activeBeams.push({
-        id: boltIdCounter++,
-        mainPoints: bolt.mainPoints,
-        branches: bolt.branches,
-        isHero: false,
-        rimHex: peer.beamColorHex,
-        coreHex: '#F0FAFF',
-        ageSec: 0,
-        durationSec: 0.42,
-        impactX: targetX,
-        impactY: targetY,
+      lightningBolts.push({
+        segments,
+        alpha: 1.0,
+        decay: 3.2,
+        color,
+        lineWidth: 3.2 * power,
       });
-
-      spawnAnvilSparkBurst(anvilX, anvilY, 3, peer.beamColorHex, false);
-
-      if (gameStateRef.current === 'playing' && bossHpRef.current > 0) {
-        onPeerAutonomousDamageRef.current?.(1 + Math.floor(Math.random() * 3));
-      }
     };
 
     const executeHeroStrikeVisuals = (forceGolden = false) => {
       const currentStanceKey = activeStanceRef.current;
-      const palette = HERO_STANCE_PALETTES[currentStanceKey] || HERO_STANCE_PALETTES.Q;
+      const sect = STANCE_TO_SECT[currentStanceKey] || 'thunder';
+      const sc = SECT_COLORS[sect] || SECT_COLORS.thunder;
 
       heroStrikeTimer = 0;
-      screenShakeTimer = 0;
-      skyImpactFlash = 1.0;
-      hitstopTimer = 0.032;
-
-      const heroX = viewW * 0.5;
-      const heroBaseY = viewH * 0.875;
-      const anvilTopX = heroX + 34;
-      const anvilTopY = heroBaseY - 46;
-
+      screenShake = forceGolden ? 13 : 8;
+      flashIntensity = forceGolden ? 1.4 : 0.95;
       rhythmPhase = 0.05;
 
-      // 1. Anvil spark burst
-      spawnAnvilSparkBurst(anvilTopX, anvilTopY, 38, palette.sparkHex, true);
+      const groundY = viewH * 0.825;
+      const centerX = viewW * 0.5;
+      const renderScale = 0.38;
+      const heroFootX = centerX - 14;
+      const spriteLeft = heroFootX - (360 * renderScale) * 0.46;
+      const spriteTop = groundY - (440 * renderScale);
+      const impactX = spriteLeft + 213 * renderScale;
+      const impactY = spriteTop + 342 * renderScale;
 
-      // 2. Colossal branching hero lightning beam
-      const skyImpactX = viewW * (0.5 + (Math.random() - 0.5) * 0.08);
-      const skyImpactY = viewH * (0.12 + Math.random() * 0.05);
-      const heroBolt = generate2DLightningBolt(
-        anvilTopX,
-        anvilTopY,
-        skyImpactX,
-        skyImpactY,
-        true,
-        Math.floor(performance.now() + Math.random() * 7919)
-      );
+      // 1. Lightning from sky to anvil
+      spawnLightningBolt(impactX, impactY, sc.glow, 1.45);
 
-      activeBeams.push({
-        id: boltIdCounter++,
-        mainPoints: heroBolt.mainPoints,
-        branches: heroBolt.branches,
-        isHero: true,
-        rimHex: palette.rimHex,
-        coreHex: palette.coreHex,
-        ageSec: 0,
-        durationSec: 0.68,
-        impactX: skyImpactX,
-        impactY: skyImpactY,
+      // 2. Shockwave
+      shockwaves.push({
+        x: impactX,
+        y: impactY,
+        radius: 10,
+        maxRadius: 75,
+        alpha: 1.0,
+        color: sc.light,
       });
 
-      // 3. Falling metallic sky ash
-      spawnSkyMetallicAsh(skyImpactX, skyImpactY, 26);
+      // 3. Sparks
+      const sparkCount = forceGolden ? 48 : 34;
+      for (let i = 0; i < sparkCount; i++) {
+        const ang = Math.PI * 1.5 + (Math.random() - 0.5) * 1.8;
+        const spd = 120 + Math.random() * 260;
+        spawnParticle(
+          impactX,
+          impactY,
+          Math.cos(ang) * spd,
+          Math.sin(ang) * spd,
+          2.2 + Math.random() * 2.6,
+          Math.random() < 0.35 ? '#FFFFFF' : sc.light,
+          0.45 + Math.random() * 0.45,
+          false
+        );
+      }
     };
 
     const spawnCombatTextInternal = (
@@ -413,15 +710,15 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
       isGolden: boolean
     ) => {
       const heroX = viewW * 0.5;
-      const heroBaseY = viewH * 0.875;
+      const groundY = viewH * 0.825;
 
       floatingTexts.push({
         id: textIdCounter++,
         text,
         subtext,
         x: heroX,
-        y: heroBaseY - 178,
-        vy: -72,
+        y: groundY - 175,
+        vy: -68,
         color,
         glowColor,
         ageSec: 0,
@@ -432,9 +729,10 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
 
     const resetSimulation = () => {
       heroStrikeTimer = -1;
-      screenShakeTimer = -1;
-      skyImpactFlash = 0;
-      activeBeams.length = 0;
+      screenShake = 0;
+      flashIntensity = 0;
+      lightningBolts.length = 0;
+      shockwaves.length = 0;
       floatingTexts.length = 0;
       for (const p of sparkPool) p.active = false;
     };
@@ -442,572 +740,232 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
     executeHeroStrikeClosureRef.current = (forceGolden?: boolean) => {
       executeHeroStrikeVisuals(forceGolden);
     };
+
     triggerPeerWaveClosureRef.current = () => {
-      for (let i = 0; i < 5; i++) {
-        triggerPeerStrike((i * 3) % peerActors.length);
-      }
+      peerSlots.forEach((slot, idx) => {
+        peerStrikeTimers[idx] = 0;
+        const px = slot.xNorm * viewW;
+        const py = viewH * 0.825 + slot.yOffset;
+        const sect = STANCE_TO_SECT[slot.stance] || 'thunder';
+        spawnLightningBolt(px, py - 8, SECT_COLORS[sect].glow, 0.9);
+      });
+      screenShake = 10;
+      flashIntensity = 0.9;
     };
+
     spawnCombatTextClosureRef.current = (text, subtext, color, glowColor, isGolden) => {
       spawnCombatTextInternal(text, subtext, color, glowColor, isGolden);
     };
+
     resetClosureRef.current = () => {
       resetSimulation();
     };
-
-    const remotePeersMap = new Map<number, RemotePeerInfo>();
 
     updateRemotePeersClosureRef.current = (peers: RemotePeerInfo[]) => {
       remotePeersMap.clear();
       for (const p of peers) {
         remotePeersMap.set(p.slotIndex, p);
       }
+
+      // Sync slot configs with real remote peers
+      peerSlots.forEach((slot, idx) => {
+        const rp = remotePeersMap.get(idx);
+        if (rp) {
+          slot.isReal = true;
+          slot.name = `★ ${rp.name}`;
+          slot.stance = rp.stance;
+        } else {
+          // Keep default named bots
+          slot.isReal = DEFAULT_PEER_SLOTS[idx].isReal;
+          slot.name = DEFAULT_PEER_SLOTS[idx].name;
+          slot.stance = DEFAULT_PEER_SLOTS[idx].stance;
+        }
+      });
     };
 
     triggerRemotePeerStrikeClosureRef.current = (payload: RemotePeerStrikePayload) => {
-      const slot = payload.slotIndex;
-      if (slot >= 0 && slot < peerActors.length) {
-        peerActiveStrikeTimers[slot] = 0;
-        const peer = peerActors[slot];
-        const px = peer.xNorm * viewW;
-        const py = peer.yNorm * viewH;
-        const anvilX = px + peer.facing * 20 * peer.scale;
-        const anvilY = py - 14 * peer.scale;
-        const targetX = viewW * (0.28 + (peer.xNorm - 0.5) * 0.44 + (Math.random() - 0.5) * 0.12);
-        const targetY = viewH * (0.11 + Math.random() * 0.16);
+      const slotIdx = payload.slotIndex;
+      if (slotIdx >= 0 && slotIdx < peerSlots.length) {
+        peerStrikeTimers[slotIdx] = 0;
+        const slot = peerSlots[slotIdx];
+        const px = slot.xNorm * viewW;
+        const py = viewH * 0.825 + slot.yOffset;
+        const sect = STANCE_TO_SECT[payload.stance] || 'thunder';
+        const sc = SECT_COLORS[sect] || SECT_COLORS.thunder;
 
-        // Subdued ambient lightning for remote players (non-laggy, slender)
-        const bolt = generate2DLightningBolt(
-          anvilX,
-          anvilY,
-          targetX,
-          targetY,
-          false,
-          Math.floor((elapsedSec * 1000 + slot * 313) % 99999)
-        );
-        const palette = HERO_STANCE_PALETTES[payload.stance] || HERO_STANCE_PALETTES.Q;
+        spawnLightningBolt(px + (slot.facing === 1 ? 14 : -14), py - 8, sc.glow, 0.95);
 
-        activeBeams.push({
-          id: boltIdCounter++,
-          mainPoints: bolt.mainPoints,
-          branches: bolt.branches,
-          isHero: false,
-          rimHex: palette.rimHex,
-          coreHex: palette.coreHex,
-          ageSec: 0,
-          durationSec: 0.22,
-          impactX: targetX,
-          impactY: targetY,
-        });
-
-        // Minimal sparks (4 subtle sparks, non-hero)
-        spawnAnvilSparkBurst(anvilX, anvilY, 4, palette.sparkHex, false);
-
-        // Người khác gõ: KHÔNG hiển thị chữ bay (floating text) để tối ưu hiệu năng và chống rối màn hình
+        for (let i = 0; i < 8; i++) {
+          const ang = Math.PI * 1.5 + (Math.random() - 0.5) * 1.6;
+          const spd = 80 + Math.random() * 160;
+          spawnParticle(
+            px + (slot.facing === 1 ? 14 : -14),
+            py - 8,
+            Math.cos(ang) * spd,
+            Math.sin(ang) * spd,
+            1.8,
+            sc.spark,
+            0.4,
+            false
+          );
+        }
       }
     };
 
-    // Seed initial peer sparks
-    for (let i = 0; i < 3; i++) {
-      triggerPeerStrike(i * 5 + 1);
-    }
-
-    // Expose debug API for automated inspection
+    // Debug API
     const debugApi = {
       strike: (forceGolden = true) => executeHeroStrikeVisuals(forceGolden),
-      triggerPeerWave: () => {
-        for (let i = 0; i < 6; i++) {
-          triggerPeerStrike((i * 2 + 1) % peerActors.length);
-        }
-      },
+      triggerPeerWave: () => triggerPeerWaveClosureRef.current?.(),
       reset: () => resetSimulation(),
       getStats: () => ({
         rendererType: 'HTML5_CANVAS_2D_PANORAMA',
         skyRatio: PANORAMA_SKY_RATIO,
         gameState: gameStateRef.current,
         activeStance: activeStanceRef.current,
-        peerCount: peerActors.length,
-        activeBeams: activeBeams.length,
+        peerCount: peerSlots.length,
         floatingTextsCount: floatingTexts.length,
-        screenShakeActive: screenShakeTimer >= 0 && screenShakeTimer <= SCREEN_SHAKE_DURATION_SEC,
       }),
     };
     (window as unknown as Record<string, unknown>).__celestialForge = debugApi;
-    (window as unknown as Record<string, unknown>).__celestialVault = debugApi;
 
-    // Drawing helpers
-    const drawLightningPolyline = (
-      points: Point2D[],
-      strokeStyle: string,
-      lineWidth: number,
-      glowColor: string,
-      glowWidth: number,
-      alpha: number
-    ) => {
-      if (!points || points.length < 2) return;
-      ctx.save();
-      ctx.lineCap = 'round';
-      ctx.lineJoin = 'round';
-      ctx.beginPath();
-      ctx.moveTo(points[0].x, points[0].y);
-      for (let i = 1; i < points.length; i++) {
-        ctx.lineTo(points[i].x, points[i].y);
-      }
-      if (glowWidth > 0) {
-        ctx.globalAlpha = Math.max(0, Math.min(1, alpha * 0.28));
-        ctx.strokeStyle = glowColor;
-        ctx.lineWidth = lineWidth + glowWidth * 0.65;
-        ctx.stroke();
-      }
-      ctx.globalAlpha = Math.max(0, Math.min(1, alpha));
-      ctx.strokeStyle = strokeStyle;
-      ctx.lineWidth = lineWidth;
-      ctx.stroke();
-      ctx.restore();
-    };
-
-    const drawBlacksmith2DSilhouette = (
-      cx: number,
-      footY: number,
-      scale: number,
-      facing: 1 | -1,
-      hammerAngleRad: number,
-      torsoOffsetY: number,
-      squashX: number,
-      squashY: number,
-      rimHex: string,
-      coreHex: string,
-      isMainHero: boolean,
-      label?: string,
-      isRealPlayer: boolean = false
-    ) => {
-      ctx.save();
-      ctx.translate(cx, footY);
-      ctx.scale(scale * squashX, scale * squashY);
-
-      // Real Player or Main Hero: 100% full opacity, bright glowing presence!
-      // Bot: 0.32 subtle ambient silhouette!
-      if (!isMainHero && !isRealPlayer) {
-        ctx.globalAlpha = 0.32;
-      } else {
-        ctx.globalAlpha = 1.0;
-      }
-
-      // ----------------------------------------------------------------------
-      // SPECIAL RENDER: MAIN HERO 2D XIANXIA SPRITE SHEET (NHẤT NIỆM TIÊU DAO)
-      // ----------------------------------------------------------------------
-      if (isMainHero && heroSpriteSheetRef.current && heroSpriteSheetRef.current.complete && heroSpriteSheetRef.current.naturalWidth > 0) {
-        const sheet = heroSpriteSheetRef.current;
-        const FRAME_W = 360;
-        const FRAME_H = 480;
-
-        // Map strike timer to 6 action frames (0: Ready, 1: Windup, 2: Downstroke, 3: Impact, 4: Rebound, 5: Recover)
-        let frameIdx = 0;
-        if (heroStrikeTimer >= 0) {
-          const p = Math.min(1, heroStrikeTimer / HERO_STRIKE_TOTAL_SEC);
-          if (p < 0.18) frameIdx = 1;      // Windup (Tích lôi)
-          else if (p < 0.40) frameIdx = 2; // Downstroke (Vung búa xé gió)
-          else if (p < 0.62) frameIdx = 3; // Impact (Nện phát nổ sấm sét)
-          else if (p < 0.82) frameIdx = 4; // Rebound (Nảy búa khói tiên)
-          else frameIdx = 5;               // Recover (Hồi thế)
-        }
-
-        // Ground Forge Aura Ring
-        ctx.save();
-        ctx.fillStyle = rimHex;
-        ctx.globalAlpha = 0.22;
-        ctx.beginPath();
-        ctx.ellipse(14 * facing, 0, 92, 18, 0, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.restore();
-
-        // Render Frame from Sprite Sheet
-        const sx = frameIdx * FRAME_W;
-        const sy = 0;
-        const sw = FRAME_W;
-        const sh = FRAME_H;
-
-        const renderScale = 0.44;
-        const dw = FRAME_W * renderScale;
-        const dh = FRAME_H * renderScale;
-        const baseLineY = 430 * renderScale; // anchor to feet baseline
-
-        const spriteLeft = -76 * facing - (facing === 1 ? 0 : dw);
-        const spriteTop = -baseLineY;
-
-        ctx.save();
-        // Dynamic Stance Aura Glow
-        ctx.shadowColor = rimHex;
-        ctx.shadowBlur = frameIdx === 3 ? 24 : 10;
-        ctx.drawImage(sheet, sx, sy, sw, sh, spriteLeft, spriteTop, dw, dh);
-        ctx.restore();
-
-        // Overhead Title Badge
-        if (label) {
-          ctx.save();
-          const labelY = -152 + torsoOffsetY * 0.4;
-          ctx.font = '700 13px "Chakra Petch", sans-serif';
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-
-          const textMetrics = ctx.measureText(label);
-          const padX = 8;
-          const boxW = textMetrics.width + padX * 2;
-          const boxH = 22;
-
-          ctx.fillStyle = 'rgba(6, 10, 20, 0.88)';
-          ctx.strokeStyle = rimHex;
-          ctx.lineWidth = 1.5;
-          ctx.beginPath();
-          ctx.roundRect(-boxW * 0.5, labelY - boxH * 0.5, boxW, boxH, 4);
-          ctx.fill();
-          ctx.stroke();
-
-          ctx.fillStyle = coreHex;
-          ctx.fillText(label, 0, labelY);
-          ctx.restore();
-        }
-
-        ctx.restore();
-        return;
-      }
-
-      // 1. Ground Forge Aura Ring under feet + Anvil
-      ctx.save();
-      ctx.fillStyle = isMainHero ? rimHex : '#334155';
-      ctx.globalAlpha = isMainHero ? 0.16 : 0.04;
-      ctx.beginPath();
-      ctx.ellipse(14 * facing, 0, isMainHero ? 88 : 48, isMainHero ? 18 : 10, 0, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.restore();
-
-      // 2. Anvil
-      const anvilX = 34 * facing;
-      ctx.save();
-      ctx.translate(anvilX, 0);
-
-      ctx.fillStyle = '#050811';
-      ctx.strokeStyle = isMainHero ? '#FFB703' : '#334155';
-      ctx.lineWidth = isMainHero ? 2.4 : 1.0;
-
-      ctx.beginPath();
-      ctx.moveTo(-26, 0);
-      ctx.lineTo(26, 0);
-      ctx.lineTo(20, -12);
-      ctx.lineTo(14, -28);
-      ctx.lineTo(34, -36);
-      ctx.lineTo(28, -45);
-      ctx.lineTo(-28, -45);
-      ctx.lineTo(-32, -35);
-      ctx.lineTo(-14, -28);
-      ctx.lineTo(-20, -12);
-      ctx.closePath();
-      ctx.fill();
-      ctx.stroke();
-
-      ctx.strokeStyle = isMainHero ? '#FFD166' : coreHex;
-      ctx.lineWidth = isMainHero ? 2.6 : 1.6;
-      ctx.beginPath();
-      ctx.moveTo(-24, -42);
-      ctx.lineTo(24, -42);
-      ctx.moveTo(-11, -22);
-      ctx.lineTo(11, -22);
-      ctx.stroke();
-      ctx.restore();
-
-      // 3. Blacksmith Silhouette
-      ctx.save();
-      ctx.scale(facing, 1);
-      ctx.translate(-14, torsoOffsetY);
-
-      ctx.fillStyle = '#060913';
-      ctx.strokeStyle = rimHex;
-      ctx.lineWidth = isMainHero ? 2.8 : 1.8;
-      ctx.lineJoin = 'round';
-      ctx.lineCap = 'round';
-
-      if (isMainHero) {
-        ctx.save();
-        ctx.fillStyle = '#0B1020';
-        ctx.strokeStyle = rimHex;
-        ctx.lineWidth = 2.0;
-        ctx.beginPath();
-        ctx.moveTo(-18, -78);
-        ctx.quadraticCurveTo(-52, -62, -64, -18);
-        ctx.quadraticCurveTo(-40, -24, -22, -46);
-        ctx.closePath();
-        ctx.fill();
-        ctx.stroke();
-        ctx.restore();
-      }
-
-      ctx.beginPath();
-      ctx.moveTo(-22, -torsoOffsetY);
-      ctx.lineTo(-16, -42);
-      ctx.lineTo(-24, -84);
-      ctx.lineTo(-12, -98);
-      ctx.lineTo(18, -96);
-      ctx.lineTo(14, -50);
-      ctx.lineTo(24, -torsoOffsetY);
-      ctx.lineTo(10, -torsoOffsetY);
-      ctx.lineTo(3, -38);
-      ctx.lineTo(-6, -38);
-      ctx.lineTo(-10, -torsoOffsetY);
-      ctx.closePath();
-      ctx.fill();
-      if (isMainHero) {
-        ctx.save();
-        ctx.globalAlpha = 0.28;
-        ctx.lineWidth = 7.5;
-        ctx.stroke();
-        ctx.restore();
-      }
-      ctx.stroke();
-
-      // Head
-      ctx.beginPath();
-      ctx.arc(3, -110, 11.5, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.stroke();
-
-      // Visor Eye
-      ctx.fillStyle = coreHex;
-      ctx.beginPath();
-      ctx.ellipse(8, -111, 3.8, 1.8, -0.1, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Chest Sigil
-      if (isMainHero) {
-        ctx.strokeStyle = coreHex;
-        ctx.lineWidth = 1.8;
-        ctx.beginPath();
-        ctx.moveTo(-4, -82);
-        ctx.lineTo(8, -82);
-        ctx.lineTo(2, -66);
-        ctx.closePath();
-        ctx.stroke();
-      }
-
-      // Arm & Hammer
-      ctx.save();
-      ctx.translate(10, -90);
-      ctx.rotate(hammerAngleRad);
-
-      if (hammerAngleRad > 0.1) {
-        ctx.save();
-        ctx.strokeStyle = `${rimHex}88`;
-        ctx.lineWidth = isMainHero ? 10 : 5;
-        ctx.beginPath();
-        ctx.arc(0, 0, isMainHero ? 64 : 44, -1.3, 0.15);
-        ctx.stroke();
-        ctx.restore();
-      }
-
-      ctx.fillStyle = '#060913';
-      ctx.strokeStyle = rimHex;
-      ctx.lineWidth = isMainHero ? 2.5 : 1.7;
-      ctx.beginPath();
-      ctx.roundRect(-6, -8, 14, 34, 6);
-      ctx.fill();
-      ctx.stroke();
-
-      const shaftLen = isMainHero ? 66 : 48;
-      ctx.strokeStyle = isMainHero ? '#FFD166' : coreHex;
-      ctx.lineWidth = isMainHero ? 4.5 : 3.0;
-      ctx.beginPath();
-      ctx.moveTo(0, 8);
-      ctx.lineTo(0, -shaftLen);
-      ctx.stroke();
-
-      ctx.translate(0, -shaftLen);
-      const hw = isMainHero ? 28 : 18;
-      const hh = isMainHero ? 16 : 11;
-      ctx.fillStyle = '#090E1C';
-      ctx.strokeStyle = rimHex;
-      ctx.lineWidth = isMainHero ? 3.0 : 2.0;
-
-      ctx.beginPath();
-      ctx.moveTo(-hw * 0.75, -hh);
-      ctx.lineTo(hw * 0.75, -hh);
-      ctx.lineTo(hw, -hh * 0.45);
-      ctx.lineTo(hw, hh * 0.45);
-      ctx.lineTo(hw * 0.75, hh);
-      ctx.lineTo(-hw * 0.75, hh);
-      ctx.lineTo(-hw, hh * 0.45);
-      ctx.lineTo(-hw, -hh * 0.45);
-      ctx.closePath();
-      ctx.fill();
-      if (isMainHero) {
-        ctx.save();
-        ctx.globalAlpha = 0.32;
-        ctx.lineWidth = 9.0;
-        ctx.stroke();
-        ctx.restore();
-      }
-      ctx.stroke();
-
-      ctx.strokeStyle = coreHex;
-      ctx.lineWidth = isMainHero ? 2.2 : 1.4;
-      ctx.beginPath();
-      ctx.moveTo(-hw * 0.55, 0);
-      ctx.lineTo(hw * 0.55, 0);
-      ctx.moveTo(0, -hh * 0.55);
-      ctx.lineTo(0, hh * 0.55);
-      ctx.stroke();
-
-      ctx.restore();
-      ctx.restore();
-
-      // 4. Overhead Badge (Đóng hộp nổi bật cho Nhân Vật Chính & Người Chơi Thật; Bot dùng nhãn mờ)
-      if (label && (isMainHero || isRealPlayer)) {
-        ctx.save();
-        const labelY = -138 + torsoOffsetY * 0.4;
-        ctx.font = isMainHero
-          ? '700 13px "Chakra Petch", sans-serif'
-          : '700 11.5px "Chakra Petch", sans-serif';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-
-        const textMetrics = ctx.measureText(label);
-        const padX = 8;
-        const boxW = textMetrics.width + padX * 2;
-        const boxH = isMainHero ? 22 : 19;
-
-        ctx.fillStyle = isMainHero ? 'rgba(6, 10, 20, 0.88)' : 'rgba(8, 14, 28, 0.9)';
-        ctx.strokeStyle = isMainHero ? rimHex : '#00F0FF';
-        ctx.lineWidth = isMainHero ? 1.5 : 1.2;
-        ctx.beginPath();
-        ctx.roundRect(-boxW * 0.5, labelY - boxH * 0.5, boxW, boxH, 4);
-        ctx.fill();
-        ctx.stroke();
-
-        ctx.fillStyle = isMainHero ? coreHex : '#00F0FF';
-        ctx.fillText(label, 0, labelY + 0.5);
-        ctx.restore();
-      } else if (label && !isMainHero) {
-        ctx.save();
-        const labelY = -128 + torsoOffsetY * 0.4;
-        ctx.font = '500 10px "Chakra Petch", monospace';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillStyle = 'rgba(148, 163, 184, 0.3)';
-        ctx.fillText(label, 0, labelY);
-        ctx.restore();
-      }
-
-      ctx.restore();
-    };
-
+    // -------------------------------------------------------------------------
+    // MAIN RENDER LOOP (60 FPS)
+    // -------------------------------------------------------------------------
     let animFrameId = 0;
     let lastPerfTime = performance.now();
 
-    const renderFrame = (now: number) => {
+    const render = (now: number) => {
       try {
-        const rawDt = Math.min((now - lastPerfTime) / 1000, 0.05);
+        const dt = Math.min((now - lastPerfTime) / 1000, 0.05);
         lastPerfTime = now;
 
         const isPaused = gameStateRef.current === 'paused';
         if (!isPaused) {
-          if (hitstopTimer > 0) {
-            hitstopTimer = Math.max(0, hitstopTimer - rawDt);
+          // Smooth mouse parallax lerp
+          currentMouseX += (targetMouseX - currentMouseX) * 0.05;
+          currentMouseY += (targetMouseY - currentMouseY) * 0.05;
+
+          // Screen shake decay
+          if (screenShake > 0) {
+            screenShake = Math.max(0, screenShake - 26 * dt);
           }
-          const simDt = hitstopTimer > 0 ? rawDt * 0.2 : rawDt;
-          elapsedSec += simDt;
+          if (flashIntensity > 0) {
+            flashIntensity = Math.max(0, flashIntensity - 3.4 * dt);
+          }
 
-          rhythmPhase = (rhythmPhase + simDt * (100 / 60)) % 1.0;
+          // Rhythm phase (100 BPM)
+          rhythmPhase = (rhythmPhase + dt * (100 / 60)) % 1.0;
 
+          // Hero strike timer
           if (heroStrikeTimer >= 0) {
-            heroStrikeTimer += rawDt;
+            heroStrikeTimer += dt;
             if (heroStrikeTimer > HERO_STRIKE_TOTAL_SEC) {
               heroStrikeTimer = -1;
             }
           }
 
-          if (screenShakeTimer >= 0) {
-            screenShakeTimer += rawDt;
-            if (screenShakeTimer > SCREEN_SHAKE_DURATION_SEC) {
-              screenShakeTimer = -1;
+          // Peer strike timers
+          for (let i = 0; i < peerStrikeTimers.length; i++) {
+            if (peerStrikeTimers[i] >= 0) {
+              peerStrikeTimers[i] += dt;
+              if (peerStrikeTimers[i] > HERO_STRIKE_TOTAL_SEC) {
+                peerStrikeTimers[i] = -1;
+              }
             }
           }
 
-          if (skyImpactFlash > 0) {
-            skyImpactFlash = Math.max(0, skyImpactFlash - rawDt * 3.8);
-          }
+          // Autonomous peer strikes for bots
+          if (gameStateRef.current === 'playing' && bossHpRef.current > 0) {
+            peerSlots.forEach((slot, idx) => {
+              if (remotePeersMap.has(idx)) return; // Real players don't auto-strike
 
-          // Autonomous Peer schedule
-          for (let i = 0; i < peerActors.length; i++) {
-            // CRITICAL: If this slot is occupied by a REAL remote player, DO NOT trigger autonomously!
-            // Real players only strike when they actively press Space/click in their own browser window.
-            if (remotePeersMap.has(i)) {
-              if (peerActiveStrikeTimers[i] >= 0) {
-                peerActiveStrikeTimers[i] += simDt;
-                if (peerActiveStrikeTimers[i] > HERO_STRIKE_TOTAL_SEC) {
-                  peerActiveStrikeTimers[i] = -1;
+              const cycleTime = 1.05 / slot.speed;
+              const cycleSec = (now * 0.001 + slot.phase * 10) % cycleTime;
+              const progress = cycleSec / cycleTime;
+              const isImpactFrame = progress >= 0.60 && progress < 0.78;
+
+              if (isImpactFrame && !lastImpactFlags[idx]) {
+                lastImpactFlags[idx] = true;
+                const px = slot.xNorm * viewW - currentMouseX * 52;
+                const py = viewH * 0.825 + slot.yOffset - currentMouseY * 14;
+                const impactX = px + (slot.facing === 1 ? 14 : -14);
+                const impactY = py - 8;
+                const sect = STANCE_TO_SECT[slot.stance] || 'thunder';
+
+                if (slot.isReal) {
+                  spawnLightningBolt(impactX, impactY, SECT_COLORS[sect].glow, 0.9);
                 }
-              }
-              continue;
-            }
 
-            const peer = peerActors[i];
-            const cycleIndex = Math.floor(
-              (elapsedSec + peer.strikeOffsetSec) / peer.strikePeriodSec
-            );
-            if (
-              peerLastCycleIndex[i] !== -1 &&
-              cycleIndex > peerLastCycleIndex[i] &&
-              bossHpRef.current > 0
-            ) {
-              triggerPeerStrike(i);
-            }
-            peerLastCycleIndex[i] = cycleIndex;
+                for (let s = 0; s < (slot.isReal ? 8 : 4); s++) {
+                  const ang = Math.PI * 1.5 + (Math.random() - 0.5) * 1.6;
+                  const spd = 60 + Math.random() * 120;
+                  spawnParticle(
+                    impactX,
+                    impactY,
+                    Math.cos(ang) * spd,
+                    Math.sin(ang) * spd,
+                    slot.isReal ? 2.0 : 1.3,
+                    slot.isReal ? SECT_COLORS[sect].spark : '#94A3B8',
+                    0.35,
+                    false
+                  );
+                }
 
-            if (peerActiveStrikeTimers[i] >= 0) {
-              peerActiveStrikeTimers[i] += simDt;
-              if (peerActiveStrikeTimers[i] > HERO_STRIKE_TOTAL_SEC) {
-                peerActiveStrikeTimers[i] = -1;
+                // Autonomous peer chip damage
+                if (Math.random() < 0.15) {
+                  onPeerAutonomousDamageRef.current?.(1);
+                }
+              } else if (!isImpactFrame) {
+                lastImpactFlags[idx] = false;
               }
+            });
+          }
+
+          // Lightning bolts decay
+          for (let i = lightningBolts.length - 1; i >= 0; i--) {
+            const bolt = lightningBolts[i];
+            bolt.alpha -= bolt.decay * dt;
+            if (bolt.alpha <= 0) {
+              lightningBolts.splice(i, 1);
             }
           }
 
-          // Active beams
-          for (let i = activeBeams.length - 1; i >= 0; i--) {
-            activeBeams[i].ageSec += rawDt;
-            if (activeBeams[i].ageSec >= activeBeams[i].durationSec) {
-              activeBeams.splice(i, 1);
+          // Shockwaves decay
+          for (let i = shockwaves.length - 1; i >= 0; i--) {
+            const sw = shockwaves[i];
+            sw.radius += 140 * dt;
+            sw.alpha -= 1.9 * dt;
+            if (sw.alpha <= 0 || sw.radius >= sw.maxRadius) {
+              shockwaves.splice(i, 1);
             }
           }
 
-          // Sparks & ash
-          const groundBounceY = viewH * 0.91;
+          // Sparks physics
+          const groundBounceY = viewH * 0.835;
           for (let i = 0; i < MAX_SPARK_POOL; i++) {
             const p = sparkPool[i];
             if (!p.active) continue;
-            p.age += simDt;
+            p.age += dt;
             if (p.age >= p.maxAge) {
               p.active = false;
               continue;
             }
-            if (p.isAsh) {
-              p.x += (p.vx + Math.sin(elapsedSec * 3.2 + i) * 18) * simDt;
-              p.y += p.vy * simDt;
-              p.alpha = (1 - p.age / p.maxAge) * (0.65 + 0.35 * Math.sin(elapsedSec * 16 + i));
-            } else {
-              p.vy += 690 * simDt;
-              p.x += p.vx * simDt;
-              p.y += p.vy * simDt;
-              if (p.y >= groundBounceY && p.vy > 0) {
-                p.y = groundBounceY;
-                p.vy = -p.vy * 0.42;
-                p.vx *= 0.78;
-              }
-              p.alpha = 1 - p.age / p.maxAge;
+            p.vy += 620 * dt;
+            p.x += p.vx * dt;
+            p.y += p.vy * dt;
+            if (p.y >= groundBounceY && p.vy > 0) {
+              p.y = groundBounceY;
+              p.vy = -p.vy * 0.38;
+              p.vx *= 0.75;
             }
+            p.alpha = 1 - p.age / p.maxAge;
           }
 
           // Floating texts
           for (let i = floatingTexts.length - 1; i >= 0; i--) {
             const ft = floatingTexts[i];
-            ft.ageSec += rawDt;
-            ft.y += ft.vy * rawDt;
+            ft.ageSec += dt;
+            ft.y += ft.vy * dt;
             ft.vy *= 0.94;
             if (ft.ageSec >= ft.durationSec) {
               floatingTexts.splice(i, 1);
@@ -1015,341 +973,551 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
           }
         }
 
-        // ======================================================================
-        // RENDERING
-        // ======================================================================
+        // =====================================================================
+        // CANVAS DRAWING PIPELINE
+        // =====================================================================
+        ctx.clearRect(0, 0, viewW, viewH);
         ctx.save();
-        ctx.setTransform(1, 0, 0, 1, 0, 0);
 
         // Screen Shake
-        if (screenShakeTimer >= 0 && screenShakeTimer <= SCREEN_SHAKE_DURATION_SEC) {
-          const decay = 1 - screenShakeTimer / SCREEN_SHAKE_DURATION_SEC;
-          const mag = decay * 11;
-          const sx = (Math.sin(elapsedSec * 190) + (Math.random() - 0.5)) * mag;
-          const sy = (Math.cos(elapsedSec * 210) + (Math.random() - 0.5)) * mag;
+        if (screenShake > 0) {
+          const sx = (Math.random() - 0.5) * screenShake;
+          const sy = (Math.random() - 0.5) * screenShake;
           ctx.translate(sx, sy);
         }
 
-        const horizonY = viewH * PANORAMA_SKY_RATIO;
-        const crackRatio = Math.max(
-          0.12,
-          Math.min(1.0, 1 - bossHpRef.current / (bossMaxHpRef.current || 1) + 0.12)
-        );
-        const currentStanceMeta = HERO_STANCE_PALETTES[activeStanceRef.current] || HERO_STANCE_PALETTES.Q;
+        const groundY = viewH * 0.825;
+        const centerX = viewW * 0.5;
 
-        // ----------------------------------------------------------------------
-        // LAYER 1: SKY VAULT (TOP 65%)
-        // ----------------------------------------------------------------------
-        const skyGrad = ctx.createLinearGradient(0, 0, 0, horizonY);
-        skyGrad.addColorStop(0, '#04060D');
-        skyGrad.addColorStop(0.45, '#0B1022');
-        skyGrad.addColorStop(0.82, '#171128');
-        skyGrad.addColorStop(1, '#261424');
-        ctx.fillStyle = skyGrad;
-        ctx.fillRect(0, 0, viewW, horizonY + 4);
+        // Determine current Sky State (1 to 6) from bossHp
+        const hpFrac = Math.max(0, Math.min(1, bossHpRef.current / (bossMaxHpRef.current || 1)));
+        const crackPct = 1 - hpFrac;
+        let skyState = 1;
+        if (crackPct >= 0.95 || bossHpRef.current <= 0) skyState = 6;
+        else if (crackPct >= 0.75) skyState = 5;
+        else if (crackPct >= 0.55) skyState = 4;
+        else if (crackPct >= 0.35) skyState = 3;
+        else if (crackPct >= 0.15) skyState = 2;
+        else skyState = 1;
 
-        const zenithX = viewW * 0.5;
-        const zenithY = viewH * 0.14;
-        const magmaRadius = viewW * (0.28 + crackRatio * 0.26);
-        const zenithGlow = ctx.createRadialGradient(
-          zenithX,
-          zenithY,
-          12,
-          zenithX,
-          zenithY,
-          magmaRadius
-        );
-        zenithGlow.addColorStop(
-          0,
-          `rgba(255, 140, 26, ${0.28 + crackRatio * 0.36 + skyImpactFlash * 0.32})`
-        );
-        zenithGlow.addColorStop(
-          0.45,
-          `rgba(220, 38, 38, ${0.14 + crackRatio * 0.22 + skyImpactFlash * 0.18})`
-        );
-        zenithGlow.addColorStop(1, 'rgba(4, 6, 13, 0)');
-        ctx.fillStyle = zenithGlow;
-        ctx.fillRect(0, 0, viewW, horizonY);
+        // ---------------------------------------------------------------------
+        // LAYER 0: CELESTIAL BACKGROUND GRADIENT
+        // ---------------------------------------------------------------------
+        const gradSky = ctx.createLinearGradient(0, 0, 0, viewH);
+        if (skyState === 1 || skyState === 2) {
+          gradSky.addColorStop(0, '#020409');
+          gradSky.addColorStop(0.42, '#060B18');
+          gradSky.addColorStop(0.75, '#0A1224');
+          gradSky.addColorStop(1, '#020408');
+        } else if (skyState === 3) {
+          gradSky.addColorStop(0, '#07030F');
+          gradSky.addColorStop(0.42, '#150B28');
+          gradSky.addColorStop(0.75, '#1E1236');
+          gradSky.addColorStop(1, '#07040C');
+        } else if (skyState === 4) {
+          gradSky.addColorStop(0, '#120404');
+          gradSky.addColorStop(0.40, '#220808');
+          gradSky.addColorStop(0.75, '#2F0E0E');
+          gradSky.addColorStop(1, '#080202');
+        } else if (skyState === 5) {
+          gradSky.addColorStop(0, '#1C0404');
+          gradSky.addColorStop(0.38, '#3A0808');
+          gradSky.addColorStop(0.75, '#481010');
+          gradSky.addColorStop(1, '#100303');
+        } else {
+          gradSky.addColorStop(0, '#260804');
+          gradSky.addColorStop(0.35, '#4D1204');
+          gradSky.addColorStop(0.70, '#5C1808');
+          gradSky.addColorStop(1, '#150502');
+        }
+        ctx.fillStyle = gradSky;
+        ctx.fillRect(0, 0, viewW, viewH);
 
-        // Storm cloud layers
-        ctx.fillStyle = 'rgba(8, 11, 22, 0.52)';
-        for (let c = 0; c < 10; c++) {
-          const drift = ((elapsedSec * (8 + (c % 3) * 4) + c * 170) % (viewW + 360)) - 180;
-          const cy = viewH * (0.08 + (c % 4) * 0.12);
-          const rx = 140 + (c % 3) * 65;
-          const ry = 34 + (c % 2) * 16;
+        // Twinkling Celestial Stars
+        stars.forEach((s) => {
+          const a = s.baseAlpha + Math.sin(now * s.twinkleSpeed + s.phase) * 0.25;
+          ctx.fillStyle = `rgba(224, 242, 254, ${Math.max(0, Math.min(1, a))})`;
           ctx.beginPath();
-          ctx.ellipse(drift, cy, rx, ry, 0, 0, Math.PI * 2);
+          ctx.arc(s.x * viewW, s.y * viewH, s.size, 0, Math.PI * 2);
           ctx.fill();
+        });
+
+        // ---------------------------------------------------------------------
+        // LAYER 1: CELESTIAL JADE MOON
+        // ---------------------------------------------------------------------
+        if (assets.moon.loaded) {
+          const mImg = assets.moon.img;
+          const moonSize = Math.min(220, viewW * 0.20);
+          const moonX = viewW * 0.74 - currentMouseX * 10;
+          const moonY = viewH * 0.07 - currentMouseY * 5;
+
+          ctx.save();
+          ctx.globalCompositeOperation = 'screen';
+          ctx.globalAlpha = skyState >= 5 ? 0.35 : 0.95;
+          ctx.drawImage(mImg, moonX, moonY, moonSize, moonSize);
+          ctx.restore();
         }
 
-        // Molten Cracks
+        // ---------------------------------------------------------------------
+        // LAYER 2: AURORA NEBULA
+        // ---------------------------------------------------------------------
+        if (assets.aurora.loaded) {
+          const aImg = assets.aurora.img;
+          const aW = viewW * 1.05;
+          const aH = aW * (aImg.height / aImg.width);
+          const aX = (viewW - aW) * 0.5 - currentMouseX * 14;
+          const aY = viewH * 0.04 - currentMouseY * 6;
+
+          ctx.save();
+          ctx.globalCompositeOperation = 'screen';
+          ctx.globalAlpha = 0.55 + Math.sin(now * 0.002) * 0.15 + flashIntensity * 0.3;
+          ctx.drawImage(aImg, aX, aY, aW, aH);
+          ctx.restore();
+        }
+
+        // ---------------------------------------------------------------------
+        // LAYER 3: 6 SKY STATES (MÁI VÒM THIÊN GIỚI NỨT VỠ -> TAN BIẾN)
+        // ---------------------------------------------------------------------
+        const skyKey = `sky${skyState}`;
+        const activeSkyAsset = assets[skyKey];
+        if (activeSkyAsset && activeSkyAsset.loaded && skyState > 1) {
+          const sImg = activeSkyAsset.img;
+          const pX = currentMouseX * 18;
+          const pY = currentMouseY * 7;
+          const sW = viewW * 0.95;
+          const sH = sW * (sImg.height / sImg.width);
+          const sX = (viewW - sW) * 0.5 - pX;
+          const sY = viewH * 0.02 - pY;
+
+          ctx.save();
+          ctx.globalCompositeOperation = 'screen';
+          const pulse = 0.85 + Math.sin(now * 0.005) * 0.15;
+          ctx.globalAlpha = Math.min(1, pulse + flashIntensity * 0.4);
+          ctx.drawImage(sImg, sX, sY, sW, sH);
+          ctx.restore();
+        }
+
+        // ---------------------------------------------------------------------
+        // LAYER 4: DRIFTING INKY CLOUDS
+        // ---------------------------------------------------------------------
+        if (assets.clouds.loaded) {
+          const clImg = assets.clouds.img;
+          const clW = viewW * 1.15;
+          const clH = clW * (clImg.height / clImg.width);
+          const clX = (viewW - clW) * 0.5 - currentMouseX * 20;
+          const clY = viewH * 0.28 - currentMouseY * 6;
+
+          ctx.save();
+          ctx.globalCompositeOperation = 'screen';
+          ctx.globalAlpha = 0.22;
+          ctx.drawImage(clImg, clX, clY, clW, clH);
+          ctx.restore();
+        }
+
+        // ---------------------------------------------------------------------
+        // LAYER 5: BASALT HORIZON RIDGE (64% HEIGHT)
+        // ---------------------------------------------------------------------
+        const horizonY = viewH * 0.64;
+
+        // Sương mù chân trời
+        const mistGrad = ctx.createLinearGradient(0, horizonY - 45, 0, horizonY + 20);
+        mistGrad.addColorStop(0, 'rgba(4, 7, 18, 0)');
+        mistGrad.addColorStop(0.6, 'rgba(12, 18, 36, 0.45)');
+        mistGrad.addColorStop(1, 'rgba(7, 10, 20, 0.85)');
+        ctx.fillStyle = mistGrad;
+        ctx.fillRect(0, horizonY - 45, viewW, 65);
+
+        // Dãy núi Basalt xa
         ctx.save();
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
-        for (let i = 0; i < SKY_CRACK_TREE.length; i++) {
-          const branch = SKY_CRACK_TREE[i];
-          if (crackRatio < branch.threshold) continue;
-
-          const branchIntensity = Math.min(
-            1,
-            (crackRatio - branch.threshold) / Math.max(0.15, 1 - branch.threshold)
-          );
-          const pts = branch.points;
-          const visibleCount = Math.max(
-            2,
-            Math.min(pts.length, Math.ceil(pts.length * (0.35 + branchIntensity * 0.65)))
-          );
-
-          ctx.beginPath();
-          ctx.moveTo(pts[0].x * viewW, pts[0].y * viewH);
-          for (let k = 1; k < visibleCount; k++) {
-            ctx.lineTo(pts[k].x * viewW, pts[k].y * viewH);
-          }
-
-          ctx.strokeStyle = `rgba(255, 55, 15, ${0.22 + branchIntensity * 0.28 + skyImpactFlash * 0.2})`;
-          ctx.lineWidth = branch.weight * (3.2 + crackRatio * 2.2) + skyImpactFlash * 3.5;
-          ctx.stroke();
-
-          ctx.strokeStyle = `rgba(255, 145, 0, ${0.55 + branchIntensity * 0.4 + skyImpactFlash * 0.25})`;
-          ctx.lineWidth = branch.weight * (1.35 + crackRatio * 0.85) + skyImpactFlash * 1.4;
-          ctx.stroke();
-
-          ctx.strokeStyle =
-            skyImpactFlash > 0.25
-              ? '#FFFFFF'
-              : `rgba(255, 232, 140, ${0.7 + branchIntensity * 0.3})`;
-          ctx.lineWidth = Math.max(1.0, branch.weight * 0.55);
-          ctx.stroke();
-        }
-        ctx.restore();
-
-        // Distant sheet lightning
-        const ambientThunder = Math.pow(Math.max(0, Math.sin(elapsedSec * 3.7) * Math.cos(elapsedSec * 9.3)), 8);
-        if (ambientThunder > 0.25) {
-          ctx.fillStyle = `rgba(180, 230, 255, ${ambientThunder * 0.09})`;
-          ctx.fillRect(0, 0, viewW, horizonY);
-        }
-
-        // Zenith Sigil
-        ctx.save();
-        ctx.translate(zenithX, zenithY);
-        ctx.strokeStyle = `rgba(255, 158, 0, ${0.42 + crackRatio * 0.45})`;
+        const paraRidgeX = currentMouseX * 18;
+        ctx.fillStyle = '#060914';
+        ctx.strokeStyle = skyState >= 5 ? 'rgba(239, 68, 68, 0.65)' : 'rgba(255, 120, 30, 0.45)';
         ctx.lineWidth = 1.6;
         ctx.beginPath();
-        ctx.arc(0, 0, 34 + Math.sin(elapsedSec * 3) * 3, 0, Math.PI * 2);
-        ctx.stroke();
-        ctx.strokeStyle = `rgba(255, 71, 26, ${0.32 + crackRatio * 0.5})`;
-        ctx.beginPath();
-        ctx.arc(0, 0, 56 + crackRatio * 18, 0, Math.PI * 2);
-        ctx.stroke();
-        ctx.restore();
-
-        // ----------------------------------------------------------------------
-        // LAYER 2: BASALT PLATEAU (BOTTOM 35%)
-        // ----------------------------------------------------------------------
-        const groundGrad = ctx.createLinearGradient(0, horizonY, 0, viewH);
-        groundGrad.addColorStop(0, '#0D1220');
-        groundGrad.addColorStop(0.35, '#090D18');
-        groundGrad.addColorStop(1, '#04060B');
-        ctx.fillStyle = groundGrad;
-        ctx.fillRect(0, horizonY, viewW, viewH - horizonY);
-
-        // Jagged Basalt Ridge
-        ctx.fillStyle = '#070A14';
-        ctx.strokeStyle = 'rgba(255, 120, 30, 0.38)';
-        ctx.lineWidth = 1.5;
-        ctx.beginPath();
-        ctx.moveTo(0, horizonY + 12);
-        const ridgeSteps = 24;
+        ctx.moveTo(-50, horizonY + 25);
+        const ridgeSteps = 32;
         for (let r = 0; r <= ridgeSteps; r++) {
-          const rx = (r / ridgeSteps) * viewW;
-          const peak = Math.sin(r * 1.7) * 14 + Math.cos(r * 3.1) * 8;
+          const rx = (r / ridgeSteps) * (viewW + 100) - 50 - paraRidgeX;
+          const peak = Math.sin(r * 1.5 + 0.4) * 16 + Math.cos(r * 2.8) * 10;
           ctx.lineTo(rx, horizonY - Math.abs(peak));
         }
-        ctx.lineTo(viewW, horizonY + 24);
-        ctx.lineTo(0, horizonY + 24);
+        ctx.lineTo(viewW + 50, horizonY + 45);
+        ctx.lineTo(-50, horizonY + 45);
         ctx.closePath();
         ctx.fill();
         ctx.stroke();
+        ctx.restore();
 
-        // 3 Stepped Quartz Terraces
-        const terraceYLevels = [viewH * 0.705, viewH * 0.772, viewH * 0.842];
-        terraceYLevels.forEach((ty, idx) => {
-          const stepH = viewH * 0.065;
-          const stepGrad = ctx.createLinearGradient(0, ty, 0, ty + stepH);
-          stepGrad.addColorStop(0, idx === 2 ? '#131C31' : '#0F172A');
-          stepGrad.addColorStop(1, '#060912');
-          ctx.fillStyle = stepGrad;
+        // ---------------------------------------------------------------------
+        // LAYER 6: 3 STEPPED BASALT TERRACES (0.685, 0.750, 0.825)
+        // ---------------------------------------------------------------------
+        const activeSect = STANCE_TO_SECT[activeStanceRef.current] || 'thunder';
+        const activeSectColor = SECT_COLORS[activeSect] || SECT_COLORS.thunder;
+
+        const terraceLevels = [
+          { y: viewH * 0.685, h: viewH * 0.065, color1: '#0B1122', color2: '#050812', stroke: 'rgba(124, 232, 255, 0.22)', lw: 1.2 },
+          { y: viewH * 0.750, h: viewH * 0.075, color1: '#0E162B', color2: '#060914', stroke: 'rgba(124, 232, 255, 0.35)', lw: 1.5 },
+          { y: viewH * 0.825, h: viewH * 0.180, color1: '#121D38', color2: '#070B18', stroke: activeSectColor.glow, lw: 2.2 },
+        ];
+
+        terraceLevels.forEach((tl, tIdx) => {
+          const pX = currentMouseX * (22 + tIdx * 14);
+          const ty = tl.y - currentMouseY * (5 + tIdx * 3);
+
+          ctx.save();
+          const gradT = ctx.createLinearGradient(0, ty, 0, ty + tl.h);
+          gradT.addColorStop(0, tl.color1);
+          gradT.addColorStop(1, tl.color2);
+          ctx.fillStyle = gradT;
 
           ctx.beginPath();
           ctx.moveTo(0, ty);
-          for (let s = 0; s <= 16; s++) {
-            const sx = (s / 16) * viewW;
-            const dip = s >= 7 && s <= 9 ? 6 : (s % 2 === 0 ? -3 : 3);
-            ctx.lineTo(sx, ty + dip);
+          for (let s = 0; s <= 20; s++) {
+            const sx = (s / 20) * viewW;
+            const dip = s >= 8 && s <= 12 ? 4 : s % 2 === 0 ? -2 : 2;
+            ctx.lineTo(sx - pX, ty + dip);
           }
-          ctx.lineTo(viewW, ty + stepH);
-          ctx.lineTo(0, ty + stepH);
+          ctx.lineTo(viewW, ty + tl.h);
+          ctx.lineTo(0, ty + tl.h);
           ctx.closePath();
           ctx.fill();
 
-          ctx.strokeStyle =
-            idx === 2
-              ? `${currentStanceMeta.rimHex}66`
-              : 'rgba(124, 232, 255, 0.28)';
-          ctx.lineWidth = idx === 2 ? 2.0 : 1.3;
+          ctx.strokeStyle = tl.stroke;
+          ctx.lineWidth = tl.lw;
+          ctx.shadowColor = tl.stroke;
+          ctx.shadowBlur = tIdx === 2 ? 14 : 6;
           ctx.beginPath();
-          for (let s = 0; s <= 16; s++) {
-            const sx = (s / 16) * viewW;
-            const dip = s >= 7 && s <= 9 ? 6 : (s % 2 === 0 ? -3 : 3);
-            if (s === 0) ctx.moveTo(sx, ty + dip);
-            else ctx.lineTo(sx, ty + dip);
+          for (let s = 0; s <= 20; s++) {
+            const sx = (s / 20) * viewW;
+            const dip = s >= 8 && s <= 12 ? 4 : s % 2 === 0 ? -2 : 2;
+            if (s === 0) ctx.moveTo(sx - pX, ty + dip);
+            else ctx.lineTo(sx - pX, ty + dip);
           }
           ctx.stroke();
+          ctx.restore();
         });
 
-        // ----------------------------------------------------------------------
-        // LAYER 3: LIGHTNING BEAMS
-        // ----------------------------------------------------------------------
-        for (let i = 0; i < activeBeams.length; i++) {
-          const beam = activeBeams[i];
-          const progress = beam.ageSec / beam.durationSec;
-          const alpha = (1 - progress) * (0.82 + 0.18 * Math.sin(elapsedSec * 90 + beam.id));
+        // ---------------------------------------------------------------------
+        // LAYER 7: AMBIENT SHADOW TROUPE (TIER 1 & 2)
+        // ---------------------------------------------------------------------
+        if (assets.peerShadowSheet.loaded) {
+          const sheetShadow = assets.peerShadowSheet.img;
+          const FW = 458;
+          const FH = 384;
 
-          if (beam.isHero) {
-            drawLightningPolyline(beam.mainPoints, beam.rimHex, 14, beam.rimHex, 28, alpha * 0.42);
-            drawLightningPolyline(beam.mainPoints, beam.rimHex, 6.5, beam.rimHex, 16, alpha * 0.85);
-            drawLightningPolyline(beam.mainPoints, '#FFFFFF', 2.8, beam.coreHex, 8, alpha);
+          AMBIENT_BOTS.forEach((bot) => {
+            const tLevel = bot.tier === 1 ? terraceLevels[0] : terraceLevels[1];
+            const tY = tLevel.y - currentMouseY * (bot.tier === 1 ? 5 : 8);
+            const pX = currentMouseX * (bot.tier === 1 ? 26 : 38);
+            const bx = bot.xNorm * viewW - pX;
+            const by = tY + (bot.tier === 1 ? 22 : 28);
 
-            for (const br of beam.branches) {
-              drawLightningPolyline(br, beam.rimHex, 4.2, beam.rimHex, 12, alpha * 0.72);
-              drawLightningPolyline(br, '#FFFFFF', 1.5, '#FFFFFF', 4, alpha * 0.9);
+            const cycleTime = 1.05 / bot.speed;
+            const cycleSec = (now * 0.001 + bot.phase * 10) % cycleTime;
+            const progress = cycleSec / cycleTime;
+            let bFrame = 0;
+            if (progress < 0.20) bFrame = 0;
+            else if (progress < 0.42) bFrame = 1;
+            else if (progress < 0.60) bFrame = 2;
+            else if (progress < 0.78) bFrame = 3;
+            else if (progress < 0.90) bFrame = 4;
+            else bFrame = 5;
+
+            const bw = FW * bot.scale;
+            const bh = FH * bot.scale;
+
+            // Mini anvil
+            ctx.save();
+            ctx.fillStyle = '#1E293B';
+            ctx.strokeStyle = '#334155';
+            ctx.lineWidth = 1.0;
+            const anvilX = bx + (bot.facing === 1 ? 8 : -8);
+            ctx.beginPath();
+            ctx.roundRect(anvilX - 9, by - 6, 18, 8, 2);
+            ctx.fill();
+            ctx.stroke();
+            ctx.restore();
+
+            // Sprite
+            ctx.save();
+            ctx.translate(bx, by);
+            if (bot.facing === -1) ctx.scale(-1, 1);
+            ctx.globalAlpha = bot.tier === 1 ? 0.45 : 0.60;
+            const sx = bFrame * FW;
+            ctx.drawImage(sheetShadow, sx, 0, FW, FH, -bw * 0.42, -bh + 6, bw, bh);
+            ctx.restore();
+
+            // Handwriting label
+            ctx.save();
+            ctx.font = '700 12.5px "Charm", "Caveat", cursive';
+            ctx.textAlign = 'center';
+            ctx.fillStyle = 'rgba(148, 163, 184, 0.55)';
+            ctx.fillText(bot.label, bx, by - bh - 2);
+            ctx.restore();
+          });
+        }
+
+        // ---------------------------------------------------------------------
+        // LAYER 8: FRONTLINE PEDESTALS (SINGLE FORGER PEDESTALS)
+        // ---------------------------------------------------------------------
+        if (assets.pedestal.loaded) {
+          const pedImg = assets.pedestal.img;
+          peerSlots.forEach((slot) => {
+            const paraX = currentMouseX * 52;
+            const paraY = currentMouseY * 14;
+            const px = slot.xNorm * viewW - paraX;
+            const py = groundY + slot.yOffset - paraY;
+
+            const pedW = 160 * (slot.scale / 0.35);
+            const pedH = pedW * (pedImg.height / pedImg.width);
+
+            // Shadow
+            ctx.save();
+            ctx.fillStyle = 'rgba(0,0,0,0.7)';
+            ctx.filter = 'blur(10px)';
+            ctx.beginPath();
+            ctx.ellipse(px, py + pedH * 0.35, pedW * 0.45, 12, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+
+            // Pedestal Image
+            ctx.save();
+            ctx.drawImage(pedImg, px - pedW * 0.5, py - pedH * 0.28, pedW, pedH);
+
+            // Sect Rune Glow
+            if (slot.isReal) {
+              const sect = STANCE_TO_SECT[slot.stance] || 'thunder';
+              const sc = SECT_COLORS[sect] || SECT_COLORS.thunder;
+              ctx.globalAlpha = 0.45 + Math.sin(now * 0.004 + slot.id) * 0.15;
+              ctx.filter = 'blur(10px)';
+              ctx.fillStyle = sc.glow;
+              ctx.beginPath();
+              ctx.ellipse(px, py - 4, pedW * 0.3, 8, 0, 0, Math.PI * 2);
+              ctx.fill();
             }
-          } else {
-            drawLightningPolyline(beam.mainPoints, beam.rimHex, 2.0, beam.rimHex, 5, alpha * 0.22);
-            drawLightningPolyline(beam.mainPoints, beam.coreHex, 0.9, beam.rimHex, 2, alpha * 0.40);
-            for (const br of beam.branches) {
-              drawLightningPolyline(br, beam.rimHex, 0.8, beam.rimHex, 2, alpha * 0.20);
+            ctx.restore();
+          });
+        }
+
+        // ---------------------------------------------------------------------
+        // LAYER 9: FRONTLINE PEER BLACKSMITHS (ANIMATED 6-FRAME)
+        // ---------------------------------------------------------------------
+        if (assets.peerSheet.loaded && assets.peerShadowSheet.loaded) {
+          const sheetColor = assets.peerSheet.img;
+          const sheetShadow = assets.peerShadowSheet.img;
+          const PEER_FW = 458;
+          const PEER_FH = 384;
+
+          peerSlots.forEach((slot) => {
+            const cycleTime = 1.05 / slot.speed;
+            const cycleSec = (now * 0.001 + slot.phase * 10) % cycleTime;
+            const progress = cycleSec / cycleTime;
+
+            let pFrame = 0;
+            if (progress < 0.20) pFrame = 0;
+            else if (progress < 0.42) pFrame = 1;
+            else if (progress < 0.60) pFrame = 2;
+            else if (progress < 0.78) pFrame = 3;
+            else if (progress < 0.90) pFrame = 4;
+            else pFrame = 5;
+
+            const paraX = currentMouseX * 52;
+            const paraY = currentMouseY * 14;
+            const px = slot.xNorm * viewW - paraX;
+            const py = groundY + slot.yOffset - paraY;
+
+            const pScale = slot.scale;
+            const pw = PEER_FW * pScale;
+            const ph = PEER_FH * pScale;
+
+            ctx.save();
+            ctx.translate(px, py);
+            if (slot.facing === -1) {
+              ctx.scale(-1, 1);
             }
+
+            const activeImg = slot.isReal ? sheetColor : sheetShadow;
+            ctx.globalAlpha = slot.isReal ? 1.0 : 0.45;
+
+            const sx = pFrame * PEER_FW;
+            const sy = 0;
+            ctx.drawImage(activeImg, sx, sy, PEER_FW, PEER_FH, -pw * 0.42, -ph + 12, pw, ph);
+            ctx.restore();
+
+            // Tiên Hiệp Plaque Nameplate (Charm / Caveat Calligraphy)
+            const nameY = py - ph + 4;
+            drawXianxiaPlaque(ctx, px, nameY, slot.name, slot.stance, false, slot.isReal);
+          });
+        }
+
+        // ---------------------------------------------------------------------
+        // LAYER 10: CENTRAL ALTAR PLATFORM (MAIN HERO)
+        // ---------------------------------------------------------------------
+        if (assets.mainAltar.loaded) {
+          const aImg = assets.mainAltar.img;
+          const aW = Math.min(270, viewW * 0.25);
+          const aH = aW * (aImg.height / aImg.width);
+          const aX = centerX - aW * 0.5 - currentMouseX * 56;
+          const aY = groundY - aH * 0.22 - currentMouseY * 16;
+
+          // Shadow
+          ctx.save();
+          ctx.fillStyle = 'rgba(0, 0, 0, 0.9)';
+          ctx.filter = 'blur(16px)';
+          ctx.beginPath();
+          ctx.ellipse(centerX - currentMouseX * 56, groundY + aH * 0.30, aW * 0.45, 14, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+
+          // Altar Image
+          ctx.save();
+          ctx.drawImage(aImg, aX, aY, aW, aH);
+
+          // Central Rune Pool
+          const runeColor = activeSectColor.glow;
+          const runePulse = 0.35 + Math.sin(now * 0.003) * 0.15 + flashIntensity * 0.45;
+          ctx.globalAlpha = runePulse;
+          ctx.filter = 'blur(12px)';
+          ctx.fillStyle = runeColor;
+          ctx.beginPath();
+          ctx.ellipse(centerX - currentMouseX * 56, groundY - 2 - currentMouseY * 16, aW * 0.26, 10, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+
+        // ---------------------------------------------------------------------
+        // LAYER 11: MAIN HERO (BALANCED 0.38 SCALE, EQUAL PROMINENCE)
+        // ---------------------------------------------------------------------
+        if (assets.heroSheet.loaded) {
+          const sheet = assets.heroSheet.img;
+          const stageFootY = groundY - currentMouseY * 18;
+          const heroFootX = centerX - 14 - currentMouseX * 64;
+
+          const FRAME_W = 360;
+          const FRAME_H = 480;
+          const renderScale = 0.38;
+          const dw = FRAME_W * renderScale;
+          const dh = FRAME_H * renderScale;
+          const baseLineY = 440 * renderScale;
+
+          // Action frame mapping
+          let heroFrameIdx = 0;
+          if (heroStrikeTimer >= 0) {
+            const p = Math.min(1, heroStrikeTimer / HERO_STRIKE_TOTAL_SEC);
+            if (p < 0.18) heroFrameIdx = 1;
+            else if (p < 0.38) heroFrameIdx = 2;
+            else if (p < 0.62) heroFrameIdx = 3;
+            else if (p < 0.82) heroFrameIdx = 4;
+            else heroFrameIdx = 5;
           }
 
+          const sx = heroFrameIdx * FRAME_W;
+          const sy = 0;
+          const spriteLeft = heroFootX - dw * 0.46;
+          const spriteTop = stageFootY - baseLineY;
+
+          // Hero Shadow
           ctx.save();
-          const burstRadius = (beam.isHero ? 26 : 12) + progress * (beam.isHero ? 95 : 36);
-          ctx.strokeStyle = beam.isHero ? '#FFD166' : beam.rimHex;
-          ctx.lineWidth = beam.isHero ? 2.8 * (1 - progress) : 1.5 * (1 - progress);
-          ctx.globalAlpha = Math.max(0, alpha * 0.85);
+          ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+          ctx.filter = 'blur(6px)';
+          ctx.beginPath();
+          ctx.ellipse(heroFootX - 16, stageFootY + 2, 26, 8, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.beginPath();
+          ctx.ellipse(heroFootX + 32, stageFootY + 3, 30, 9, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+
+          // Forge Aura Ring
+          ctx.save();
+          ctx.strokeStyle = activeSectColor.glow;
+          ctx.lineWidth = 1.6;
+          ctx.globalAlpha = 0.55 + Math.sin(now * 0.004) * 0.2;
+          ctx.beginPath();
+          ctx.ellipse(heroFootX + 8, stageFootY, 62, 14, 0, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.restore();
+
+          // Hero Sprite
+          ctx.save();
+          if (heroFrameIdx === 3) {
+            ctx.shadowColor = activeSectColor.light;
+            ctx.shadowBlur = 25;
+          }
+          ctx.drawImage(sheet, sx, sy, FRAME_W, FRAME_H, spriteLeft, spriteTop, dw, dh);
+          ctx.restore();
+
+          // Contracting Rhythm Ring (100 BPM) on Hero Anvil
+          const anvilImpactX = spriteLeft + 213 * renderScale;
+          const anvilImpactY = spriteTop + 342 * renderScale;
+          const ringScale = 1 - rhythmPhase;
+          const isSweetSpot = Math.abs(rhythmPhase - 0.78) <= 0.18;
+
+          ctx.save();
+          ctx.strokeStyle = isSweetSpot ? '#FFD166' : activeSectColor.glow;
+          ctx.lineWidth = isSweetSpot ? 2.6 : 1.5;
+          ctx.globalAlpha = 0.35 + rhythmPhase * 0.55;
           ctx.beginPath();
           ctx.ellipse(
-            beam.impactX,
-            beam.impactY,
-            burstRadius,
-            burstRadius * 0.45,
+            anvilImpactX,
+            anvilImpactY,
+            14 + ringScale * 38,
+            5 + ringScale * 14,
             0,
             0,
             Math.PI * 2
           );
           ctx.stroke();
           ctx.restore();
+
+          // Balanced Overhead Plaque (Charm / Caveat Calligraphy)
+          const stanceMeta = HERO_STANCE_PALETTES[activeStanceRef.current] || HERO_STANCE_PALETTES.Q;
+          const labelText = `Thợ Rèn Chính · [${stanceMeta.nameVn}]`;
+          const tagY = stageFootY - 140;
+          drawXianxiaPlaque(ctx, centerX - currentMouseX * 64, tagY, labelText, activeStanceRef.current, true, true);
         }
 
-        // ----------------------------------------------------------------------
-        // LAYER 4: 18 PEER BLACKSMITHS
-        // ----------------------------------------------------------------------
-        for (let i = 0; i < peerActors.length; i++) {
-          const peer = peerActors[i];
-          const px = peer.xNorm * viewW;
-          const py = peer.yNorm * viewH;
-          const peerPose = evaluateHero2DStrikePose(
-            peerActiveStrikeTimers[i],
-            elapsedSec + peer.strikeOffsetSec
-          );
+        // ---------------------------------------------------------------------
+        // LAYER 12: DYNAMIC LIGHTNING BOLTS
+        // ---------------------------------------------------------------------
+        for (let i = lightningBolts.length - 1; i >= 0; i--) {
+          const bolt = lightningBolts[i];
+          ctx.save();
+          ctx.globalAlpha = Math.max(0, bolt.alpha);
+          ctx.strokeStyle = '#FFFFFF';
+          ctx.lineWidth = bolt.lineWidth;
+          ctx.shadowColor = bolt.color;
+          ctx.shadowBlur = 22;
 
-          const realPeer = remotePeersMap.get(i);
-          const isReal = !!realPeer;
-          const palette = realPeer ? HERO_STANCE_PALETTES[realPeer.stance] : null;
-          const rimHex = realPeer ? (palette?.rimHex || '#00F0FF') : '#475569';
-          const coreHex = realPeer ? (palette?.coreHex || '#FFFFFF') : '#334155';
-          const label = realPeer ? `★ ${realPeer.name}` : peer.label;
+          ctx.beginPath();
+          ctx.moveTo(bolt.segments[0].x, bolt.segments[0].y);
+          for (let s = 1; s < bolt.segments.length; s++) {
+            ctx.lineTo(bolt.segments[s].x, bolt.segments[s].y);
+          }
+          ctx.stroke();
 
-          drawBlacksmith2DSilhouette(
-            px,
-            py,
-            peer.scale,
-            peer.facing,
-            peerPose.hammerAngleRad,
-            peerPose.torsoOffsetY,
-            peerPose.scaleX,
-            peerPose.scaleY,
-            rimHex,
-            coreHex,
-            false,
-            label,
-            isReal
-          );
+          ctx.strokeStyle = bolt.color;
+          ctx.lineWidth = bolt.lineWidth * 2.2;
+          ctx.globalAlpha = Math.max(0, bolt.alpha * 0.45);
+          ctx.stroke();
+          ctx.restore();
         }
 
-        // ----------------------------------------------------------------------
-        // LAYER 5: CENTER MAIN HERO & ANVIL
-        // ----------------------------------------------------------------------
-        const heroX = viewW * 0.5;
-        const heroY = viewH * 0.885;
-        const heroPose = evaluateHero2DStrikePose(heroStrikeTimer, elapsedSec);
+        // ---------------------------------------------------------------------
+        // LAYER 13: SHOCKWAVES & SPARKS
+        // ---------------------------------------------------------------------
+        for (let i = shockwaves.length - 1; i >= 0; i--) {
+          const sw = shockwaves[i];
+          ctx.save();
+          ctx.globalAlpha = Math.max(0, sw.alpha);
+          ctx.strokeStyle = sw.color;
+          ctx.lineWidth = 2.4 * sw.alpha;
+          ctx.beginPath();
+          ctx.ellipse(sw.x, sw.y, sw.radius, sw.radius * 0.45, 0, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.restore();
+        }
 
-        // Hero Altar Platform
-        ctx.save();
-        ctx.translate(heroX, heroY + 6);
-        ctx.fillStyle = '#0B1222';
-        ctx.strokeStyle = currentStanceMeta.rimHex;
-        ctx.lineWidth = 2.4;
-        ctx.beginPath();
-        ctx.moveTo(-135, 16);
-        ctx.lineTo(135, 16);
-        ctx.lineTo(108, -12);
-        ctx.lineTo(-108, -12);
-        ctx.closePath();
-        ctx.fill();
-        ctx.stroke();
-
-        // Contracting Rhythm Ring (100 BPM)
-        const anvilCenterOffset = 38;
-        const ringScale = 1 - rhythmPhase;
-        const isSweetSpot = Math.abs(rhythmPhase - 0.78) <= 0.18;
-        ctx.strokeStyle = isSweetSpot ? '#FFD166' : currentStanceMeta.rimHex;
-        ctx.lineWidth = isSweetSpot ? 3.2 : 1.8;
-        ctx.globalAlpha = 0.35 + rhythmPhase * 0.55;
-        ctx.beginPath();
-        ctx.ellipse(
-          anvilCenterOffset,
-          -4,
-          24 + ringScale * 76,
-          7 + ringScale * 22,
-          0,
-          0,
-          Math.PI * 2
-        );
-        ctx.stroke();
-        ctx.restore();
-
-        // Main Hero Silhouette
-        drawBlacksmith2DSilhouette(
-          heroX,
-          heroY,
-          1.14,
-          1,
-          heroPose.hammerAngleRad,
-          heroPose.torsoOffsetY,
-          heroPose.scaleX,
-          heroPose.scaleY,
-          currentStanceMeta.rimHex,
-          currentStanceMeta.coreHex,
-          true,
-          `THỢ RÈN CHÍNH · [${currentStanceMeta.key}] ${currentStanceMeta.nameVn.toUpperCase()}`
-        );
-
-        // ----------------------------------------------------------------------
-        // LAYER 6: SPARKS & ASH
-        // ----------------------------------------------------------------------
         ctx.save();
         for (let i = 0; i < MAX_SPARK_POOL; i++) {
           const p = sparkPool[i];
@@ -1357,30 +1525,15 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
 
           ctx.globalAlpha = Math.max(0, Math.min(1, p.alpha));
           ctx.fillStyle = p.color;
-          ctx.strokeStyle = p.color;
-
-          if (p.isAsh) {
-            ctx.beginPath();
-            ctx.moveTo(p.x, p.y - p.size);
-            ctx.lineTo(p.x + p.size * 0.75, p.y);
-            ctx.lineTo(p.x, p.y + p.size);
-            ctx.lineTo(p.x - p.size * 0.75, p.y);
-            ctx.closePath();
-            ctx.fill();
-          } else {
-            ctx.lineWidth = p.size;
-            ctx.lineCap = 'round';
-            ctx.beginPath();
-            ctx.moveTo(p.x, p.y);
-            ctx.lineTo(p.x - p.vx * 0.024, p.y - p.vy * 0.024);
-            ctx.stroke();
-          }
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+          ctx.fill();
         }
         ctx.restore();
 
-        // ----------------------------------------------------------------------
-        // LAYER 7: FLOATING COMBAT TEXT
-        // ----------------------------------------------------------------------
+        // ---------------------------------------------------------------------
+        // LAYER 14: FLOATING COMBAT TEXT
+        // ---------------------------------------------------------------------
         for (let i = 0; i < floatingTexts.length; i++) {
           const ft = floatingTexts[i];
           const prog = ft.ageSec / ft.durationSec;
@@ -1404,7 +1557,7 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
           ctx.fillStyle = ft.color;
           ctx.fillText(ft.text, 0, 0);
 
-          ctx.font = '700 12px "Chakra Petch", sans-serif';
+          ctx.font = '700 13px "Charm", "Caveat", cursive';
           ctx.lineWidth = 3;
           ctx.strokeText(ft.subtext, 0, 22);
           ctx.fillStyle = '#F8FAFC';
@@ -1416,17 +1569,18 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
       } catch (err) {
         console.error('Community panoramic render error:', err);
       } finally {
-        animFrameId = requestAnimationFrame(renderFrame);
+        animFrameId = requestAnimationFrame(render);
       }
     };
 
-    renderFrame(performance.now());
+    render(performance.now());
 
     return () => {
       cancelAnimationFrame(animFrameId);
       ro.disconnect();
+      window.removeEventListener('mousemove', handleMouseMove);
     };
-  }, []); // Mounts once, decoupled from component state updates
+  }, []);
 
   return (
     <div
@@ -1437,7 +1591,9 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
         ref={canvasRef}
         data-testid="panoramic-2d-canvas"
         onClick={handleCanvasClick}
-        className="block w-full h-full cursor-pointer"
+        onTouchStart={handleCanvasClick}
+        tabIndex={0}
+        className="block w-full h-full cursor-pointer outline-none"
       />
     </div>
   );

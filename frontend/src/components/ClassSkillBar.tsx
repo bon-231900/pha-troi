@@ -19,6 +19,7 @@ interface ClassSkillBarProps {
     R: number;
   };
   onCastSkill: (slotKey: 'W' | 'E' | 'R') => void;
+  onHeroStrike?: () => void;
   hudVisible?: boolean;
 }
 
@@ -30,6 +31,7 @@ export const ClassSkillBar: React.FC<ClassSkillBarProps> = ({
   totalForgeLevel,
   cooldowns,
   onCastSkill,
+  onHeroStrike,
   hudVisible = true,
 }) => {
   const tierInfo = getOverdriveTier(overdriveCharge);
@@ -68,13 +70,15 @@ export const ClassSkillBar: React.FC<ClassSkillBarProps> = ({
         aria-label="Bộ 4 Kỹ Năng Q W E R"
         className="grid grid-cols-4 gap-1 sm:gap-1.5 p-1 rounded-2xl bg-slate-950/90 border border-slate-800/90 backdrop-blur-md shadow-xl"
       >
-        {/* SKILL [Q]: Core Rhythm Stance (Always active) */}
-        <div
-          className="relative p-1.5 sm:p-2 rounded-xl bg-slate-900/90 border border-amber-400/80 shadow-md flex flex-col items-center justify-between text-center select-none"
-          title={`[Q] ${playerClass.skills.Q.name}: ${playerClass.skills.Q.description}`}
+        {/* SKILL [Q]: Core Rhythm Stance (Clickable button to strike anvil!) */}
+        <button
+          type="button"
+          onClick={onHeroStrike}
+          className="relative p-1.5 sm:p-2 rounded-xl bg-slate-900/90 border border-amber-400/80 shadow-md flex flex-col items-center justify-between text-center select-none cursor-pointer hover:border-amber-300 hover:brightness-125 active:scale-95 transition-all"
+          title={`[Q] ${playerClass.skills.Q.name}: Bấm hoặc nhấn SPACE để gõ đe`}
         >
           <div className="w-full flex items-center justify-between text-[9px] font-tech text-amber-300">
-            <span className="font-bold bg-amber-400/20 px-1 rounded">Q</span>
+            <span className="font-bold bg-amber-400/20 px-1 rounded">Q / SPACE</span>
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
           </div>
 
@@ -86,11 +90,11 @@ export const ClassSkillBar: React.FC<ClassSkillBarProps> = ({
             <div className="text-[10px] sm:text-[11px] font-tech font-bold text-slate-100 truncate">
               {playerClass.skills.Q.name.split(' ')[0]}
             </div>
-            <div className="text-[8px] text-emerald-400 font-tech uppercase truncate">
-              Gõ Đe
+            <div className="text-[8px] text-emerald-400 font-tech uppercase truncate font-bold">
+              Gõ Đe ⚡
             </div>
           </div>
-        </div>
+        </button>
 
         {/* SKILL [W]: Tactical Utility (Cooldown) */}
         {(() => {

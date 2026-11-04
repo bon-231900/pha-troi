@@ -78,6 +78,17 @@ import { RightProgressionPanel, LeaderboardEntry } from './components/RightProgr
 import { StatusModal } from './components/StatusModal';
 import { LoadingScreen } from './components/LoadingScreen';
 import { CharacterCreationModal } from './components/CharacterCreationModal';
+import { CharacterSelectionModal } from './components/CharacterSelectionModal';
+import {
+  loadCharacterSlots,
+  saveAllCharacterSlots,
+  getActiveSlotId,
+  setActiveSlotId,
+  createCharacterInSlot,
+  deleteCharacterSlot,
+  updateActiveSlotProgress,
+  CharacterProfile,
+} from './game/characterSlots';
 import { ClassSkillBar } from './components/ClassSkillBar';
 import { MultiplayerClient } from './game/multiplayer';
 import { serverSyncClient } from './game/serverSync';
@@ -88,7 +99,7 @@ import {
 } from './components/CommunityPanoramicForgeCanvas';
 import { Shield, Hammer, X, Zap, Flame, Sparkles, Eye, EyeOff } from 'lucide-react';
 
-type GameState = 'title' | 'playing' | 'paused' | 'gameover';
+type GameState = 'title' | 'character_select' | 'playing' | 'paused' | 'gameover';
 
 const INITIAL_CHAT: ChatMessage[] = [
   {
@@ -186,11 +197,14 @@ export default function App() {
     safeStorage.setItem('phatroi_user', created);
     return created;
   });
-  const [playerName] = useState<string>(() => {
+  const [playerName, setPlayerName] = useState<string>(() => {
     const saved = safeStorage.getItem('phatroi_user_name');
     if (saved) return saved;
     return `Thợ Rèn #${playerId.slice(-4)}`;
   });
+  const [activeSlotId, setActiveSlotIdState] = useState<1 | 2 | 3>(() => getActiveSlotId(googleUser?.googleId));
+  const [characterSlots, setCharacterSlots] = useState<(CharacterProfile | null)[]>(() => loadCharacterSlots(googleUser?.googleId));
+  const [creatingSlotId, setCreatingSlotId] = useState<(1 | 2 | 3) | null>(null);
   const pendingServerBatchRef = useRef({
     damage: 0,
     raidContribution: 0,
@@ -645,6 +659,7 @@ export default function App() {
           raidContributionScore,
           lastActiveTimestamp: Date.now(),
         };
+        updateActiveSlotProgress(activeSlotId, payload, googleUser?.googleId);
         const activeKey = googleUser ? `phatroi_account_${googleUser.googleId}` : 'phatroi_guest_save';
         safeStorage.setItem(activeKey, JSON.stringify(payload));
         // Also keep legacy key synced only if guest
@@ -1012,6 +1027,42 @@ export default function App() {
     setGuildHearths({});
     setUserGuildId('thiet_hai');
   }, []);
+
+  // Helper to load a character slot profile into React state
+  const loadSlotProfile = useCallback(
+    (profile: CharacterProfile) => {
+      setActiveSlotId(profile.slotId, googleUser?.googleId);
+      setActiveSlotIdState(profile.slotId);
+      setPlayerClassId(profile.classId);
+      setPlayerName(profile.characterName);
+      safeStorage.setItem('phatroi_user_name', profile.characterName);
+      safeStorage.setItem('phatroi_player_class', profile.classId);
+
+      const prog = profile.progress;
+      if (typeof prog.bossHp === 'number' && prog.bossHp >= 10_000_000) {
+        setBossHp(prog.bossHp);
+      }
+      setLinhThach(prog.linhThach || 0);
+      setTinhHoa(prog.tinhHoa || 0);
+      setUpgrades(Array.isArray(prog.upgrades) ? prog.upgrades : INITIAL_UPGRADES);
+      setSpiritNodes(Array.isArray(prog.spiritNodes) ? prog.spiritNodes : INITIAL_SPIRIT_NODES);
+      setStanceSkills(
+        Array.isArray(prog.stanceSkills) && prog.stanceSkills.length === INITIAL_STANCE_SKILLS.length
+          ? prog.stanceSkills
+          : INITIAL_STANCE_SKILLS
+      );
+      setEquippedItems(prog.equippedItems && typeof prog.equippedItems === 'object' ? prog.equippedItems : INITIAL_EQUIPPED_SLOTS);
+      setInventory(Array.isArray(prog.inventory) ? prog.inventory : []);
+      setPlayerTotalDamage(prog.playerTotalDamage || 0);
+      setClaimedMilestones(Array.isArray(prog.claimedMilestones) ? prog.claimedMilestones : []);
+      setCurrentVaultId(typeof prog.currentVaultId === 'number' ? prog.currentVaultId : 1);
+      setUserGuildId(prog.userGuildId || 'thiet_hai');
+
+      const cls = getPlayerClass(profile.classId);
+      if (cls) setActiveStance(cls.stanceKey);
+    },
+    [googleUser]
+  );
 
   // Keep latest state ref to avoid re-triggering GSI init on every hammer strike
   const latestGuestStateRef = useRef({
@@ -1407,6 +1458,7 @@ export default function App() {
   // Player Strike Handler
   const handleHeroStrike = useCallback(
     (forceGolden = false) => {
+      soundEngine.unlockAudio();
       if (gameState !== 'playing') {
         if (gameState === 'title') startGame();
         return;
@@ -2165,7 +2217,13 @@ export default function App() {
   // Balance Patch v3.3: Class Commitment & Active Class Skill Handlers
   const handleCommitClass = useCallback(
     (classId: PlayerClassId, name: string) => {
-      setPlayerClassId(classId);
+      const targetSlot = creatingSlotId || activeSlotId;
+      const newProfile = createCharacterInSlot(targetSlot, name, classId, googleUser?.googleId);
+      const updatedSlots = loadCharacterSlots(googleUser?.googleId);
+      setCharacterSlots(updatedSlots);
+      loadSlotProfile(newProfile);
+      setCreatingSlotId(null);
+      setGameState('playing');
       safeStorage.setItem('phatroi_player_class', classId);
       safeStorage.setItem('phatroi_user_name', name);
       const cls = getPlayerClass(classId);
@@ -2174,7 +2232,35 @@ export default function App() {
       soundEngine.playGlobalBurstFanfare();
       appendCombatLog(`🎉 [BÁI SƯ THÀNH CÔNG] Bạn đã gia nhập [${cls.name} · ${cls.sectTitle}]! Bắt đầu tu luyện bộ chiêu thức Q W E R.`, 'gold');
     },
-    [appendCombatLog]
+    [creatingSlotId, activeSlotId, googleUser, loadSlotProfile, appendCombatLog]
+  );
+
+  const handleSelectSlot = useCallback(
+    (slotId: 1 | 2 | 3) => {
+      const profile = characterSlots[slotId - 1];
+      if (profile) {
+        loadSlotProfile(profile);
+        setGameState('playing');
+        appendCombatLog(`⚔️ [XUẤT TRẬN] Tu sĩ [${profile.characterName}] đã nhập trận tại Slot #${slotId}!`, 'gold');
+      } else {
+        setCreatingSlotId(slotId);
+      }
+    },
+    [characterSlots, loadSlotProfile, appendCombatLog]
+  );
+
+  const handleCreateNewInSlot = useCallback((slotId: 1 | 2 | 3) => {
+    setCreatingSlotId(slotId);
+  }, []);
+
+  const handleDeleteSlot = useCallback(
+    (slotId: 1 | 2 | 3) => {
+      deleteCharacterSlot(slotId, googleUser?.googleId);
+      const updated = loadCharacterSlots(googleUser?.googleId);
+      setCharacterSlots(updated);
+      appendCombatLog(`💨 [GIẢI THỂ] Đã giải thể đệ tử tại Slot #${slotId}.`, 'red');
+    },
+    [googleUser, appendCombatLog]
   );
 
   const handleCastClassSkill = useCallback(
@@ -2339,25 +2425,37 @@ export default function App() {
   // Keyboard Shortcuts: Space, Q/W/E/R, P/Esc, M, [ and ]
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
-      // Chặn hoàn toàn sự kiện giữ im phím (e.repeat) của trình duyệt để không spam đập búa / kỹ năng gây lag
-      if (e.repeat) {
-        e.preventDefault();
-        return;
-      }
+      const isInput =
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement ||
+        (e.target instanceof HTMLElement && e.target.isContentEditable);
+      if (isInput) return;
 
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
-        return;
+      const isSpace =
+        e.code === 'Space' ||
+        e.key === ' ' ||
+        e.key === 'Spacebar' ||
+        e.keyCode === 32 ||
+        e.which === 32;
+
+      const isQ = e.code === 'KeyQ' || e.key === 'q' || e.key === 'Q';
+
+      // Chống nuốt phím Space khi đang focus vào button sau khi click
+      if (isSpace && document.activeElement instanceof HTMLElement && document.activeElement !== document.body) {
+        if (document.activeElement.tagName === 'BUTTON' || document.activeElement.tagName === 'A') {
+          document.activeElement.blur();
+        }
       }
 
       if (gameState === 'title') {
-        if (e.code === 'Space' || e.code === 'Enter') {
+        if (isSpace || e.code === 'Enter' || e.key === 'Enter') {
           e.preventDefault();
-          startGame();
+          setGameState('character_select');
         }
         return;
       }
 
-      if (e.code === 'KeyP' || e.code === 'Escape') {
+      if (e.code === 'KeyP' || e.code === 'Escape' || e.key === 'p' || e.key === 'P' || e.key === 'Escape') {
         e.preventDefault();
         setGameState((prev) =>
           prev === 'playing' ? 'paused' : prev === 'paused' ? 'playing' : prev
@@ -2365,7 +2463,7 @@ export default function App() {
         return;
       }
 
-      if (e.code === 'KeyM') {
+      if (e.code === 'KeyM' || e.key === 'm' || e.key === 'M') {
         e.preventDefault();
         setMuted((prev) => {
           const next = !prev;
@@ -2387,7 +2485,7 @@ export default function App() {
         return;
       }
 
-      if (e.code === 'KeyH') {
+      if (e.code === 'KeyH' || e.key === 'h' || e.key === 'H') {
         e.preventDefault();
         toggleHudVisibility();
         return;
@@ -2395,16 +2493,16 @@ export default function App() {
 
       if (gameState !== 'playing') return;
 
-      if (e.code === 'Space' || e.code === 'KeyQ') {
+      if (isSpace || isQ) {
         e.preventDefault();
         handleHeroStrike(false);
-      } else if (e.code === 'KeyW') {
+      } else if (e.code === 'KeyW' || e.key === 'w' || e.key === 'W') {
         e.preventDefault();
         handleCastClassSkill('W');
-      } else if (e.code === 'KeyE') {
+      } else if (e.code === 'KeyE' || e.key === 'e' || e.key === 'E') {
         e.preventDefault();
         handleCastClassSkill('E');
-      } else if (e.code === 'KeyR') {
+      } else if (e.code === 'KeyR' || e.key === 'r' || e.key === 'R') {
         e.preventDefault();
         handleCastClassSkill('R');
       }
@@ -2412,7 +2510,7 @@ export default function App() {
 
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [gameState, startGame, handleHeroStrike, handleSelectStance, toggleHudVisibility]);
+  }, [gameState, startGame, handleHeroStrike, handleCastClassSkill, toggleHudVisibility]);
 
   const leaderboard: LeaderboardEntry[] = [
     ...INITIAL_RIVALS,
@@ -2455,7 +2553,7 @@ export default function App() {
       {/* Title Screen Overlay */}
       {gameState === 'title' && (
         <TitleScreenModal
-          onStart={startGame}
+          onStart={() => setGameState('character_select')}
           googleProfile={googleUser}
           onGoogleLogin={handleGoogleLogin}
         />
@@ -2512,6 +2610,7 @@ export default function App() {
         rightPanelOpen={rightPanelOpen}
         onToggleRightPanel={() => setRightPanelOpen((prev) => !prev)}
         playerClass={getPlayerClass(playerClassId || 'thunder')}
+        onSwitchCharacter={() => setGameState('character_select')}
       />
 
       {/* 3. CORNER HUD DOCKS (Positioned at corners to leave the Center Hero & Anvil 100% Unobstructed) */}
@@ -2524,19 +2623,31 @@ export default function App() {
         totalForgeLevel={upgrades.reduce((sum, u) => sum + u.level, 0)}
         cooldowns={skillCooldowns}
         onCastSkill={handleCastClassSkill}
+        onHeroStrike={() => handleHeroStrike(false)}
         hudVisible={hudVisible}
       />
 
       {/* 3B. Bottom-Right Controls: Primary Strike Trigger + Toggle HUD Button */}
       <div className="fixed bottom-3 right-3 sm:right-5 z-20 flex items-center gap-2 pointer-events-auto">
         {hudVisible && (
-          <button
-            type="button"
-            onClick={() => handleHeroStrike(false)}
-            className="px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl bg-gradient-to-r from-amber-500/20 via-orange-500/20 to-amber-500/20 hover:from-amber-500/30 hover:to-amber-500/30 border border-amber-500/50 text-xs sm:text-sm font-tech font-bold text-amber-300 tracking-wider shadow-lg hover:border-amber-400 transition-all cursor-pointer active:scale-95 whitespace-nowrap"
-          >
-            NỆN BÚA [SPACE]
-          </button>
+          <>
+            <button
+              type="button"
+              onClick={() => setGameState('character_select')}
+              className="px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-amber-500/40 text-xs sm:text-sm font-tech font-bold text-amber-300 tracking-wider shadow-lg hover:border-amber-400 transition-all cursor-pointer active:scale-95 whitespace-nowrap flex items-center gap-1.5"
+              title="Đổi Nhân Vật (3 Slots) & Vào Bệ Đá Bát Quái"
+            >
+              <span>⚡ ĐỔI TU SĨ (3 SLOTS)</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleHeroStrike(false)}
+              className="px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl bg-gradient-to-r from-amber-500/20 via-orange-500/20 to-amber-500/20 hover:from-amber-500/30 hover:to-amber-500/30 border border-amber-500/50 text-xs sm:text-sm font-tech font-bold text-amber-300 tracking-wider shadow-lg hover:border-amber-400 transition-all cursor-pointer active:scale-95 whitespace-nowrap"
+            >
+              NỆN BÚA [SPACE]
+            </button>
+          </>
         )}
 
         {/* Toggle HUD Button [Phím H] */}
@@ -2672,10 +2783,34 @@ export default function App() {
         />
       )}
 
-      {/* Pause & Victory Status Modal */}
-      {/* 4. Character Creation & Single-Class Commitment Modal (Chỉ xuất hiện khi chưa chọn phái) */}
-      {(!playerClassId && gameState === 'playing') && (
+      {/* Character Selection Hub (3 Slots Multi-Profile) */}
+      {gameState === 'character_select' && (
+        <CharacterSelectionModal
+          slots={characterSlots}
+          activeSlotId={activeSlotId}
+          onSelectSlot={handleSelectSlot}
+          onCreateNewInSlot={handleCreateNewInSlot}
+          onDeleteSlot={handleDeleteSlot}
+          onBackToTitle={() => setGameState('title')}
+        />
+      )}
+
+      {/* Character Creation Modal when creating in a slot */}
+      {creatingSlotId !== null && (
         <CharacterCreationModal
+          slotId={creatingSlotId}
+          currentClassId={null}
+          currentName=""
+          isInitialCreation={true}
+          onConfirm={handleCommitClass}
+          onCancel={() => setCreatingSlotId(null)}
+        />
+      )}
+
+      {/* Fallback Single-Class Commitment Modal (if playing without class) */}
+      {(!playerClassId && gameState === 'playing' && creatingSlotId === null) && (
+        <CharacterCreationModal
+          slotId={activeSlotId}
           currentClassId={playerClassId}
           currentName={playerName}
           isInitialCreation={true}
@@ -2683,6 +2818,7 @@ export default function App() {
         />
       )}
 
+      {/* Pause & Victory Status Modal */}
       {(gameState === 'paused' || gameState === 'gameover') && (
         <StatusModal
           mode={gameState}
@@ -2692,6 +2828,9 @@ export default function App() {
           onResume={() => setGameState('playing')}
           onReturnTitle={() => setGameState('title')}
           onRestart={startGame}
+          onSwitchCharacter={() => {
+            setGameState('character_select');
+          }}
         />
       )}
     </div>

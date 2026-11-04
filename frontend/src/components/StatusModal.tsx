@@ -9,6 +9,7 @@ interface StatusModalProps {
   onResume: () => void;
   onRestart: () => void;
   onReturnTitle: () => void;
+  onSwitchCharacter?: () => void;
 }
 
 export const StatusModal: React.FC<StatusModalProps> = ({
@@ -20,6 +21,7 @@ export const StatusModal: React.FC<StatusModalProps> = ({
   onResume,
   onRestart,
   onReturnTitle,
+  onSwitchCharacter,
 }) => {
   const currentDamage = Math.round(
     typeof playerTotalDamage === 'number'
@@ -70,6 +72,15 @@ export const StatusModal: React.FC<StatusModalProps> = ({
               >
                 TIẾP TỤC RÈN ĐÚC
               </button>
+              {onSwitchCharacter && (
+                <button
+                  type="button"
+                  onClick={onSwitchCharacter}
+                  className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-cyan-500/30 font-tech font-semibold text-sm cursor-pointer transition-colors"
+                >
+                  ĐỔI TU SĨ (3 SLOTS)
+                </button>
+              )}
               <button
                 type="button"
                 onClick={onRestart}

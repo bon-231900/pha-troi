@@ -48,6 +48,7 @@ export interface TopBossHeaderProps {
   onGoogleLogin?: () => void;
   onGoogleLogout?: () => void;
   playerClass?: PlayerClassMeta;
+  onSwitchCharacter?: () => void;
 }
 
 export const TopBossHeader: React.FC<TopBossHeaderProps> = ({
@@ -92,6 +93,7 @@ export const TopBossHeader: React.FC<TopBossHeaderProps> = ({
   onGoogleLogin,
   onGoogleLogout,
   playerClass,
+  onSwitchCharacter,
 }) => {
   const safeMax = Math.max(1, bossMaxHp);
   const safeHp = Math.max(0, Math.min(safeMax, bossHp));
@@ -262,15 +264,20 @@ export const TopBossHeader: React.FC<TopBossHeaderProps> = ({
 
       {/* 3. Right Floating Capsule: Utilities + Toggle Lò Rèn */}
       <div className="pointer-events-auto flex items-center gap-1.5">
-        {/* Player Class / Sect Commitment Badge (Co dinh can co - Khong cho doi phai) */}
+        {/* Player Class / Sect Commitment Badge -> Clickable to Switch Characters (3 Slots) */}
         {playerClass && (
-          <div
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-tech font-bold shadow-md border select-none ${playerClass.badgeBg}`}
-            title={`Hệ Phái: ${playerClass.name} - ${playerClass.sectTitle} (Độc Nhất Căn Cơ)`}
+          <button
+            type="button"
+            onClick={onSwitchCharacter}
+            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-tech font-bold shadow-lg border cursor-pointer hover:brightness-125 transition-all active:scale-95 ${playerClass.badgeBg}`}
+            title="Bấm để Đổi Tu Sĩ / Quản lý 3 Slot & Trải nghiệm Bệ Đá Bát Quái Nện Thử Búa"
           >
             <span>{playerClass.icon}</span>
-            <span className="hidden md:inline font-bold">{playerClass.name}</span>
-          </div>
+            <span className="font-bold">{playerClass.name}</span>
+            <span className="text-[10px] text-amber-300 ml-1 border-l border-amber-500/40 pl-1.5 font-bold">
+              ĐỔI TU SĨ ▾
+            </span>
+          </button>
         )}
 
         {/* Google Cloud Save Button or User Profile */}
