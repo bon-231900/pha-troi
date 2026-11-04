@@ -62,7 +62,7 @@ def deploy():
         f"git remote add origin {repo_remote}",
         "git checkout -B gh-pages",
         "git add -A",
-        'git commit -m "Visual Upgrade: AAA Xianxia Title Screen with Original Calligraphy Logo & 16:9 Celestial Splash Art"',
+        'git commit -m "fix(gameplay): Spacebar hammer strike capture listener, slot auto-start and resilient input handling"',
         "git push -u origin gh-pages --force"
     ]
     full_cmd = " && ".join(commands)

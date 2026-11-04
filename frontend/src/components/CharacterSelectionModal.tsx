@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { CharacterProfile, MAX_CHARACTER_SLOTS } from '../game/characterSlots';
 import { PLAYER_CLASSES, PlayerClassId } from '../game/rules';
 import { soundEngine } from '../game/audio';
@@ -87,6 +87,39 @@ export const CharacterSelectionModal: React.FC<CharacterSelectionModalProps> = (
     const days = Math.floor(hours / 24);
     return `${days} ngày trước`;
   };
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const isInput =
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement ||
+        (e.target instanceof HTMLElement && e.target.isContentEditable);
+      if (isInput) return;
+
+      const isSpace =
+        e.code === 'Space' ||
+        e.key === ' ' ||
+        e.key === 'Spacebar' ||
+        e.keyCode === 32 ||
+        e.which === 32;
+      const isEnter = e.code === 'Enter' || e.key === 'Enter';
+
+      if (isSpace || isEnter) {
+        e.preventDefault();
+        e.stopPropagation();
+        const slotNumber = (selectedSlotIndex + 1) as 1 | 2 | 3;
+        const profile = slots[selectedSlotIndex];
+        if (profile) {
+          handleEnterGame(slotNumber);
+        } else {
+          onCreateNewInSlot(slotNumber);
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown, true);
+    return () => window.removeEventListener('keydown', handleKeyDown, true);
+  }, [selectedSlotIndex, slots, onCreateNewInSlot]);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-slate-950/92 backdrop-blur-2xl select-none overflow-y-auto">

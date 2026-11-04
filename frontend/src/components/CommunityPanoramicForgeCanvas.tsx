@@ -514,10 +514,13 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
     };
 
     Object.values(assets).forEach((asset) => {
-      asset.img.src = asset.src;
       asset.img.onload = () => {
         asset.loaded = true;
       };
+      asset.img.src = asset.src;
+      if (asset.img.complete) {
+        asset.loaded = true;
+      }
     });
 
     let viewW = Math.max(320, container.clientWidth || window.innerWidth);
@@ -1585,13 +1588,28 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
   return (
     <div
       ref={containerRef}
-      className={`relative w-full h-full overflow-hidden select-none ${className}`}
+      tabIndex={0}
+      onClick={handleCanvasClick}
+      onTouchStart={handleCanvasClick}
+      onKeyDown={(e) => {
+        const isSpace =
+          e.code === 'Space' ||
+          e.key === ' ' ||
+          e.key === 'Spacebar' ||
+          e.keyCode === 32 ||
+          e.which === 32;
+        const isQ = e.code === 'KeyQ' || e.key === 'q' || e.key === 'Q';
+        if (isSpace || isQ) {
+          e.preventDefault();
+          e.stopPropagation();
+          onHeroStrikeActionRef.current?.(false);
+        }
+      }}
+      className={`relative w-full h-full overflow-hidden select-none outline-none ${className}`}
     >
       <canvas
         ref={canvasRef}
         data-testid="panoramic-2d-canvas"
-        onClick={handleCanvasClick}
-        onTouchStart={handleCanvasClick}
         tabIndex={0}
         className="block w-full h-full cursor-pointer outline-none"
       />

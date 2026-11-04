@@ -245,9 +245,6 @@ export const InteractiveAltarPreview = forwardRef<InteractiveAltarPreviewRef, In
     const altarImg = new Image();
     const heroImg = new Image();
 
-    altarImg.src = `${cleanBase}assets/art/altar_platform.webp`;
-    heroImg.src = `${cleanBase}assets/art/hero_spritesheet_strip.webp`;
-
     let loadedCount = 0;
     const onAssetLoad = () => {
       loadedCount++;
@@ -260,6 +257,12 @@ export const InteractiveAltarPreview = forwardRef<InteractiveAltarPreviewRef, In
 
     altarImg.onload = onAssetLoad;
     heroImg.onload = onAssetLoad;
+
+    altarImg.src = `${cleanBase}assets/art/altar_platform.webp`;
+    heroImg.src = `${cleanBase}assets/art/hero_spritesheet_strip.webp`;
+
+    if (altarImg.complete) onAssetLoad();
+    if (heroImg.complete) onAssetLoad();
 
     return () => {
       active = false;
@@ -407,22 +410,31 @@ export const InteractiveAltarPreview = forwardRef<InteractiveAltarPreviewRef, In
     triggerStrike: executeStrike,
   }));
 
-  // Keyboard Space listener (ignores if focused on input)
+  // Keyboard Space listener (capture mode, supports all space variants)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.code === 'Space') {
-        const target = e.target as HTMLElement | null;
-        if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA')) {
-          return; // Let typing spaces work in name input
-        }
-        e.preventDefault();
-        executeStrike();
+      const isSpace =
+        e.code === 'Space' ||
+        e.key === ' ' ||
+        e.key === 'Spacebar' ||
+        e.keyCode === 32 ||
+        e.which === 32;
+
+      if (!isSpace) return;
+
+      const target = e.target as HTMLElement | null;
+      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA')) {
+        return; // Let typing spaces work in name input
       }
+
+      e.preventDefault();
+      e.stopPropagation();
+      executeStrike();
     };
 
-    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keydown', handleKeyDown, true);
     return () => {
-      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keydown', handleKeyDown, true);
     };
   }, [executeStrike]);
 

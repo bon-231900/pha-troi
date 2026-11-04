@@ -617,6 +617,11 @@ export default function App() {
   const mpClientRef = useRef<MultiplayerClient | null>(null);
   const realtimeRoomRef = useRef<RealtimeRoomClient | null>(null);
   const lastHeroStrikeTimeRef = useRef<number>(0);
+  const gameStateRef = useRef(gameState);
+  useEffect(() => {
+    gameStateRef.current = gameState;
+  }, [gameState]);
+  const handleHeroStrikeRef = useRef<(forceGolden?: boolean) => void>(() => {});
   const [onlinePeers, setOnlinePeers] = useState<PeerPresence[]>([]);
 
   const appendCombatLog = useCallback(
@@ -1459,8 +1464,9 @@ export default function App() {
   const handleHeroStrike = useCallback(
     (forceGolden = false) => {
       soundEngine.unlockAudio();
-      if (gameState !== 'playing') {
-        if (gameState === 'title') startGame();
+      const currentSt = gameStateRef.current;
+      if (currentSt !== 'playing') {
+        if (currentSt === 'title') startGame();
         return;
       }
 
@@ -2422,6 +2428,17 @@ export default function App() {
     realtimeRoomRef.current?.broadcastChat(content);
   }, []);
 
+  useEffect(() => {
+    handleHeroStrikeRef.current = handleHeroStrike;
+  }, [handleHeroStrike]);
+
+  useEffect(() => {
+    if (gameState === 'playing') {
+      window.focus();
+      if (document.body) document.body.focus();
+    }
+  }, [gameState]);
+
   // Keyboard Shortcuts: Space, Q/W/E/R, P/Esc, M, [ and ]
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -2440,17 +2457,39 @@ export default function App() {
 
       const isQ = e.code === 'KeyQ' || e.key === 'q' || e.key === 'Q';
 
-      // Chống nuốt phím Space khi đang focus vào button sau khi click
-      if (isSpace && document.activeElement instanceof HTMLElement && document.activeElement !== document.body) {
-        if (document.activeElement.tagName === 'BUTTON' || document.activeElement.tagName === 'A') {
-          document.activeElement.blur();
+      // Chống nuốt phím Space: Ngăn chặn cuộn trang & giải phóng focus khỏi nút bấm
+      if (isSpace) {
+        e.preventDefault();
+        if (document.activeElement instanceof HTMLElement && document.activeElement !== document.body) {
+          if (document.activeElement.tagName === 'BUTTON' || document.activeElement.tagName === 'A') {
+            document.activeElement.blur();
+          }
         }
       }
 
-      if (gameState === 'title') {
+      const currentSt = gameStateRef.current;
+
+      if (currentSt === 'title') {
         if (isSpace || e.code === 'Enter' || e.key === 'Enter') {
           e.preventDefault();
+          e.stopPropagation();
           setGameState('character_select');
+        }
+        return;
+      }
+
+      if (currentSt === 'character_select') {
+        if (isSpace || e.code === 'Enter' || e.key === 'Enter') {
+          if (creatingSlotId !== null) return;
+          e.preventDefault();
+          e.stopPropagation();
+          const targetSlot = activeSlotId || 1;
+          const profile = characterSlots[targetSlot - 1];
+          if (profile) {
+            handleSelectSlot(targetSlot);
+          } else {
+            handleCreateNewInSlot(targetSlot);
+          }
         }
         return;
       }
@@ -2491,11 +2530,12 @@ export default function App() {
         return;
       }
 
-      if (gameState !== 'playing') return;
+      if (currentSt !== 'playing') return;
 
       if (isSpace || isQ) {
         e.preventDefault();
-        handleHeroStrike(false);
+        e.stopPropagation();
+        handleHeroStrikeRef.current(false);
       } else if (e.code === 'KeyW' || e.key === 'w' || e.key === 'W') {
         e.preventDefault();
         handleCastClassSkill('W');
@@ -2508,9 +2548,21 @@ export default function App() {
       }
     };
 
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
-  }, [gameState, startGame, handleHeroStrike, handleCastClassSkill, toggleHudVisibility]);
+    window.addEventListener('keydown', onKeyDown, true);
+    document.addEventListener('keydown', onKeyDown, true);
+    return () => {
+      window.removeEventListener('keydown', onKeyDown, true);
+      document.removeEventListener('keydown', onKeyDown, true);
+    };
+  }, [
+    activeSlotId,
+    characterSlots,
+    creatingSlotId,
+    handleSelectSlot,
+    handleCreateNewInSlot,
+    handleCastClassSkill,
+    toggleHudVisibility,
+  ]);
 
   const leaderboard: LeaderboardEntry[] = [
     ...INITIAL_RIVALS,
@@ -2642,10 +2694,14 @@ export default function App() {
 
             <button
               type="button"
-              onClick={() => handleHeroStrike(false)}
+              onClick={(e) => {
+                (e.currentTarget as HTMLElement)?.blur();
+                handleHeroStrike(false);
+              }}
+              onFocus={(e) => (e.currentTarget as HTMLElement)?.blur()}
               className="px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl bg-gradient-to-r from-amber-500/20 via-orange-500/20 to-amber-500/20 hover:from-amber-500/30 hover:to-amber-500/30 border border-amber-500/50 text-xs sm:text-sm font-tech font-bold text-amber-300 tracking-wider shadow-lg hover:border-amber-400 transition-all cursor-pointer active:scale-95 whitespace-nowrap"
             >
-              NỆN BÚA [SPACE]
+              🔨 NỆN BÚA [SPACE]
             </button>
           </>
         )}

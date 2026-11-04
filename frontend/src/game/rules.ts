@@ -4122,7 +4122,7 @@ export function evaluateCinematicPostFx(
 export const PANORAMA_SKY_RATIO = 0.65;
 export const PANORAMA_GROUND_RATIO = 0.35;
 export const HERO_STRIKE_DOWNSTROKE_SEC = 0.1;
-export const HERO_STRIKE_TOTAL_SEC = 0.32;
+export const HERO_STRIKE_TOTAL_SEC = 0.42;
 export const SCREEN_SHAKE_DURATION_SEC = 0.15;
 export const PANORAMA_BOSS_MAX_HP = 10000;
 
