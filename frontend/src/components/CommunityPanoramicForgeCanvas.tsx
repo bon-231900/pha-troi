@@ -433,6 +433,8 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
   const resetClosureRef = useRef<(() => void) | null>(null);
   const triggerRemotePeerStrikeClosureRef = useRef<((payload: RemotePeerStrikePayload) => void) | null>(null);
   const updateRemotePeersClosureRef = useRef<((peers: RemotePeerInfo[]) => void) | null>(null);
+  const spawnTouchRippleClosureRef = useRef<((x: number, y: number) => void) | null>(null);
+  const lastTouchTimeRef = useRef<number>(0);
 
   useImperativeHandle(
     ref,
@@ -587,6 +589,31 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
     const shockwaves: Shockwave2D[] = [];
     const floatingTexts: FloatingCombatText2D[] = [];
 
+    interface TouchRipple2D {
+      x: number;
+      y: number;
+      radius: number;
+      maxRadius: number;
+      alpha: number;
+      color: string;
+    }
+    const touchRipples: TouchRipple2D[] = [];
+
+    spawnTouchRippleClosureRef.current = (x: number, y: number) => {
+      const currentStanceKey = activeStanceRef.current;
+      const sect = STANCE_TO_SECT[currentStanceKey] || 'thunder';
+      const sc = SECT_COLORS[sect] || SECT_COLORS.thunder;
+      touchRipples.push({
+        x,
+        y,
+        radius: 10,
+        maxRadius: 65,
+        alpha: 0.85,
+        color: sc.glow,
+      });
+      hapticEngine.playStrike();
+    };
+
     const sparkPool: SparkParticle2D[] = Array.from({ length: MAX_SPARK_POOL }, () => ({
       active: false,
       x: 0,
@@ -665,9 +692,10 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
       flashIntensity = forceGolden ? 1.4 : 0.95;
       rhythmPhase = 0.05;
 
-      const groundY = viewH * 0.825;
+      const isPortrait = viewW < viewH;
+      const groundY = isPortrait ? viewH * 0.65 : (viewH < 500 ? viewH * 0.81 : viewH * 0.825);
+      const renderScale = isPortrait ? Math.min(0.48, Math.max(0.36, viewW / 760)) : 0.38;
       const centerX = viewW * 0.5;
-      const renderScale = 0.38;
       const heroFootX = centerX - 14;
       const spriteLeft = heroFootX - (360 * renderScale) * 0.46;
       const spriteTop = groundY - (440 * renderScale);
@@ -713,7 +741,8 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
       isGolden: boolean
     ) => {
       const heroX = viewW * 0.5;
-      const groundY = viewH * 0.825;
+      const isPortrait = viewW < viewH;
+      const groundY = isPortrait ? viewH * 0.65 : (viewH < 500 ? viewH * 0.81 : viewH * 0.825);
 
       floatingTexts.push({
         id: textIdCounter++,
@@ -989,7 +1018,9 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
           ctx.translate(sx, sy);
         }
 
-        const groundY = viewH * 0.825;
+        const isPortrait = viewW < viewH;
+        const groundY = isPortrait ? viewH * 0.65 : (viewH < 500 ? viewH * 0.81 : viewH * 0.825);
+        const renderScale = isPortrait ? Math.min(0.48, Math.max(0.36, viewW / 760)) : 0.38;
         const centerX = viewW * 0.5;
 
         // Determine current Sky State (1 to 6) from bossHp
@@ -1358,7 +1389,7 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
         // ---------------------------------------------------------------------
         if (assets.mainAltar.loaded) {
           const aImg = assets.mainAltar.img;
-          const aW = Math.min(270, viewW * 0.25);
+          const aW = isPortrait ? Math.min(260, viewW * 0.58) : Math.min(270, viewW * 0.25);
           const aH = aW * (aImg.height / aImg.width);
           const aX = centerX - aW * 0.5 - currentMouseX * 56;
           const aY = groundY - aH * 0.22 - currentMouseY * 16;
@@ -1398,7 +1429,6 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
 
           const FRAME_W = 360;
           const FRAME_H = 480;
-          const renderScale = 0.38;
           const dw = FRAME_W * renderScale;
           const dh = FRAME_H * renderScale;
           const baseLineY = 440 * renderScale;
@@ -1589,8 +1619,27 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
     <div
       ref={containerRef}
       tabIndex={0}
-      onClick={handleCanvasClick}
-      onTouchStart={handleCanvasClick}
+      onTouchStart={(e) => {
+        lastTouchTimeRef.current = performance.now();
+        const touch = e.touches[0] || e.changedTouches[0];
+        if (touch && containerRef.current) {
+          const rect = containerRef.current.getBoundingClientRect();
+          const x = touch.clientX - rect.left;
+          const y = touch.clientY - rect.top;
+          spawnTouchRippleClosureRef.current?.(x, y);
+        }
+        handleCanvasClick();
+      }}
+      onClick={(e) => {
+        if (performance.now() - lastTouchTimeRef.current < 500) return;
+        if (containerRef.current) {
+          const rect = containerRef.current.getBoundingClientRect();
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+          spawnTouchRippleClosureRef.current?.(x, y);
+        }
+        handleCanvasClick();
+      }}
       onKeyDown={(e) => {
         const isSpace =
           e.code === 'Space' ||

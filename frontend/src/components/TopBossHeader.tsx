@@ -106,8 +106,121 @@ export const TopBossHeader: React.FC<TopBossHeaderProps> = ({
   return (
     <header
       aria-label="Trạng thái Vòm Trời Thiên Cấm"
-      className="pointer-events-none fixed top-2 sm:top-2.5 inset-x-0 z-20 px-2 sm:px-5 flex items-center justify-between gap-2 select-none"
+      className="pointer-events-none fixed top-1 sm:top-2.5 inset-x-0 z-20 px-2 sm:px-5 pt-safe flex flex-col items-center select-none"
     >
+      {/* ------------------------------------------------------------- */}
+      {/* MOBILE COMPACT HEADER (< 768px): Zero-Overflow, 1-Hand Friendly */}
+      {/* ------------------------------------------------------------- */}
+      <div className="flex md:hidden flex-col gap-1 w-full pointer-events-auto bg-[#070A14]/95 border border-amber-500/40 px-2.5 py-1.5 rounded-2xl shadow-2xl backdrop-blur-md">
+        {/* Row 1: Actions Left + Boss HP Center + Actions Right */}
+        <div className="flex items-center justify-between gap-2">
+          {/* Left Actions: Thế Trận + Đổi Tu Sĩ */}
+          <div className="flex items-center gap-1 shrink-0">
+            {onToggleLeftPanel && (
+              <button
+                type="button"
+                onClick={onToggleLeftPanel}
+                className={`p-1.5 rounded-lg border text-xs font-tech font-bold cursor-pointer transition-all ${
+                  leftPanelOpen
+                    ? 'bg-amber-400 text-slate-950 border-amber-300'
+                    : 'bg-slate-900/90 border-amber-500/30 text-amber-300'
+                }`}
+                title="Bật/Tắt Thế Trận & Cống Hiến"
+              >
+                <Shield className="w-3.5 h-3.5 text-cyan-400" />
+              </button>
+            )}
+
+            {playerClass && onSwitchCharacter && (
+              <button
+                type="button"
+                onClick={onSwitchCharacter}
+                className={`flex items-center gap-1 px-1.5 py-1 rounded-lg text-[10px] font-tech font-bold border cursor-pointer active:scale-95 ${playerClass.badgeBg}`}
+                title="Đổi Tu Sĩ (3 Slots)"
+              >
+                <span>{playerClass.icon}</span>
+                <span className="truncate max-w-[60px]">{playerClass.name}</span>
+              </button>
+            )}
+          </div>
+
+          {/* Center: Boss Title & HP % */}
+          <div className="flex-1 min-w-0 flex flex-col items-center justify-center">
+            <div className="flex items-center gap-1 text-[10px] font-display font-bold text-amber-200 truncate max-w-full justify-center">
+              <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse shrink-0" />
+              <span className="truncate">{bossName}</span>
+            </div>
+            <div className="text-[10px] font-tech font-bold text-red-400 tabular-nums">
+              {hpPct.toFixed(1)}% <span className="text-slate-400 font-normal">({safeHp >= 1e9 ? `${(safeHp / 1e9).toFixed(2)}B` : `${(safeHp / 1e6).toFixed(1)}M`} HP)</span>
+            </div>
+          </div>
+
+          {/* Right Actions: Mute + Lò Rèn */}
+          <div className="flex items-center gap-1 shrink-0">
+            <button
+              type="button"
+              onClick={onToggleMute}
+              className="p-1.5 rounded-lg bg-slate-900/90 border border-slate-800 text-slate-300 cursor-pointer"
+              title={muted ? 'Bật âm thanh' : 'Tắt âm thanh'}
+            >
+              {muted ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
+            </button>
+
+            {onToggleRightPanel && (
+              <button
+                type="button"
+                onClick={onToggleRightPanel}
+                className={`flex items-center gap-1 px-2 py-1 rounded-lg border text-xs font-tech font-bold cursor-pointer transition-all shadow-md ${
+                  rightPanelOpen
+                    ? 'bg-amber-400 text-slate-950 border-amber-300'
+                    : 'bg-amber-500/20 border-amber-500/60 text-amber-300'
+                }`}
+                title="Lò Rèn, Vũ Khí & Thần Hồn"
+              >
+                <Hammer className="w-3.5 h-3.5 text-amber-400" />
+                <span className="text-[10px] font-bold">Lò Rèn</span>
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Row 2: Sleek 3px HP Track */}
+        <div className="relative h-1.5 w-full bg-[#0D1322] border border-amber-500/30 rounded-full overflow-hidden">
+          <div
+            className="absolute inset-y-0 left-0 bg-amber-300/50 transition-all duration-300"
+            style={{ width: `${trailPct}%` }}
+          />
+          <div
+            className="absolute inset-y-0 left-0 bg-gradient-to-r from-red-600 via-orange-500 to-amber-400 transition-all duration-150"
+            style={{ width: `${hpPct}%` }}
+          />
+        </div>
+
+        {/* Row 3: World Raid Mini Ticker */}
+        <div className="flex items-center justify-between text-[9px] font-tech text-slate-400 pt-0.5 tabular-nums">
+          <span>
+            {isShieldBroken ? (
+              <b className="text-cyan-300">VỠ GIÁP ({shieldBreakTimeLeft.toFixed(0)}s)</b>
+            ) : (
+              <span>Giáp: <b className="text-purple-300">{activeArmorBreakPoints}</b>/{armorBreakMaxPoints}</span>
+            )}
+          </span>
+          <span>
+            Lò: <b className="text-amber-300">{serverFurnaceHeat}°C</b>
+          </span>
+          <span>
+            Đe: <b className="text-emerald-300">{serverAnvilHp}</b>/10k
+          </span>
+          <span className="text-amber-300 font-bold">
+            {formatInteger(raidContributionScore)} RCS
+          </span>
+        </div>
+      </div>
+
+      {/* ------------------------------------------------------------- */}
+      {/* DESKTOP FULL HEADER (>= 768px): 3 Independent Floating Capsules */}
+      {/* ------------------------------------------------------------- */}
+      <div className="hidden md:flex items-center justify-between gap-2 w-full">
       {/* 1. Left Floating Capsule: Toggle Thế Trận & Online Counter */}
       <div className="pointer-events-auto flex items-center gap-1.5">
         {onToggleLeftPanel && (
@@ -366,6 +479,7 @@ export const TopBossHeader: React.FC<TopBossHeaderProps> = ({
             <span className="hidden sm:inline">Lò Rèn</span>
           </button>
         )}
+      </div>
       </div>
     </header>
   );

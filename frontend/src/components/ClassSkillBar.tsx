@@ -6,6 +6,7 @@ import {
   OVERDRIVE_TOTAL_CAP,
 } from '../game/rules';
 import { Zap, Flame, Mountain, Music, Sparkles, Shield, Clock, AlertCircle } from 'lucide-react';
+import { hapticEngine } from '../game/haptics';
 
 interface ClassSkillBarProps {
   playerClass: PlayerClassMeta;
@@ -46,7 +47,7 @@ export const ClassSkillBar: React.FC<ClassSkillBarProps> = ({
 
   return (
     <div
-      className={`fixed bottom-3 left-3 sm:left-5 z-20 flex flex-col gap-1.5 pointer-events-auto max-w-[320px] sm:max-w-[400px] transition-all duration-300 ${
+      className={`fixed bottom-2 inset-x-2 sm:inset-x-auto sm:left-5 sm:bottom-3 z-20 flex flex-col gap-1.5 pointer-events-auto sm:max-w-[420px] pb-safe transition-all duration-300 ${
         hudVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6 pointer-events-none'
       }`}
     >
@@ -73,12 +74,18 @@ export const ClassSkillBar: React.FC<ClassSkillBarProps> = ({
         {/* SKILL [Q]: Core Rhythm Stance (Clickable button to strike anvil!) */}
         <button
           type="button"
-          onClick={onHeroStrike}
+          onClick={() => {
+            hapticEngine.playStrike();
+            onHeroStrike?.();
+          }}
           className="relative p-1.5 sm:p-2 rounded-xl bg-slate-900/90 border border-amber-400/80 shadow-md flex flex-col items-center justify-between text-center select-none cursor-pointer hover:border-amber-300 hover:brightness-125 active:scale-95 transition-all"
           title={`[Q] ${playerClass.skills.Q.name}: Bấm hoặc nhấn SPACE để gõ đe`}
         >
           <div className="w-full flex items-center justify-between text-[9px] font-tech text-amber-300">
-            <span className="font-bold bg-amber-400/20 px-1 rounded">Q / SPACE</span>
+            <span className="font-bold bg-amber-400/20 px-1 rounded">
+              <span className="hidden sm:inline">Q / SPACE</span>
+              <span className="sm:hidden">🔨 GÕ ĐE</span>
+            </span>
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
           </div>
 

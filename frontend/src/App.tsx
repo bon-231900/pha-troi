@@ -70,6 +70,7 @@ import {
   QUENCH_OPTIONS,
 } from './game/rules';
 import { soundEngine } from './game/audio';
+import { hapticEngine } from './game/haptics';
 import { safeStorage } from './game/storage';
 import { TitleScreenModal } from './components/TitleScreenModal';
 import { TopBossHeader } from './components/TopBossHeader';
@@ -1546,6 +1547,7 @@ export default function App() {
         activeStance,
         combo >= 5 || overdriveActive
       );
+      hapticEngine.playStrike(outcome.isCrit, isGoldenHit);
 
       // 4. Update Anvil Heat (Hỏa Hầu)
       setAnvilHeat((prev) => Math.min(MAX_ANVIL_HEAT, prev + outcome.heatGain));
@@ -2680,7 +2682,7 @@ export default function App() {
       />
 
       {/* 3B. Bottom-Right Controls: Primary Strike Trigger + Toggle HUD Button */}
-      <div className="fixed bottom-3 right-3 sm:right-5 z-20 flex items-center gap-2 pointer-events-auto">
+      <div className="hidden sm:flex fixed bottom-3 right-3 sm:right-5 z-20 items-center gap-2 pointer-events-auto">
         {hudVisible && (
           <>
             <button
@@ -2775,7 +2777,7 @@ export default function App() {
 
       {/* 5. SLIDE-OUT DRAWER 2 (RIGHT): NÂNG CẤP, THẦN HỒN & BẢNG VÀNG */}
       <div
-        className={`fixed inset-y-0 right-0 z-40 w-full sm:w-[400px] md:w-[440px] bg-slate-950/95 border-l border-amber-500/30 backdrop-blur-xl shadow-2xl transform transition-transform duration-300 ease-in-out flex flex-col ${
+        className={`fixed inset-y-0 right-0 z-40 w-full sm:w-[400px] md:w-[440px] bg-slate-950/95 border-l border-amber-500/30 backdrop-blur-xl shadow-2xl transform transition-transform duration-300 ease-in-out flex flex-col pt-safe pb-safe ${
           rightPanelOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
       >

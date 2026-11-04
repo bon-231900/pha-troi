@@ -1,0 +1,18 @@
+{
+  "name": "Phá Trời - The Celestial Forge",
+  "short_name": "Phá Trời",
+  "description": "Vạn Cổ Đúc Thần Đài · Webgame Tu Tiên Luyện Khí & Boss Raid Đỉnh Cao",
+  "start_url": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#060914",
+  "theme_color": "#060914",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
