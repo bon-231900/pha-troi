@@ -1,6 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  getItemRarityMeta,
+  getSalvageYield,
+  FLOOR_TIER_DROP_WEIGHTS,
+  rollLootDrop,
+  openWorldRaidClearChest,
+  ascendEquipmentTier,
+  getMaxInventorySlots,
+  generateProceduralItem,
   computeRaidContributionScore,
   CELESTIAL_VAULTS,
   judgeRhythmWave,
@@ -218,4 +226,66 @@ test('v3.1 World Raid mechanics compute correct RCS and vault 9 tiers', () => {
   const rcs = computeRaidContributionScore(100, 2, 5, 20);
   // 100 + 50,000 + 75,000 + 40 = 125,140
   assert.equal(rcs, 125140);
+});
+
+test('v3.2 MMORPG drop tables, 6 tiers (E -> S) and pity counter work deterministically', () => {
+// imports from rules.ts
+
+  // 1. Tiers verification
+  const metaE = getItemRarityMeta('common');
+  assert.equal(metaE.tier, 'E');
+  assert.equal(metaE.label, 'Tier E · Phàm Thiết');
+
+  const metaD = getItemRarityMeta('uncommon');
+  assert.equal(metaD.tier, 'D');
+  assert.equal(metaD.label, 'Tier D · Tinh Thiết');
+
+  const metaS = getItemRarityMeta('mythic');
+  assert.equal(metaS.tier, 'S');
+  assert.equal(metaS.label, 'Tier S · Thiên Đạo Thần Khí');
+
+  // 2. Salvage yields verification
+  const salvageS = getSalvageYield({ rarity: 'mythic' });
+  assert.equal(salvageS.ironDust, 1000);
+  assert.equal(salvageS.celestialStar, 1);
+  assert.equal(salvageS.tinhHoa, 20);
+
+  const salvageE = getSalvageYield({ rarity: 'common' });
+  assert.equal(salvageE.ironDust, 5);
+  assert.equal(salvageE.linhThach, 10);
+
+  // 3. Max inventory capacity expansion (24 -> 64)
+  assert.equal(getMaxInventorySlots(1), 24);
+  assert.equal(getMaxInventorySlots(5), 40);
+  assert.equal(getMaxInventorySlots(10), 60);
+
+  // 4. Pity counter: at 200 drops without Tier A+, guaranteed Tier A
+  const pityResult = rollLootDrop({
+    grade: 'PERFECT',
+    isShieldBreak: true,
+    anvilPityCount: 199,
+    vaultFloorId: 1
+  });
+  assert.ok(pityResult.item !== null);
+  assert.equal(pityResult.item.rarity, 'legendary');
+  assert.equal(pityResult.newPityCount, 0);
+  assert.equal(pityResult.isPityTriggered, true);
+
+  // 5. World Raid Clear Chest
+  const chestReward = openWorldRaidClearChest({
+    rank: 'S',
+    vaultFloorId: 3,
+    raidPityCount: 10,
+    playerStance: 'W'
+  });
+  assert.equal(chestReward.items.length, 5);
+  assert.equal(chestReward.ironDustReward, 600);
+  assert.equal(chestReward.raidPityGranted, 3);
+
+  // 6. Tier A -> Tier S Ascension
+  const itemA = generateProceduralItem({ minRarity: 'legendary' });
+  const itemS = ascendEquipmentTier(itemA);
+  assert.ok(itemS !== null);
+  assert.equal(itemS.rarity, 'mythic');
+  assert.ok(itemS.baseStatValue > itemA.baseStatValue);
 });

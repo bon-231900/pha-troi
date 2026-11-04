@@ -40,7 +40,10 @@ import {
   ItemRarity,
   INITIAL_EQUIPPED_SLOTS,
   MAX_INVENTORY_SLOTS,
+  getMaxInventorySlots,
   rollLootDrop,
+  openWorldRaidClearChest,
+  ascendEquipmentTier,
   getSalvageYield,
   getItemRarityMeta,
   calculateArsenalBonuses,
@@ -260,6 +263,56 @@ export default function App() {
       }
     } catch {}
     return 0; // Starts at 0 Tinh Hoa!
+  });
+  const [ironDust, setIronDust] = useState<number>(() => {
+    try {
+      const s = getInitialSaveString();
+      if (s) {
+        const parsed = JSON.parse(s);
+        if (typeof parsed.ironDust === 'number') return parsed.ironDust;
+      }
+    } catch {}
+    return 0;
+  });
+  const [celestialStars, setCelestialStars] = useState<number>(() => {
+    try {
+      const s = getInitialSaveString();
+      if (s) {
+        const parsed = JSON.parse(s);
+        if (typeof parsed.celestialStars === 'number') return parsed.celestialStars;
+      }
+    } catch {}
+    return 0;
+  });
+  const [anvilPityCount, setAnvilPityCount] = useState<number>(() => {
+    try {
+      const s = getInitialSaveString();
+      if (s) {
+        const parsed = JSON.parse(s);
+        if (typeof parsed.anvilPityCount === 'number') return parsed.anvilPityCount;
+      }
+    } catch {}
+    return 0;
+  });
+  const [raidPityCount, setRaidPityCount] = useState<number>(() => {
+    try {
+      const s = getInitialSaveString();
+      if (s) {
+        const parsed = JSON.parse(s);
+        if (typeof parsed.raidPityCount === 'number') return parsed.raidPityCount;
+      }
+    } catch {}
+    return 0;
+  });
+  const [autoSalvageTiers, setAutoSalvageTiers] = useState<{ tierE: boolean; tierD: boolean; tierC: boolean }>(() => {
+    try {
+      const s = getInitialSaveString();
+      if (s) {
+        const parsed = JSON.parse(s);
+        if (parsed.autoSalvageTiers) return parsed.autoSalvageTiers;
+      }
+    } catch {}
+    return { tierE: false, tierD: false, tierC: false };
   });
   const [upgrades, setUpgrades] = useState<ForgeUpgrade[]>(() => {
     try {
@@ -864,6 +917,11 @@ export default function App() {
       const parsed = JSON.parse(saveJsonStr);
       if (typeof parsed.linhThach === 'number') setLinhThach(parsed.linhThach);
       if (typeof parsed.tinhHoa === 'number') setTinhHoa(parsed.tinhHoa);
+      if (typeof parsed.ironDust === 'number') setIronDust(parsed.ironDust);
+      if (typeof parsed.celestialStars === 'number') setCelestialStars(parsed.celestialStars);
+      if (typeof parsed.anvilPityCount === 'number') setAnvilPityCount(parsed.anvilPityCount);
+      if (typeof parsed.raidPityCount === 'number') setRaidPityCount(parsed.raidPityCount);
+      if (parsed.autoSalvageTiers) setAutoSalvageTiers(parsed.autoSalvageTiers);
       if (Array.isArray(parsed.upgrades)) setUpgrades(parsed.upgrades);
       if (Array.isArray(parsed.spiritNodes)) setSpiritNodes(parsed.spiritNodes);
       if (Array.isArray(parsed.stanceSkills)) setStanceSkills(parsed.stanceSkills);
@@ -886,6 +944,11 @@ export default function App() {
   const resetToFreshCharacter = useCallback(() => {
     setLinhThach(0);
     setTinhHoa(0);
+    setIronDust(0);
+    setCelestialStars(0);
+    setAnvilPityCount(0);
+    setRaidPityCount(0);
+    setAutoSalvageTiers({ tierE: false, tierD: false, tierC: false });
     setUpgrades(INITIAL_UPGRADES);
     setSpiritNodes(INITIAL_SPIRIT_NODES);
     setStanceSkills(INITIAL_STANCE_SKILLS);
@@ -910,6 +973,11 @@ export default function App() {
           bossHp,
           linhThach,
           tinhHoa,
+          ironDust,
+          celestialStars,
+          anvilPityCount,
+          raidPityCount,
+          autoSalvageTiers,
           upgrades,
           spiritNodes,
           stanceSkills,
@@ -953,6 +1021,11 @@ export default function App() {
           bossHp: BOSS_FLOOR_1_MAX_HP,
           linhThach: 0,
           tinhHoa: 0,
+          ironDust: 0,
+          celestialStars: 0,
+          anvilPityCount: 0,
+          raidPityCount: 0,
+          autoSalvageTiers: { tierE: false, tierD: false, tierC: false },
           upgrades: INITIAL_UPGRADES,
           spiritNodes: INITIAL_SPIRIT_NODES,
           stanceSkills: INITIAL_STANCE_SKILLS,
@@ -1014,6 +1087,11 @@ export default function App() {
           bossHp,
           linhThach,
           tinhHoa,
+          ironDust,
+          celestialStars,
+          anvilPityCount,
+          raidPityCount,
+          autoSalvageTiers,
           upgrades,
           spiritNodes,
           stanceSkills,
@@ -1519,36 +1597,64 @@ export default function App() {
           );
         }
 
-        // 9. Procedural ARPG Loot Drop Check
-        const droppedItem = rollLootDrop(
+        // 9. Procedural ARPG Loot Drop Check with MMORPG Drop Table & Dual Pity
+        const dropResult = rollLootDrop({
           grade,
-          outcome.triggeredOverdrive || overdriveActive,
-          isShieldBroken
-        );
-        if (droppedItem) {
-          setInventory((prevInv) => {
-            if (prevInv.length >= MAX_INVENTORY_SLOTS) {
-              appendCombatLog(
-                `⚠️ [TÚI ĐỒ ĐẦY] Rơi [${droppedItem.name}] nhưng rương đã kín chỗ (${MAX_INVENTORY_SLOTS}/${MAX_INVENTORY_SLOTS})! Hãy phân giải bớt.`,
-                'red'
-              );
-              return prevInv;
-            }
-            const rMeta = getItemRarityMeta(droppedItem.rarity);
-            soundEngine.playGlobalBurstFanfare();
-            canvasHandleRef.current?.spawnCombatText(
-              `🎁 RƠI ${rMeta.label.toUpperCase()}!`,
-              droppedItem.name,
-              rMeta.hex,
-              '#FFFFFF',
-              true
-            );
+          isOverdrive: outcome.triggeredOverdrive || overdriveActive,
+          isShieldBreak: isShieldBroken,
+          magicFindPct: arsenalBonuses.magicFindPct,
+          vaultFloorId: currentVaultId,
+          anvilPityCount,
+        });
+
+        if (dropResult.newPityCount !== anvilPityCount) {
+          setAnvilPityCount(dropResult.newPityCount);
+        }
+
+        if (dropResult.item) {
+          const droppedItem = dropResult.item;
+          const rMeta = getItemRarityMeta(droppedItem.rarity);
+
+          // Auto-salvage check
+          const shouldAutoSalvage =
+            (droppedItem.rarity === 'common' && autoSalvageTiers.tierE) ||
+            (droppedItem.rarity === 'uncommon' && autoSalvageTiers.tierD) ||
+            (droppedItem.rarity === 'rare' && autoSalvageTiers.tierC);
+
+          if (shouldAutoSalvage) {
+            const salvage = getSalvageYield(droppedItem);
+            setLinhThach((lt) => lt + salvage.linhThach);
+            setIronDust((d) => d + salvage.ironDust);
+            if (salvage.tinhHoa > 0) setTinhHoa((th) => th + salvage.tinhHoa);
             appendCombatLog(
-              `🎁 [RƠI TRANG BỊ] Bạn vừa nhặt được [${droppedItem.name}] (${rMeta.label})! Đã chuyển vào Túi Đồ.`,
-              droppedItem.rarity === 'mythic' || droppedItem.rarity === 'legendary' ? 'gold' : 'cyan'
+              `⚡ [TỰ ĐỘNG NUNG] Rơi [${droppedItem.name}] [Tier ${rMeta.tier}] -> Tự nung ra +${salvage.ironDust} Bụi Thiết, +${salvage.linhThach} LT!`,
+              'cyan'
             );
-            return [droppedItem, ...prevInv];
-          });
+          } else {
+            const currentCapacity = getMaxInventorySlots(forgerRank.tier);
+            setInventory((prevInv) => {
+              if (prevInv.length >= currentCapacity) {
+                appendCombatLog(
+                  `⚠️ [TÚI ĐỒ ĐẦY] Rơi [${droppedItem.name}] nhưng rương đã kín chỗ (${currentCapacity}/${currentCapacity})! Hãy phân giải bớt.`,
+                  'red'
+                );
+                return prevInv;
+              }
+              soundEngine.playGlobalBurstFanfare();
+              canvasHandleRef.current?.spawnCombatText(
+                `🎁 RƠI TIER ${rMeta.tier}!`,
+                droppedItem.name,
+                rMeta.hex,
+                '#FFFFFF',
+                true
+              );
+              appendCombatLog(
+                `🎁 [RƠI TRANG BỊ] Bạn vừa nhặt được [${droppedItem.name}] [Tier ${rMeta.tier} - ${rMeta.label}]! Đã chuyển vào Túi Đồ.`,
+                droppedItem.rarity === 'mythic' || droppedItem.rarity === 'legendary' ? 'gold' : 'cyan'
+              );
+              return [droppedItem, ...prevInv];
+            });
+          }
         }
       }
 
@@ -1866,6 +1972,12 @@ export default function App() {
       if (yieldReward.tinhHoa > 0) {
         setTinhHoa((prev) => prev + yieldReward.tinhHoa);
       }
+      if (yieldReward.ironDust > 0) {
+        setIronDust((prev) => prev + yieldReward.ironDust);
+      }
+      if (yieldReward.celestialStar > 0) {
+        setCelestialStars((prev) => prev + yieldReward.celestialStar);
+      }
       if (equippedItems[item.slotKey]?.id === item.id) {
         setEquippedItems((prev) => ({
           ...prev,
@@ -1876,9 +1988,9 @@ export default function App() {
       }
       soundEngine.playStanceSwitch('W');
       appendCombatLog(
-        `♻️ Phân giải [${item.name}]: Thu được +${yieldReward.linhThach} Linh Thạch${
+        `♻️ Phân giải [${item.name}]: Thu được +${yieldReward.ironDust} Bụi Thiết, +${yieldReward.linhThach} Linh Thạch${
           yieldReward.tinhHoa > 0 ? `, +${yieldReward.tinhHoa} Tinh Hoa` : ''
-        }!`,
+        }${yieldReward.celestialStar > 0 ? `, +${yieldReward.celestialStar} Thiên Tinh` : ''}!`,
         'gold'
       );
     },
@@ -1892,25 +2004,74 @@ export default function App() {
 
       let totalLT = 0;
       let totalTH = 0;
+      let totalDust = 0;
+      let totalStars = 0;
       targetItems.forEach((it) => {
         const r = getSalvageYield(it);
         totalLT += r.linhThach;
         totalTH += r.tinhHoa;
+        totalDust += r.ironDust;
+        totalStars += r.celestialStar;
       });
 
       setLinhThach((prev) => prev + totalLT);
       if (totalTH > 0) setTinhHoa((prev) => prev + totalTH);
+      if (totalDust > 0) setIronDust((prev) => prev + totalDust);
+      if (totalStars > 0) setCelestialStars((prev) => prev + totalStars);
 
       setInventory((prev) => prev.filter((it) => !rarities.includes(it.rarity)));
       soundEngine.playGlobalBurstFanfare();
       appendCombatLog(
-        `♻️ [PHÂN GIẢI NHANH] Đã tách ${targetItems.length} món trang bị! Thu được +${totalLT.toLocaleString(
+        `♻️ [PHÂN GIẢI NHANH] Đã tách ${targetItems.length} món trang bị! Thu được +${totalDust} Bụi Thiết, +${totalLT.toLocaleString(
           'en-US'
-        )} Linh Thạch${totalTH > 0 ? `, +${totalTH} Tinh Hoa` : ''}!`,
+        )} Linh Thạch${totalTH > 0 ? `, +${totalTH} Tinh Hoa` : ''}${totalStars > 0 ? `, +${totalStars} Thiên Tinh` : ''}!`,
         'cyan'
       );
     },
     [inventory, appendCombatLog]
+  );
+
+  const handleToggleAutoSalvage = useCallback((tierKey: 'tierE' | 'tierD' | 'tierC') => {
+    setAutoSalvageTiers((prev) => ({
+      ...prev,
+      [tierKey]: !prev[tierKey],
+    }));
+  }, []);
+
+  const handleAscendItem = useCallback(
+    (item: EquipmentItem) => {
+      if (item.rarity !== 'legendary') return;
+      if (ironDust < 1000 || tinhHoa < 10 || celestialStars < 1) {
+        appendCombatLog('⚠️ Không đủ nguyên liệu Thăng Bậc (Cần 1,000 Bụi Thiết, 10 Tinh Hoa, 1 Thiên Tinh)!', 'red');
+        return;
+      }
+      setIronDust((d) => d - 1000);
+      setTinhHoa((th) => th - 10);
+      setCelestialStars((s) => s - 1);
+
+      const ascended = ascendEquipmentTier(item);
+      if (equippedItems[item.slotKey]?.id === item.id) {
+        setEquippedItems((prev) => ({
+          ...prev,
+          [item.slotKey]: ascended,
+        }));
+      } else {
+        setInventory((prev) => prev.map((it) => (it.id === item.id ? ascended : it)));
+      }
+      soundEngine.playGlobalBurstFanfare();
+      canvasHandleRef.current?.spawnCombatText(
+        '🌟 THẦN THÔNG TIER S!',
+        ascended.name,
+        '#FF1A53',
+        '#FFD700',
+        true
+      );
+      appendCombatLog(
+        `🌟 [THĂNG BẬC THẦN KHÍ] Chúc mừng! Trang bị [${item.name}] đã đột phá lên Tier S: [${ascended.name}]!`,
+        'gold'
+      );
+    },
+    [ironDust, tinhHoa, celestialStars, equippedItems, appendCombatLog]
   );
 
   // Claim Personal Contribution Tier Handler
@@ -2321,6 +2482,11 @@ export default function App() {
             burnStacks={burnStacks}
             linhThach={linhThach}
             tinhHoa={tinhHoa}
+            ironDust={ironDust}
+            celestialStars={celestialStars}
+            anvilPityCount={anvilPityCount}
+            raidPityCount={raidPityCount}
+            autoSalvageTiers={autoSalvageTiers}
             tier2Unlocked={tier2Unlocked}
             leaderboard={leaderboard}
             mobileDrawerOpen={rightPanelOpen}
@@ -2333,6 +2499,8 @@ export default function App() {
             onSalvageItem={handleSalvageItem}
             onQuickSalvage={handleQuickSalvage}
             onQuenchItem={handleQuenchItem}
+            onAscendItem={handleAscendItem}
+            onToggleAutoSalvage={handleToggleAutoSalvage}
           />
         </div>
       </div>

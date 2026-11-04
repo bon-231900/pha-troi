@@ -26,6 +26,8 @@ import {
   formatInteger,
   QuenchType,
   QUENCH_OPTIONS,
+  getMaxInventorySlots,
+  ascendEquipmentTier,
 } from '../game/rules';
 import {
   Hammer,
@@ -64,6 +66,10 @@ interface RightProgressionPanelProps {
   burnStacks?: number;
   linhThach: number;
   tinhHoa: number;
+  ironDust?: number;
+  celestialStars?: number;
+  anvilPityCount?: number;
+  raidPityCount?: number;
   tier2Unlocked?: boolean;
   leaderboard: LeaderboardEntry[];
   mobileDrawerOpen: boolean;
@@ -76,6 +82,9 @@ interface RightProgressionPanelProps {
   onSalvageItem: (item: EquipmentItem) => void;
   onQuickSalvage: (rarities: ItemRarity[]) => void;
   onQuenchItem?: (itemId: string, quenchType: QuenchType) => void;
+  onAscendItem?: (item: EquipmentItem) => void;
+  autoSalvageTiers?: { tierE: boolean; tierD: boolean; tierC: boolean };
+  onToggleAutoSalvage?: (tierKey: 'tierE' | 'tierD' | 'tierC') => void;
 }
 
 export const RightProgressionPanel: React.FC<RightProgressionPanelProps> = ({
@@ -89,6 +98,10 @@ export const RightProgressionPanel: React.FC<RightProgressionPanelProps> = ({
   burnStacks = 0,
   linhThach,
   tinhHoa,
+  ironDust = 0,
+  celestialStars = 0,
+  anvilPityCount = 0,
+  raidPityCount = 0,
   tier2Unlocked = false,
   leaderboard,
   mobileDrawerOpen,
@@ -101,6 +114,9 @@ export const RightProgressionPanel: React.FC<RightProgressionPanelProps> = ({
   onSalvageItem,
   onQuickSalvage,
   onQuenchItem,
+  onAscendItem,
+  autoSalvageTiers = { tierE: false, tierD: false, tierC: false },
+  onToggleAutoSalvage,
 }) => {
   const [activeTab, setActiveTab] = useState<'arsenal' | 'upgrades' | 'spirit' | 'leaderboard'>('arsenal');
   const [selectedItem, setSelectedItem] = useState<EquipmentItem | null>(() => {
@@ -131,9 +147,11 @@ export const RightProgressionPanel: React.FC<RightProgressionPanelProps> = ({
     return equippedItems[item.slotKey]?.id === item.id;
   };
 
-  // Quick salvage counts
-  const commonInBag = inventory.filter((it) => it.rarity === 'common').length;
-  const rareInBag = inventory.filter((it) => it.rarity === 'rare').length;
+  // Inventory capacity & salvage counts
+  const maxInventorySlots = getMaxInventorySlots(forgerRank.tier);
+  const tierECount = inventory.filter((it) => it.rarity === 'common').length;
+  const tierDCount = inventory.filter((it) => it.rarity === 'uncommon').length;
+  const tierCCount = inventory.filter((it) => it.rarity === 'rare').length;
 
   const renderPanelContent = () => (
     <div className="flex flex-col h-full">
@@ -209,21 +227,29 @@ export const RightProgressionPanel: React.FC<RightProgressionPanelProps> = ({
       </div>
 
       {/* Resource Bar Summary */}
-      <div className="flex items-center justify-between px-3 py-1.5 rounded-lg bg-[#080A10] border border-slate-800/80 mb-2.5 font-tech text-xs shrink-0">
-        <div>
-          <span className="text-slate-400">Linh Thạch: </span>
+      <div className="flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-[#080A10] border border-slate-800/80 mb-2.5 font-tech text-[11px] shrink-0 overflow-x-auto gap-1.5">
+        <div className="whitespace-nowrap">
+          <span className="text-slate-400">LT: </span>
           <span className="text-cyan-300 font-bold">{linhThach.toLocaleString('en-US')}</span>
         </div>
         <span>·</span>
-        <div>
+        <div className="whitespace-nowrap">
           <span className="text-slate-400">Tinh Hoa: </span>
           <span className="text-amber-300 font-bold">{tinhHoa}</span>
         </div>
         <span>·</span>
-        <div>
-          <span className="text-slate-400">Thần Hồn: </span>
-          <span className="text-emerald-300 font-bold">x{spiritTotalMult.toFixed(2)}</span>
+        <div className="whitespace-nowrap">
+          <span className="text-slate-400">Bụi Thiết: </span>
+          <span className="text-slate-200 font-bold">{ironDust.toLocaleString('en-US')}</span>
         </div>
+        {celestialStars > 0 && (
+          <>
+            <span>·</span>
+            <div className="whitespace-nowrap">
+              <span className="text-purple-400 font-bold">✨ {celestialStars} Thiên Tinh</span>
+            </div>
+          </>
+        )}
       </div>
 
       {/* Tab Body */}
@@ -233,18 +259,66 @@ export const RightProgressionPanel: React.FC<RightProgressionPanelProps> = ({
         {/* ================================================================= */}
         {activeTab === 'arsenal' && (
           <div className="flex flex-col gap-2.5">
-            {/* Top Equipped Stats Card */}
-            <div className="p-2.5 rounded-xl bg-[#080A10] border border-amber-500/30 flex items-center justify-between">
-              <div>
-                <div className="text-[10px] text-slate-400 font-tech">Sức Mạnh Bộ Trang Bị Đang Mặc</div>
-                <div className="text-xs font-bold text-amber-300">
-                  {arsenalBonuses.totalEquippedCount}/6 Món · +{arsenalBonuses.flatDamage} DMG Cơ Bản
+            {/* Ngũ Đại Thuộc Tính Rèn (Stat Triad & Synergy MMORPG Card) */}
+            <div className="p-2.5 rounded-xl bg-[#080A10] border border-amber-500/30 flex flex-col gap-2">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-tech font-bold text-amber-300">
+                  NGŨ ĐẠI THUỘC TÍNH RÈN (MMORPG STATS)
+                </span>
+                <span className="text-[10px] font-tech text-slate-400">
+                  {arsenalBonuses.totalEquippedCount}/6 Món Trang Bị
+                </span>
+              </div>
+
+              {/* 5 Core Attributes Pills */}
+              <div className="grid grid-cols-5 gap-1 text-center font-tech">
+                <div className="p-1 rounded bg-slate-900/80 border border-red-500/30">
+                  <div className="text-[8px] text-red-400 font-bold">STR</div>
+                  <div className="text-xs font-bold text-red-300">{arsenalBonuses.coreStats.str}</div>
+                  <div className="text-[7px] text-slate-400 truncate">Lực Chùy</div>
+                </div>
+                <div className="p-1 rounded bg-slate-900/80 border border-yellow-500/30">
+                  <div className="text-[8px] text-yellow-400 font-bold">DEX</div>
+                  <div className="text-xs font-bold text-yellow-300">{arsenalBonuses.coreStats.dex}</div>
+                  <div className="text-[7px] text-slate-400 truncate">Chuẩn Xác</div>
+                </div>
+                <div className="p-1 rounded bg-slate-900/80 border border-orange-500/30">
+                  <div className="text-[8px] text-orange-400 font-bold">INT</div>
+                  <div className="text-xs font-bold text-orange-300">{arsenalBonuses.coreStats.int}</div>
+                  <div className="text-[7px] text-slate-400 truncate">Nhiệt Lực</div>
+                </div>
+                <div className="p-1 rounded bg-slate-900/80 border border-purple-500/30">
+                  <div className="text-[8px] text-purple-400 font-bold">PEN</div>
+                  <div className="text-xs font-bold text-purple-300">{arsenalBonuses.coreStats.pen}</div>
+                  <div className="text-[7px] text-slate-400 truncate">Phá Phách</div>
+                </div>
+                <div className="p-1 rounded bg-slate-900/80 border border-emerald-500/30">
+                  <div className="text-[8px] text-emerald-400 font-bold">SPI</div>
+                  <div className="text-xs font-bold text-emerald-300">{arsenalBonuses.coreStats.spi}</div>
+                  <div className="text-[7px] text-slate-400 truncate">Cộng Hưởng</div>
                 </div>
               </div>
-              <div className="flex items-center gap-1.5 text-[10px] font-tech text-cyan-300 bg-[#111625] px-2 py-1 rounded-lg border border-slate-800">
-                <span>x{arsenalBonuses.damageMultiplier} Sát Thương</span>
-                <span>·</span>
-                <span>+{arsenalBonuses.critChancePct}% Crit</span>
+
+              {/* Stat Synergy Indicators */}
+              <div className="flex items-center justify-between text-[10px] font-tech text-slate-300 pt-1 border-t border-slate-800/80">
+                <div className="flex items-center gap-1">
+                  {arsenalBonuses.glancingHitPenalty ? (
+                    <span className="text-red-400 font-bold bg-red-950/60 px-1.5 py-0.5 rounded border border-red-500/40 animate-pulse">
+                      ⚠️ DỘI BÚA (STR &gt; 2.5 INT: -35% DMG)
+                    </span>
+                  ) : (
+                    <span className="text-emerald-400 bg-emerald-950/60 px-1.5 py-0.5 rounded border border-emerald-500/40">
+                      ✓ Cân Bằng STR/INT: {(arsenalBonuses.coreStats.str / Math.max(1, arsenalBonuses.coreStats.int)).toFixed(1)}
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center gap-2 text-cyan-300">
+                  <span>Xuyên Giáp: +{arsenalBonuses.piercePct}%</span>
+                  <span>·</span>
+                  <span>MF: +{arsenalBonuses.magicFindPct}%</span>
+                  <span>·</span>
+                  <span>Crit: {arsenalBonuses.critRateEffective}%</span>
+                </div>
               </div>
             </div>
 
@@ -322,45 +396,125 @@ export const RightProgressionPanel: React.FC<RightProgressionPanelProps> = ({
               </div>
             </div>
 
-            {/* Backpack / Inventory Section with Quick Salvage */}
-            <div className="pt-2 border-t border-slate-800">
-              <div className="flex items-center justify-between mb-1.5">
+            {/* Backpack / Inventory Section with Dynamic Capacity & Pity Counters */}
+            <div className="pt-2 border-t border-slate-800 space-y-2">
+              {/* Dual Pity Bar & Drop Luck Indicators */}
+              <div className="p-2 rounded-xl bg-gradient-to-r from-slate-950 via-[#0B0F1C] to-slate-950 border border-slate-800 text-[10px] font-tech flex flex-col gap-1.5">
+                <div className="flex items-center justify-between text-slate-300">
+                  <span className="flex items-center gap-1 font-bold text-amber-300">
+                    <Sparkles className="w-3 h-3 text-amber-400" />
+                    BẢO HIỂM NỆN BÚA (ANVIL PITY):
+                  </span>
+                  <span className="text-cyan-300 font-mono">
+                    {anvilPityCount}/200 {anvilPityCount >= 50 && anvilPityCount < 200 ? '(Đã bảo hiểm Tier B)' : anvilPityCount >= 200 ? '(Nổ Tier A!)' : `(Tier B: ${anvilPityCount}/50)`}
+                  </span>
+                </div>
+                <div className="w-full bg-slate-900 h-1.5 rounded-full overflow-hidden border border-slate-800">
+                  <div
+                    className="bg-gradient-to-r from-cyan-500 via-purple-500 to-amber-400 h-full transition-all duration-300"
+                    style={{ width: `${Math.min(100, (anvilPityCount / 200) * 100)}%` }}
+                  />
+                </div>
+
+                <div className="flex items-center justify-between text-slate-400 pt-0.5">
+                  <span className="flex items-center gap-1 font-bold text-red-300">
+                    <Shield className="w-3 h-3 text-red-400" />
+                    BẢO HIỂM RƯƠNG RAID (TIER S PITY):
+                  </span>
+                  <span className="text-red-300 font-mono">
+                    {raidPityCount}/50 Ấn Ký {raidPityCount >= 50 ? '(Nổ Thần Khí Tier S!)' : ''}
+                  </span>
+                </div>
+                <div className="w-full bg-slate-900 h-1 rounded-full overflow-hidden border border-slate-800">
+                  <div
+                    className="bg-gradient-to-r from-purple-500 to-red-500 h-full transition-all duration-300"
+                    style={{ width: `${Math.min(100, (raidPityCount / 50) * 100)}%` }}
+                  />
+                </div>
+              </div>
+
+              {/* Inventory Header & Quick Salvage Actions */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
                 <div className="flex items-center gap-1.5 text-xs font-tech">
                   <PackageOpen className="w-3.5 h-3.5 text-cyan-400" />
-                  <span className="font-bold text-slate-200">TÚI ĐỒ (RƯƠNG VŨ KHÍ)</span>
-                  <span className="text-[10px] text-slate-400">
-                    ({inventory.length}/{MAX_INVENTORY_SLOTS})
+                  <span className="font-bold text-slate-200">RƯƠNG KHÍ GIỚI</span>
+                  <span className="text-[10px] text-amber-300 font-mono">
+                    [{inventory.length}/{maxInventorySlots} Ô]
                   </span>
                 </div>
 
                 {/* Quick Salvage Actions */}
-                <div className="flex items-center gap-1">
-                  {commonInBag > 0 && (
+                <div className="flex items-center gap-1 flex-wrap">
+                  {tierECount > 0 && (
                     <button
                       type="button"
                       onClick={() => onQuickSalvage(['common'])}
-                      className="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 text-[10px] font-tech cursor-pointer transition-colors"
-                      title="Phân giải toàn bộ trang bị Phàm Thiết (Trắng) trong túi"
+                      className="px-1.5 py-0.5 rounded bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 text-[9px] font-tech cursor-pointer transition-colors"
+                      title="Phân giải toàn bộ Tier E (Phàm Thiết) ra Bụi Thiết"
                     >
-                      Tách Trắng ({commonInBag})
+                      Tách Tier E ({tierECount})
                     </button>
                   )}
-                  {(commonInBag > 0 || rareInBag > 0) && (
+                  {tierDCount > 0 && (
                     <button
                       type="button"
-                      onClick={() => onQuickSalvage(['common', 'rare'])}
-                      className="px-2 py-0.5 rounded bg-cyan-950/60 hover:bg-cyan-900/80 border border-cyan-500/40 text-cyan-300 text-[10px] font-tech cursor-pointer transition-colors"
-                      title="Phân giải nhanh toàn bộ đồ Trắng & Cổ Thiết (Xanh) trong túi"
+                      onClick={() => onQuickSalvage(['uncommon'])}
+                      className="px-1.5 py-0.5 rounded bg-emerald-950/60 hover:bg-emerald-900/80 border border-emerald-500/40 text-emerald-300 text-[9px] font-tech cursor-pointer transition-colors"
+                      title="Phân giải toàn bộ Tier D (Tinh Thiết) ra Bụi Thiết"
                     >
-                      Tách Trắng/Xanh ({commonInBag + rareInBag})
+                      Tách Tier D ({tierDCount})
+                    </button>
+                  )}
+                  {tierCCount > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => onQuickSalvage(['rare'])}
+                      className="px-1.5 py-0.5 rounded bg-blue-950/60 hover:bg-blue-900/80 border border-blue-500/40 text-blue-300 text-[9px] font-tech cursor-pointer transition-colors"
+                      title="Phân giải toàn bộ Tier C (Cổ Đồng) ra Bụi Thiết"
+                    >
+                      Tách Tier C ({tierCCount})
                     </button>
                   )}
                 </div>
               </div>
 
-              {/* 24-Slot Bag Grid */}
-              <div className="grid grid-cols-6 gap-1.5 p-2 rounded-xl bg-[#070912] border border-slate-800/90">
-                {Array.from({ length: MAX_INVENTORY_SLOTS }).map((_, idx) => {
+              {/* Auto-Salvage Checkbox Filters */}
+              {onToggleAutoSalvage && (
+                <div className="flex items-center gap-3 px-2 py-1 rounded-lg bg-slate-950/60 border border-slate-800/80 text-[10px] font-tech text-slate-400">
+                  <span className="text-slate-300 font-semibold">Tự động nung:</span>
+                  <label className="flex items-center gap-1 cursor-pointer hover:text-slate-200">
+                    <input
+                      type="checkbox"
+                      checked={autoSalvageTiers.tierE}
+                      onChange={() => onToggleAutoSalvage('tierE')}
+                      className="accent-amber-400 w-3 h-3 rounded"
+                    />
+                    <span>Tier E</span>
+                  </label>
+                  <label className="flex items-center gap-1 cursor-pointer hover:text-slate-200">
+                    <input
+                      type="checkbox"
+                      checked={autoSalvageTiers.tierD}
+                      onChange={() => onToggleAutoSalvage('tierD')}
+                      className="accent-emerald-400 w-3 h-3 rounded"
+                    />
+                    <span>Tier D</span>
+                  </label>
+                  <label className="flex items-center gap-1 cursor-pointer hover:text-slate-200">
+                    <input
+                      type="checkbox"
+                      checked={autoSalvageTiers.tierC}
+                      onChange={() => onToggleAutoSalvage('tierC')}
+                      className="accent-blue-400 w-3 h-3 rounded"
+                    />
+                    <span>Tier C</span>
+                  </label>
+                </div>
+              )}
+
+              {/* Dynamic Bag Grid (Scales up to 64 slots based on Forger Rank) */}
+              <div className="grid grid-cols-6 sm:grid-cols-8 gap-1.5 p-2 rounded-xl bg-[#070912] border border-slate-800/90 max-h-56 overflow-y-auto">
+                {Array.from({ length: maxInventorySlots }).map((_, idx) => {
                   const bagItem = inventory[idx] || null;
                   const isSelected = selectedItem?.id === bagItem?.id;
                   const rMeta = bagItem ? getItemRarityMeta(bagItem.rarity) : null;
@@ -382,29 +536,34 @@ export const RightProgressionPanel: React.FC<RightProgressionPanelProps> = ({
                             }`
                           : 'border-dashed border-slate-800/60 bg-slate-950/40 cursor-default'
                       }`}
-                      title={bagItem ? `${bagItem.name} (${rMeta?.label})` : 'Ô trống'}
+                      title={bagItem ? `${bagItem.name} [Tier ${rMeta?.tier} - ${rMeta?.label}]` : `Ô trống #${idx + 1}`}
                     >
                       {bagItem ? (
                         <>
-                          <div className={`text-[10px] font-tech font-bold ${rMeta?.textColor}`}>
+                          <div className={`text-[9px] font-tech font-bold ${rMeta?.textColor}`}>
                             {bagItem.slotName.substring(0, 2)}
                           </div>
-                          <div className="text-[8px] font-tech text-slate-400">
+                          <div className="text-[7.5px] font-tech text-slate-400">
                             +{bagItem.baseStatValue}
                           </div>
-                          {bagItem.rarity !== 'common' && (
-                            <span
-                              className={`absolute top-0.5 right-0.5 w-1.5 h-1.5 rounded-full ${
-                                bagItem.rarity === 'mythic'
-                                  ? 'bg-orange-400 animate-ping'
-                                  : bagItem.rarity === 'legendary'
-                                  ? 'bg-amber-400'
-                                  : bagItem.rarity === 'epic'
-                                  ? 'bg-purple-400'
-                                  : 'bg-cyan-400'
-                              }`}
-                            />
-                          )}
+                          {/* Tier Badge / Pip */}
+                          <span
+                            className={`absolute top-0.5 right-0.5 w-2 h-2 rounded-full text-[6px] font-bold flex items-center justify-center ${
+                              bagItem.rarity === 'mythic'
+                                ? 'bg-red-500 text-white animate-pulse'
+                                : bagItem.rarity === 'legendary'
+                                ? 'bg-amber-400 text-slate-950'
+                                : bagItem.rarity === 'epic'
+                                ? 'bg-purple-400 text-slate-950'
+                                : bagItem.rarity === 'rare'
+                                ? 'bg-blue-400 text-slate-950'
+                                : bagItem.rarity === 'uncommon'
+                                ? 'bg-emerald-400 text-slate-950'
+                                : 'bg-slate-600 text-white'
+                            }`}
+                          >
+                            {rMeta?.tier}
+                          </span>
                         </>
                       ) : (
                         <span className="text-[10px] text-slate-700">·</span>
@@ -581,6 +740,26 @@ export const RightProgressionPanel: React.FC<RightProgressionPanelProps> = ({
                   </div>
                 </div>
 
+                {/* Tier A -> Tier S Ascension (Thăng Bậc Thần Khí) */}
+                {activeSelected.rarity === 'legendary' && onAscendItem && (
+                  <div className="pt-2 border-t border-purple-900/50 flex flex-col gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => onAscendItem(activeSelected)}
+                      disabled={ironDust < 1000 || tinhHoa < 10 || celestialStars < 1}
+                      className={`w-full py-2 px-3 rounded-xl font-tech font-bold text-xs tracking-wider transition-all flex items-center justify-center gap-1.5 ${
+                        ironDust >= 1000 && tinhHoa >= 10 && celestialStars >= 1
+                          ? 'bg-gradient-to-r from-red-600 via-purple-600 to-amber-500 hover:brightness-125 text-white shadow-lg shadow-purple-500/30 cursor-pointer active:scale-95'
+                          : 'bg-slate-900 border border-slate-800 text-slate-500 cursor-not-allowed opacity-60'
+                      }`}
+                      title="Nâng cấp trang bị Tier A (Địa Linh Kim) lên Tier S (Thiên Đạo Thần Khí) giữ nguyên toàn bộ Affix"
+                    >
+                      <Sparkles className="w-3.5 h-3.5 text-amber-300 animate-spin" />
+                      <span>THĂNG BẬC TIER S (1000 Bụi + 10 TH + 1 Thiên Tinh)</span>
+                    </button>
+                  </div>
+                )}
+
                 {/* Action Buttons: Equip or Salvage */}
                 <div className="pt-2 border-t border-slate-800 flex items-center gap-2">
                   {!isEquipped(activeSelected) ? (
@@ -600,12 +779,12 @@ export const RightProgressionPanel: React.FC<RightProgressionPanelProps> = ({
                             type="button"
                             onClick={() => onSalvageItem(activeSelected)}
                             className="py-2 px-3 rounded-xl bg-red-950/40 hover:bg-red-900/60 border border-red-500/40 text-red-300 font-tech font-bold text-xs flex items-center gap-1 cursor-pointer transition-colors"
-                            title={`Tách thành +${salvage.linhThach} LT${
+                            title={`Tách: +${salvage.ironDust} Bụi Thiết, +${salvage.linhThach} LT${
                               salvage.tinhHoa > 0 ? `, +${salvage.tinhHoa} TH` : ''
-                            }`}
+                            }${salvage.celestialStar > 0 ? `, +${salvage.celestialStar} Thiên Tinh` : ''}`}
                           >
                             <Trash2 className="w-3.5 h-3.5" />
-                            <span>Tách (+{salvage.linhThach} LT)</span>
+                            <span>Tách (+{salvage.ironDust} Bụi)</span>
                           </button>
                         );
                       })()}
