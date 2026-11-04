@@ -71,6 +71,7 @@ import { StatusModal } from './components/StatusModal';
 import { LoadingScreen } from './components/LoadingScreen';
 import { MultiplayerClient } from './game/multiplayer';
 import { serverSyncClient } from './game/serverSync';
+import { googleAuthService, GoogleUserProfile } from './game/googleAuth';
 import {
   CommunityPanoramicForgeCanvas,
   CommunityPanoramicForgeCanvasHandle,
@@ -148,6 +149,7 @@ export default function App() {
   const [globalBurstActive, setGlobalBurstActive] = useState<boolean>(false);
   const [activeForgersCount, setActiveForgersCount] = useState<number>(520);
   const [isServerSynced, setIsServerSynced] = useState<boolean>(false);
+  const [googleUser, setGoogleUser] = useState<GoogleUserProfile | null>(() => googleAuthService.getProfile());
   const [playerId] = useState<string>(() => {
     const saved = safeStorage.getItem('phatroi_user');
     if (saved) return saved;
@@ -830,6 +832,72 @@ export default function App() {
     document.body.dataset.state = 'playing';
     setGameState('playing');
     appendCombatLog('Lò rèn tái khởi động! Vạn dân đồng loạt giáng búa vào Tầng 1!', 'gold');
+  }, [appendCombatLog]);
+
+  // Google Sign-In & Cloud Save Integration
+  useEffect(() => {
+    const getLocalSaveJson = () => {
+      try {
+        return safeStorage.getItem('phatroi_save_v6') || '{}';
+      } catch {
+        return '{}';
+      }
+    };
+
+    googleAuthService.initGsi(getLocalSaveJson);
+
+    googleAuthService.onLogin((profile, remoteSaveData) => {
+      setGoogleUser(profile);
+      appendCombatLog(`☁️ [GOOGLE CLOUD] Đăng nhập thành công tài khoản [${profile.name}]!`, 'gold');
+
+      if (remoteSaveData && remoteSaveData.length > 50) {
+        try {
+          const parsed = JSON.parse(remoteSaveData);
+          if (typeof parsed.linhThach === 'number') setLinhThach(parsed.linhThach);
+          if (typeof parsed.tinhHoa === 'number') setTinhHoa(parsed.tinhHoa);
+          if (Array.isArray(parsed.upgrades)) setUpgrades(parsed.upgrades);
+          if (Array.isArray(parsed.spiritNodes)) setSpiritNodes(parsed.spiritNodes);
+          if (Array.isArray(parsed.stanceSkills)) setStanceSkills(parsed.stanceSkills);
+          if (parsed.equippedItems && typeof parsed.equippedItems === 'object') setEquippedItems(parsed.equippedItems);
+          if (Array.isArray(parsed.inventory)) setInventory(parsed.inventory);
+          if (typeof parsed.playerTotalDamage === 'number') setPlayerTotalDamage(parsed.playerTotalDamage);
+          if (typeof parsed.raidContributionScore === 'number') setRaidContributionScore(parsed.raidContributionScore);
+          if (typeof parsed.currentVaultId === 'number' && parsed.currentVaultId >= 1) setCurrentVaultId(parsed.currentVaultId);
+          safeStorage.setItem('phatroi_save_v6', remoteSaveData);
+          appendCombatLog('🎉 Đã phục hồi toàn bộ Búa, Đe & Túi đồ từ Đám mây Cloudflare D1!', 'cyan');
+        } catch (e) {
+          console.error('[Restore Save Error]', e);
+        }
+      } else {
+        const localData = getLocalSaveJson();
+        googleAuthService.pushCloudSave(localData);
+        appendCombatLog('🛡️ Tiến độ hiện tại của bạn đã được sao lưu vĩnh viễn lên Mây!', 'cyan');
+      }
+    });
+  }, [appendCombatLog]);
+
+  // Periodic Auto Cloud Save (Every 30s when logged in)
+  useEffect(() => {
+    if (!googleUser) return;
+    const timer = setInterval(() => {
+      try {
+        const saveStr = safeStorage.getItem('phatroi_save_v6');
+        if (saveStr) {
+          googleAuthService.pushCloudSave(saveStr);
+        }
+      } catch {}
+    }, 30000);
+    return () => clearInterval(timer);
+  }, [googleUser]);
+
+  const handleGoogleLogin = useCallback(() => {
+    googleAuthService.promptLogin();
+  }, []);
+
+  const handleGoogleLogout = useCallback(() => {
+    googleAuthService.logout();
+    setGoogleUser(null);
+    appendCombatLog('Đã đăng xuất tài khoản Google.', 'neutral');
   }, [appendCombatLog]);
 
   // Periodic co-op raid loop & Simulation Tick (Runs every 500ms)
@@ -1861,6 +1929,9 @@ export default function App() {
         realOnlinePeersCount={onlinePeers.length}
         isOffline={isOffline}
         isCloudflareServerOnline={isServerSynced}
+        googleProfile={googleUser}
+        onGoogleLogin={handleGoogleLogin}
+        onGoogleLogout={handleGoogleLogout}
         anvilHeat={anvilHeat}
         resonanceStrikes={resonanceStrikes}
         isShieldBroken={isShieldBroken}

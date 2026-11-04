@@ -52,10 +52,10 @@ class ServerSyncClient {
       const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
       // Nếu chạy local thử nghiệm, thử cổng 8787 của wrangler hoặc cùng domain
       if (isLocal) {
-        this.primaryBaseUrl = 'http://localhost:8787/api';
+        this.primaryBaseUrl = 'https://phatroi-api.beanbinh2000.workers.dev/api';
       } else {
         // Trên môi trường production phatroi.com hoặc github.io
-        this.primaryBaseUrl = 'https://phatroi.com/api';
+        this.primaryBaseUrl = 'https://phatroi-api.beanbinh2000.workers.dev/api';
       }
     } else {
       this.primaryBaseUrl = 'https://phatroi.com/api';

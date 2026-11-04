@@ -1,6 +1,6 @@
 // ==============================================================================
 // DỰ ÁN WEBGAME "PHÁ TRỜI" (PHATROI.COM) - CLOUDFLARE WORKERS API
-// Single Source of Truth cho Máu Boss, Giáp, Đe Rèn & Bảng Xếp Hạng Vạn Dân
+// Single Source of Truth cho Máu Boss, Giáp, Đe Rèn & Google Sign-In Cloud Save
 // ==============================================================================
 
 export interface Env {
@@ -8,6 +8,8 @@ export interface Env {
   PHATROI_KV?: KVNamespace;
   ADMIN_API_KEY?: string;
 }
+
+const EXPECTED_GOOGLE_CLIENT_ID = '325984073866-an8facrtq5edm0aetm5ok3qmrf00oq7t.apps.googleusercontent.com';
 
 interface BossStateRecord {
   vault_id: number;
@@ -32,6 +34,16 @@ interface LeaderboardRecord {
   last_hit_at: number;
 }
 
+interface PlayerProfileRecord {
+  google_id: string;
+  email: string;
+  display_name: string;
+  avatar_url: string;
+  save_data: string;
+  last_sync_at: number;
+  created_at: number;
+}
+
 // In-Memory Fallback nếu chưa kết nối D1 Database
 const memoryBossState: Record<number, BossStateRecord> = {
   1: {
@@ -50,6 +62,7 @@ const memoryBossState: Record<number, BossStateRecord> = {
 };
 
 const memoryLeaderboard = new Map<string, LeaderboardRecord>();
+const memoryProfiles = new Map<string, PlayerProfileRecord>();
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -63,6 +76,24 @@ function jsonResponse(data: unknown, status: number = 200): Response {
     status,
     headers: CORS_HEADERS,
   });
+}
+
+function decodeGoogleJwt(jwt: string): { sub: string; email: string; name: string; picture?: string; aud: string; exp: number } | null {
+  try {
+    const parts = jwt.split('.');
+    if (parts.length !== 3) return null;
+    const base64Url = parts[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split('')
+        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
+    );
+    return JSON.parse(jsonPayload);
+  } catch {
+    return null;
+  }
 }
 
 export default {
@@ -167,7 +198,113 @@ export default {
         });
       }
 
-      // 6. POST /api/boss/reset - Admin Reset Boss (Kiểm tra Secret Key)
+      // 6. POST /api/auth/google - Xác thực Đăng Nhập Google & Nạp Hồ Sơ Cloud
+      if (request.method === 'POST' && pathname === '/api/auth/google') {
+        const body = (await request.json().catch(() => ({}))) as Record<string, unknown>;
+        const credential = String(body.credential || '').trim();
+        const localSaveData = typeof body.localSaveData === 'string' ? body.localSaveData : '';
+
+        if (!credential) {
+          return jsonResponse({ success: false, error: 'Thiếu mã xác thực Google' }, 400);
+        }
+
+        const decoded = decodeGoogleJwt(credential);
+        if (!decoded || !decoded.sub || !decoded.email) {
+          return jsonResponse({ success: false, error: 'Mã xác thực Google không hợp lệ' }, 401);
+        }
+
+        const now = Date.now();
+        const existingProfile = await getPlayerProfile(env, decoded.sub);
+
+        if (existingProfile) {
+          return jsonResponse({
+            success: true,
+            isNew: false,
+            profile: {
+              googleId: existingProfile.google_id,
+              email: existingProfile.email,
+              name: existingProfile.display_name,
+              avatar: existingProfile.avatar_url,
+            },
+            saveData: existingProfile.save_data,
+            lastSyncAt: existingProfile.last_sync_at,
+          });
+        }
+
+        // Tạo hồ sơ mới & liên kết tiến trình Guest hiện tại lên Cloud
+        const newProfile: PlayerProfileRecord = {
+          google_id: decoded.sub,
+          email: decoded.email,
+          display_name: decoded.name || 'Thợ Rèn Google',
+          avatar_url: decoded.picture || '',
+          save_data: localSaveData || '{}',
+          last_sync_at: now,
+          created_at: now,
+        };
+
+        await upsertPlayerProfile(env, newProfile);
+
+        return jsonResponse({
+          success: true,
+          isNew: true,
+          profile: {
+            googleId: newProfile.google_id,
+            email: newProfile.email,
+            name: newProfile.display_name,
+            avatar: newProfile.avatar_url,
+          },
+          saveData: newProfile.save_data,
+          lastSyncAt: now,
+        });
+      }
+
+      // 7. POST /api/player/cloud-save - Lưu trữ tiến độ lên Mây (Cloud Save)
+      if (request.method === 'POST' && pathname === '/api/player/cloud-save') {
+        const body = (await request.json().catch(() => ({}))) as Record<string, unknown>;
+        const googleId = String(body.googleId || '').trim();
+        const saveData = typeof body.saveData === 'string' ? body.saveData : '';
+
+        if (!googleId || !saveData) {
+          return jsonResponse({ success: false, error: 'Thiếu googleId hoặc saveData' }, 400);
+        }
+
+        const now = Date.now();
+        const updated = await updatePlayerSaveData(env, googleId, saveData, now);
+
+        if (updated) {
+          return jsonResponse({
+            success: true,
+            lastSyncAt: now,
+          });
+        }
+        return jsonResponse({ success: false, error: 'Không tìm thấy hồ sơ người chơi' }, 404);
+      }
+
+      // 8. GET /api/player/cloud-load - Tải tiến độ từ Mây
+      if (request.method === 'GET' && pathname === '/api/player/cloud-load') {
+        const googleId = String(url.searchParams.get('googleId') || '').trim();
+        if (!googleId) {
+          return jsonResponse({ success: false, error: 'Thiếu googleId' }, 400);
+        }
+
+        const profile = await getPlayerProfile(env, googleId);
+        if (profile) {
+          return jsonResponse({
+            success: true,
+            profile: {
+              googleId: profile.google_id,
+              email: profile.email,
+              name: profile.display_name,
+              avatar: profile.avatar_url,
+            },
+            saveData: profile.save_data,
+            lastSyncAt: profile.last_sync_at,
+          });
+        }
+        return jsonResponse({ success: false, error: 'Không tìm thấy hồ sơ' }, 404);
+      }
+
+      // 9. POST /api/boss/reset - Admin Reset Boss (Kiểm tra Secret Key)
       if (request.method === 'POST' && pathname === '/api/boss/reset') {
         const adminKey = request.headers.get('X-Admin-Key') || url.searchParams.get('key');
         if (env.ADMIN_API_KEY && adminKey !== env.ADMIN_API_KEY) {
@@ -193,11 +330,10 @@ export default {
 };
 
 // ==============================================================================
-// DATABASE ACCESS ADAPTER (D1 -> KV -> Memory Fallback)
+// DATABASE ACCESS ADAPTER (D1 -> Memory Fallback)
 // ==============================================================================
 
 async function getBossState(env: Env, vaultId: number): Promise<BossStateRecord> {
-  // 1. D1 Database SQLite
   if (env.DB) {
     try {
       const row = await env.DB.prepare(
@@ -206,7 +342,6 @@ async function getBossState(env: Env, vaultId: number): Promise<BossStateRecord>
 
       if (row) return row;
 
-      // Nếu chưa có dòng cho tầng này, tự khởi tạo
       const defaultState: BossStateRecord = {
         vault_id: vaultId,
         name: `Tầng ${vaultId}`,
@@ -236,7 +371,6 @@ async function getBossState(env: Env, vaultId: number): Promise<BossStateRecord>
     }
   }
 
-  // 2. Memory State Fallback
   if (!memoryBossState[vaultId]) {
     memoryBossState[vaultId] = {
       vault_id: vaultId,
@@ -271,13 +405,10 @@ async function applyStrikeToBoss(
 ): Promise<BossStateRecord> {
   const now = Date.now();
 
-  // 1. D1 Database với Atomic Update
   if (env.DB) {
     try {
-      // Đảm bảo row tồn tại
       await getBossState(env, strike.vaultId);
 
-      // Cập nhật nguyên tử Boss State
       await env.DB.prepare(`
         UPDATE boss_state
         SET 
@@ -298,7 +429,6 @@ async function applyStrikeToBoss(
         strike.vaultId
       ).run();
 
-      // Cập nhật Leaderboard (Upsert)
       if (strike.playerId && (strike.damage > 0 || strike.raidContribution > 0)) {
         await env.DB.prepare(`
           INSERT INTO leaderboard (player_id, player_name, total_damage, raid_score, last_hit_at)
@@ -317,7 +447,6 @@ async function applyStrikeToBoss(
     }
   }
 
-  // 2. In-Memory Atomic Emulation
   const state = await getBossState(env, strike.vaultId);
   state.current_hp = Math.max(0, state.current_hp - strike.damage);
   state.current_armor = Math.max(0, state.current_armor - strike.shatterPoints);
@@ -326,7 +455,6 @@ async function applyStrikeToBoss(
   state.last_strike_at = now;
   state.updated_at = now;
 
-  // Leaderboard memory
   if (strike.playerId && (strike.damage > 0 || strike.raidContribution > 0)) {
     const existing = memoryLeaderboard.get(strike.playerId) || {
       player_id: strike.playerId,
@@ -361,7 +489,6 @@ async function getLeaderboard(env: Env, limit: number): Promise<LeaderboardRecor
     }
   }
 
-  // In-memory
   return Array.from(memoryLeaderboard.values())
     .sort((a, b) => b.total_damage - a.total_damage)
     .slice(0, limit);
@@ -399,4 +526,70 @@ async function resetBossState(env: Env, vaultId: number): Promise<void> {
     memoryBossState[vaultId].server_furnace_heat = 0;
     memoryBossState[vaultId].server_anvil_hp = 10000;
   }
+}
+
+// ==============================================================================
+// PLAYER PROFILE & CLOUD SAVE D1 ADAPTER
+// ==============================================================================
+
+async function getPlayerProfile(env: Env, googleId: string): Promise<PlayerProfileRecord | null> {
+  if (env.DB) {
+    try {
+      const row = await env.DB.prepare(
+        'SELECT google_id, email, display_name, avatar_url, save_data, last_sync_at, created_at FROM player_profiles WHERE google_id = ?'
+      ).bind(googleId).first<PlayerProfileRecord>();
+      if (row) return row;
+    } catch (e) {
+      console.error('[D1 Error getPlayerProfile]', e);
+    }
+  }
+  return memoryProfiles.get(googleId) || null;
+}
+
+async function upsertPlayerProfile(env: Env, profile: PlayerProfileRecord): Promise<void> {
+  if (env.DB) {
+    try {
+      await env.DB.prepare(`
+        INSERT INTO player_profiles (google_id, email, display_name, avatar_url, save_data, last_sync_at, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT(google_id) DO UPDATE SET
+          display_name = excluded.display_name,
+          avatar_url = excluded.avatar_url,
+          save_data = excluded.save_data,
+          last_sync_at = excluded.last_sync_at
+      `).bind(
+        profile.google_id,
+        profile.email,
+        profile.display_name,
+        profile.avatar_url,
+        profile.save_data,
+        profile.last_sync_at,
+        profile.created_at
+      ).run();
+      return;
+    } catch (e) {
+      console.error('[D1 Error upsertPlayerProfile]', e);
+    }
+  }
+  memoryProfiles.set(profile.google_id, profile);
+}
+
+async function updatePlayerSaveData(env: Env, googleId: string, saveData: string, syncTime: number): Promise<boolean> {
+  if (env.DB) {
+    try {
+      const res = await env.DB.prepare(
+        'UPDATE player_profiles SET save_data = ?, last_sync_at = ? WHERE google_id = ?'
+      ).bind(saveData, syncTime, googleId).run();
+      return res.success;
+    } catch (e) {
+      console.error('[D1 Error updatePlayerSaveData]', e);
+    }
+  }
+  const existing = memoryProfiles.get(googleId);
+  if (existing) {
+    existing.save_data = saveData;
+    existing.last_sync_at = syncTime;
+    return true;
+  }
+  return false;
 }

@@ -37,3 +37,17 @@ INSERT OR IGNORE INTO boss_state (
     1, 'Thiết Vân Vòm', 1500000000, 1500000000, 500, 500, 
     0, 10000, 0, 0, 1730700000000
 );
+
+
+-- Bảng Hồ Sơ Người Chơi & Cloud Save (Đồng bộ đa thiết bị qua Google Sign-In)
+CREATE TABLE IF NOT EXISTS player_profiles (
+    google_id TEXT PRIMARY KEY,
+    email TEXT NOT NULL,
+    display_name TEXT NOT NULL,
+    avatar_url TEXT DEFAULT '',
+    save_data TEXT NOT NULL,
+    last_sync_at INTEGER NOT NULL,
+    created_at INTEGER NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_player_profiles_email ON player_profiles(email);
