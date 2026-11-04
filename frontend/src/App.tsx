@@ -962,6 +962,54 @@ export default function App() {
     setUserGuildId('thiet_hai');
   }, []);
 
+  // Keep latest state ref to avoid re-triggering GSI init on every hammer strike
+  const latestGuestStateRef = useRef({
+    bossHp,
+    linhThach,
+    tinhHoa,
+    ironDust,
+    celestialStars,
+    anvilPityCount,
+    raidPityCount,
+    autoSalvageTiers,
+    upgrades,
+    spiritNodes,
+    stanceSkills,
+    equippedItems,
+    inventory,
+    playerTotalDamage,
+    claimedMilestones,
+    currentVaultId,
+    userGuildId,
+    guildHearths,
+    serverFurnaceHeat,
+    serverAnvilHp,
+    raidContributionScore,
+  });
+  latestGuestStateRef.current = {
+    bossHp,
+    linhThach,
+    tinhHoa,
+    ironDust,
+    celestialStars,
+    anvilPityCount,
+    raidPityCount,
+    autoSalvageTiers,
+    upgrades,
+    spiritNodes,
+    stanceSkills,
+    equippedItems,
+    inventory,
+    playerTotalDamage,
+    claimedMilestones,
+    currentVaultId,
+    userGuildId,
+    guildHearths,
+    serverFurnaceHeat,
+    serverAnvilHp,
+    raidContributionScore,
+  };
+
   // Google Sign-In & Cloud Save Integration (Strict Account vs Guest Separation)
   useEffect(() => {
     googleAuthService.initGsi(() => '');
@@ -970,27 +1018,7 @@ export default function App() {
       // 1. Lưu giữ nguyên vẹn dữ liệu Chế Độ Khách hiện tại vào slot khách (độc lập tuyệt đối)
       try {
         const guestPayload = {
-          bossHp,
-          linhThach,
-          tinhHoa,
-          ironDust,
-          celestialStars,
-          anvilPityCount,
-          raidPityCount,
-          autoSalvageTiers,
-          upgrades,
-          spiritNodes,
-          stanceSkills,
-          equippedItems,
-          inventory,
-          playerTotalDamage,
-          claimedMilestones,
-          currentVaultId,
-          userGuildId,
-          guildHearths,
-          serverFurnaceHeat,
-          serverAnvilHp,
-          raidContributionScore,
+          ...latestGuestStateRef.current,
           lastActiveTimestamp: Date.now(),
         };
         safeStorage.setItem('phatroi_guest_save', JSON.stringify(guestPayload));
@@ -1058,7 +1086,7 @@ export default function App() {
         return st;
       });
     });
-  }, [appendCombatLog, bossHp, linhThach, tinhHoa, upgrades, spiritNodes, stanceSkills, equippedItems, inventory, playerTotalDamage, claimedMilestones, currentVaultId, userGuildId, guildHearths, serverFurnaceHeat, serverAnvilHp, raidContributionScore, loadSaveData, resetToFreshCharacter]);
+  }, [loadSaveData, resetToFreshCharacter, appendCombatLog]);
 
   // Periodic Auto Cloud Save (Every 30s when logged in with Google)
   useEffect(() => {
