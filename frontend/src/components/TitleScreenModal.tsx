@@ -1,12 +1,19 @@
 import React, { useState } from 'react';
 import { soundEngine } from '../game/audio';
 import { Play } from 'lucide-react';
+import { GoogleUserProfile } from '../game/googleAuth';
 
 interface TitleScreenModalProps {
   onStart: () => void;
+  googleProfile?: GoogleUserProfile | null;
+  onGoogleLogin?: () => void;
 }
 
-export const TitleScreenModal: React.FC<TitleScreenModalProps> = ({ onStart }) => {
+export const TitleScreenModal: React.FC<TitleScreenModalProps> = ({
+  onStart,
+  googleProfile = null,
+  onGoogleLogin,
+}) => {
   const [isStarting, setIsStarting] = useState(false);
 
   const handleStart = () => {
@@ -63,17 +70,14 @@ export const TitleScreenModal: React.FC<TitleScreenModalProps> = ({ onStart }) =
           <span className="hover:text-amber-200 transition-colors cursor-pointer">TIN TỨC</span>
         </div>
 
-        {/* Top-right CTA */}
-        <button
-          type="button"
-          onClick={handleStart}
-          className="px-4 py-1.5 rounded-full bg-gradient-to-r from-amber-400/20 via-amber-300/30 to-amber-500/20 hover:from-amber-400/35 hover:to-amber-500/35 border border-amber-400/60 text-amber-200 text-xs font-tech font-bold tracking-wider backdrop-blur-md shadow-md transition-all cursor-pointer"
-        >
-          VÀO GAME →
-        </button>
+        {/* Top-right Status */}
+        <div className="flex items-center gap-2 text-xs font-tech text-amber-300/80 tracking-wider">
+          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+          <span>MÁY CHỦ TOÀN CẦU ON</span>
+        </div>
       </div>
 
-      {/* 3. Main Hero Typography Block (Positioned on the Left / Mid-Left like the reference) */}
+      {/* 3. Main Hero Typography Block */}
       <div className="my-auto max-w-2xl z-10 flex flex-col items-start text-left pl-2 sm:pl-6 md:pl-12">
         {/* The Original Calligraphy Brush Title "Phá Trời" */}
         <div className="relative mb-2">
@@ -104,24 +108,64 @@ export const TitleScreenModal: React.FC<TitleScreenModalProps> = ({ onStart }) =
           <p>và con người viết tiếp huyền thoại của chính mình.</p>
         </div>
 
-        {/* Pill Glassmorphic Action Button (Styled identical to the reference "XEM TRAILER" button) */}
-        <div className="mt-4 flex items-center gap-4">
+        {/* Action Buttons: 1 là Google, 2 là Chế Độ Khách */}
+        <div className="mt-5 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
+          {/* LỰA CHỌN 1: ĐĂNG NHẬP GOOGLE (HOẶC VÀO GAME NẾU ĐÃ CÓ ACC) */}
+          {googleProfile ? (
+            <button
+              type="button"
+              data-start="true"
+              onClick={handleStart}
+              disabled={isStarting}
+              className="group flex items-center justify-center gap-3 px-7 py-3 rounded-full bg-gradient-to-r from-emerald-950/80 via-slate-900/90 to-emerald-950/80 hover:from-emerald-900/90 hover:to-slate-800 border border-emerald-400/70 hover:border-emerald-300 text-emerald-200 text-xs sm:text-sm font-tech font-bold tracking-[0.15em] uppercase backdrop-blur-md shadow-[0_4px_25px_rgba(16,185,129,0.35)] transition-all cursor-pointer active:scale-95"
+            >
+              {googleProfile.avatar ? (
+                <img src={googleProfile.avatar} alt="Avatar" className="w-6 h-6 rounded-full border border-emerald-400" />
+              ) : (
+                <div className="w-6 h-6 rounded-full bg-emerald-500 text-slate-950 flex items-center justify-center font-bold text-xs">
+                  {googleProfile.name.charAt(0)}
+                </div>
+              )}
+              <span>NHẬP TRẬN · {googleProfile.name.toUpperCase()}</span>
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => {
+                onGoogleLogin?.();
+              }}
+              disabled={isStarting}
+              className="group flex items-center justify-center gap-3 px-7 py-3 rounded-full bg-slate-900/85 hover:bg-slate-900 border border-amber-400/70 hover:border-amber-300 text-slate-100 hover:text-amber-200 text-xs sm:text-sm font-tech font-bold tracking-[0.15em] uppercase backdrop-blur-md shadow-[0_4px_25px_rgba(255,190,40,0.25)] transition-all cursor-pointer active:scale-95"
+              title="Đăng nhập Google để lưu trữ túi đồ và búa rèn vĩnh viễn trên mây"
+            >
+              <div className="w-6 h-6 rounded-full bg-white flex items-center justify-center p-1 shadow-sm">
+                <svg className="w-full h-full" viewBox="0 0 24 24">
+                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
+                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
+                </svg>
+              </div>
+              <span>ĐĂNG NHẬP GOOGLE</span>
+            </button>
+          )}
+
+          {/* LỰA CHỌN 2: CHƠI CHẾ ĐỘ KHÁCH (GUEST) */}
           <button
             type="button"
             data-start="true"
             onClick={handleStart}
             disabled={isStarting}
-            className="group flex items-center gap-3 px-6 py-2.5 sm:px-8 sm:py-3 rounded-full bg-slate-900/65 hover:bg-slate-900/85 border border-amber-500/40 hover:border-amber-400 text-slate-100 hover:text-amber-200 text-xs sm:text-sm font-tech font-bold tracking-[0.2em] uppercase backdrop-blur-md shadow-[0_4px_20px_rgba(0,0,0,0.5)] transition-all cursor-pointer active:scale-95"
+            className="group flex items-center justify-center gap-2 px-6 py-2.5 rounded-full bg-slate-950/60 hover:bg-slate-900/80 border border-slate-700/60 hover:border-slate-500 text-slate-300 hover:text-white text-xs font-tech font-semibold tracking-wider transition-all cursor-pointer active:scale-95"
+            title="Chơi ngay không cần đăng nhập (Tiến độ chỉ lưu trên trình duyệt này)"
           >
-            <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-amber-400/25 group-hover:bg-amber-400 group-hover:text-slate-950 text-amber-300 flex items-center justify-center transition-colors">
-              <Play className="w-3 h-3 sm:w-3.5 sm:h-3.5 fill-current ml-0.5" />
-            </div>
-            <span>NHẬP TRẬN ĐÚC BINH</span>
+            <Play className="w-3 h-3 fill-current text-slate-400 group-hover:text-amber-300 transition-colors" />
+            <span>CHƠI CHẾ ĐỘ KHÁCH →</span>
           </button>
         </div>
       </div>
 
-      {/* 4. Vertical Poetic Calligraphy Text on the Right Edge (From Reference Image) */}
+      {/* 4. Vertical Poetic Calligraphy Text on the Right Edge */}
       <div className="hidden lg:flex fixed right-10 top-1/2 -translate-y-1/2 flex-col items-center gap-3 z-10 pointer-events-none select-none">
         <span className="text-amber-400/60 text-xs">✧</span>
         <div
@@ -133,10 +177,20 @@ export const TitleScreenModal: React.FC<TitleScreenModalProps> = ({ onStart }) =
         <span className="text-amber-400/60 text-xs">✧</span>
       </div>
 
-      {/* 5. Bottom Status / Hints */}
-      <div className="w-full max-w-7xl mx-auto flex items-center justify-between text-[11px] sm:text-xs text-slate-400/70 font-tech tracking-wider z-10 pt-2 border-t border-slate-800/40">
+      {/* 5. Bottom Status, Controls & Legal Links */}
+      <div className="w-full max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between text-[11px] sm:text-xs text-slate-400/70 font-tech tracking-wider z-10 pt-3 border-t border-slate-800/40 gap-2">
         <div>Space / Chạm: Đập Đe Canh Nhịp • Q W E R: 4 Thế Búa</div>
-        <div className="font-mono text-amber-400/60">v2.4 · Phá Trời Khai Thiên</div>
+        <div className="flex items-center gap-3 text-slate-500">
+          <a href="./privacy.html" target="_blank" rel="noopener noreferrer" className="hover:text-amber-400 transition underline">
+            Chính Sách Bảo Mật
+          </a>
+          <span>·</span>
+          <a href="./terms.html" target="_blank" rel="noopener noreferrer" className="hover:text-amber-400 transition underline">
+            Điều Khoản
+          </a>
+          <span>·</span>
+          <span className="font-mono text-amber-400/60">v3.2 Cloud Edition</span>
+        </div>
       </div>
     </div>
   );
