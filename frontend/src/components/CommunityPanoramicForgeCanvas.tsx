@@ -461,14 +461,31 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
     []
   );
 
-  const handleCanvasClick = useCallback(() => {
+  const handleInteraction = useCallback((clientX?: number, clientY?: number) => {
     if (document.activeElement instanceof HTMLElement && document.activeElement !== document.body) {
       document.activeElement.blur();
+    }
+    if (typeof clientX === 'number' && typeof clientY === 'number' && containerRef.current) {
+      const rect = containerRef.current.getBoundingClientRect();
+      const x = clientX - rect.left;
+      const y = clientY - rect.top;
+      spawnTouchRippleClosureRef.current?.(x, y);
     }
     if (gameStateRef.current === 'playing' || gameStateRef.current === 'title') {
       onHeroStrikeActionRef.current?.(false);
     }
   }, []);
+
+  const handleTouch = useCallback((e: React.TouchEvent) => {
+    lastTouchTimeRef.current = performance.now();
+    const touch = e.touches[0] || e.changedTouches[0];
+    handleInteraction(touch?.clientX, touch?.clientY);
+  }, [handleInteraction]);
+
+  const handleClick = useCallback((e: React.MouseEvent) => {
+    if (performance.now() - lastTouchTimeRef.current < 450) return;
+    handleInteraction(e.clientX, e.clientY);
+  }, [handleInteraction]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -1619,27 +1636,8 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
     <div
       ref={containerRef}
       tabIndex={0}
-      onTouchStart={(e) => {
-        lastTouchTimeRef.current = performance.now();
-        const touch = e.touches[0] || e.changedTouches[0];
-        if (touch && containerRef.current) {
-          const rect = containerRef.current.getBoundingClientRect();
-          const x = touch.clientX - rect.left;
-          const y = touch.clientY - rect.top;
-          spawnTouchRippleClosureRef.current?.(x, y);
-        }
-        handleCanvasClick();
-      }}
-      onClick={(e) => {
-        if (performance.now() - lastTouchTimeRef.current < 500) return;
-        if (containerRef.current) {
-          const rect = containerRef.current.getBoundingClientRect();
-          const x = e.clientX - rect.left;
-          const y = e.clientY - rect.top;
-          spawnTouchRippleClosureRef.current?.(x, y);
-        }
-        handleCanvasClick();
-      }}
+      onTouchStart={handleTouch}
+      onClick={handleClick}
       onKeyDown={(e) => {
         const isSpace =
           e.code === 'Space' ||
@@ -1660,6 +1658,8 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
         ref={canvasRef}
         data-testid="panoramic-2d-canvas"
         tabIndex={0}
+        onTouchStart={handleTouch}
+        onClick={handleClick}
         className="block w-full h-full cursor-pointer outline-none"
       />
     </div>
