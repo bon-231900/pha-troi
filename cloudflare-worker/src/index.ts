@@ -202,19 +202,45 @@ export default {
       if (request.method === 'POST' && pathname === '/api/auth/google') {
         const body = (await request.json().catch(() => ({}))) as Record<string, unknown>;
         const credential = String(body.credential || '').trim();
+        const accessToken = String(body.accessToken || '').trim();
         const localSaveData = typeof body.localSaveData === 'string' ? body.localSaveData : '';
 
-        if (!credential) {
-          return jsonResponse({ success: false, error: 'Thiếu mã xác thực Google' }, 400);
+        let userSub = '';
+        let userEmail = '';
+        let userName = '';
+        let userPicture = '';
+
+        if (credential) {
+          const decoded = decodeGoogleJwt(credential);
+          if (decoded && decoded.sub && decoded.email) {
+            userSub = decoded.sub;
+            userEmail = decoded.email;
+            userName = decoded.name || 'Thợ Rèn Google';
+            userPicture = decoded.picture || '';
+          }
+        } else if (accessToken) {
+          try {
+            const googleRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+              headers: { Authorization: `Bearer ${accessToken}` },
+            });
+            if (googleRes.ok) {
+              const info = (await googleRes.json()) as Record<string, unknown>;
+              userSub = String(info.sub || '');
+              userEmail = String(info.email || '');
+              userName = String(info.name || info.email || 'Thợ Rèn Google');
+              userPicture = String(info.picture || '');
+            }
+          } catch (e) {
+            console.error('[Google UserInfo Error]', e);
+          }
         }
 
-        const decoded = decodeGoogleJwt(credential);
-        if (!decoded || !decoded.sub || !decoded.email) {
-          return jsonResponse({ success: false, error: 'Mã xác thực Google không hợp lệ' }, 401);
+        if (!userSub || !userEmail) {
+          return jsonResponse({ success: false, error: 'Xác thực tài khoản Google không thành công' }, 401);
         }
 
         const now = Date.now();
-        const existingProfile = await getPlayerProfile(env, decoded.sub);
+        const existingProfile = await getPlayerProfile(env, userSub);
 
         if (existingProfile) {
           return jsonResponse({
@@ -233,10 +259,10 @@ export default {
 
         // Tạo hồ sơ mới & liên kết tiến trình Guest hiện tại lên Cloud
         const newProfile: PlayerProfileRecord = {
-          google_id: decoded.sub,
-          email: decoded.email,
-          display_name: decoded.name || 'Thợ Rèn Google',
-          avatar_url: decoded.picture || '',
+          google_id: userSub,
+          email: userEmail,
+          display_name: userName || 'Thợ Rèn Google',
+          avatar_url: userPicture || '',
           save_data: localSaveData || '{}',
           last_sync_at: now,
           created_at: now,
