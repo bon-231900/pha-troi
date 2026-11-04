@@ -2,6 +2,7 @@ import React from 'react';
 import { Volume2, VolumeX, Pause, Shield, Hammer, Flame, Award, AlertTriangle } from 'lucide-react';
 import { formatCountdown, AtmosphericSealLayer, getAtmosphericSealLayer, formatInteger } from '../game/rules';
 import { GoogleUserProfile } from '../game/googleAuth';
+import { PlayerClassMeta } from '../game/rules';
 
 export interface TopBossHeaderProps {
   bossName?: string;
@@ -46,6 +47,8 @@ export interface TopBossHeaderProps {
   googleProfile?: GoogleUserProfile | null;
   onGoogleLogin?: () => void;
   onGoogleLogout?: () => void;
+  playerClass?: PlayerClassMeta;
+  onOpenClassModal?: () => void;
 }
 
 export const TopBossHeader: React.FC<TopBossHeaderProps> = ({
@@ -89,6 +92,8 @@ export const TopBossHeader: React.FC<TopBossHeaderProps> = ({
   googleProfile = null,
   onGoogleLogin,
   onGoogleLogout,
+  playerClass,
+  onOpenClassModal,
 }) => {
   const safeMax = Math.max(1, bossMaxHp);
   const safeHp = Math.max(0, Math.min(safeMax, bossHp));
@@ -259,6 +264,19 @@ export const TopBossHeader: React.FC<TopBossHeaderProps> = ({
 
       {/* 3. Right Floating Capsule: Utilities + Toggle Lò Rèn */}
       <div className="pointer-events-auto flex items-center gap-1.5">
+        {/* Player Class / Sect Commitment Badge */}
+        {playerClass && (
+          <button
+            type="button"
+            onClick={onOpenClassModal}
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-tech font-bold shadow-md border cursor-pointer transition-all hover:scale-105 active:scale-95 ${playerClass.badgeBg}`}
+            title={`${playerClass.name} - ${playerClass.sectTitle} (Nhấn để xem kỹ năng hoặc đổi phái)`}
+          >
+            <span>{playerClass.icon}</span>
+            <span className="hidden md:inline font-bold">{playerClass.name}</span>
+          </button>
+        )}
+
         {/* Google Cloud Save Button or User Profile */}
         {googleProfile ? (
           <div className="flex items-center gap-1.5 bg-[#070B16]/90 backdrop-blur-md border border-emerald-500/40 px-2 py-1 rounded-xl text-xs font-tech text-slate-200 shadow-md">

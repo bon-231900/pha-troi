@@ -28,6 +28,7 @@ import {
   QUENCH_OPTIONS,
   getMaxInventorySlots,
   ascendEquipmentTier,
+  PlayerClassMeta,
 } from '../game/rules';
 import {
   Hammer,
@@ -85,6 +86,8 @@ interface RightProgressionPanelProps {
   onAscendItem?: (item: EquipmentItem) => void;
   autoSalvageTiers?: { tierE: boolean; tierD: boolean; tierC: boolean };
   onToggleAutoSalvage?: (tierKey: 'tierE' | 'tierD' | 'tierC') => void;
+  playerClass?: PlayerClassMeta;
+  onOpenClassModal?: () => void;
 }
 
 export const RightProgressionPanel: React.FC<RightProgressionPanelProps> = ({
@@ -117,6 +120,8 @@ export const RightProgressionPanel: React.FC<RightProgressionPanelProps> = ({
   onAscendItem,
   autoSalvageTiers = { tierE: false, tierD: false, tierC: false },
   onToggleAutoSalvage,
+  playerClass,
+  onOpenClassModal,
 }) => {
   const [activeTab, setActiveTab] = useState<'arsenal' | 'upgrades' | 'spirit' | 'leaderboard'>('arsenal');
   const [selectedItem, setSelectedItem] = useState<EquipmentItem | null>(() => {
@@ -958,6 +963,75 @@ export const RightProgressionPanel: React.FC<RightProgressionPanelProps> = ({
                 </div>
               );
             })()}
+
+            {/* 2A. BẢN SẮC CĂN CƠ · HỆ PHÁI ĐÃ CHỌN CARD */}
+            {playerClass && (
+              <div
+                className="p-3 rounded-xl border flex flex-col gap-2.5 transition-all shadow-lg"
+                style={{
+                  backgroundColor: `${playerClass.color}15`,
+                  borderColor: `${playerClass.color}50`,
+                }}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl">{playerClass.icon}</span>
+                    <div>
+                      <h4 className="text-xs font-bold font-tech text-amber-300">
+                        {playerClass.name} · {playerClass.sectTitle}
+                      </h4>
+                      <div className="text-[10px] text-slate-400">
+                        {playerClass.role} ({playerClass.guildTitle})
+                      </div>
+                    </div>
+                  </div>
+                  {onOpenClassModal && (
+                    <button
+                      type="button"
+                      onClick={onOpenClassModal}
+                      className="px-2.5 py-1 rounded-lg text-[10px] font-tech font-bold bg-slate-900/90 hover:bg-slate-800 border border-amber-500/40 text-amber-300 transition-colors cursor-pointer"
+                      title="Xem chi tiết 4 kỹ năng hoặc chuyển đổi Hệ Phái"
+                    >
+                      Đổi Phái ↺
+                    </button>
+                  )}
+                </div>
+
+                {/* 4 Class Skills Q W E R Mini Preview */}
+                <div className="grid grid-cols-4 gap-1 font-tech">
+                  {(['Q', 'W', 'E', 'R'] as const).map((slotKey) => {
+                    const sk = playerClass.skills[slotKey];
+                    return (
+                      <div
+                        key={slotKey}
+                        className="p-1.5 rounded-lg bg-slate-950/80 border border-slate-800 flex flex-col items-center text-center gap-0.5"
+                      >
+                        <span
+                          className="w-4 h-4 rounded text-[9px] font-bold flex items-center justify-center"
+                          style={{ backgroundColor: playerClass.color, color: '#05070F' }}
+                        >
+                          {slotKey}
+                        </span>
+                        <span className="text-[9px] font-semibold text-slate-200 truncate w-full">
+                          {sk.name}
+                        </span>
+                        <span className="text-[8px] text-cyan-400">
+                          {slotKey === 'Q' ? 'Cấp 1' : slotKey === 'W' ? 'Cấp 40' : slotKey === 'E' ? 'Cấp 100' : 'Cấp 200'}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* 2 Sub-Classes Preview */}
+                <div className="text-[10px] font-tech text-slate-400 pt-1.5 border-t border-slate-800/80 flex items-center justify-between">
+                  <span className="text-purple-300">① {playerClass.subClasses.a.name}</span>
+                  <span>·</span>
+                  <span className="text-emerald-300">② {playerClass.subClasses.b.name}</span>
+                  <span className="text-[9px] text-slate-500">(Mở Cấp 120)</span>
+                </div>
+              </div>
+            )}
 
             {/* 2. STANCE SELECTOR TABS (Q, W, E, R) */}
             <div>
