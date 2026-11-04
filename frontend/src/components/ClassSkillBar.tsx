@@ -19,7 +19,6 @@ interface ClassSkillBarProps {
     R: number;
   };
   onCastSkill: (slotKey: 'W' | 'E' | 'R') => void;
-  onOpenClassSelect?: () => void;
   hudVisible?: boolean;
 }
 
@@ -31,7 +30,6 @@ export const ClassSkillBar: React.FC<ClassSkillBarProps> = ({
   totalForgeLevel,
   cooldowns,
   onCastSkill,
-  onOpenClassSelect,
   hudVisible = true,
 }) => {
   const tierInfo = getOverdriveTier(overdriveCharge);
@@ -61,16 +59,7 @@ export const ClassSkillBar: React.FC<ClassSkillBarProps> = ({
           </span>
         </div>
 
-        {onOpenClassSelect && (
-          <button
-            type="button"
-            onClick={onOpenClassSelect}
-            className="text-[9px] text-cyan-400 hover:text-cyan-300 hover:underline cursor-pointer ml-2 whitespace-nowrap"
-            title="Đổi hệ phái hoặc khởi tạo lại căn cơ"
-          >
-            Đổi Phái
-          </button>
-        )}
+
       </div>
 
       {/* 4 Class Skills Row: [Q] [W] [E] [R] */}

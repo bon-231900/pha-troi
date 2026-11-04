@@ -340,7 +340,6 @@ export default function App() {
     return null;
   });
 
-  const [showClassModal, setShowClassModal] = useState<boolean>(false);
   const [skillCooldowns, setSkillCooldowns] = useState<{ W: number; E: number; R: number }>({
     W: 0,
     E: 0,
@@ -2172,7 +2171,6 @@ export default function App() {
       const cls = getPlayerClass(classId);
       setActiveStance(cls.stanceKey);
       setUserGuildId(cls.guildId);
-      setShowClassModal(false);
       soundEngine.playGlobalBurstFanfare();
       appendCombatLog(`🎉 [BÁI SƯ THÀNH CÔNG] Bạn đã gia nhập [${cls.name} · ${cls.sectTitle}]! Bắt đầu tu luyện bộ chiêu thức Q W E R.`, 'gold');
     },
@@ -2514,7 +2512,6 @@ export default function App() {
         rightPanelOpen={rightPanelOpen}
         onToggleRightPanel={() => setRightPanelOpen((prev) => !prev)}
         playerClass={getPlayerClass(playerClassId || 'thunder')}
-        onOpenClassModal={() => setShowClassModal(true)}
       />
 
       {/* 3. CORNER HUD DOCKS (Positioned at corners to leave the Center Hero & Anvil 100% Unobstructed) */}
@@ -2527,7 +2524,6 @@ export default function App() {
         totalForgeLevel={upgrades.reduce((sum, u) => sum + u.level, 0)}
         cooldowns={skillCooldowns}
         onCastSkill={handleCastClassSkill}
-        onOpenClassSelect={() => setShowClassModal(true)}
         hudVisible={hudVisible}
       />
 
@@ -2661,8 +2657,7 @@ export default function App() {
             onAscendItem={handleAscendItem}
             onToggleAutoSalvage={handleToggleAutoSalvage}
             playerClass={getPlayerClass(playerClassId || 'thunder')}
-            onOpenClassModal={() => setShowClassModal(true)}
-          />
+              />
         </div>
       </div>
 
@@ -2678,14 +2673,13 @@ export default function App() {
       )}
 
       {/* Pause & Victory Status Modal */}
-      {/* 4. Character Creation & Single-Class Commitment Modal */}
-      {(showClassModal || (!playerClassId && gameState === 'playing')) && (
+      {/* 4. Character Creation & Single-Class Commitment Modal (Chỉ xuất hiện khi chưa chọn phái) */}
+      {(!playerClassId && gameState === 'playing') && (
         <CharacterCreationModal
           currentClassId={playerClassId}
           currentName={playerName}
-          isInitialCreation={!playerClassId}
+          isInitialCreation={true}
           onConfirm={handleCommitClass}
-          onCancel={() => setShowClassModal(false)}
         />
       )}
 

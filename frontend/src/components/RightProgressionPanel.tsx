@@ -87,7 +87,6 @@ interface RightProgressionPanelProps {
   autoSalvageTiers?: { tierE: boolean; tierD: boolean; tierC: boolean };
   onToggleAutoSalvage?: (tierKey: 'tierE' | 'tierD' | 'tierC') => void;
   playerClass?: PlayerClassMeta;
-  onOpenClassModal?: () => void;
 }
 
 export const RightProgressionPanel: React.FC<RightProgressionPanelProps> = ({
@@ -121,7 +120,6 @@ export const RightProgressionPanel: React.FC<RightProgressionPanelProps> = ({
   autoSalvageTiers = { tierE: false, tierD: false, tierC: false },
   onToggleAutoSalvage,
   playerClass,
-  onOpenClassModal,
 }) => {
   const [activeTab, setActiveTab] = useState<'arsenal' | 'upgrades' | 'spirit' | 'leaderboard'>('arsenal');
   const [selectedItem, setSelectedItem] = useState<EquipmentItem | null>(() => {
@@ -985,16 +983,9 @@ export const RightProgressionPanel: React.FC<RightProgressionPanelProps> = ({
                       </div>
                     </div>
                   </div>
-                  {onOpenClassModal && (
-                    <button
-                      type="button"
-                      onClick={onOpenClassModal}
-                      className="px-2.5 py-1 rounded-lg text-[10px] font-tech font-bold bg-slate-900/90 hover:bg-slate-800 border border-amber-500/40 text-amber-300 transition-colors cursor-pointer"
-                      title="Xem chi tiết 4 kỹ năng hoặc chuyển đổi Hệ Phái"
-                    >
-                      Đổi Phái ↺
-                    </button>
-                  )}
+                  <span className="px-2 py-0.5 rounded text-[10px] font-tech font-bold bg-slate-900/90 border border-amber-500/30 text-amber-300/90 select-none">
+                    Độc Nhất Căn Cơ
+                  </span>
                 </div>
 
                 {/* 4 Class Skills Q W E R Mini Preview */}
