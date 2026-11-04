@@ -1,0 +1,26 @@
+{
+  "name": "phatroi-cloudflare-api",
+  "version": "1.0.0",
+  "description": "Serverless Global State API & Persistent World Raid for phatroi.com",
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "d1:init": "wrangler d1 execute phatroi_db --local --file=./schema.sql",
+    "d1:init:prod": "wrangler d1 execute phatroi_db --remote --file=./schema.sql"
+  },
+  "keywords": [
+    "cloudflare-workers",
+    "d1",
+    "phatroi",
+    "serverless",
+    "game-api"
+  ],
+  "author": "Skybreaker Studio",
+  "license": "MIT",
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20240405.0",
+    "typescript": "^5.4.5",
+    "wrangler": "^3.50.0"
+  }
+}

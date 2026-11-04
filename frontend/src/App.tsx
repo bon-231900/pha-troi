@@ -70,6 +70,7 @@ import { RightProgressionPanel, LeaderboardEntry } from './components/RightProgr
 import { StatusModal } from './components/StatusModal';
 import { LoadingScreen } from './components/LoadingScreen';
 import { MultiplayerClient } from './game/multiplayer';
+import { serverSyncClient } from './game/serverSync';
 import {
   CommunityPanoramicForgeCanvas,
   CommunityPanoramicForgeCanvasHandle,
@@ -146,6 +147,26 @@ export default function App() {
   const [globalSynergyPct, setGlobalSynergyPct] = useState<number>(74.0);
   const [globalBurstActive, setGlobalBurstActive] = useState<boolean>(false);
   const [activeForgersCount, setActiveForgersCount] = useState<number>(520);
+  const [isServerSynced, setIsServerSynced] = useState<boolean>(false);
+  const [playerId] = useState<string>(() => {
+    const saved = safeStorage.getItem('phatroi_user');
+    if (saved) return saved;
+    const created = `Tho_Ren_${Math.floor(Math.random() * 89999 + 10000)}`;
+    safeStorage.setItem('phatroi_user', created);
+    return created;
+  });
+  const [playerName] = useState<string>(() => {
+    const saved = safeStorage.getItem('phatroi_user_name');
+    if (saved) return saved;
+    return `Thợ Rèn #${playerId.slice(-4)}`;
+  });
+  const pendingServerBatchRef = useRef({
+    damage: 0,
+    raidContribution: 0,
+    shatterPoints: 0,
+    furnaceCooling: 0,
+    anvilRepair: 0,
+  });
 
   // New Mechanics: Anvil Heat (Hỏa Hầu) & Phá Giáp Resonance
   const [anvilHeat, setAnvilHeat] = useState<number>(100); // 100°C - 1000°C
@@ -670,6 +691,105 @@ export default function App() {
     };
   }, [userGuildId, activeStance, currentVaultId, appendCombatLog]);
 
+  // Cloudflare Worker API: Initial Global World State Fetch & Periodic Poll (10s)
+  useEffect(() => {
+    let isCancelled = false;
+
+    const syncWithServer = async () => {
+      try {
+        const state = await serverSyncClient.fetchBossState(currentVaultId);
+        if (state && !isCancelled) {
+          setIsServerSynced(true);
+          // Snap boss HP if drift > 20 HP or on initial load
+          setBossHp((localHp) => {
+            if (Math.abs(localHp - state.currentHp) > 20 || !hasReceivedInitialSyncRef.current) {
+              hasReceivedInitialSyncRef.current = true;
+              setBossTrailHp(state.currentHp);
+              return state.currentHp;
+            }
+            return localHp;
+          });
+
+          if (typeof state.serverFurnaceHeat === 'number') {
+            setServerFurnaceHeat((localHeat) => (Math.abs(localHeat - state.serverFurnaceHeat) > 20 ? state.serverFurnaceHeat : localHeat));
+          }
+          if (typeof state.serverAnvilHp === 'number') {
+            setServerAnvilHp((localAnvil) => (Math.abs(localAnvil - state.serverAnvilHp) > 20 ? state.serverAnvilHp : localAnvil));
+          }
+          if (state.isShieldBroken !== undefined) {
+            setIsShieldBroken(state.isShieldBroken);
+          }
+        } else if (!isCancelled) {
+          setIsServerSynced(false);
+        }
+      } catch {
+        if (!isCancelled) setIsServerSynced(false);
+      }
+    };
+
+    // Immediate initial sync
+    syncWithServer();
+
+    // Periodic poll every 10 seconds for idle/background sync
+    const pollTimer = setInterval(syncWithServer, 10000);
+
+    return () => {
+      isCancelled = true;
+      clearInterval(pollTimer);
+    };
+  }, [currentVaultId]);
+
+  // Cloudflare Worker API: 3-Second Batched Strike Flush
+  useEffect(() => {
+    const flushBatch = async () => {
+      const batch = pendingServerBatchRef.current;
+      if (batch.damage <= 0 && batch.raidContribution <= 0 && batch.shatterPoints <= 0) {
+        return;
+      }
+
+      // Snapshot and reset
+      const payload = {
+        playerId,
+        playerName,
+        vaultId: currentVaultId,
+        damage: batch.damage,
+        raidContribution: batch.raidContribution,
+        shatterPoints: batch.shatterPoints,
+        furnaceCooling: batch.furnaceCooling,
+        anvilRepair: batch.anvilRepair,
+      };
+
+      pendingServerBatchRef.current = {
+        damage: 0,
+        raidContribution: 0,
+        shatterPoints: 0,
+        furnaceCooling: 0,
+        anvilRepair: 0,
+      };
+
+      const resState = await serverSyncClient.sendBatchedStrike(payload);
+      if (resState) {
+        setIsServerSynced(true);
+        setBossHp((localHp) => {
+          if (Math.abs(localHp - resState.currentHp) > 25) {
+            setBossTrailHp(resState.currentHp);
+            return resState.currentHp;
+          }
+          return localHp;
+        });
+        if (typeof resState.serverFurnaceHeat === 'number') {
+          setServerFurnaceHeat((localHeat) => (Math.abs(localHeat - resState.serverFurnaceHeat) > 20 ? resState.serverFurnaceHeat : localHeat));
+        }
+        if (typeof resState.serverAnvilHp === 'number') {
+          setServerAnvilHp((localAnvil) => (Math.abs(localAnvil - resState.serverAnvilHp) > 20 ? resState.serverAnvilHp : localAnvil));
+        }
+      }
+    };
+
+    const batchTimer = setInterval(flushBatch, 3000);
+    return () => clearInterval(batchTimer);
+  }, [playerId, playerName, currentVaultId]);
+
   const startGame = useCallback(() => {
     soundEngine.unlockAudio();
     soundEngine.playAnvilStrike('PERFECT', 'Q', false);
@@ -1009,6 +1129,13 @@ export default function App() {
         setArmorRegenFrozenTime((t) => Math.min(5, t + outcome.freezeRegenSec));
       }
       setRaidContributionScore((rcs) => rcs + outcome.raidContributionGain);
+
+      // 4D. Accumulate into Cloudflare Worker strike batch (Batched 3s Flush)
+      pendingServerBatchRef.current.damage += outcome.damage;
+      pendingServerBatchRef.current.raidContribution += outcome.raidContributionGain;
+      pendingServerBatchRef.current.shatterPoints += outcome.armorBreakGain;
+      pendingServerBatchRef.current.furnaceCooling += outcome.serverHeatGain;
+      pendingServerBatchRef.current.anvilRepair += outcome.anvilRepairGain;
 
       // 5. Update Phá Giáp Resonance (Active Armor Break Points)
       if (!isShieldBroken) {
@@ -1733,6 +1860,7 @@ export default function App() {
         activeForgersCount={activeForgersCount}
         realOnlinePeersCount={onlinePeers.length}
         isOffline={isOffline}
+        isCloudflareServerOnline={isServerSynced}
         anvilHeat={anvilHeat}
         resonanceStrikes={resonanceStrikes}
         isShieldBroken={isShieldBroken}

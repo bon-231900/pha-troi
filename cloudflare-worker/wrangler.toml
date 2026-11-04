@@ -1,0 +1,24 @@
+name = "phatroi-api"
+main = "src/index.ts"
+compatibility_date = "2024-04-01"
+
+# ==============================================================================
+# ĐỊNH TUYẾN CLOUDFLARE WORKER:
+# 1. Chạy trên subdomain: https://api.phatroi.com/*
+# 2. Hoặc định tuyến trực tiếp trên domain chính: https://phatroi.com/api/*
+# ==============================================================================
+# routes = [
+#   { pattern = "phatroi.com/api/*", zone_name = "phatroi.com" }
+# ]
+
+# ==============================================================================
+# CƠ SỞ DỮ LIỆU D1 (SQLITE SERVERLESS MIỄN PHÍ TOÀN CẦU):
+# Khởi tạo bằng lệnh: npx wrangler d1 create phatroi_db
+# ==============================================================================
+[[d1_databases]]
+binding = "DB"
+database_name = "phatroi_db"
+database_id = "phatroi_db_primary"
+
+# [vars]
+# ADMIN_API_KEY = "phatroi_secret_key"

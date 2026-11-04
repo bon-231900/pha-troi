@@ -13,6 +13,7 @@ export interface TopBossHeaderProps {
   globalSynergyPct: number;
   globalBurstActive: boolean;
   activeForgersCount: number;
+  isCloudflareServerOnline?: boolean;
   isOffline?: boolean;
   realOnlinePeersCount?: number;
   anvilHeat?: number; // 100 - 1000°C (local)
@@ -53,6 +54,7 @@ export const TopBossHeader: React.FC<TopBossHeaderProps> = ({
   globalSynergyPct,
   globalBurstActive,
   activeForgersCount,
+  isCloudflareServerOnline = false,
   isOffline = false,
   realOnlinePeersCount = 0,
   anvilHeat = 100,
@@ -122,6 +124,11 @@ export const TopBossHeader: React.FC<TopBossHeaderProps> = ({
             {activeForgersCount.toLocaleString('en-US')}
           </span>
           <span className="text-slate-400 text-[11px]">
+            {isCloudflareServerOnline && (
+              <span className="text-emerald-400 font-bold bg-emerald-950/80 border border-emerald-500/40 px-1 py-0.5 rounded text-[10px] tracking-wide mr-1" title="Đã kết nối Serverless Cloudflare Edge API">
+                ☁️ SERVER
+              </span>
+            )}
             {realOnlinePeersCount > 0 ? (
               <span className="text-cyan-400 font-bold">({realOnlinePeersCount + 1} Đồng Môn P2P)</span>
             ) : isOffline ? (
