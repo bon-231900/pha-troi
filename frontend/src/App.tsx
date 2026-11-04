@@ -603,6 +603,7 @@ export default function App() {
   const logCounterRef = useRef<number>(10);
   const mpClientRef = useRef<MultiplayerClient | null>(null);
   const realtimeRoomRef = useRef<RealtimeRoomClient | null>(null);
+  const lastHeroStrikeTimeRef = useRef<number>(0);
   const [onlinePeers, setOnlinePeers] = useState<PeerPresence[]>([]);
 
   const appendCombatLog = useCallback(
@@ -1411,6 +1412,13 @@ export default function App() {
         if (gameState === 'title') startGame();
         return;
       }
+
+      // Throttle tối thiểu 100ms giữa các nhát gõ chống spam/macro quá tải đồ họa & âm thanh
+      const now = performance.now();
+      if (now - lastHeroStrikeTimeRef.current < 100) {
+        return;
+      }
+      lastHeroStrikeTimeRef.current = now;
 
       // Rhythm judgment: true skill timing or Overdrive burst (No more 45% RNG auto-crit!)
       const isGoldenHit = forceGolden || overdriveActive || (combo >= 5 && Math.random() < 0.15);
@@ -2333,6 +2341,12 @@ export default function App() {
   // Keyboard Shortcuts: Space, Q/W/E/R, P/Esc, M, [ and ]
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
+      // Chặn hoàn toàn sự kiện giữ im phím (e.repeat) của trình duyệt để không spam đập búa / kỹ năng gây lag
+      if (e.repeat) {
+        e.preventDefault();
+        return;
+      }
+
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
         return;
       }
