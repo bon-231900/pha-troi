@@ -207,7 +207,7 @@ export const CharacterSelectionModal: React.FC<CharacterSelectionModalProps> = (
                           <>
                             <div className="w-12 h-16 rounded-xl overflow-hidden bg-slate-900 border border-slate-700/80 shrink-0 relative shadow">
                               <img
-                                src={`$${import.meta.env.BASE_URL || './'}${skin.cardPath}`}
+                                src={`${import.meta.env.BASE_URL || './'}${skin.cardPath}`}
                                 alt={skin.name}
                                 className="w-full h-full object-cover"
                               />

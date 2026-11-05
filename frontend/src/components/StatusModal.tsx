@@ -200,7 +200,7 @@ export const StatusModal: React.FC<StatusModalProps> = ({
                           )}
                           <div className="w-full aspect-[3/4] rounded-lg overflow-hidden bg-slate-900/90 relative border border-slate-700/50">
                             <img
-                              src={`$${import.meta.env.BASE_URL || './'}${sk.cardPath}`}
+                              src={`${import.meta.env.BASE_URL || './'}${sk.cardPath}`}
                               alt={sk.name}
                               className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                             />
