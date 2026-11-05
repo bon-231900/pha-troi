@@ -2154,8 +2154,8 @@ export function calculateStrikeOutcome(input: StrikeInput): StrikeOutcome {
     (baseLinhThach + extraLTDrops) * (isOverdriveNow ? 2 : 1) * (stanceBonuses?.linhThachMult ?? 1.0)
   );
 
-  const tinhHoaChance = (isGolden || isCrit ? 0.20 : 0.08) * (stanceBonuses?.essenceDropMult ?? 1.0);
-  const tinhHoaEarned = Math.random() < tinhHoaChance ? 1 : 0;
+  // Tinh Hoa Thần Hồn is strictly managed by procedural rollLootDrop (0.10% chance)
+  const tinhHoaEarned = 0;
 
   // Heat & Resonance
   const extraHeat = (arsenal ? arsenal.heatPerHitBonus : 0) + (stanceBonuses?.heatGainAdd ?? 0);

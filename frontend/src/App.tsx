@@ -1711,10 +1711,7 @@ export default function App() {
       // 8. Resources & Damage (Linh Thạch: 1-2 on great, 5 on perfect)
       if (outcome.damage > 0) {
         setLinhThach((prev) => prev + outcome.linhThachEarned);
-        if (outcome.tinhHoaEarned > 0) {
-          setTinhHoa((prev) => prev + outcome.tinhHoaEarned);
-          appendCombatLog('Thu được +1 Tinh Hoa Thần Hồn từ nhát búa Hoàng Kim!', 'cyan');
-        }
+
         setPlayerTotalDamage((prev) => prev + outcome.damage);
 
         setGlobalSynergyPct((prevSyn) => Math.min(100, Number((prevSyn + 0.1).toFixed(1))));
@@ -1782,24 +1779,7 @@ export default function App() {
           }
         }
 
-        // Phase 3: Tam Điểm Lôi Hỏa (Co-op Beat Chain with Blacksmith Guild)
-        if (combo >= 6 && isGoldenHit && Math.random() < 0.25) {
-          const tamDiemDmg = 1500;
-          setBossHp((hp) => Math.max(0, hp - tamDiemDmg));
-          setPlayerTotalDamage((dmg) => dmg + tamDiemDmg);
-          soundEngine.playGlobalBurstFanfare();
-          canvasHandleRef.current?.spawnCombatText(
-            '💥 TAM ĐIỂM LÔI HỎA! -1,500 DMG',
-            '3 ĐỒNG MÔN PHƯỜNG RÈN HỢP LỰC TRẢM THIÊN',
-            '#FFD700',
-            '#FF4D00',
-            true
-          );
-          appendCombatLog(
-            `💥 [TAM ĐIỂM LÔI HỎA] Vũ điệu Khai Thiên hòa nhịp! Đồng môn ${currentGuild.name} phóng 3 cột lôi hỏa giáng -1,500 DMG!`,
-            'gold'
-          );
-        }
+
 
         // 9. Procedural ARPG Loot Drop Check with MMORPG Drop Table & Dual Pity
         const dropResult = rollLootDrop({

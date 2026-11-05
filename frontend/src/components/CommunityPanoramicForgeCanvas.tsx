@@ -810,6 +810,14 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
         badgeText = 'DỘI BÚA';
       }
 
+      // MMORPG Damage Fountain: arc outward to left/right sides from the anvil impact point
+      // Prevents numbers from shooting straight up into the hero face and overhead plaque
+      const side = Math.random() > 0.5 ? 1 : -1;
+      const spawnX = heroX + side * (32 + Math.random() * 40);
+      const spawnY = groundY - 30 - Math.random() * 15;
+      const vx = side * (60 + Math.random() * 70);
+      const vy = -125 - Math.random() * 35;
+
       floatingTexts.push({
         id: textIdCounter++,
         kind: 'damage',
@@ -817,10 +825,10 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
         badgeText,
         isGolden,
         isCrit,
-        x: heroX + (Math.random() - 0.5) * 44,
-        y: groundY - 55 - Math.random() * 20,
-        vx: (Math.random() - 0.5) * 110,
-        vy: -175 - Math.random() * 55,
+        x: spawnX,
+        y: spawnY,
+        vx,
+        vy,
         color,
         glowColor,
         ageSec: 0,
@@ -840,20 +848,22 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
       const isPortrait = viewW < viewH;
       const groundY = isPortrait ? viewH * 0.65 : (viewH < 500 ? viewH * 0.81 : viewH * 0.825);
 
+      // Skill & Milestone Banners float in the sky/boss area (upper 28%), well above hero avatar
+      const bannerY = Math.max(80, viewH * 0.28);
       floatingTexts.push({
         id: textIdCounter++,
         kind: 'skill',
         valueText: text,
         badgeText: subtext,
         x: heroX,
-        y: groundY - 180,
+        y: bannerY,
         vx: 0,
-        vy: -40,
+        vy: -18,
         color,
         glowColor,
         ageSec: 0,
-        durationSec: 1.5,
-        scale: isGolden ? 1.2 : 1.0,
+        durationSec: 1.8,
+        scale: isGolden ? 1.15 : 1.0,
       });
     };
 
@@ -1720,21 +1730,21 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
             // 1. Ornate Game Art Badges (HOÀNG KIM / BẠO KÍCH)
             if (ft.isGolden && assets.badgeHoangKim.loaded) {
               const bImg = assets.badgeHoangKim.img;
-              const bW = 104;
+              const bW = 76;
               const bH = bW * (bImg.height / bImg.width);
               ctx.save();
               ctx.shadowColor = '#F59E0B';
-              ctx.shadowBlur = 8;
-              ctx.drawImage(bImg, -bW * 0.5, -bH - 10, bW, bH);
+              ctx.shadowBlur = 6;
+              ctx.drawImage(bImg, -bW * 0.5, -bH - 6, bW, bH);
               ctx.restore();
             } else if (ft.isCrit && assets.badgeBaoKich.loaded) {
               const bImg = assets.badgeBaoKich.img;
-              const bW = 96;
+              const bW = 70;
               const bH = bW * (bImg.height / bImg.width);
               ctx.save();
               ctx.shadowColor = '#00F0FF';
-              ctx.shadowBlur = 8;
-              ctx.drawImage(bImg, -bW * 0.5, -bH - 10, bW, bH);
+              ctx.shadowBlur = 6;
+              ctx.drawImage(bImg, -bW * 0.5, -bH - 6, bW, bH);
               ctx.restore();
             } else if (ft.badgeText) {
               ctx.save();
