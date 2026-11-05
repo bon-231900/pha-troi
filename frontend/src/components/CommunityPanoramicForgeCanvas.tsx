@@ -905,7 +905,7 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
       const amphiW = Math.max(viewW * 1.05, viewH * (1376 / 768) * (isPortrait ? 1.3 : 1.05));
       const amphiH = amphiW * (768 / 1376);
       const amphiX = (viewW - amphiW) * 0.5 - currentMouseX * 24;
-      const amphiY = isPortrait ? viewH * 0.32 - currentMouseY * 8 : viewH - amphiH + 8 - currentMouseY * 10;
+      const amphiY = isPortrait ? viewH * 0.32 - currentMouseY * 8 : viewH * 0.28 - currentMouseY * 10;
 
       peerSlots.forEach((slot, idx) => {
         if (!slot.isReal) return; // Only real connected peers
@@ -961,7 +961,7 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
         const amphiW = Math.max(viewW * 1.05, viewH * (1376 / 768) * (isPortrait ? 1.3 : 1.05));
         const amphiH = amphiW * (768 / 1376);
         const amphiX = (viewW - amphiW) * 0.5 - currentMouseX * 24;
-        const amphiY = isPortrait ? viewH * 0.32 - currentMouseY * 8 : viewH - amphiH + 8 - currentMouseY * 10;
+        const amphiY = isPortrait ? viewH * 0.32 - currentMouseY * 8 : viewH * 0.28 - currentMouseY * 10;
         const px = amphiX + slot.xNorm * amphiW;
         const py = amphiY + slot.yNorm * amphiH;
         const sect = STANCE_TO_SECT[payload.stance] || 'thunder';
@@ -1257,7 +1257,7 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
         const amphiW = Math.max(viewW * 1.05, viewH * (1376 / 768) * (isPortrait ? 1.3 : 1.05));
         const amphiH = amphiW * (768 / 1376);
         const amphiX = (viewW - amphiW) * 0.5 - currentMouseX * 24;
-        const amphiY = isPortrait ? viewH * 0.32 - currentMouseY * 8 : viewH - amphiH + 8 - currentMouseY * 10;
+        const amphiY = isPortrait ? viewH * 0.32 - currentMouseY * 8 : viewH * 0.28 - currentMouseY * 10;
 
         if (assets.amphitheater.loaded) {
           const amImg = assets.amphitheater.img;
