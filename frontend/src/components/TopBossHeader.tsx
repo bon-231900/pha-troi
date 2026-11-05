@@ -101,6 +101,41 @@ export const TopBossHeader: React.FC<TopBossHeaderProps> = ({
   const trailPct = Math.max(hpPct, Math.min(100, (bossTrailHp / safeMax) * 100));
   const crackPct = Math.max(0, Math.min(100, 100 - hpPct));
 
+  // Dynamic Combat Visual Ghost Trail:
+  // Guarantees a visible 0.65% - 2.5% golden ghost bar decay on every hit, even when Boss has 1.5 Billion HP!
+  const [visualTrailOffset, setVisualTrailOffset] = React.useState<number>(0);
+  const [isHitFlashing, setIsHitFlashing] = React.useState<boolean>(false);
+  const prevHpRef = React.useRef<number>(safeHp);
+
+  React.useEffect(() => {
+    if (safeHp < prevHpRef.current) {
+      setIsHitFlashing(true);
+      const flashTimer = setTimeout(() => setIsHitFlashing(false), 120);
+
+      // Pop visual trail offset by 0.65% (visible 3-5px bar), stack up to 2.5% max on combos
+      setVisualTrailOffset((prev) => Math.min(2.5, prev + 0.65));
+      prevHpRef.current = safeHp;
+      return () => clearTimeout(flashTimer);
+    } else {
+      prevHpRef.current = safeHp;
+    }
+  }, [safeHp]);
+
+  // Smoothly decay visual trail offset back to 0
+  React.useEffect(() => {
+    if (visualTrailOffset > 0) {
+      const timer = setTimeout(() => {
+        setVisualTrailOffset((prev) => {
+          const next = prev - 0.12;
+          return next <= 0.02 ? 0 : next;
+        });
+      }, 30);
+      return () => clearTimeout(timer);
+    }
+  }, [visualTrailOffset]);
+
+  const effectiveTrailPct = Math.min(100, Math.max(trailPct, hpPct + visualTrailOffset));
+
   const seal = currentSealLayer || getAtmosphericSealLayer(safeHp, safeMax);
 
   return (
@@ -204,12 +239,16 @@ export const TopBossHeader: React.FC<TopBossHeaderProps> = ({
             className="absolute inset-0 w-full h-full object-fill pointer-events-none z-10 drop-shadow-[0_0_4px_rgba(16,185,129,0.3)]"
           />
           <div className="relative w-[94%] h-1.5 rounded-full overflow-hidden bg-black/85">
+            {/* Visual Ghost Trail Bar (Máu tuột vàng rực) */}
             <div
-              className="absolute inset-y-0 left-0 bg-amber-300/40 transition-all duration-300"
-              style={{ width: `${trailPct}%` }}
+              className="absolute inset-y-0 left-0 bg-gradient-to-r from-amber-200 to-amber-400 shadow-[0_0_8px_#F59E0B] transition-all duration-300"
+              style={{ width: `${effectiveTrailPct}%` }}
             />
+            {/* Active HP Bar */}
             <div
-              className="absolute inset-y-0 left-0 bg-gradient-to-r from-red-600 via-orange-500 to-amber-400 transition-all duration-150"
+              className={`absolute inset-y-0 left-0 bg-gradient-to-r from-red-600 via-orange-500 to-amber-400 transition-all duration-100 ${
+                isHitFlashing ? 'brightness-150 shadow-[0_0_10px_#FFF]' : 'shadow-[0_0_8px_#F59E0B]'
+              }`}
               style={{ width: `${hpPct}%` }}
             />
           </div>
@@ -334,12 +373,16 @@ export const TopBossHeader: React.FC<TopBossHeaderProps> = ({
               className="absolute inset-0 w-full h-full object-fill pointer-events-none z-10 drop-shadow-[0_0_6px_rgba(16,185,129,0.35)]"
             />
             <div className="relative w-[94%] h-2 sm:h-2.5 rounded-full overflow-hidden bg-black/85">
+              {/* Visual Ghost Trail Bar (Máu tuột vàng rực) */}
               <div
-                className="absolute inset-y-0 left-0 bg-amber-300/45 transition-all duration-300"
-                style={{ width: `${trailPct}%` }}
+                className="absolute inset-y-0 left-0 bg-gradient-to-r from-amber-200 to-amber-400 shadow-[0_0_10px_#F59E0B] transition-all duration-300"
+                style={{ width: `${effectiveTrailPct}%` }}
               />
+              {/* Active HP Bar with Combat Hit Flash */}
               <div
-                className="absolute inset-y-0 left-0 bg-gradient-to-r from-red-600 via-orange-500 to-amber-400 transition-all duration-150 shadow-[0_0_8px_#F59E0B]"
+                className={`absolute inset-y-0 left-0 bg-gradient-to-r from-red-600 via-orange-500 to-amber-400 transition-all duration-100 ${
+                  isHitFlashing ? 'brightness-150 shadow-[0_0_14px_#FFF]' : 'shadow-[0_0_8px_#F59E0B]'
+                }`}
                 style={{ width: `${hpPct}%` }}
               />
             </div>
