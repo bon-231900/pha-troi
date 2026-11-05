@@ -1,5 +1,6 @@
 import React from 'react';
-import { PlayerClassMeta } from '../game/rules';
+import { PlayerClassMeta, CHARACTER_SKINS } from '../game/rules';
+import { Sparkles } from 'lucide-react';
 import { HEADER_ICON_ASSETS, HEADER_FRAME_ASSETS } from '../game/headerArtAssets';
 
 interface StatusModalProps {

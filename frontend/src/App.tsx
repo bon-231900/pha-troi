@@ -76,6 +76,8 @@ import {
   getGuild,
   QuenchType,
   QUENCH_OPTIONS,
+  SECT_DEFAULT_SKIN,
+  CHARACTER_SKINS,
 } from './game/rules';
 import { soundEngine } from './game/audio';
 import { hapticEngine } from './game/haptics';
