@@ -458,7 +458,7 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
     const cleanBase = base.endsWith('/') ? base : `${base}/`;
     if (!skinSpritesRef.current.has(equippedSkinId)) {
       const img = new Image();
-      img.src = `${cleanBase}assets/art/skins/${equippedSkinId}/spritesheet_strip.webp`;
+      img.src = `${cleanBase}assets/art/skins/${equippedSkinId}/spritesheet_strip.webp?v=20261105_v3`;
       skinSpritesRef.current.set(equippedSkinId, img);
     }
   }, [equippedSkinId]);
