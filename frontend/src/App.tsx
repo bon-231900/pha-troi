@@ -1128,7 +1128,7 @@ export default function App() {
       safeStorage.setItem('phatroi_player_class', profile.classId);
 
       const prog = profile.progress;
-      if (typeof prog.bossHp === 'number' && prog.bossHp >= 10_000_000) {
+      if (!isServerSynced && !hasReceivedInitialSyncRef.current && typeof prog.bossHp === 'number' && prog.bossHp >= 10_000_000) {
         setBossHp(prog.bossHp);
       }
       setLinhThach(prog.linhThach || 0);
@@ -2441,6 +2441,13 @@ export default function App() {
       if (profile) {
         loadSlotProfile(profile);
         setGameState('playing');
+        serverSyncClient.fetchBossState(currentVaultId).then((state) => {
+          if (state && typeof state.currentHp === 'number') {
+            setIsServerSynced(true);
+            setBossHp(state.currentHp);
+            setBossTrailHp(state.currentHp);
+          }
+        }).catch(() => {});
         appendCombatLog(`⚔️ [XUẤT TRẬN] Tu sĩ [${profile.characterName}] đã nhập trận tại Slot #${slotId}!`, 'gold');
       } else {
         setCreatingSlotId(slotId);
