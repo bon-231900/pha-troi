@@ -1136,9 +1136,9 @@ export default function App() {
       const skin = profile.equippedSkinId || SECT_DEFAULT_SKIN[profile.classId] || 'skin_default';
       setEquippedSkinId(skin);
       safeStorage.setItem('phatroi_equipped_skin', skin);
-      if (realtimeClientRef.current) {
+      if (realtimeRoomRef.current) {
         const cls = getPlayerClass(profile.classId);
-        realtimeClientRef.current.updateIdentity(cls.stanceKey, cls.guildId, profile.characterName, skin);
+        realtimeRoomRef.current.updateIdentity(cls.stanceKey, cls.guildId, profile.characterName, skin);
       }
 
       const prog = profile.progress;
@@ -2446,8 +2446,8 @@ export default function App() {
       setUserGuildId(cls.guildId);
       setEquippedSkinId(finalSkinId);
       safeStorage.setItem('phatroi_equipped_skin', finalSkinId);
-      if (realtimeClientRef.current) {
-        realtimeClientRef.current.updateIdentity(cls.stanceKey, cls.guildId, name, finalSkinId);
+      if (realtimeRoomRef.current) {
+        realtimeRoomRef.current.updateIdentity(cls.stanceKey, cls.guildId, name, finalSkinId);
       }
       soundEngine.playGlobalBurstFanfare();
       appendCombatLog(`🎉 [BÁI SƯ THÀNH CÔNG] Bạn đã gia nhập [${cls.name} · ${cls.sectTitle}]! Bắt đầu tu luyện bộ chiêu thức Q W E R.`, 'gold');
@@ -2462,8 +2462,8 @@ export default function App() {
       updateCharacterSkinInSlot(activeSlotId, skinId, googleUser?.googleId);
       const updated = loadCharacterSlots(googleUser?.googleId);
       setCharacterSlots(updated);
-      if (realtimeClientRef.current) {
-        realtimeClientRef.current.updateIdentity(undefined, undefined, undefined, skinId);
+      if (realtimeRoomRef.current) {
+        realtimeRoomRef.current.updateIdentity(undefined, undefined, undefined, skinId);
       }
       soundEngine.playAnvilStrike('PERFECT', 'Q', false);
       const sName = CHARACTER_SKINS[skinId]?.name || 'Trang Phục Mới';
