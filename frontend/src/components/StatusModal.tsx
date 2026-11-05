@@ -16,6 +16,8 @@ interface StatusModalProps {
   onToggleMute?: () => void;
   playerClass?: PlayerClassMeta;
   activeCharacterName?: string;
+  equippedSkinId?: string;
+  onEquipSkin?: (skinId: string) => void;
 }
 
 export const StatusModal: React.FC<StatusModalProps> = ({
@@ -32,6 +34,8 @@ export const StatusModal: React.FC<StatusModalProps> = ({
   onToggleMute,
   playerClass,
   activeCharacterName,
+  equippedSkinId = 'skin_default',
+  onEquipSkin,
 }) => {
   const currentDamage = Math.round(
     typeof playerTotalDamage === 'number'

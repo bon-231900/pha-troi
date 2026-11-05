@@ -2842,6 +2842,7 @@ export default function App() {
           gameState={gameState}
           playerName={playerName}
           onHeroStrikeAction={() => handleHeroStrike(false)}
+          equippedSkinId={equippedSkinId}
         />
       </div>
 
@@ -3152,6 +3153,8 @@ export default function App() {
           }}
           playerClass={getPlayerClass(playerClassId || 'thunder')}
           activeCharacterName={playerName}
+          equippedSkinId={equippedSkinId}
+          onEquipSkin={handleEquipSkin}
         />
       )}
     </div>

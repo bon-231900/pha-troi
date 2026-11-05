@@ -65,6 +65,7 @@ export interface CommunityPanoramicForgeCanvasProps {
   onHeroStrikeAction?: (forceGolden: boolean) => void;
   onPeerAutonomousDamage?: (damageAmount: number) => void;
   className?: string;
+  equippedSkinId?: string;
 }
 
 interface ActiveLightningBolt2D {
@@ -433,6 +434,7 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
     onHeroStrikeAction,
     onPeerAutonomousDamage,
     className = '',
+    equippedSkinId = 'skin_default',
   },
   ref
 ) {
