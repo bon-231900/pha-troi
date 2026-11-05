@@ -337,21 +337,21 @@ export const TopBossHeader: React.FC<TopBossHeaderProps> = ({
           <div className="absolute inset-0 bg-gradient-to-b from-amber-500/10 via-transparent to-black/40 pointer-events-none" />
 
           {/* Boss Title & HP Stats */}
-          <div className="relative z-10 flex items-center justify-between gap-2 mb-1">
-            <div className="flex items-center gap-1.5 shrink-0">
+          <div className="relative z-10 flex items-center justify-between gap-1.5 mb-1 min-w-0">
+            <div className="flex items-center gap-1 sm:gap-1.5 min-w-0">
               <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse shrink-0 shadow-[0_0_6px_#EF4444]" />
-              <span className="font-display text-[11px] sm:text-xs font-bold tracking-wider text-amber-300 uppercase whitespace-nowrap">
+              <span className="font-display text-[11px] sm:text-xs font-bold tracking-wider text-amber-300 uppercase truncate">
                 {bossName}
               </span>
-              <span className="hidden sm:inline px-1.5 py-0.2 rounded bg-amber-500/20 border border-amber-500/40 text-[9px] font-tech text-amber-300 whitespace-nowrap">
+              <span className="hidden lg:inline px-1.5 py-0.2 rounded bg-amber-500/20 border border-amber-500/40 text-[9px] font-tech text-amber-300 whitespace-nowrap shrink-0">
                 {seal.shortName} (-{seal.damageReductionPct}%)
               </span>
             </div>
 
-            <div className="font-tech text-[10px] sm:text-xs font-bold tabular-nums text-slate-200 whitespace-nowrap shrink-0">
+            <div className="font-tech text-[10px] sm:text-xs font-bold tabular-nums text-slate-200 whitespace-nowrap shrink-0 pl-1.5">
               <span className="text-red-400 font-extrabold">{safeHp.toLocaleString('en-US')}</span>
               <span className="text-slate-400 font-normal"> / {safeMax.toLocaleString('en-US')} HP</span>
-              <span className="ml-1 text-orange-400 font-semibold">(Nứt {crackPct.toFixed(1)}%)</span>
+              <span className="ml-1 text-orange-400 font-semibold hidden md:inline">(Nứt {crackPct.toFixed(1)}%)</span>
             </div>
           </div>
 
@@ -412,8 +412,8 @@ export const TopBossHeader: React.FC<TopBossHeaderProps> = ({
                 alt="Hỏa Hẩu"
                 className="w-4 h-4 object-contain filter drop-shadow-[0_0_4px_#F97316] shrink-0"
               />
-              <span className="truncate">
-                Lò: <b className="text-amber-300">{serverFurnaceHeat.toLocaleString('en-US')}°C</b>
+              <span className="whitespace-nowrap">
+                Lò: <b className="text-amber-300">{serverFurnaceHeat >= 10000 ? '10k' : serverFurnaceHeat}°C</b>
               </span>
               {serverFurnaceHeat >= vaultMeltingThreshold ? (
                 <span className="px-1 py-0.2 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[8px] font-bold">

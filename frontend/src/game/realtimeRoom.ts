@@ -244,9 +244,15 @@ export class RealtimeRoomClient {
   }
 
   private getNextAvailableSlot(): number {
-    // Available terrace slots in order of proximity to center Main Hero:
-    // 1 (Right front), 0 (Left front), 3 (Right mid), 2 (Left mid), 5, 4, 7, 6...
-    const preferredOrder = [1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14, 17, 16];
+    // 24 Available amphitheater slots ordered from center hero outward:
+    // Tier 1 Foreground Rim (3, 4, 2, 5, 1, 6, 0, 7)
+    // Tier 2 Midground Terraces & Colosseum Wings (12, 15, 11, 16, 13, 14, 10, 17, 9, 18, 8, 19)
+    // Tier 3 High Mountain Spires (21, 22, 20, 23)
+    const preferredOrder = [
+      3, 4, 2, 5, 1, 6, 0, 7,
+      12, 15, 11, 16, 13, 14, 10, 17, 9, 18, 8, 19,
+      21, 22, 20, 23,
+    ];
     const occupied = new Set<number>();
     for (const peer of this.peers.values()) {
       occupied.add(peer.slotIndex);
@@ -254,7 +260,7 @@ export class RealtimeRoomClient {
     for (const slot of preferredOrder) {
       if (!occupied.has(slot)) return slot;
     }
-    return 1;
+    return 3;
   }
 
   private broadcastPresence() {

@@ -371,11 +371,11 @@ function drawXianxiaPlaque(
 // All bots removed per user request: zero bot overhead, no lag
 const AMBIENT_BOTS: Array<{ id: string; xNorm: number; tier: number; scale: number; facing: number; speed: number; phase: number; label: string }> = [];
 
-// Tier 3: Frontline Peer Blacksmith Slots (Flanking Main Hero)
+// 24 Multi-Tier Co-Op Forge Stations (Vạn Cổ Đúc Thần Đài)
 interface PeerSlotConfig {
   id: number;
-  xNorm: number;
-  yOffset: number;
+  xNorm: number; // Normalized to amphitheater width
+  yNorm: number; // Normalized to amphitheater height
   scale: number;
   facing: 1 | -1;
   speed: number;
@@ -383,15 +383,41 @@ interface PeerSlotConfig {
   isReal: boolean;
   name: string;
   stance: StanceKey;
+  tier: 1 | 2 | 3;
 }
 
 const DEFAULT_PEER_SLOTS: PeerSlotConfig[] = [
-  { id: 0, xNorm: 0.12, yOffset: 6, scale: 0.34, facing: 1, speed: 1.15, phase: 0.1, isReal: false, name: '', stance: 'Q' },
-  { id: 1, xNorm: 0.24, yOffset: 2, scale: 0.35, facing: 1, speed: 0.95, phase: 0.35, isReal: false, name: '', stance: 'W' },
-  { id: 2, xNorm: 0.36, yOffset: 0, scale: 0.36, facing: 1, speed: 1.05, phase: 0.7, isReal: false, name: '', stance: 'Q' },
-  { id: 3, xNorm: 0.64, yOffset: 0, scale: 0.36, facing: -1, speed: 1.0, phase: 0.55, isReal: false, name: '', stance: 'R' },
-  { id: 4, xNorm: 0.76, yOffset: 2, scale: 0.35, facing: -1, speed: 1.2, phase: 0.85, isReal: false, name: '', stance: 'E' },
-  { id: 5, xNorm: 0.88, yOffset: 6, scale: 0.34, facing: -1, speed: 1.1, phase: 0.65, isReal: false, name: '', stance: 'W' },
+  // Tier 1: Foreground Stone Promenade (8 stations, closest to camera)
+  { id: 0, xNorm: 255 / 1376, yNorm: 535 / 768, scale: 0.35, facing: 1, speed: 1.15, phase: 0.10, isReal: false, name: '', stance: 'Q', tier: 1 },
+  { id: 1, xNorm: 350 / 1376, yNorm: 550 / 768, scale: 0.36, facing: 1, speed: 0.95, phase: 0.35, isReal: false, name: '', stance: 'W', tier: 1 },
+  { id: 2, xNorm: 455 / 1376, yNorm: 560 / 768, scale: 0.38, facing: 1, speed: 1.05, phase: 0.70, isReal: false, name: '', stance: 'E', tier: 1 },
+  { id: 3, xNorm: 565 / 1376, yNorm: 545 / 768, scale: 0.38, facing: 1, speed: 1.20, phase: 0.45, isReal: false, name: '', stance: 'R', tier: 1 },
+  { id: 4, xNorm: 810 / 1376, yNorm: 545 / 768, scale: 0.38, facing: -1, speed: 1.00, phase: 0.55, isReal: false, name: '', stance: 'R', tier: 1 },
+  { id: 5, xNorm: 920 / 1376, yNorm: 560 / 768, scale: 0.38, facing: -1, speed: 1.10, phase: 0.85, isReal: false, name: '', stance: 'E', tier: 1 },
+  { id: 6, xNorm: 1025 / 1376, yNorm: 550 / 768, scale: 0.36, facing: -1, speed: 1.15, phase: 0.25, isReal: false, name: '', stance: 'W', tier: 1 },
+  { id: 7, xNorm: 1120 / 1376, yNorm: 535 / 768, scale: 0.35, facing: -1, speed: 1.05, phase: 0.65, isReal: false, name: '', stance: 'Q', tier: 1 },
+
+  // Tier 2: Midground Stepped Terraces & Colosseum Wings (12 stations)
+  // Left Wing (6)
+  { id: 8,  xNorm: 140 / 1376, yNorm: 475 / 768, scale: 0.26, facing: 1, speed: 1.00, phase: 0.15, isReal: false, name: '', stance: 'Q', tier: 2 },
+  { id: 9,  xNorm: 225 / 1376, yNorm: 450 / 768, scale: 0.25, facing: 1, speed: 1.10, phase: 0.40, isReal: false, name: '', stance: 'W', tier: 2 },
+  { id: 10, xNorm: 305 / 1376, yNorm: 425 / 768, scale: 0.24, facing: 1, speed: 0.90, phase: 0.60, isReal: false, name: '', stance: 'E', tier: 2 },
+  { id: 11, xNorm: 245 / 1376, yNorm: 505 / 768, scale: 0.27, facing: 1, speed: 1.15, phase: 0.80, isReal: false, name: '', stance: 'R', tier: 2 },
+  { id: 12, xNorm: 345 / 1376, yNorm: 490 / 768, scale: 0.26, facing: 1, speed: 1.05, phase: 0.30, isReal: false, name: '', stance: 'Q', tier: 2 },
+  { id: 13, xNorm: 425 / 1376, yNorm: 465 / 768, scale: 0.25, facing: 1, speed: 1.25, phase: 0.50, isReal: false, name: '', stance: 'W', tier: 2 },
+  // Right Wing (6)
+  { id: 14, xNorm: 950 / 1376, yNorm: 465 / 768, scale: 0.25, facing: -1, speed: 1.20, phase: 0.20, isReal: false, name: '', stance: 'W', tier: 2 },
+  { id: 15, xNorm: 1030 / 1376, yNorm: 490 / 768, scale: 0.26, facing: -1, speed: 1.00, phase: 0.75, isReal: false, name: '', stance: 'Q', tier: 2 },
+  { id: 16, xNorm: 1130 / 1376, yNorm: 505 / 768, scale: 0.27, facing: -1, speed: 1.10, phase: 0.35, isReal: false, name: '', stance: 'R', tier: 2 },
+  { id: 17, xNorm: 1070 / 1376, yNorm: 425 / 768, scale: 0.24, facing: -1, speed: 0.95, phase: 0.55, isReal: false, name: '', stance: 'E', tier: 2 },
+  { id: 18, xNorm: 1150 / 1376, yNorm: 450 / 768, scale: 0.25, facing: -1, speed: 1.15, phase: 0.90, isReal: false, name: '', stance: 'W', tier: 2 },
+  { id: 19, xNorm: 1235 / 1376, yNorm: 475 / 768, scale: 0.26, facing: -1, speed: 1.05, phase: 0.10, isReal: false, name: '', stance: 'Q', tier: 2 },
+
+  // Tier 3: High Mountain Spire Platforms (4 stations in misty heights)
+  { id: 20, xNorm: 110 / 1376, yNorm: 365 / 768, scale: 0.18, facing: 1, speed: 1.05, phase: 0.25, isReal: false, name: '', stance: 'Q', tier: 3 },
+  { id: 21, xNorm: 205 / 1376, yNorm: 350 / 768, scale: 0.17, facing: 1, speed: 1.10, phase: 0.65, isReal: false, name: '', stance: 'W', tier: 3 },
+  { id: 22, xNorm: 1170 / 1376, yNorm: 350 / 768, scale: 0.17, facing: -1, speed: 1.00, phase: 0.45, isReal: false, name: '', stance: 'W', tier: 3 },
+  { id: 23, xNorm: 1265 / 1376, yNorm: 365 / 768, scale: 0.18, facing: -1, speed: 1.15, phase: 0.85, isReal: false, name: '', stance: 'Q', tier: 3 },
 ];
 
 export const CommunityPanoramicForgeCanvas = forwardRef<
@@ -551,6 +577,12 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
       heroSheet: { src: `${cleanBase}assets/art/hero_spritesheet_strip.webp`, img: new Image(), loaded: false },
       badgeHoangKim: { src: `${cleanBase}assets/art/ui/badge_hoang_kim.webp`, img: new Image(), loaded: false },
       badgeBaoKich: { src: `${cleanBase}assets/art/ui/badge_bao_kich.webp`, img: new Image(), loaded: false },
+      amphitheater: { src: `${cleanBase}assets/art/grand_amphitheater_terraces.webp`, img: new Image(), loaded: false },
+      anvilFire: { src: `${cleanBase}assets/art/props/prop_anvil_fire_bagua.webp`, img: new Image(), loaded: false },
+      anvilLightning: { src: `${cleanBase}assets/art/props/prop_anvil_lightning_dragon.webp`, img: new Image(), loaded: false },
+      anvilMountain: { src: `${cleanBase}assets/art/props/prop_anvil_mountain_stone.webp`, img: new Image(), loaded: false },
+      brazier: { src: `${cleanBase}assets/art/props/prop_furnace_bronze_brazier.webp`, img: new Image(), loaded: false },
+      daoistMarker: { src: `${cleanBase}assets/art/props/prop_altar_daoist_marker.webp`, img: new Image(), loaded: false },
     };
 
     Object.values(assets).forEach((asset) => {
@@ -731,7 +763,7 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
       rhythmPhase = 0.05;
 
       const isPortrait = viewW < viewH;
-      const groundY = isPortrait ? viewH * 0.65 : (viewH < 500 ? viewH * 0.81 : viewH * 0.825);
+      let groundY = isPortrait ? viewH * 0.65 : (viewH < 500 ? viewH * 0.81 : viewH * 0.825);
       const renderScale = isPortrait ? Math.min(0.48, Math.max(0.36, viewW / 760)) : 0.38;
       const centerX = viewW * 0.5;
       const heroFootX = centerX - 14;
@@ -869,11 +901,17 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
     };
 
     triggerPeerWaveClosureRef.current = () => {
+      const isPortrait = viewW < viewH;
+      const amphiW = Math.max(viewW * 1.05, viewH * (1376 / 768) * (isPortrait ? 1.3 : 1.05));
+      const amphiH = amphiW * (768 / 1376);
+      const amphiX = (viewW - amphiW) * 0.5 - currentMouseX * 24;
+      const amphiY = isPortrait ? viewH * 0.32 - currentMouseY * 8 : viewH - amphiH + 8 - currentMouseY * 10;
+
       peerSlots.forEach((slot, idx) => {
         if (!slot.isReal) return; // Only real connected peers
         peerStrikeTimers[idx] = 0;
-        const px = slot.xNorm * viewW;
-        const py = viewH * 0.825 + slot.yOffset;
+        const px = amphiX + slot.xNorm * amphiW;
+        const py = amphiY + slot.yNorm * amphiH;
         const sect = STANCE_TO_SECT[slot.stance] || 'thunder';
         spawnLightningBolt(px, py - 8, SECT_COLORS[sect].glow, 0.9);
       });
@@ -919,8 +957,13 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
       if (slotIdx >= 0 && slotIdx < peerSlots.length) {
         peerStrikeTimers[slotIdx] = 0;
         const slot = peerSlots[slotIdx];
-        const px = slot.xNorm * viewW;
-        const py = viewH * 0.825 + slot.yOffset;
+        const isPortrait = viewW < viewH;
+        const amphiW = Math.max(viewW * 1.05, viewH * (1376 / 768) * (isPortrait ? 1.3 : 1.05));
+        const amphiH = amphiW * (768 / 1376);
+        const amphiX = (viewW - amphiW) * 0.5 - currentMouseX * 24;
+        const amphiY = isPortrait ? viewH * 0.32 - currentMouseY * 8 : viewH - amphiH + 8 - currentMouseY * 10;
+        const px = amphiX + slot.xNorm * amphiW;
+        const py = amphiY + slot.yNorm * amphiH;
         const sect = STANCE_TO_SECT[payload.stance] || 'thunder';
         const sc = SECT_COLORS[sect] || SECT_COLORS.thunder;
 
@@ -1079,7 +1122,7 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
         }
 
         const isPortrait = viewW < viewH;
-        const groundY = isPortrait ? viewH * 0.65 : (viewH < 500 ? viewH * 0.81 : viewH * 0.825);
+        let groundY = isPortrait ? viewH * 0.65 : (viewH < 500 ? viewH * 0.81 : viewH * 0.825);
         const renderScale = isPortrait ? Math.min(0.48, Math.max(0.36, viewW / 760)) : 0.38;
         const centerX = viewW * 0.5;
 
@@ -1209,196 +1252,120 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
         }
 
         // ---------------------------------------------------------------------
-        // LAYER 5: BASALT HORIZON RIDGE (64% HEIGHT)
+        // LAYER 5: 2.5D GRAND BASALT AMPHITHEATER (VẠN CỔ ĐÚC THẦN ĐÀI)
         // ---------------------------------------------------------------------
-        const horizonY = viewH * 0.64;
+        const amphiW = Math.max(viewW * 1.05, viewH * (1376 / 768) * (isPortrait ? 1.3 : 1.05));
+        const amphiH = amphiW * (768 / 1376);
+        const amphiX = (viewW - amphiW) * 0.5 - currentMouseX * 24;
+        const amphiY = isPortrait ? viewH * 0.32 - currentMouseY * 8 : viewH - amphiH + 8 - currentMouseY * 10;
 
-        // Sương mù chân trời
-        const mistGrad = ctx.createLinearGradient(0, horizonY - 45, 0, horizonY + 20);
-        mistGrad.addColorStop(0, 'rgba(4, 7, 18, 0)');
-        mistGrad.addColorStop(0.6, 'rgba(12, 18, 36, 0.45)');
-        mistGrad.addColorStop(1, 'rgba(7, 10, 20, 0.85)');
-        ctx.fillStyle = mistGrad;
-        ctx.fillRect(0, horizonY - 45, viewW, 65);
+        if (assets.amphitheater.loaded) {
+          const amImg = assets.amphitheater.img;
+          ctx.save();
+          ctx.drawImage(amImg, amphiX, amphiY, amphiW, amphiH);
 
-        // Dãy núi Basalt xa
-        ctx.save();
-        const paraRidgeX = currentMouseX * 18;
-        ctx.fillStyle = '#060914';
-        ctx.strokeStyle = skyState >= 5 ? 'rgba(239, 68, 68, 0.65)' : 'rgba(255, 120, 30, 0.45)';
-        ctx.lineWidth = 1.6;
-        ctx.beginPath();
-        ctx.moveTo(-50, horizonY + 25);
-        const ridgeSteps = 32;
-        for (let r = 0; r <= ridgeSteps; r++) {
-          const rx = (r / ridgeSteps) * (viewW + 100) - 50 - paraRidgeX;
-          const peak = Math.sin(r * 1.5 + 0.4) * 16 + Math.cos(r * 2.8) * 10;
-          ctx.lineTo(rx, horizonY - Math.abs(peak));
+          // Ethereal Qi mist & Magma fissure atmospheric pulse
+          const fissurePulse = 0.65 + Math.sin(now * 0.003) * 0.35 + flashIntensity * 0.4;
+          ctx.globalCompositeOperation = 'screen';
+          ctx.globalAlpha = Math.min(0.38, fissurePulse * 0.30);
+          const magmaGrad = ctx.createRadialGradient(
+            viewW * 0.5 - currentMouseX * 24, amphiY + amphiH * 0.72, 40,
+            viewW * 0.5 - currentMouseX * 24, amphiY + amphiH * 0.72, viewW * 0.55
+          );
+          magmaGrad.addColorStop(0, 'rgba(255, 120, 20, 0.40)');
+          magmaGrad.addColorStop(0.5, 'rgba(0, 240, 255, 0.18)');
+          magmaGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+          ctx.fillStyle = magmaGrad;
+          ctx.fillRect(0, amphiY + amphiH * 0.40, viewW, amphiH * 0.60);
+          ctx.restore();
         }
-        ctx.lineTo(viewW + 50, horizonY + 45);
-        ctx.lineTo(-50, horizonY + 45);
-        ctx.closePath();
-        ctx.fill();
-        ctx.stroke();
-        ctx.restore();
 
         // ---------------------------------------------------------------------
-        // LAYER 6: 3 STEPPED BASALT TERRACES (0.685, 0.750, 0.825)
+        // LAYER 6: DECORATIVE BRONZE BRAZIERS (CENTRAL STAIR FLANKS)
+        // ---------------------------------------------------------------------
+        if (assets.brazier.loaded) {
+          const bImg = assets.brazier.img;
+          const brazierStations = [
+            { xNorm: 525 / 1376, yNorm: 515 / 768, scale: 0.32 },
+            { xNorm: 850 / 1376, yNorm: 515 / 768, scale: 0.32 },
+          ];
+          brazierStations.forEach((bz) => {
+            const bx = amphiX + bz.xNorm * amphiW;
+            const by = amphiY + bz.yNorm * amphiH;
+            const bw = 54 * bz.scale;
+            const bh = bw * (bImg.height / bImg.width);
+
+            // Brazier shadow
+            ctx.save();
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
+            ctx.filter = 'blur(6px)';
+            ctx.beginPath();
+            ctx.ellipse(bx, by + 2, bw * 0.45, 6, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+
+            // Brazier sprite
+            ctx.save();
+            ctx.drawImage(bImg, bx - bw * 0.5, by - bh, bw, bh);
+
+            // Flickering eternal forge flame glow
+            const flamePulse = 0.5 + Math.sin(now * 0.007 + bx) * 0.3;
+            ctx.globalCompositeOperation = 'screen';
+            ctx.globalAlpha = flamePulse * 0.55;
+            ctx.fillStyle = '#FF7700';
+            ctx.filter = 'blur(8px)';
+            ctx.beginPath();
+            ctx.arc(bx, by - bh * 0.72, 10, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+          });
+        }
+
+        // ---------------------------------------------------------------------
+        // HELPER: DRAW PEER FORGE STATION (PEDESTAL + ANVIL + BLACKSMITH + PLAQUE)
         // ---------------------------------------------------------------------
         const activeSect = STANCE_TO_SECT[activeStanceRef.current] || 'thunder';
         const activeSectColor = SECT_COLORS[activeSect] || SECT_COLORS.thunder;
 
-        const terraceLevels = [
-          { y: viewH * 0.685, h: viewH * 0.065, color1: '#0B1122', color2: '#050812', stroke: 'rgba(124, 232, 255, 0.22)', lw: 1.2 },
-          { y: viewH * 0.750, h: viewH * 0.075, color1: '#0E162B', color2: '#060914', stroke: 'rgba(124, 232, 255, 0.35)', lw: 1.5 },
-          { y: viewH * 0.825, h: viewH * 0.180, color1: '#121D38', color2: '#070B18', stroke: activeSectColor.glow, lw: 2.2 },
-        ];
+        const drawPeerStation = (slot: PeerSlotConfig) => {
+          if (!slot.isReal) return; // Only render when real human peer is present (no bots)
+          const px = amphiX + slot.xNorm * amphiW;
+          const py = amphiY + slot.yNorm * amphiH;
 
-        terraceLevels.forEach((tl, tIdx) => {
-          const pX = currentMouseX * (22 + tIdx * 14);
-          const ty = tl.y - currentMouseY * (5 + tIdx * 3);
-
-          ctx.save();
-          const gradT = ctx.createLinearGradient(0, ty, 0, ty + tl.h);
-          gradT.addColorStop(0, tl.color1);
-          gradT.addColorStop(1, tl.color2);
-          ctx.fillStyle = gradT;
-
-          ctx.beginPath();
-          ctx.moveTo(0, ty);
-          for (let s = 0; s <= 20; s++) {
-            const sx = (s / 20) * viewW;
-            const dip = s >= 8 && s <= 12 ? 4 : s % 2 === 0 ? -2 : 2;
-            ctx.lineTo(sx - pX, ty + dip);
-          }
-          ctx.lineTo(viewW, ty + tl.h);
-          ctx.lineTo(0, ty + tl.h);
-          ctx.closePath();
-          ctx.fill();
-
-          ctx.strokeStyle = tl.stroke;
-          ctx.lineWidth = tl.lw;
-          ctx.shadowColor = tl.stroke;
-          ctx.shadowBlur = tIdx === 2 ? 14 : 6;
-          ctx.beginPath();
-          for (let s = 0; s <= 20; s++) {
-            const sx = (s / 20) * viewW;
-            const dip = s >= 8 && s <= 12 ? 4 : s % 2 === 0 ? -2 : 2;
-            if (s === 0) ctx.moveTo(sx - pX, ty + dip);
-            else ctx.lineTo(sx - pX, ty + dip);
-          }
-          ctx.stroke();
-          ctx.restore();
-        });
-
-        // ---------------------------------------------------------------------
-        // LAYER 7: AMBIENT SHADOW TROUPE (TIER 1 & 2)
-        // ---------------------------------------------------------------------
-        if (assets.peerShadowSheet.loaded) {
-          const sheetShadow = assets.peerShadowSheet.img;
-          const FW = 458;
-          const FH = 384;
-
-          AMBIENT_BOTS.forEach((bot) => {
-            const tLevel = bot.tier === 1 ? terraceLevels[0] : terraceLevels[1];
-            const tY = tLevel.y - currentMouseY * (bot.tier === 1 ? 5 : 8);
-            const pX = currentMouseX * (bot.tier === 1 ? 26 : 38);
-            const bx = bot.xNorm * viewW - pX;
-            const by = tY + (bot.tier === 1 ? 22 : 28);
-
-            const cycleTime = 1.05 / bot.speed;
-            const cycleSec = (now * 0.001 + bot.phase * 10) % cycleTime;
-            const progress = cycleSec / cycleTime;
-            let bFrame = 0;
-            if (progress < 0.20) bFrame = 0;
-            else if (progress < 0.42) bFrame = 1;
-            else if (progress < 0.60) bFrame = 2;
-            else if (progress < 0.78) bFrame = 3;
-            else if (progress < 0.90) bFrame = 4;
-            else bFrame = 5;
-
-            const bw = FW * bot.scale;
-            const bh = FH * bot.scale;
-
-            // Mini anvil
-            ctx.save();
-            ctx.fillStyle = '#1E293B';
-            ctx.strokeStyle = '#334155';
-            ctx.lineWidth = 1.0;
-            const anvilX = bx + (bot.facing === 1 ? 8 : -8);
-            ctx.beginPath();
-            ctx.roundRect(anvilX - 9, by - 6, 18, 8, 2);
-            ctx.fill();
-            ctx.stroke();
-            ctx.restore();
-
-            // Sprite
-            ctx.save();
-            ctx.translate(bx, by);
-            if (bot.facing === -1) ctx.scale(-1, 1);
-            ctx.globalAlpha = bot.tier === 1 ? 0.45 : 0.60;
-            const sx = bFrame * FW;
-            ctx.drawImage(sheetShadow, sx, 0, FW, FH, -bw * 0.42, -bh + 6, bw, bh);
-            ctx.restore();
-
-            // (Ambient handwriting label omitted to maintain clean terrace view)
-          });
-        }
-
-        // ---------------------------------------------------------------------
-        // LAYER 8: FRONTLINE PEDESTALS (SINGLE FORGER PEDESTALS)
-        // ---------------------------------------------------------------------
-        if (assets.pedestal.loaded) {
-          const pedImg = assets.pedestal.img;
-          peerSlots.forEach((slot) => {
-            if (!slot.isReal) return; // Only render when real human peer is present (no bots)
-            const paraX = currentMouseX * 52;
-            const paraY = currentMouseY * 14;
-            const px = slot.xNorm * viewW - paraX;
-            const py = groundY + slot.yOffset - paraY;
-
-            const pedW = 160 * (slot.scale / 0.35);
+          // 1. Pedestal
+          if (assets.pedestal.loaded) {
+            const pedImg = assets.pedestal.img;
+            const pedW = 145 * (slot.scale / 0.35);
             const pedH = pedW * (pedImg.height / pedImg.width);
 
-            // Shadow
             ctx.save();
-            ctx.fillStyle = 'rgba(0,0,0,0.7)';
-            ctx.filter = 'blur(10px)';
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
+            ctx.filter = 'blur(8px)';
             ctx.beginPath();
-            ctx.ellipse(px, py + pedH * 0.35, pedW * 0.45, 12, 0, 0, Math.PI * 2);
+            ctx.ellipse(px, py + pedH * 0.32, pedW * 0.45, 10, 0, 0, Math.PI * 2);
             ctx.fill();
             ctx.restore();
 
-            // Pedestal Image
             ctx.save();
             ctx.drawImage(pedImg, px - pedW * 0.5, py - pedH * 0.28, pedW, pedH);
 
             // Sect Rune Glow
-            if (slot.isReal) {
-              const sect = STANCE_TO_SECT[slot.stance] || 'thunder';
-              const sc = SECT_COLORS[sect] || SECT_COLORS.thunder;
-              ctx.globalAlpha = 0.45 + Math.sin(now * 0.004 + slot.id) * 0.15;
-              ctx.filter = 'blur(10px)';
-              ctx.fillStyle = sc.glow;
-              ctx.beginPath();
-              ctx.ellipse(px, py - 4, pedW * 0.3, 8, 0, 0, Math.PI * 2);
-              ctx.fill();
-            }
+            const sect = STANCE_TO_SECT[slot.stance] || 'thunder';
+            const sc = SECT_COLORS[sect] || SECT_COLORS.thunder;
+            ctx.globalAlpha = 0.45 + Math.sin(now * 0.004 + slot.id) * 0.15;
+            ctx.filter = 'blur(10px)';
+            ctx.fillStyle = sc.glow;
+            ctx.beginPath();
+            ctx.ellipse(px, py - 3, pedW * 0.3, 7, 0, 0, Math.PI * 2);
+            ctx.fill();
             ctx.restore();
-          });
-        }
+          }
 
-        // ---------------------------------------------------------------------
-        // LAYER 9: FRONTLINE PEER BLACKSMITHS (ANIMATED 6-FRAME)
-        // ---------------------------------------------------------------------
-        if (assets.peerSheet.loaded && assets.peerShadowSheet.loaded) {
-          const sheetColor = assets.peerSheet.img;
-          const sheetShadow = assets.peerShadowSheet.img;
-          const PEER_FW = 458;
-          const PEER_FH = 384;
-
-          peerSlots.forEach((slot) => {
-            if (!slot.isReal) return; // Only render when real human peer is present (no bots)
+          // 2. Peer Blacksmith Sprite (Animated 6-frame)
+          if (assets.peerSheet.loaded) {
+            const sheetColor = assets.peerSheet.img;
+            const PEER_FW = 458;
+            const PEER_FH = 384;
             const cycleTime = 1.05 / slot.speed;
             const cycleSec = (now * 0.001 + slot.phase * 10) % cycleTime;
             const progress = cycleSec / cycleTime;
@@ -1411,53 +1378,76 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
             else if (progress < 0.90) pFrame = 4;
             else pFrame = 5;
 
-            const paraX = currentMouseX * 52;
-            const paraY = currentMouseY * 14;
-            const px = slot.xNorm * viewW - paraX;
-            const py = groundY + slot.yOffset - paraY;
-
-            const pScale = slot.scale;
-            const pw = PEER_FW * pScale;
-            const ph = PEER_FH * pScale;
+            const pw = PEER_FW * slot.scale;
+            const ph = PEER_FH * slot.scale;
 
             ctx.save();
             ctx.translate(px, py);
             if (slot.facing === -1) {
               ctx.scale(-1, 1);
             }
-
-            const activeImg = slot.isReal ? sheetColor : sheetShadow;
-            ctx.globalAlpha = slot.isReal ? 1.0 : 0.45;
-
             const sx = pFrame * PEER_FW;
-            const sy = 0;
-            ctx.drawImage(activeImg, sx, sy, PEER_FW, PEER_FH, -pw * 0.42, -ph + 12, pw, ph);
+            ctx.drawImage(sheetColor, sx, 0, PEER_FW, PEER_FH, -pw * 0.42, -ph + 12, pw, ph);
             ctx.restore();
+          }
 
-            // Tiên Hiệp Plaque Nameplate (Charm / Caveat Calligraphy) - Only for real connected remote peers
-            if (slot.isReal && slot.name && slot.name.trim()) {
-              const nameY = py - ph + 4;
-              drawXianxiaPlaque(ctx, px, nameY, slot.name, slot.stance, false, slot.isReal);
-            }
-          });
-        }
+          // 3. Custom Sect Anvil Prop
+          const anvilAsset =
+            slot.stance === 'W'
+              ? assets.anvilFire
+              : slot.stance === 'E'
+              ? assets.anvilMountain
+              : assets.anvilLightning;
+
+          if (anvilAsset && anvilAsset.loaded) {
+            const aImg = anvilAsset.img;
+            const anW = 42 * (slot.scale / 0.35);
+            const anH = anW * (aImg.height / aImg.width);
+            const anX = px + (slot.facing === 1 ? 8 : -8) - anW * 0.5;
+            const anY = py - anH + 4;
+
+            ctx.save();
+            ctx.drawImage(aImg, anX, anY, anW, anH);
+            ctx.restore();
+          }
+
+          // 4. Tiên Hiệp Plaque Nameplate (Charm / Caveat Calligraphy)
+          if (slot.name && slot.name.trim()) {
+            const ph = 384 * slot.scale;
+            const nameY = py - ph + 4;
+            drawXianxiaPlaque(ctx, px, nameY, slot.name, slot.stance, false, true);
+          }
+        };
 
         // ---------------------------------------------------------------------
-        // LAYER 10: CENTRAL ALTAR PLATFORM (MAIN HERO)
+        // LAYER 7: TIER 3 HIGH MOUNTAIN SPIRE STATIONS (BACKGROUND PEERS)
         // ---------------------------------------------------------------------
+        peerSlots.filter((s) => s.tier === 3).forEach(drawPeerStation);
+
+        // ---------------------------------------------------------------------
+        // LAYER 8: TIER 2 MIDGROUND TERRACE STATIONS (COLOSSEUM WINGS)
+        // ---------------------------------------------------------------------
+        peerSlots.filter((s) => s.tier === 2).forEach(drawPeerStation);
+
+        // ---------------------------------------------------------------------
+        // LAYER 9: CENTRAL ALTAR PLATFORM (MAIN HERO DAIS)
+        // ---------------------------------------------------------------------
+        const daisTopY = amphiY + amphiH * (375 / 768);
+        const aW = isPortrait ? Math.min(270, viewW * 0.58) : Math.min(300, viewW * 0.22);
+        const aH = aW * (assets.mainAltar.img.height / assets.mainAltar.img.width);
+        const aX = centerX - aW * 0.5 - currentMouseX * 24;
+        const aY = daisTopY - aH * 0.65;
+        groundY = aY + aH * 0.58;
+
         if (assets.mainAltar.loaded) {
           const aImg = assets.mainAltar.img;
-          const aW = isPortrait ? Math.min(260, viewW * 0.58) : Math.min(270, viewW * 0.25);
-          const aH = aW * (aImg.height / aImg.width);
-          const aX = centerX - aW * 0.5 - currentMouseX * 56;
-          const aY = groundY - aH * 0.22 - currentMouseY * 16;
 
           // Shadow
           ctx.save();
           ctx.fillStyle = 'rgba(0, 0, 0, 0.9)';
           ctx.filter = 'blur(16px)';
           ctx.beginPath();
-          ctx.ellipse(centerX - currentMouseX * 56, groundY + aH * 0.30, aW * 0.45, 14, 0, 0, Math.PI * 2);
+          ctx.ellipse(centerX - currentMouseX * 24, groundY + aH * 0.15, aW * 0.45, 14, 0, 0, Math.PI * 2);
           ctx.fill();
           ctx.restore();
 
@@ -1472,10 +1462,15 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
           ctx.filter = 'blur(12px)';
           ctx.fillStyle = runeColor;
           ctx.beginPath();
-          ctx.ellipse(centerX - currentMouseX * 56, groundY - 2 - currentMouseY * 16, aW * 0.26, 10, 0, 0, Math.PI * 2);
+          ctx.ellipse(centerX - currentMouseX * 24, groundY - 2, aW * 0.26, 10, 0, 0, Math.PI * 2);
           ctx.fill();
           ctx.restore();
         }
+
+        // ---------------------------------------------------------------------
+        // LAYER 10: TIER 1 FOREGROUND PROMENADE STATIONS (FLANKING HERO)
+        // ---------------------------------------------------------------------
+        peerSlots.filter((s) => s.tier === 1).forEach(drawPeerStation);
 
         // ---------------------------------------------------------------------
         // LAYER 11: MAIN HERO (BALANCED 0.38 SCALE, EQUAL PROMINENCE)
@@ -1483,7 +1478,7 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
         if (assets.heroSheet.loaded) {
           const sheet = assets.heroSheet.img;
           const stageFootY = groundY - currentMouseY * 18;
-          const heroFootX = centerX - 14 - currentMouseX * 64;
+          const heroFootX = centerX - 14 - currentMouseX * 24;
 
           const FRAME_W = 360;
           const FRAME_H = 480;
@@ -1590,7 +1585,7 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
           const heroName = playerNameRef.current.trim() || 'Thợ Rèn Chính';
           const labelText = `${heroName} · [${stanceMeta.nameVn}]`;
           const tagY = stageFootY - 140;
-          drawXianxiaPlaque(ctx, centerX - currentMouseX * 64, tagY, labelText, activeStanceRef.current, true, true);
+          drawXianxiaPlaque(ctx, centerX - currentMouseX * 24, tagY, labelText, activeStanceRef.current, true, true);
         }
 
         // ---------------------------------------------------------------------
