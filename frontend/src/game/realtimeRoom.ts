@@ -14,7 +14,8 @@ export interface PeerPresence {
   name: string;
   guildId: string;
   stance: StanceKey;
-  slotIndex: number; // 0..17 (slots on panoramic terraces)
+  slotIndex: number; // 0..23 (slots on panoramic terraces)
+  skinId?: string;
   lastSeen: number;
 }
 
@@ -74,6 +75,7 @@ export class RealtimeRoomClient {
   private localPlayerName: string;
   private localGuildId: string = 'guild_thien_thai';
   private localStance: StanceKey = 'Q';
+  private localSkinId: string = 'skin_default';
   private assignedSlotIndex: number = 1; // Default first peer slot
 
   private peers: Map<string, PeerPresence> = new Map();
@@ -233,9 +235,10 @@ export class RealtimeRoomClient {
     }, 4000);
   }
 
-  public updateIdentity(stance?: StanceKey, guildId?: string, name?: string) {
+  public updateIdentity(stance?: StanceKey, guildId?: string, name?: string, skinId?: string) {
     if (stance) this.localStance = stance;
     if (guildId) this.localGuildId = guildId;
+    if (skinId) this.localSkinId = skinId;
     if (name) {
       this.localPlayerName = name;
       safeStorage.setItem('phatroi_user_name', name);
@@ -279,6 +282,7 @@ export class RealtimeRoomClient {
       guildId: this.localGuildId,
       stance: this.localStance,
       slotIndex: this.assignedSlotIndex,
+      skinId: this.localSkinId,
       lastSeen: Date.now(),
     };
 

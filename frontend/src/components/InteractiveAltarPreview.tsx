@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback, useImperativeHandle, forwardRef } from 'react';
-import { PlayerClassId, PLAYER_CLASSES, StanceKey } from '../game/rules';
+import { PlayerClassId, PLAYER_CLASSES, StanceKey, SECT_DEFAULT_SKIN, CHARACTER_SKINS } from '../game/rules';
 import { soundEngine } from '../game/audio';
 
 export interface InteractiveAltarPreviewRef {
@@ -9,6 +9,7 @@ export interface InteractiveAltarPreviewRef {
 interface InteractiveAltarPreviewProps {
   selectedClassId: PlayerClassId;
   characterName: string;
+  skinId?: string;
   onStrikeStatsUpdate?: (stats: { totalStrikes: number; perfectStrikes: number; lastRating: string }) => void;
 }
 
@@ -234,40 +235,67 @@ export const InteractiveAltarPreview = forwardRef<InteractiveAltarPreviewRef, In
   // Asset image refs
   const altarImgRef = useRef<HTMLImageElement | null>(null);
   const heroSheetRef = useRef<HTMLImageElement | null>(null);
+  const skinCacheRef = useRef<Map<string, HTMLImageElement>>(new Map());
   const assetsLoadedRef = useRef<boolean>(false);
 
-  // Load assets once
+  // Effective skin for this class
+  const activeSkinId = skinId || SECT_DEFAULT_SKIN[selectedClassId] || 'skin_default';
+
+  // Base platform asset loader
   useEffect(() => {
     let active = true;
     const base = import.meta.env.BASE_URL || '/';
     const cleanBase = base.endsWith('/') ? base : `${base}/`;
 
     const altarImg = new Image();
-    const heroImg = new Image();
-
-    let loadedCount = 0;
-    const onAssetLoad = () => {
-      loadedCount++;
-      if (loadedCount >= 2 && active) {
+    altarImg.onload = () => {
+      if (active) {
         altarImgRef.current = altarImg;
-        heroSheetRef.current = heroImg;
         assetsLoadedRef.current = true;
       }
     };
-
-    altarImg.onload = onAssetLoad;
-    heroImg.onload = onAssetLoad;
-
     altarImg.src = `${cleanBase}assets/art/altar_platform.webp`;
-    heroImg.src = `${cleanBase}assets/art/hero_spritesheet_strip.webp`;
-
-    if (altarImg.complete) onAssetLoad();
-    if (heroImg.complete) onAssetLoad();
+    if (altarImg.complete) {
+      altarImgRef.current = altarImg;
+      assetsLoadedRef.current = true;
+    }
 
     return () => {
       active = false;
     };
   }, []);
+
+  // Dynamic Skin Spritesheet Loader (instant cached switching)
+  useEffect(() => {
+    let active = true;
+    const base = import.meta.env.BASE_URL || '/';
+    const cleanBase = base.endsWith('/') ? base : `${base}/`;
+
+    const cached = skinCacheRef.current.get(activeSkinId);
+    if (cached && cached.complete) {
+      heroSheetRef.current = cached;
+      return;
+    }
+
+    const skinMeta = CHARACTER_SKINS[activeSkinId];
+    const srcPath = skinMeta ? `${cleanBase}${skinMeta.spritesheetPath}` : `${cleanBase}assets/art/hero_spritesheet_strip.webp`;
+    const skinImg = new Image();
+    skinImg.onload = () => {
+      if (active) {
+        skinCacheRef.current.set(activeSkinId, skinImg);
+        heroSheetRef.current = skinImg;
+      }
+    };
+    skinImg.src = srcPath;
+    if (skinImg.complete) {
+      skinCacheRef.current.set(activeSkinId, skinImg);
+      heroSheetRef.current = skinImg;
+    }
+
+    return () => {
+      active = false;
+    };
+  }, [activeSkinId]);
 
   // Strike Action Function
   const executeStrike = useCallback(() => {

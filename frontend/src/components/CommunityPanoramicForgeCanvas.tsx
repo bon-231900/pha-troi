@@ -445,6 +445,21 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
   const activeStanceRef = useRef<StanceKey>(activeStance);
   const gameStateRef = useRef<string>(gameState);
   const playerNameRef = useRef<string>(playerName);
+  const skinSpritesRef = useRef<Map<string, HTMLImageElement>>(new Map());
+  const equippedSkinIdRef = useRef<string>(equippedSkinId);
+  equippedSkinIdRef.current = equippedSkinId;
+
+  // Preload equipped skin
+  useEffect(() => {
+    if (!equippedSkinId) return;
+    const base = import.meta.env.BASE_URL || '/';
+    const cleanBase = base.endsWith('/') ? base : `${base}/`;
+    if (!skinSpritesRef.current.has(equippedSkinId)) {
+      const img = new Image();
+      img.src = `${cleanBase}assets/art/skins/${equippedSkinId}/spritesheet_strip.webp`;
+      skinSpritesRef.current.set(equippedSkinId, img);
+    }
+  }, [equippedSkinId]);
   const onHeroStrikeActionRef = useRef(onHeroStrikeAction);
   const onPeerAutonomousDamageRef = useRef(onPeerAutonomousDamage);
 
@@ -1476,7 +1491,11 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
         // LAYER 11: MAIN HERO (BALANCED 0.38 SCALE, EQUAL PROMINENCE)
         // ---------------------------------------------------------------------
         if (assets.heroSheet.loaded) {
-          const sheet = assets.heroSheet.img;
+          const currentSkinId = equippedSkinIdRef.current || 'skin_default';
+          const customSkinImg = skinSpritesRef.current.get(currentSkinId);
+          const sheet = (customSkinImg && customSkinImg.complete && customSkinImg.naturalWidth > 0)
+            ? customSkinImg
+            : assets.heroSheet.img;
           const stageFootY = groundY - currentMouseY * 18;
           const heroFootX = centerX - 14 - currentMouseX * 24;
 

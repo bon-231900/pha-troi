@@ -7,6 +7,7 @@ import {
   INITIAL_SPIRIT_NODES,
   INITIAL_EQUIPPED_SLOTS,
   StanceSkillNode,
+  SECT_DEFAULT_SKIN,
 } from './rules';
 
 export interface CharacterSlotProgress {
@@ -26,6 +27,7 @@ export interface CharacterSlotProgress {
   serverFurnaceHeat?: number;
   serverAnvilHp?: number;
   raidContributionScore?: number;
+  equippedSkinId?: string;
   lastActiveTimestamp: number;
 }
 
@@ -36,6 +38,7 @@ export interface CharacterProfile {
   createdAt: number;
   lastPlayedAt: number;
   level: number;
+  equippedSkinId?: string;
   progress: CharacterSlotProgress;
 }
 
@@ -212,14 +215,17 @@ export function createCharacterInSlot(
   slotId: 1 | 2 | 3,
   characterName: string,
   classId: PlayerClassId,
-  googleId?: string
+  googleId?: string,
+  skinId?: string
 ): CharacterProfile {
   const slots = loadCharacterSlots(googleId);
 
+  const finalSkinId = skinId || SECT_DEFAULT_SKIN[classId] || 'skin_default';
   const newProfile: CharacterProfile = {
     slotId,
     characterName: characterName.trim() || `Thợ Rèn #${Math.floor(Math.random() * 8999 + 1000)}`,
     classId,
+    equippedSkinId: finalSkinId,
     createdAt: Date.now(),
     lastPlayedAt: Date.now(),
     level: 1,
@@ -240,6 +246,7 @@ export function createCharacterInSlot(
       serverFurnaceHeat: 3500,
       serverAnvilHp: 10000,
       raidContributionScore: 0,
+      equippedSkinId: finalSkinId,
       lastActiveTimestamp: Date.now(),
     },
   };
@@ -299,4 +306,28 @@ export function updateActiveSlotProgress(
 
   slots[slotId - 1] = current;
   saveAllCharacterSlots(slots, googleId);
+}
+
+
+/**
+ * Update equipped skin for a character in slot
+ */
+export function updateCharacterSkinInSlot(
+  slotId: 1 | 2 | 3,
+  skinId: string,
+  googleId?: string
+): void {
+  try {
+    const slots = loadCharacterSlots(googleId);
+    const profile = slots[slotId - 1];
+    if (profile) {
+      profile.equippedSkinId = skinId;
+      if (profile.progress) {
+        profile.progress.equippedSkinId = skinId;
+      }
+      saveAllCharacterSlots(slots, googleId);
+    }
+  } catch (err) {
+    console.error('Failed to update character skin in slot:', err);
+  }
 }

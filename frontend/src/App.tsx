@@ -96,6 +96,7 @@ import {
   createCharacterInSlot,
   deleteCharacterSlot,
   updateActiveSlotProgress,
+  updateCharacterSkinInSlot,
   CharacterProfile,
 } from './game/characterSlots';
 import { ClassSkillBar } from './components/ClassSkillBar';
@@ -1126,6 +1127,13 @@ export default function App() {
       setPlayerName(profile.characterName);
       safeStorage.setItem('phatroi_user_name', profile.characterName);
       safeStorage.setItem('phatroi_player_class', profile.classId);
+      const skin = profile.equippedSkinId || SECT_DEFAULT_SKIN[profile.classId] || 'skin_default';
+      setEquippedSkinId(skin);
+      safeStorage.setItem('phatroi_equipped_skin', skin);
+      if (realtimeClientRef.current) {
+        const cls = getPlayerClass(profile.classId);
+        realtimeClientRef.current.updateIdentity(cls.stanceKey, cls.guildId, profile.characterName, skin);
+      }
 
       const prog = profile.progress;
       if (!isServerSynced && !hasReceivedInitialSyncRef.current && typeof prog.bossHp === 'number' && prog.bossHp >= 10_000_000) {
@@ -2416,9 +2424,10 @@ export default function App() {
 
   // Balance Patch v3.3: Class Commitment & Active Class Skill Handlers
   const handleCommitClass = useCallback(
-    (classId: PlayerClassId, name: string) => {
+    (classId: PlayerClassId, name: string, skinId?: string) => {
       const targetSlot = creatingSlotId || activeSlotId;
-      const newProfile = createCharacterInSlot(targetSlot, name, classId, googleUser?.googleId);
+      const finalSkinId = skinId || SECT_DEFAULT_SKIN[classId] || 'skin_default';
+      const newProfile = createCharacterInSlot(targetSlot, name, classId, googleUser?.googleId, finalSkinId);
       const updatedSlots = loadCharacterSlots(googleUser?.googleId);
       setCharacterSlots(updatedSlots);
       loadSlotProfile(newProfile);
@@ -2429,10 +2438,32 @@ export default function App() {
       const cls = getPlayerClass(classId);
       setActiveStance(cls.stanceKey);
       setUserGuildId(cls.guildId);
+      setEquippedSkinId(finalSkinId);
+      safeStorage.setItem('phatroi_equipped_skin', finalSkinId);
+      if (realtimeClientRef.current) {
+        realtimeClientRef.current.updateIdentity(cls.stanceKey, cls.guildId, name, finalSkinId);
+      }
       soundEngine.playGlobalBurstFanfare();
       appendCombatLog(`🎉 [BÁI SƯ THÀNH CÔNG] Bạn đã gia nhập [${cls.name} · ${cls.sectTitle}]! Bắt đầu tu luyện bộ chiêu thức Q W E R.`, 'gold');
     },
     [creatingSlotId, activeSlotId, googleUser, loadSlotProfile, appendCombatLog]
+  );
+
+  const handleEquipSkin = useCallback(
+    (skinId: string) => {
+      setEquippedSkinId(skinId);
+      safeStorage.setItem('phatroi_equipped_skin', skinId);
+      updateCharacterSkinInSlot(activeSlotId, skinId, googleUser?.googleId);
+      const updated = loadCharacterSlots(googleUser?.googleId);
+      setCharacterSlots(updated);
+      if (realtimeClientRef.current) {
+        realtimeClientRef.current.updateIdentity(undefined, undefined, undefined, skinId);
+      }
+      soundEngine.playAnvilStrike('PERFECT', 'Q', false);
+      const sName = CHARACTER_SKINS[skinId]?.name || 'Trang Phục Mới';
+      appendCombatLog(`👘 [Y PHỤC] Bạn đã khoác lên [${sName}]!`, 'cyan');
+    },
+    [activeSlotId, googleUser, appendCombatLog]
   );
 
   const handleSelectSlot = useCallback(

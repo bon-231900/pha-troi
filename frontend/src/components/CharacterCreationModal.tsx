@@ -3,6 +3,9 @@ import {
   PlayerClassId,
   PLAYER_CLASSES,
   PlayerClassMeta,
+  CHARACTER_SKINS,
+  SECT_DEFAULT_SKIN,
+  CharacterSkinMeta,
 } from '../game/rules';
 import { soundEngine } from '../game/audio';
 import { Sparkles, Dices, Zap, Flame, Mountain, Music, ArrowRight, Check } from 'lucide-react';
@@ -11,9 +14,10 @@ import { InteractiveAltarPreview, InteractiveAltarPreviewRef } from './Interacti
 interface CharacterCreationModalProps {
   currentClassId?: PlayerClassId | null;
   currentName?: string;
+  currentSkinId?: string | null;
   isInitialCreation?: boolean;
   slotId?: 1 | 2 | 3;
-  onConfirm: (classId: PlayerClassId, characterName: string) => void;
+  onConfirm: (classId: PlayerClassId, characterName: string, skinId?: string) => void;
   onCancel?: () => void;
 }
 
@@ -35,12 +39,17 @@ const RANDOM_NAMES = [
 export const CharacterCreationModal: React.FC<CharacterCreationModalProps> = ({
   currentClassId = null,
   currentName = '',
+  currentSkinId = null,
   isInitialCreation = false,
   slotId,
   onConfirm,
   onCancel,
 }) => {
   const [selectedClassId, setSelectedClassId] = useState<PlayerClassId>(currentClassId || 'thunder');
+  const [selectedSkinId, setSelectedSkinId] = useState<string>(() => {
+    if (currentSkinId && CHARACTER_SKINS[currentSkinId]) return currentSkinId;
+    return SECT_DEFAULT_SKIN[currentClassId || 'thunder'] || 'skin_thunder_robe';
+  });
   const [characterName, setCharacterName] = useState<string>(() => {
     if (currentName && currentName.trim().length > 0) return currentName;
     return `Thợ Rèn #${Math.floor(Math.random() * 8999 + 1000)}`;
@@ -58,8 +67,14 @@ export const CharacterCreationModal: React.FC<CharacterCreationModalProps> = ({
 
   const handleSelectClass = (cId: PlayerClassId) => {
     setSelectedClassId(cId);
+    setSelectedSkinId(SECT_DEFAULT_SKIN[cId] || 'skin_default');
     const cls = PLAYER_CLASSES[cId];
     soundEngine.playStanceSwitch(cls.stanceKey);
+  };
+
+  const handleSelectSkin = (sId: string) => {
+    setSelectedSkinId(sId);
+    soundEngine.playAnvilStrike('GREAT', 'Q', false);
   };
 
   const handleCommit = () => {
@@ -68,7 +83,7 @@ export const CharacterCreationModal: React.FC<CharacterCreationModalProps> = ({
     soundEngine.unlockAudio();
     soundEngine.playGlobalBurstFanfare();
     setTimeout(() => {
-      onConfirm(selectedClassId, characterName.trim() || 'Thợ Rèn Vô Danh');
+      onConfirm(selectedClassId, characterName.trim() || 'Thợ Rèn Vô Danh', selectedSkinId);
     }, 400);
   };
 
@@ -126,12 +141,77 @@ export const CharacterCreationModal: React.FC<CharacterCreationModalProps> = ({
         {/* 2.5D SPLIT SCREEN: LEFT PREVIEW + RIGHT CONFIGURATION */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch">
           {/* LEFT COLUMN: 2.5D INTERACTIVE ALTAR & PRE-TEST HAMMER */}
-          <div className="lg:col-span-5 flex flex-col justify-between">
+          <div className="lg:col-span-5 flex flex-col justify-between gap-2.5">
             <InteractiveAltarPreview
               ref={altarPreviewRef}
               selectedClassId={selectedClassId}
               characterName={characterName}
+              skinId={selectedSkinId}
             />
+
+            {/* Sect Outfits & Robe Selector */}
+            <div className="p-3 rounded-2xl bg-slate-900/80 border border-slate-800 flex flex-col gap-2">
+              <div className="flex items-center justify-between text-xs font-tech">
+                <span className="text-amber-300 font-bold uppercase tracking-wider flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Y PHỤC MÔN PHÁI (5 BỘ ĐỒ ĐỘC BẢN):</span>
+                </span>
+                <span className="text-[11px] text-slate-400">
+                  Đang chọn: <b className="text-amber-300">{CHARACTER_SKINS[selectedSkinId]?.name || 'Phục Trang'}</b>
+                </span>
+              </div>
+
+              {/* 5 Outfit Cards Row */}
+              <div className="grid grid-cols-5 gap-1.5">
+                {Object.values(CHARACTER_SKINS).map((sk) => {
+                  const isSelected = selectedSkinId === sk.id;
+                  const isSectMatch = sk.sectId === selectedClassId;
+                  return (
+                    <button
+                      key={sk.id}
+                      type="button"
+                      onClick={() => handleSelectSkin(sk.id)}
+                      className={`relative rounded-xl border p-1 text-center cursor-pointer transition-all flex flex-col items-center gap-1 group ${
+                        isSelected
+                          ? 'bg-slate-800/90 border-amber-400 ring-2 ring-amber-400/50 shadow-lg scale-105 z-10'
+                          : 'bg-slate-950/70 border-slate-800 hover:border-slate-700 hover:bg-slate-900/60'
+                      }`}
+                      title={`${sk.name} · ${sk.sectTitle}\n${sk.description}`}
+                    >
+                      {/* Sect Recommended Tag */}
+                      {isSectMatch && (
+                        <div className="absolute -top-1.5 -right-1 px-1 py-0.2 rounded-full bg-amber-500 text-slate-950 text-[7px] font-bold z-20 shadow">
+                          CHUẨN
+                        </div>
+                      )}
+
+                      {/* Outfit Card Image */}
+                      <div className="w-full aspect-[3/4] rounded-lg overflow-hidden bg-slate-900/90 relative border border-slate-700/50">
+                        <img
+                          src={`$${import.meta.env.BASE_URL || './'}${sk.cardPath}`}
+                          alt={sk.name}
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
+                        <span className="absolute bottom-0.5 right-1 text-[11px]">{sk.icon}</span>
+                      </div>
+
+                      {/* Outfit Short Name */}
+                      <span className={`text-[9px] font-tech font-bold leading-tight truncate w-full ${
+                        isSelected ? 'text-amber-300' : 'text-slate-300'
+                      }`}>
+                        {sk.name.replace('Phàm Nhân ', '').replace('Cửu Tiêu ', '').replace('Hắc Diệm ', '').replace('Bất Chu ', '').replace('Thanh Mộc ', '')}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Lore / Description Line */}
+              <div className="text-[10px] font-tech text-slate-400 italic bg-slate-950/60 py-1 px-2 rounded-lg border border-slate-800/60 truncate">
+                ✨ {CHARACTER_SKINS[selectedSkinId]?.description || ''}
+              </div>
+            </div>
           </div>
 
           {/* RIGHT COLUMN: SECT SELECTION, SKILLS, AND COMMIT */}
