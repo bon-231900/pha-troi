@@ -1469,11 +1469,9 @@ export default function App() {
       // 4. Global countdown
       setGlobalCountdownSec((prev) => (prev <= 1 ? 180 : prev - 0.5));
 
-      // 5. Atmospheric Seal Layer & Ambient check
+      // 5. Atmospheric Seal Layer & Ambient check (No chip - HP only decreases on active player strikes)
       setBossHp((prevHp) => {
-        // Only simulate local chip if completely offline (server unreachable)
-        const chip = isServerSynced ? 0 : 100;
-        const nextHp = Math.max(0, prevHp - chip);
+        const nextHp = prevHp;
 
         const currentSeal = getAtmosphericSealLayer(nextHp, vault.maxHp);
         if (currentSeal.id > lastSealLayerIdRef.current) {
