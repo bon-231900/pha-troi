@@ -193,6 +193,17 @@ export default function App() {
     return BOSS_FLOOR_1_MAX_HP;
   });
   const [bossTrailHp, setBossTrailHp] = useState<number>(bossHp);
+
+  // Smooth fighting-game style Boss Ghost Trail HP decay (No visual jump)
+  useEffect(() => {
+    if (bossTrailHp > bossHp) {
+      const step = Math.max(1, Math.round((bossTrailHp - bossHp) * 0.18));
+      const t = setTimeout(() => {
+        setBossTrailHp((prev) => Math.max(bossHp, prev - step));
+      }, 35);
+      return () => clearTimeout(t);
+    }
+  }, [bossHp, bossTrailHp]);
   const [bossShieldPct, setBossShieldPct] = useState<number>(100.0);
   const [globalCountdownSec, setGlobalCountdownSec] = useState<number>(180);
   const [globalSynergyPct, setGlobalSynergyPct] = useState<number>(74.0);
@@ -812,15 +823,10 @@ export default function App() {
         }
 
         // Synchronize Boss HP: snap if drift > 15 HP or on initial room sync
-        setBossHp((localHp) => {
-          const diff = Math.abs(localHp - state.bossHp);
-          if (diff > 15 || !hasReceivedInitialSyncRef.current) {
-            hasReceivedInitialSyncRef.current = true;
-            setBossTrailHp(state.bossTrailHp || state.bossHp);
-            return state.bossHp;
-          }
-          return localHp;
-        });
+        // When Cloudflare Server is active, Cloudflare is the master authority for Boss HP
+        if (isServerSynced) return;
+        // Monotonic sync: never snap backward
+        setBossHp((localHp) => Math.min(localHp, state.bossHp));
 
         // Synchronize Server Furnace Heat
         if (typeof state.serverFurnaceHeat === 'number') {
@@ -889,12 +895,13 @@ export default function App() {
           setIsServerSynced(true);
           // Snap boss HP if drift > 20 HP or on initial load
           setBossHp((localHp) => {
-            if (Math.abs(localHp - state.currentHp) > 20 || !hasReceivedInitialSyncRef.current) {
+            if (!hasReceivedInitialSyncRef.current) {
               hasReceivedInitialSyncRef.current = true;
               setBossTrailHp(state.currentHp);
               return state.currentHp;
             }
-            return localHp;
+            // Monotonic: smoothly pull down if server has lower HP (community progress)
+            return Math.min(localHp, state.currentHp);
           });
 
           if (typeof state.serverFurnaceHeat === 'number') {
@@ -958,11 +965,8 @@ export default function App() {
       if (resState) {
         setIsServerSynced(true);
         setBossHp((localHp) => {
-          if (Math.abs(localHp - resState.currentHp) > 25) {
-            setBossTrailHp(resState.currentHp);
-            return resState.currentHp;
-          }
-          return localHp;
+          // Monotonic: smoothly pull down if server has lower HP
+          return Math.min(localHp, resState.currentHp);
         });
         if (typeof resState.serverFurnaceHeat === 'number') {
           setServerFurnaceHeat((localHeat) => (Math.abs(localHeat - resState.serverFurnaceHeat) > 20 ? resState.serverFurnaceHeat : localHeat));
@@ -1465,15 +1469,12 @@ export default function App() {
       // 4. Global countdown
       setGlobalCountdownSec((prev) => (prev <= 1 ? 180 : prev - 0.5));
 
-      // 5. Realistic Server Output Simulation:
-      // 500 CCU * 30 hits/min * 8 DMG = 7.2M/hour = ~2,000 DMG/s = ~1,000 DMG per 500ms
+      // 5. Atmospheric Seal Layer & Ambient check
       setBossHp((prevHp) => {
-        const alliedChip = 1000 + Math.floor((Math.random() - 0.5) * 200);
-        const nextHp = Math.max(0, prevHp - alliedChip);
+        // Only simulate local chip if completely offline (server unreachable)
+        const chip = isServerSynced ? 0 : 100;
+        const nextHp = Math.max(0, prevHp - chip);
 
-        setBossTrailHp((prevTrail) => Math.max(nextHp, prevTrail - 1200));
-
-        // Check Atmospheric Seal Layer transitions (75%, 50%, 25%)
         const currentSeal = getAtmosphericSealLayer(nextHp, vault.maxHp);
         if (currentSeal.id > lastSealLayerIdRef.current) {
           lastSealLayerIdRef.current = currentSeal.id;
