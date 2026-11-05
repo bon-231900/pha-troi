@@ -368,21 +368,8 @@ function drawXianxiaPlaque(
 }
 
 // Background troupe (Tier 1 & 2 ambient shadows)
-const AMBIENT_BOTS = [
-  { id: 'b1', xNorm: 0.08, tier: 1, scale: 0.16, facing: 1, speed: 0.92, phase: 0.12, label: 'Tàn Ảnh #11' },
-  { id: 'b2', xNorm: 0.19, tier: 1, scale: 0.16, facing: 1, speed: 1.08, phase: 0.45, label: 'Tàn Ảnh #12' },
-  { id: 'b3', xNorm: 0.30, tier: 1, scale: 0.16, facing: 1, speed: 0.95, phase: 0.78, label: 'Tàn Ảnh #13' },
-  { id: 'b4', xNorm: 0.41, tier: 1, scale: 0.16, facing: 1, speed: 1.15, phase: 0.23, label: 'Tàn Ảnh #14' },
-  { id: 'b5', xNorm: 0.59, tier: 1, scale: 0.16, facing: -1, speed: 1.02, phase: 0.85, label: 'Tàn Ảnh #15' },
-  { id: 'b6', xNorm: 0.70, tier: 1, scale: 0.16, facing: -1, speed: 1.12, phase: 0.38, label: 'Tàn Ảnh #16' },
-  { id: 'b7', xNorm: 0.81, tier: 1, scale: 0.16, facing: -1, speed: 0.90, phase: 0.65, label: 'Tàn Ảnh #17' },
-  { id: 'b8', xNorm: 0.92, tier: 1, scale: 0.16, facing: -1, speed: 1.20, phase: 0.19, label: 'Tàn Ảnh #18' },
-
-  { id: 'b9', xNorm: 0.18, tier: 2, scale: 0.22, facing: 1, speed: 1.00, phase: 0.35, label: 'Tàn Ảnh #21' },
-  { id: 'b10', xNorm: 0.30, tier: 2, scale: 0.22, facing: 1, speed: 1.18, phase: 0.68, label: 'Tàn Ảnh #22' },
-  { id: 'b11', xNorm: 0.70, tier: 2, scale: 0.22, facing: -1, speed: 0.96, phase: 0.52, label: 'Tàn Ảnh #23' },
-  { id: 'b12', xNorm: 0.82, tier: 2, scale: 0.22, facing: -1, speed: 1.05, phase: 0.91, label: 'Tàn Ảnh #24' },
-];
+// All bots removed per user request: zero bot overhead, no lag
+const AMBIENT_BOTS: Array<{ id: string; xNorm: number; tier: number; scale: number; facing: number; speed: number; phase: number; label: string }> = [];
 
 // Tier 3: Frontline Peer Blacksmith Slots (Flanking Main Hero)
 interface PeerSlotConfig {
@@ -883,6 +870,7 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
 
     triggerPeerWaveClosureRef.current = () => {
       peerSlots.forEach((slot, idx) => {
+        if (!slot.isReal) return; // Only real connected peers
         peerStrikeTimers[idx] = 0;
         const px = slot.xNorm * viewW;
         const py = viewH * 0.825 + slot.yOffset;
@@ -1017,52 +1005,7 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
             }
           }
 
-          // Autonomous peer strikes for bots
-          if (gameStateRef.current === 'playing' && bossHpRef.current > 0) {
-            peerSlots.forEach((slot, idx) => {
-              if (remotePeersMap.has(idx)) return; // Real players don't auto-strike
-
-              const cycleTime = 1.05 / slot.speed;
-              const cycleSec = (now * 0.001 + slot.phase * 10) % cycleTime;
-              const progress = cycleSec / cycleTime;
-              const isImpactFrame = progress >= 0.60 && progress < 0.78;
-
-              if (isImpactFrame && !lastImpactFlags[idx]) {
-                lastImpactFlags[idx] = true;
-                const px = slot.xNorm * viewW - currentMouseX * 52;
-                const py = viewH * 0.825 + slot.yOffset - currentMouseY * 14;
-                const impactX = px + (slot.facing === 1 ? 14 : -14);
-                const impactY = py - 8;
-                const sect = STANCE_TO_SECT[slot.stance] || 'thunder';
-
-                if (slot.isReal) {
-                  spawnLightningBolt(impactX, impactY, SECT_COLORS[sect].glow, 0.9);
-                }
-
-                for (let s = 0; s < (slot.isReal ? 8 : 4); s++) {
-                  const ang = Math.PI * 1.5 + (Math.random() - 0.5) * 1.6;
-                  const spd = 60 + Math.random() * 120;
-                  spawnParticle(
-                    impactX,
-                    impactY,
-                    Math.cos(ang) * spd,
-                    Math.sin(ang) * spd,
-                    slot.isReal ? 2.0 : 1.3,
-                    slot.isReal ? SECT_COLORS[sect].spark : '#94A3B8',
-                    0.35,
-                    false
-                  );
-                }
-
-                // Autonomous peer chip damage
-                if (Math.random() < 0.15) {
-                  onPeerAutonomousDamageRef.current?.(1);
-                }
-              } else if (!isImpactFrame) {
-                lastImpactFlags[idx] = false;
-              }
-            });
-          }
+          // Autonomous peer strikes for bots [REMOVED: Zero bot computation, no lag]
 
           // Lightning bolts decay
           for (let i = lightningBolts.length - 1; i >= 0; i--) {
@@ -1408,6 +1351,7 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
         if (assets.pedestal.loaded) {
           const pedImg = assets.pedestal.img;
           peerSlots.forEach((slot) => {
+            if (!slot.isReal) return; // Only render when real human peer is present (no bots)
             const paraX = currentMouseX * 52;
             const paraY = currentMouseY * 14;
             const px = slot.xNorm * viewW - paraX;
@@ -1454,6 +1398,7 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
           const PEER_FH = 384;
 
           peerSlots.forEach((slot) => {
+            if (!slot.isReal) return; // Only render when real human peer is present (no bots)
             const cycleTime = 1.05 / slot.speed;
             const cycleSec = (now * 0.001 + slot.phase * 10) % cycleTime;
             const progress = cycleSec / cycleTime;

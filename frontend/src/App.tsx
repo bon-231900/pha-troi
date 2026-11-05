@@ -208,7 +208,7 @@ export default function App() {
   const [globalCountdownSec, setGlobalCountdownSec] = useState<number>(180);
   const [globalSynergyPct, setGlobalSynergyPct] = useState<number>(74.0);
   const [globalBurstActive, setGlobalBurstActive] = useState<boolean>(false);
-  const [activeForgersCount, setActiveForgersCount] = useState<number>(520);
+  const [activeForgersCount, setActiveForgersCount] = useState<number>(1);
   const [isServerSynced, setIsServerSynced] = useState<boolean>(false);
   const [googleUser, setGoogleUser] = useState<GoogleUserProfile | null>(() => googleAuthService.getProfile());
   const [playerId] = useState<string>(() => {
@@ -810,7 +810,7 @@ export default function App() {
       onPeersChange: (peers) => {
         setOnlinePeers(peers);
         canvasHandleRef.current?.updateRemotePeers(peers.map((p) => ({ peerId: p.id, name: p.name, guildId: p.guildId, stance: p.stance, slotIndex: p.slotIndex })));
-        setActiveForgersCount(peers.length > 0 ? peers.length + 1 : 480);
+        setActiveForgersCount(peers.length > 0 ? peers.length + 1 : 1);
         setIsOffline(peers.length === 0);
       },
       onRequestWorldState: () => latestWorldStateRef.current,
@@ -1514,9 +1514,7 @@ export default function App() {
       });
 
       setGlobalSynergyPct((prevSyn) => Math.min(100, Number((prevSyn + 0.4).toFixed(1))));
-      setActiveForgersCount((prevCount) =>
-        Math.max(480, prevCount + Math.floor((Math.random() - 0.48) * 8))
-      );
+// activeForgersCount jitter removed: no fake bots
     }, 500);
 
     return () => clearInterval(timer);
@@ -2788,9 +2786,6 @@ export default function App() {
           gameState={gameState}
           playerName={playerName}
           onHeroStrikeAction={() => handleHeroStrike(false)}
-          onPeerAutonomousDamage={(chip) => {
-            setBossHp((prev) => Math.max(0, prev - chip));
-          }}
         />
       </div>
 
