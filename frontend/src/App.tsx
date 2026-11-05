@@ -392,6 +392,10 @@ export default function App() {
     return null;
   });
 
+  const [equippedSkinId, setEquippedSkinId] = useState<string>(() => {
+    return safeStorage.getItem('phatroi_equipped_skin') || 'skin_default';
+  });
+
   const [skillCooldowns, setSkillCooldowns] = useState<{ W: number; E: number; R: number }>({
     W: 0,
     E: 0,
