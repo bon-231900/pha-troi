@@ -38,6 +38,14 @@ export interface CommunityPanoramicForgeCanvasHandle {
   triggerPeerWave: () => void;
   triggerRemotePeerStrike: (payload: RemotePeerStrikePayload) => void;
   updateRemotePeers: (peers: RemotePeerInfo[]) => void;
+  spawnCombatNumber: (
+    damage: number,
+    grade: 'NORMAL' | 'GREAT' | 'PERFECT' | 'GLANCING',
+    multiplier: number,
+    isCrit: boolean,
+    isGolden: boolean,
+    stanceKey: StanceKey
+  ) => void;
   spawnCombatText: (
     text: string,
     subtext: string,
@@ -83,10 +91,12 @@ interface SparkParticle2D {
 
 interface FloatingCombatText2D {
   id: number;
-  text: string;
-  subtext: string;
+  kind: 'damage' | 'skill';
+  valueText: string;
+  badgeText?: string;
   x: number;
   y: number;
+  vx: number;
   vy: number;
   color: string;
   glowColor: string;
@@ -434,6 +444,16 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
   // Imperative hooks into canvas closure
   const executeHeroStrikeClosureRef = useRef<((forceGolden?: boolean) => void) | null>(null);
   const triggerPeerWaveClosureRef = useRef<(() => void) | null>(null);
+  const spawnCombatNumberClosureRef = useRef<
+    ((
+      damage: number,
+      grade: 'NORMAL' | 'GREAT' | 'PERFECT' | 'GLANCING',
+      multiplier: number,
+      isCrit: boolean,
+      isGolden: boolean,
+      stanceKey: StanceKey
+    ) => void) | null
+  >(null);
   const spawnCombatTextClosureRef = useRef<
     ((text: string, subtext: string, color: string, glowColor: string, isGolden: boolean) => void) | null
   >(null);
@@ -457,6 +477,9 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
       },
       updateRemotePeers: (peers: RemotePeerInfo[]) => {
         updateRemotePeersClosureRef.current?.(peers);
+      },
+      spawnCombatNumber: (damage, grade, multiplier, isCrit, isGolden, stanceKey) => {
+        spawnCombatNumberClosureRef.current?.(damage, grade, multiplier, isCrit, isGolden, stanceKey);
       },
       spawnCombatText: (text, subtext, color, glowColor, isGolden) => {
         spawnCombatTextClosureRef.current?.(text, subtext, color, glowColor, isGolden);
@@ -757,6 +780,49 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
       }
     };
 
+    const spawnCombatNumberInternal = (
+      damage: number,
+      grade: 'NORMAL' | 'GREAT' | 'PERFECT' | 'GLANCING',
+      multiplier: number,
+      isCrit: boolean,
+      isGolden: boolean,
+      stanceKey: StanceKey
+    ) => {
+      const heroX = viewW * 0.5;
+      const isPortrait = viewW < viewH;
+      const groundY = isPortrait ? viewH * 0.65 : (viewH < 500 ? viewH * 0.81 : viewH * 0.825);
+
+      const isGlance = grade === 'GLANCING';
+      const color = isGlance ? '#F87171' : isGolden ? '#FFD700' : isCrit ? '#38BDF8' : '#F8FAFC';
+      const glowColor = isGlance ? '#EF4444' : isGolden ? '#F59E0B' : isCrit ? '#00F0FF' : 'rgba(255, 255, 255, 0.4)';
+      const scale = isGolden ? 1.35 : isCrit ? 1.22 : isGlance ? 0.92 : 1.05;
+
+      let badgeText: string | undefined = undefined;
+      if (isGolden) {
+        badgeText = `★ HOÀNG KIM x${multiplier}`;
+      } else if (isCrit) {
+        badgeText = `⚡ BẠO KÍCH x${multiplier}`;
+      } else if (isGlance) {
+        badgeText = 'DỘI BÚA';
+      }
+
+      floatingTexts.push({
+        id: textIdCounter++,
+        kind: 'damage',
+        valueText: `-${damage}`,
+        badgeText,
+        x: heroX + (Math.random() - 0.5) * 44,
+        y: groundY - 55 - Math.random() * 20,
+        vx: (Math.random() - 0.5) * 110,
+        vy: -175 - Math.random() * 55,
+        color,
+        glowColor,
+        ageSec: 0,
+        durationSec: 1.15,
+        scale,
+      });
+    };
+
     const spawnCombatTextInternal = (
       text: string,
       subtext: string,
@@ -770,16 +836,18 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
 
       floatingTexts.push({
         id: textIdCounter++,
-        text,
-        subtext,
+        kind: 'skill',
+        valueText: text,
+        badgeText: subtext,
         x: heroX,
-        y: groundY - 175,
-        vy: -68,
+        y: groundY - 180,
+        vx: 0,
+        vy: -40,
         color,
         glowColor,
         ageSec: 0,
-        durationSec: 1.35,
-        scale: isGolden ? 1.18 : 1.0,
+        durationSec: 1.5,
+        scale: isGolden ? 1.2 : 1.0,
       });
     };
 
@@ -809,6 +877,9 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
       flashIntensity = 0.9;
     };
 
+    spawnCombatNumberClosureRef.current = (damage, grade, multiplier, isCrit, isGolden, stanceKey) => {
+      spawnCombatNumberInternal(damage, grade, multiplier, isCrit, isGolden, stanceKey);
+    };
     spawnCombatTextClosureRef.current = (text, subtext, color, glowColor, isGolden) => {
       spawnCombatTextInternal(text, subtext, color, glowColor, isGolden);
     };
@@ -1017,12 +1088,18 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
             p.alpha = 1 - p.age / p.maxAge;
           }
 
-          // Floating texts
+          // Floating combat texts with dynamic fountain physics
           for (let i = floatingTexts.length - 1; i >= 0; i--) {
             const ft = floatingTexts[i];
             ft.ageSec += dt;
+            ft.x += ft.vx * dt;
             ft.y += ft.vy * dt;
-            ft.vy *= 0.94;
+            if (ft.kind === 'damage') {
+              ft.vy += 320 * dt; // gravity arc
+              ft.vx *= 0.96;     // air friction
+            } else {
+              ft.vy *= 0.94;
+            }
             if (ft.ageSec >= ft.durationSec) {
               floatingTexts.splice(i, 1);
             }
@@ -1586,16 +1663,21 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
         ctx.restore();
 
         // ---------------------------------------------------------------------
-        // LAYER 14: FLOATING COMBAT TEXT
+        // LAYER 14: FLOATING COMBAT TEXT & DAMAGE FOUNTAIN
         // ---------------------------------------------------------------------
         for (let i = 0; i < floatingTexts.length; i++) {
           const ft = floatingTexts[i];
           const prog = ft.ageSec / ft.durationSec;
-          const alpha = prog < 0.7 ? 1 : 1 - (prog - 0.7) / 0.3;
-          const popScale =
-            prog < 0.14
-              ? ft.scale * (0.7 + (prog / 0.14) * 0.45)
-              : ft.scale * (1.15 - prog * 0.15);
+          const alpha = prog < 0.65 ? 1 : Math.max(0, 1 - (prog - 0.65) / 0.35);
+
+          // Juicy Spring Pop-in
+          let popScale = ft.scale;
+          if (prog < 0.12) {
+            popScale = ft.scale * (0.6 + (prog / 0.12) * 0.75); // Pop to 1.35x
+          } else if (prog < 0.24) {
+            const t = (prog - 0.12) / 0.12;
+            popScale = ft.scale * (1.35 - t * 0.35); // Rebound to 1.0x
+          }
 
           ctx.save();
           ctx.translate(ft.x, ft.y);
@@ -1604,18 +1686,62 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
 
-          ctx.font = '700 24px "Cinzel", serif';
-          ctx.lineWidth = 5;
-          ctx.strokeStyle = '#050811';
-          ctx.strokeText(ft.text, 0, 0);
-          ctx.fillStyle = ft.color;
-          ctx.fillText(ft.text, 0, 0);
+          if (ft.kind === 'damage') {
+            // 1. Sleek Compact Badge Pill (for Golden & Crit)
+            if (ft.badgeText) {
+              ctx.save();
+              ctx.font = '700 11px "Chakra Petch", sans-serif';
+              const bw = ctx.measureText(ft.badgeText).width + 14;
+              const bh = 17;
+              ctx.fillStyle = 'rgba(6, 9, 18, 0.88)';
+              ctx.strokeStyle = ft.color;
+              ctx.lineWidth = 1.0;
+              ctx.beginPath();
+              ctx.roundRect(-bw * 0.5, -bh - 12, bw, bh, 8);
+              ctx.fill();
+              ctx.stroke();
 
-          ctx.font = '700 13px "Charm", "Caveat", cursive';
-          ctx.lineWidth = 3;
-          ctx.strokeText(ft.subtext, 0, 22);
-          ctx.fillStyle = '#F8FAFC';
-          ctx.fillText(ft.subtext, 0, 22);
+              ctx.fillStyle = ft.color;
+              ctx.shadowColor = ft.glowColor;
+              ctx.shadowBlur = 4;
+              ctx.fillText(ft.badgeText, 0, -bh - 3);
+              ctx.restore();
+            }
+
+            // 2. Bold Modern Damage Number
+            ctx.save();
+            ctx.font = '900 28px "Chakra Petch", sans-serif';
+            ctx.shadowColor = ft.glowColor;
+            ctx.shadowBlur = ft.scale > 1.1 ? 12 : 5;
+            ctx.lineWidth = 4.5;
+            ctx.strokeStyle = '#050811';
+            ctx.strokeText(ft.valueText, 0, 0);
+
+            ctx.fillStyle = ft.color;
+            ctx.fillText(ft.valueText, 0, 0);
+            ctx.restore();
+          } else {
+            // Majestic Skill Banner
+            ctx.save();
+            ctx.font = '800 22px "Cinzel", "Chakra Petch", serif';
+            ctx.lineWidth = 4.5;
+            ctx.strokeStyle = '#050811';
+            ctx.shadowColor = ft.glowColor;
+            ctx.shadowBlur = 10;
+            ctx.strokeText(ft.valueText, 0, 0);
+            ctx.fillStyle = ft.color;
+            ctx.fillText(ft.valueText, 0, 0);
+
+            if (ft.badgeText) {
+              ctx.font = '700 12.5px "Charm", "Caveat", cursive';
+              ctx.lineWidth = 3;
+              ctx.strokeText(ft.badgeText, 0, 20);
+              ctx.fillStyle = '#F8FAFC';
+              ctx.fillText(ft.badgeText, 0, 20);
+            }
+            ctx.restore();
+          }
+
           ctx.restore();
         }
 

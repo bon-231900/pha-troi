@@ -98,6 +98,7 @@ import {
   CommunityPanoramicForgeCanvas,
   CommunityPanoramicForgeCanvasHandle,
 } from './components/CommunityPanoramicForgeCanvas';
+import { LootNotificationFeed, LootToastItem } from './components/LootNotificationFeed';
 import { Shield, Hammer, X, Zap, Flame, Sparkles, Eye, EyeOff } from 'lucide-react';
 
 type GameState = 'title' | 'character_select' | 'playing' | 'paused' | 'gameover';
@@ -243,6 +244,21 @@ export default function App() {
   // Side Panels Collapsed State (Default closed for 100% unobstructed community panorama)
   const [leftPanelOpen, setLeftPanelOpen] = useState<boolean>(false);
   const [rightPanelOpen, setRightPanelOpen] = useState<boolean>(false);
+
+  // Bottom-Right Corner Loot Drop Notification Feed
+  const [lootToasts, setLootToasts] = useState<LootToastItem[]>([]);
+
+  const addLootToast = useCallback((toast: Omit<LootToastItem, 'id' | 'timestamp'>) => {
+    const id = `loot_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+    setLootToasts((prev) => [
+      { ...toast, id, timestamp: Date.now() },
+      ...prev.slice(0, 3), // max 4 toasts
+    ]);
+  }, []);
+
+  const dismissLootToast = useCallback((id: string) => {
+    setLootToasts((prev) => prev.filter((t) => t.id !== id));
+  }, []);
 
   // Bottom HUD Visibility State (Can be toggled via H or button)
   const [hudVisible, setHudVisible] = useState<boolean>(() => {
@@ -1517,28 +1533,14 @@ export default function App() {
       const isCritHit = outcome.isCrit;
       const isGlancingHit = outcome.isGlancingHit;
 
-      const combatGradeLabel = isGlancingHit
-        ? 'DỘI BÚA! (LÒ NGUỘI) x0.6'
-        : isCritHit
-        ? `⚡ BẠO KÍCH! x${outcome.displayMultiplier}`
-        : isGoldenHit
-        ? `HOÀNG KIM! x${outcome.displayMultiplier}`
-        : 'CHUẨN XÁC! x1.0';
-
-      const combatGradeColor = isGlancingHit
-        ? '#EF4444'
-        : isCritHit
-        ? '#00F0FF'
-        : isGoldenHit
-        ? '#FFD166'
-        : stanceData.color;
-
-      canvasHandleRef.current?.spawnCombatText(
-        combatGradeLabel,
-        `${stanceData.name.toUpperCase()} · -${outcome.damage} DMG`,
-        combatGradeColor,
-        isCritHit ? '#0099FF' : isGoldenHit ? '#FF9E00' : stanceData.color,
-        isGoldenHit || !!isCritHit
+      // Dynamic, juicy combat damage fountain (replaces clunky 2-line text blocks)
+      canvasHandleRef.current?.spawnCombatNumber(
+        outcome.damage,
+        grade,
+        outcome.displayMultiplier,
+        !!isCritHit,
+        isGoldenHit,
+        activeStance
       );
 
       // 3. Audio & Haptics
@@ -1774,6 +1776,11 @@ export default function App() {
             setLinhThach((lt) => lt + salvage.linhThach);
             setIronDust((d) => d + salvage.ironDust);
             if (salvage.tinhHoa > 0) setTinhHoa((th) => th + salvage.tinhHoa);
+            addLootToast({
+              type: 'salvage',
+              item: droppedItem,
+              salvageYield: salvage,
+            });
             appendCombatLog(
               `⚡ [TỰ ĐỘNG NUNG] Rơi [${droppedItem.name}] [Tier ${rMeta.tier}] -> Tự nung ra +${salvage.ironDust} Bụi Thiết, +${salvage.linhThach} LT!`,
               'cyan'
@@ -1782,6 +1789,10 @@ export default function App() {
             const currentCapacity = getMaxInventorySlots(forgerRank.tier);
             setInventory((prevInv) => {
               if (prevInv.length >= currentCapacity) {
+                addLootToast({
+                  type: 'full',
+                  item: droppedItem,
+                });
                 appendCombatLog(
                   `⚠️ [TÚI ĐỒ ĐẦY] Rơi [${droppedItem.name}] nhưng rương đã kín chỗ (${currentCapacity}/${currentCapacity})! Hãy phân giải bớt.`,
                   'red'
@@ -1789,13 +1800,10 @@ export default function App() {
                 return prevInv;
               }
               soundEngine.playGlobalBurstFanfare();
-              canvasHandleRef.current?.spawnCombatText(
-                `🎁 RƠI TIER ${rMeta.tier}!`,
-                droppedItem.name,
-                rMeta.hex,
-                '#FFFFFF',
-                true
-              );
+              addLootToast({
+                type: 'drop',
+                item: droppedItem,
+              });
               appendCombatLog(
                 `🎁 [RƠI TRANG BỊ] Bạn vừa nhặt được [${droppedItem.name}] [Tier ${rMeta.tier} - ${rMeta.label}]! Đã chuyển vào Túi Đồ.`,
                 droppedItem.rarity === 'mythic' || droppedItem.rarity === 'legendary' ? 'gold' : 'cyan'
@@ -2830,6 +2838,13 @@ export default function App() {
               />
         </div>
       </div>
+
+      {/* Modern Bottom-Right Loot Notification Stream */}
+      <LootNotificationFeed
+        notifications={lootToasts}
+        onDismiss={dismissLootToast}
+        onOpenInventory={() => setRightPanelOpen(true)}
+      />
 
       {/* Backdrop Dimmer when either side drawer is open */}
       {(leftPanelOpen || rightPanelOpen) && (
