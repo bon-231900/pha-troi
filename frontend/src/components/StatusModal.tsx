@@ -178,6 +178,22 @@ export const StatusModal: React.FC<StatusModalProps> = ({
                   VỀ TRANG CHỦ
                 </button>
               </div>
+
+              {/* 4. Version Badge & Force Clear Cache / Reload Helper */}
+              <div className="pt-1 flex items-center justify-between text-[10px] font-tech text-slate-400 px-1">
+                <span>Bản game: <b className="text-amber-400">v4.2 (Vạn Cổ Đúc Thần Đài)</b></span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    localStorage.removeItem('pha_troi_cache_buster');
+                    window.location.reload();
+                  }}
+                  className="text-cyan-400 hover:text-cyan-300 underline cursor-pointer flex items-center gap-1 font-bold"
+                  title="Xóa cache trình duyệt và tải ngay phiên bản mới nhất"
+                >
+                  <span>Làm mới & Xóa Cache ⟳</span>
+                </button>
+              </div>
             </>
           ) : (
             <>
