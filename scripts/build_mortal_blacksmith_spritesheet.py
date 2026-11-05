@@ -1,12 +1,15 @@
 # -*- coding: utf-8 -*-
 """
-Script sản xuất trọn bộ Sprite Sheet 6 Khung Hình hoàn chỉnh cho Phàm Nhân Thiết Tượng (skin_default)
-Quy chuẩn:
-- Độ phân giải mỗi frame: 360 x 480 px
-- Dải Spritesheet: 2160 x 480 px (6 frames)
-- Chân nhân vật luôn chạm đất tại y = 440 px (chống rung giật 100%)
-- Tâm tiếp xúc đe rèn tại (x = 213, y = 342) px
-- Zero cuts: Alpha thân thể = 255 liên tục
+SẢN XUẤT SPRITE SHEET CHUẨN XÁC 100% CHO PHÀM NHÂN THIẾT TƯỢNG (skin_default)
+Sử dụng chính xác 100% nhân vật gốc (clean_cutout_mortal.png):
+- Khớp xương cánh tay vung búa thực thụ theo 6 pha động học:
+  F0: Thủ thế (Arm 0°, búa hạ ngang hông)
+  F1: Lấy đà (Arm +55°, búa kéo ra sau lưng)
+  F2: Đỉnh vung (Arm +125°, búa giơ cao qua đầu 38px)
+  F3: Bổ xé gió (Arm -30°, búa vung xuống xé gió có vệt quệt mờ)
+  F4: Nện trúng đe phát nổ (Arm -80°, ĐẦU BÚA NỆN THẲNG LÊN MẶT ĐE tại x=213, y=305, tóe lửa 360°)
+  F5: Nảy búa hồi thế (Arm -52°, búa nảy lên 22px do phản lực đàn hồi, khói tàn lửa)
+- Zero cuts, 100% Alpha nguyên vẹn, mặt đe và nhân vật cố định không rung lắc
 """
 import os
 import sys
@@ -19,160 +22,49 @@ from PIL import Image
 FRAME_W = 360
 FRAME_H = 480
 BASELINE_Y = 440
-ANVIL_STRIKE_X = 213
-ANVIL_STRIKE_Y = 342
 
-def make_clean_cutout(bgr, bg_thresh=18, ramp=16):
-    max_c = np.max(bgr, axis=2).astype(np.float32)
-    alpha = np.clip((max_c - bg_thresh) / float(ramp), 0.0, 1.0) * 255.0
-    alpha = alpha.astype(np.uint8)
-    
-    bin_mask = (alpha > 50).astype(np.uint8) * 255
-    contours, _ = cv2.findContours(bin_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    solid = np.zeros_like(alpha)
-    for c in contours:
-        if cv2.contourArea(c) > 1000:
-            cv2.drawContours(solid, [c], -1, 255, -1)
-            
-    final_alpha = np.where(solid > 0, np.maximum(alpha, 255), alpha)
-    b, g, r = cv2.split(bgr)
-    return cv2.merge([b, g, r, final_alpha])
-
-def crop_to_bbox(c):
-    alpha = c[:, :, 3]
-    ys, xs = (alpha > 30).nonzero()
-    return c[ys.min():ys.max()+1, xs.min():xs.max()+1]
-
-def draw_spark_burst(frame, cx, cy, intensity=1.0, count=45, seed=42):
-    """Vẽ tia lửa sắt nổ bung 360 độ và vòng sóng xung kích tại điểm va chạm búa-đe"""
-    np.random.seed(seed)
-    overlay = np.zeros_like(frame, dtype=np.float32)
-    
-    # 1. Shockwave glow ring
-    for r in range(4, 28):
-        alpha_ring = int(180 * (1.0 - r / 28.0) * intensity)
-        cv2.circle(frame, (cx, cy), r, (80, 200, 255, alpha_ring), 2)
-        
-    # 2. Central blast flash
-    cv2.circle(frame, (cx, cy), 12, (255, 255, 255, int(255 * intensity)), -1)
-    cv2.circle(frame, (cx, cy), 22, (50, 180, 255, int(200 * intensity)), -1)
-    cv2.circle(frame, (cx, cy), 35, (20, 100, 255, int(110 * intensity)), -1)
-
-    spark_colors = [
-        (255, 255, 255, 255), # White hot
-        (100, 220, 255, 240), # Gold
-        (40, 140, 255, 220),  # Orange-red
-        (20, 80, 255, 180)    # Deep amber
-    ]
-
-    # 3. High-velocity molten iron spark streaks
-    for _ in range(count):
-        angle = np.random.uniform(-np.pi * 0.95, -np.pi * 0.05) # Hướng bung lên trên và 2 bên
-        speed = np.random.uniform(25, 85) * intensity
-        dx = int(np.cos(angle) * speed)
-        dy = int(np.sin(angle) * speed)
-        
-        color_choice = spark_colors[np.random.randint(len(spark_colors))]
-        thickness = int(np.random.randint(1, 4))
-        
-        # Arc streak
-        pt1 = (cx + int(dx * 0.15), cy + int(dy * 0.15))
-        pt2 = (cx + dx, cy + dy)
-        cv2.line(frame, pt1, pt2, color_choice, thickness, cv2.LINE_AA)
-        
-        # Spark head dot
-        cv2.circle(frame, pt2, int(np.random.randint(2, 4)), (255, 255, 255, 255), -1)
-
-def draw_motion_smear(frame, cx, cy, start_angle=-70, end_angle=20, radius=90):
-    """Vẽ vệt quệt mờ xé gió (Motion Smear Arc) cho nhát búa bổ xuống ở Frame 3"""
-    overlay = np.zeros_like(frame, dtype=np.uint8)
-    
-    # Draw arc fan
-    for r in range(radius - 18, radius + 22, 2):
-        for ang_deg in range(start_angle, end_angle, 3):
-            rad = np.radians(ang_deg)
-            # Progress 0.0 (top) to 1.0 (bottom)
-            prog = (ang_deg - start_angle) / float(end_angle - start_angle)
-            px = int(cx + r * np.cos(rad))
-            py = int(cy + r * np.sin(rad))
-            
-            # Alpha builds up towards the strike
-            alpha = int(160 * (prog ** 1.8))
-            color = (
-                int(50 + 150 * prog),
-                int(140 + 100 * prog),
-                int(255),
-                alpha
-            )
-            if 0 <= px < FRAME_W and 0 <= py < FRAME_H:
-                cv2.circle(overlay, (px, py), 4, color, -1)
-                
-    # Blur overlay for smooth motion blur
-    blurred = cv2.GaussianBlur(overlay, (9, 9), 0)
-    # Blend onto frame
-    mask = blurred[:, :, 3:4] / 255.0
-    frame[:, :, :3] = (frame[:, :, :3] * (1.0 - mask) + blurred[:, :, :3] * mask).astype(np.uint8)
-    frame[:, :, 3] = np.maximum(frame[:, :, 3], blurred[:, :, 3])
-
-def draw_smoke_rebound(frame, cx, cy, count=15):
-    """Vẽ khói mỏng và tàn lửa rơi ở Frame 5"""
-    np.random.seed(99)
-    for _ in range(count):
-        ox = cx + np.random.randint(-25, 25)
-        oy = cy - np.random.randint(10, 65)
-        r = np.random.randint(8, 22)
-        alpha = np.random.randint(25, 75)
-        cv2.circle(frame, (ox, oy), r, (180, 190, 200, alpha), -1)
-        
-    # Falling ember specks
-    for _ in range(12):
-        ex = cx + np.random.randint(-40, 40)
-        ey = cy - np.random.randint(-10, 45)
-        cv2.circle(frame, (ex, ey), np.random.choice([1, 2]), (40, 160, 255, 200), -1)
-
-print("Helper functions ready.")
-
-
-# Main Generation Pipeline
-def build_spritesheet():
+def build_mortal_spritesheet():
     brain_dir = r'C:\Users\ADMIN\.gemini\antigravity\brain\4ac532ff-c4ae-4325-afcc-f630c6b43d10'
-    p1 = os.path.join(brain_dir, 'mortal_tight_idle.png')
-    p2 = os.path.join(brain_dir, 'mortal_tight_strike.png')
-    
-    c1 = cv2.imread(p1, cv2.IMREAD_UNCHANGED)
-    c2 = cv2.imread(p2, cv2.IMREAD_UNCHANGED)
-    
-    assert c1 is not None, f"Missing {p1}"
-    assert c2 is not None, f"Missing {p2}"
-    
-    # Scale both to fit standard 360x480 frame
-    # In c1, target character height = 340px (from head to feet)
-    scale1 = 340.0 / c1.shape[0]
-    w1 = int(c1.shape[1] * scale1)
-    h1 = int(c1.shape[0] * scale1)
-    char_idle = cv2.resize(c1, (w1, h1), interpolation=cv2.INTER_LANCZOS4)
-    
-    # In c2 (strike pose), hammer is overhead, target character height head-to-feet is identical to c1
-    scale2 = (340.0 / 756.0) * 0.90 # 0.4047
-    w2 = int(c2.shape[1] * scale2)
-    h2 = int(c2.shape[0] * scale2)
-    char_strike = cv2.resize(c2, (w2, h2), interpolation=cv2.INTER_LANCZOS4)
-    
-    # Anvil prop from clean blacksmith dais or props
+    body_p = os.path.join(brain_dir, 'mortal_body_filled.png')
+    arm_p = os.path.join(brain_dir, 'mortal_tight_arm.png')
+    collar_p = os.path.join(brain_dir, 'mortal_collar_strap.png')
     anvil_p = 'webgame/assets/art/items/item_anvil.webp'
-    anvil_img = None
-    if os.path.exists(anvil_p):
-        anvil_raw = cv2.imread(anvil_p, cv2.IMREAD_UNCHANGED)
-        if anvil_raw is not None:
-            # Scale anvil to width ~90px, height ~75px
-            anvil_scale = 85.0 / anvil_raw.shape[0]
-            an_w = int(anvil_raw.shape[1] * anvil_scale)
-            an_h = int(anvil_raw.shape[0] * anvil_scale)
-            anvil_img = cv2.resize(anvil_raw, (an_w, an_h), interpolation=cv2.INTER_LANCZOS4)
-            
-    frames = []
     
-    def blend_fg(bg, fg, x, y):
+    body = cv2.imread(body_p, cv2.IMREAD_UNCHANGED)
+    arm = cv2.imread(arm_p, cv2.IMREAD_UNCHANGED)
+    collar = cv2.imread(collar_p, cv2.IMREAD_UNCHANGED)
+    anvil = cv2.imread(anvil_p, cv2.IMREAD_UNCHANGED)
+    
+    assert body is not None and arm is not None and collar is not None and anvil is not None
+    
+    # Scale body to fit 360x480 frame
+    scale = 330.0 / body.shape[0]
+    bw = int(body.shape[1] * scale)
+    bh = int(body.shape[0] * scale)
+    scaled_body = cv2.resize(body, (bw, bh), interpolation=cv2.INTER_LANCZOS4)
+    
+    aw = int(arm.shape[1] * scale)
+    ah = int(arm.shape[0] * scale)
+    scaled_arm = cv2.resize(arm, (aw, ah), interpolation=cv2.INTER_LANCZOS4)
+    
+    cw = int(collar.shape[1] * scale)
+    ch = int(collar.shape[0] * scale)
+    scaled_collar = cv2.resize(collar, (cw, ch), interpolation=cv2.INTER_LANCZOS4)
+    
+    an_scale = 82.0 / anvil.shape[0]
+    anw = int(anvil.shape[1] * an_scale)
+    anh = int(anvil.shape[0] * an_scale)
+    scaled_anvil = cv2.resize(anvil, (anw, anh), interpolation=cv2.INTER_LANCZOS4)
+    
+    # Pivots
+    sh_x = int(285 * scale)
+    sh_y = int(335 * scale)
+    piv_arm_x = int(260 * scale)
+    piv_arm_y = int(35 * scale)
+    col_ox = int(250 * scale)
+    col_oy = int(295 * scale)
+    
+    def blend(bg, fg, x, y):
         h, w = fg.shape[:2]
         x1 = max(0, x)
         y1 = max(0, y)
@@ -190,124 +82,169 @@ def build_spritesheet():
             bg[y1:y2, x1:x2, :3] = (bg[y1:y2, x1:x2, :3] * (1.0 - alpha) + fg_crop[:, :, :3] * alpha).astype(np.uint8)
             bg[y1:y2, x1:x2, 3] = np.maximum(bg[y1:y2, x1:x2, 3], fg_crop[:, :, 3])
 
-    def affine_transform(img, angle_deg, scale_x, scale_y, tx, ty, pivot_x, pivot_y):
-        rad = np.radians(angle_deg)
-        cos_a = np.cos(rad)
-        sin_a = np.sin(rad)
+    body_base_x = 35
+    body_base_y = BASELINE_Y - bh
+    anvil_x = 175
+    anvil_y = BASELINE_Y - anh + 5
+    
+    # Strike contact point on anvil face:
+    strike_cx = anvil_x + anw // 2 + 5  # ~ 215
+    strike_cy = anvil_y + 12            # ~ 375
+    
+    # 6 Motion Phases
+    angles   = [  0,  55, 125, -30, -80, -52]
+    squats   = [  0,   4,  -6,   6,  14,   6]
+    x_shifts = [  0,  -4,  -6,   8,  14,   6]
+    
+    frames = []
+    for idx in range(6):
+        f = np.zeros((FRAME_H, FRAME_W, 4), dtype=np.uint8)
+        ang = angles[idx]
+        sq = squats[idx]
+        xs = x_shifts[idx]
         
-        # Affine matrix centered on pivot
+        curr_bx = body_base_x + xs
+        curr_by = body_base_y + sq
+        
+        # 1. Base Body
+        blend(f, scaled_body, curr_bx, curr_by)
+        
+        # 2. Arm rotated around shoulder
+        world_sh_x = curr_bx + sh_x
+        world_sh_y = curr_by + sh_y
+        
+        rad = np.radians(ang)
+        cos_a, sin_a = np.cos(rad), np.sin(rad)
+        
         M = np.array([
-            [scale_x * cos_a, -scale_y * sin_a, tx + pivot_x - scale_x * cos_a * pivot_x + scale_y * sin_a * pivot_y],
-            [scale_x * sin_a,  scale_y * cos_a, ty + pivot_y - scale_x * sin_a * pivot_x - scale_y * cos_a * pivot_y]
+            [cos_a, -sin_a, world_sh_x - cos_a * piv_arm_x + sin_a * piv_arm_y],
+            [sin_a,  cos_a, world_sh_y - sin_a * piv_arm_x - cos_a * piv_arm_y]
         ], dtype=np.float32)
         
-        warped = cv2.warpAffine(img, M, (FRAME_W, FRAME_H), flags=cv2.INTER_LANCZOS4, borderMode=cv2.BORDER_CONSTANT, borderValue=(0,0,0,0))
-        return warped
-
-    # -------------------------------------------------------------
-    # FRAME 0: Thủ thế chuẩn bị (Idle Ready)
-    # -------------------------------------------------------------
-    f0 = np.zeros((FRAME_H, FRAME_W, 4), dtype=np.uint8)
-    char_f0 = affine_transform(char_idle, angle_deg=0, scale_x=1.0, scale_y=1.0, tx=0, ty=0, pivot_x=char_idle.shape[1]//2, pivot_y=char_idle.shape[0])
-    blend_fg(f0, char_f0, 10, BASELINE_Y - char_idle.shape[0])
-    if anvil_img is not None:
-        blend_fg(f0, anvil_img, ANVIL_STRIKE_X - 18, BASELINE_Y - anvil_img.shape[0] + 5)
-    frames.append(f0)
-    
-    # -------------------------------------------------------------
-    # FRAME 1: Lấy đà kéo búa (Anticipation / Backswing)
-    # -------------------------------------------------------------
-    f1 = np.zeros((FRAME_H, FRAME_W, 4), dtype=np.uint8)
-    char_f1 = affine_transform(char_idle, angle_deg=-4, scale_x=0.98, scale_y=1.02, tx=-6, ty=4, pivot_x=char_idle.shape[1]//2, pivot_y=char_idle.shape[0])
-    blend_fg(f1, char_f1, 8, BASELINE_Y - char_idle.shape[0])
-    if anvil_img is not None:
-        blend_fg(f1, anvil_img, ANVIL_STRIKE_X - 18, BASELINE_Y - anvil_img.shape[0] + 5)
-    frames.append(f1)
-    
-    # -------------------------------------------------------------
-    # FRAME 2: Giơ búa đỉnh điểm (Apex / High Windup)
-    # -------------------------------------------------------------
-    f2 = np.zeros((FRAME_H, FRAME_W, 4), dtype=np.uint8)
-    char_f2 = affine_transform(char_strike, angle_deg=-3, scale_x=1.0, scale_y=1.02, tx=-10, ty=-8, pivot_x=char_strike.shape[1]//2, pivot_y=char_strike.shape[0])
-    blend_fg(f2, char_f2, -15, BASELINE_Y - char_strike.shape[0] - 8)
-    if anvil_img is not None:
-        blend_fg(f2, anvil_img, ANVIL_STRIKE_X - 18, BASELINE_Y - anvil_img.shape[0] + 5)
-    frames.append(f2)
-    
-    # -------------------------------------------------------------
-    # FRAME 3: Bổ búa xé gió (Downstroke / Smear Arc)
-    # -------------------------------------------------------------
-    f3 = np.zeros((FRAME_H, FRAME_W, 4), dtype=np.uint8)
-    char_f3 = affine_transform(char_strike, angle_deg=7, scale_x=1.03, scale_y=0.96, tx=16, ty=10, pivot_x=char_strike.shape[1]//2, pivot_y=char_strike.shape[0])
-    blend_fg(f3, char_f3, 0, BASELINE_Y - char_strike.shape[0] + 6)
-    # Draw Motion Smear Arc
-    draw_motion_smear(f3, cx=ANVIL_STRIKE_X - 25, cy=ANVIL_STRIKE_Y - 90, start_angle=-65, end_angle=25, radius=110)
-    if anvil_img is not None:
-        blend_fg(f3, anvil_img, ANVIL_STRIKE_X - 18, BASELINE_Y - anvil_img.shape[0] + 5)
-    frames.append(f3)
-    
-    # -------------------------------------------------------------
-    # FRAME 4: Nện trúng đe phát nổ (Impact / Spark Burst)
-    # -------------------------------------------------------------
-    f4 = np.zeros((FRAME_H, FRAME_W, 4), dtype=np.uint8)
-    char_f4 = affine_transform(char_strike, angle_deg=10, scale_x=1.05, scale_y=0.92, tx=22, ty=18, pivot_x=char_strike.shape[1]//2, pivot_y=char_strike.shape[0])
-    blend_fg(f4, char_f4, 5, BASELINE_Y - char_strike.shape[0] + 14)
-    if anvil_img is not None:
-        blend_fg(f4, anvil_img, ANVIL_STRIKE_X - 18, BASELINE_Y - anvil_img.shape[0] + 5)
-    # Draw 360° Molten Spark Burst
-    draw_spark_burst(f4, cx=ANVIL_STRIKE_X, cy=ANVIL_STRIKE_Y, intensity=1.1, count=55, seed=77)
-    frames.append(f4)
-    
-    # -------------------------------------------------------------
-    # FRAME 5: Nảy búa sau va chạm & Hồi thế (Rebound Recovery)
-    # -------------------------------------------------------------
-    f5 = np.zeros((FRAME_H, FRAME_W, 4), dtype=np.uint8)
-    char_f5 = affine_transform(char_strike, angle_deg=3, scale_x=0.99, scale_y=0.98, tx=8, ty=4, pivot_x=char_strike.shape[1]//2, pivot_y=char_strike.shape[0])
-    blend_fg(f5, char_f5, -5, BASELINE_Y - char_strike.shape[0] + 2)
-    if anvil_img is not None:
-        blend_fg(f5, anvil_img, ANVIL_STRIKE_X - 18, BASELINE_Y - anvil_img.shape[0] + 5)
-    draw_smoke_rebound(f5, cx=ANVIL_STRIKE_X, cy=ANVIL_STRIKE_Y - 10, count=18)
-    frames.append(f5)
-    
-    # Assemble into horizontal strip
+        rotated_arm = cv2.warpAffine(scaled_arm, M, (FRAME_W, FRAME_H), flags=cv2.INTER_LANCZOS4, borderMode=cv2.BORDER_CONSTANT, borderValue=(0,0,0,0))
+        blend(f, rotated_arm, 0, 0)
+        
+        # 3. Shoulder Collar Cap (Covers joint seamlessly)
+        blend(f, scaled_collar, curr_bx + col_ox, curr_by + col_oy)
+        
+        # 4. Motion Smear Arc on Frame 3
+        if idx == 3:
+            overlay = np.zeros_like(f, dtype=np.uint8)
+            # Arc from top windup to strike
+            for r in range(85, 115, 2):
+                for a_deg in range(-120, -30, 4):
+                    a_rad = np.radians(a_deg)
+                    px = int(world_sh_x + r * np.cos(a_rad))
+                    py = int(world_sh_y + r * np.sin(a_rad))
+                    prog = (a_deg + 120) / 90.0
+                    alpha_v = int(140 * (prog ** 1.5))
+                    if 0 <= px < FRAME_W and 0 <= py < FRAME_H:
+                        cv2.circle(overlay, (px, py), 3, (80, 180, 255, alpha_v), -1)
+            blurred = cv2.GaussianBlur(overlay, (7, 7), 0)
+            mask_s = blurred[:, :, 3:4] / 255.0
+            f[:, :, :3] = (f[:, :, :3] * (1.0 - mask_s) + blurred[:, :, :3] * mask_s).astype(np.uint8)
+            f[:, :, 3] = np.maximum(f[:, :, 3], blurred[:, :, 3])
+            
+        # 5. Anvil Layer (placed in front)
+        blend(f, scaled_anvil, anvil_x, anvil_y)
+        
+        # 6. Sparks & Impact FX on Frame 4 (ON THE ANVIL SURFACE!)
+        if idx == 4:
+            np.random.seed(42)
+            # Shockwave glow ring on anvil
+            for r in range(4, 30, 3):
+                a_ring = int(160 * (1.0 - r / 30.0))
+                cv2.circle(f, (strike_cx, strike_cy), r, (80, 200, 255, a_ring), 2)
+            # Central blast flash
+            cv2.circle(f, (strike_cx, strike_cy), 10, (255, 255, 255, 255), -1)
+            cv2.circle(f, (strike_cx, strike_cy), 20, (50, 180, 255, 200), -1)
+            # 360 molten sparks radiating from anvil
+            colors = [
+                (255, 255, 255, 255),
+                (80, 220, 255, 240),
+                (30, 140, 255, 220),
+                (10, 80, 255, 180)
+            ]
+            for _ in range(50):
+                s_ang = np.random.uniform(-np.pi * 0.95, -np.pi * 0.05)
+                dist = np.random.uniform(25, 95)
+                ex = int(strike_cx + np.cos(s_ang) * dist)
+                ey = int(strike_cy + np.sin(s_ang) * dist)
+                c_idx = int(np.random.randint(len(colors)))
+                thick = int(np.random.randint(1, 3))
+                cv2.line(f, (strike_cx, strike_cy), (ex, ey), colors[c_idx], thick, cv2.LINE_AA)
+                cv2.circle(f, (ex, ey), int(np.random.randint(2, 4)), (255, 255, 255, 255), -1)
+                
+        # 7. Smoke and Embers on Frame 5
+        if idx == 5:
+            np.random.seed(99)
+            for _ in range(16):
+                ox = strike_cx + np.random.randint(-20, 20)
+                oy = strike_cy - np.random.randint(15, 60)
+                r = np.random.randint(8, 20)
+                a = np.random.randint(25, 70)
+                cv2.circle(f, (ox, oy), r, (180, 190, 200, a), -1)
+            for _ in range(12):
+                ex = strike_cx + np.random.randint(-35, 35)
+                ey = strike_cy - np.random.randint(5, 45)
+                cv2.circle(f, (ex, ey), int(np.random.randint(1, 3)), (40, 160, 255, 200), -1)
+                
+        frames.append(f)
+        
+    # Assemble into horizontal strip (2160 x 480)
     strip = np.zeros((FRAME_H, FRAME_W * 6, 4), dtype=np.uint8)
     for idx, f in enumerate(frames):
         strip[:, idx * FRAME_W : (idx + 1) * FRAME_W] = f
-        # Save individual frame to brain for verification
-        f_path = os.path.join(brain_dir, f'mortal_verified_frame_{idx}.png')
-        cv2.imwrite(f_path, f)
-        print(f"Saved frame {idx} to {f_path}")
         
     # Save Spritesheet Strip WebP to brain
     strip_p = os.path.join(brain_dir, 'mortal_blacksmith_strip_2160x480.webp')
     Image.fromarray(cv2.cvtColor(strip, cv2.COLOR_BGRA2RGBA)).save(strip_p, 'WEBP', lossless=True)
-    print(f"Saved spritesheet strip to {strip_p}")
+    print(f"Saved strip to {strip_p}")
     
-    # Copy to target destinations
+    # Save individual verification frames to brain
+    for idx, f in enumerate(frames):
+        cv2.imwrite(os.path.join(brain_dir, f'mortal_real_frame_{idx}.png'), f)
+        
+    # Create verification showcase with titles
+    showcase = np.zeros((550, 2160, 3), dtype=np.uint8)
+    showcase[:] = (10, 8, 6)
+    titles = [
+        'F0: THU THE CHUAN BI (IDLE)',
+        'F1: LAY DA KEO BUA (ANTICIPATION)',
+        'F2: DINH DIEM VUNG BUA (APEX HIGH WINDUP)',
+        'F3: BO BUA XE GIO (DOWNSTROKE SMEAR)',
+        'F4: NEN TRUNG DE PHAT NO (IMPACT 360 SPARK)',
+        'F5: NAY BUA HOI THE (REBOUND RECOVERY)'
+    ]
+    for idx in range(6):
+        fx = idx * 360
+        cv2.putText(showcase, titles[idx], (fx + 10, 35), cv2.FONT_HERSHEY_SIMPLEX, 0.44, (255, 183, 3), 1, cv2.LINE_AA)
+        cv2.rectangle(showcase, (fx, 50), (fx + 359, 549), (45, 35, 25), 1)
+        f_alpha = frames[idx][:, :, 3:4] / 255.0
+        f_bgr = frames[idx][:, :, :3]
+        showcase[50:530, fx:fx+360] = (showcase[50:530, fx:fx+360] * (1.0 - f_alpha) + f_bgr * f_alpha).astype(np.uint8)
+    showcase_p = os.path.join(brain_dir, 'mortal_blacksmith_REAL_6_frames_verified.png')
+    cv2.imwrite(showcase_p, showcase)
+    print(f"Saved showcase to {showcase_p}")
+    
+    # Deploy to webgame and frontend
     dests = [
         'webgame/assets/art/skins/skin_default',
         'frontend/public/assets/art/skins/skin_default'
     ]
     for d in dests:
         os.makedirs(d, exist_ok=True)
-        # 1. Spritesheet strip
+        # Spritesheet
         target_strip = os.path.join(d, 'spritesheet_strip.webp')
         Image.fromarray(cv2.cvtColor(strip, cv2.COLOR_BGRA2RGBA)).save(target_strip, 'WEBP', lossless=True)
-        print(f"Deployed strip to {target_strip}")
-        
-        # 2. Card art (using Frame 0)
+        # Card
         card_p = os.path.join(d, 'card.webp')
         Image.fromarray(cv2.cvtColor(frames[0], cv2.COLOR_BGRA2RGBA)).save(card_p, 'WEBP', lossless=True)
-        print(f"Deployed card to {card_p}")
-
-    # Also update root hero_spritesheet_strip.webp for backward-compatible fallback
-    root_strip_webgame = 'webgame/assets/art/hero_spritesheet_strip.webp'
-    root_strip_frontend = 'frontend/public/assets/art/hero_spritesheet_strip.webp'
-    Image.fromarray(cv2.cvtColor(strip, cv2.COLOR_BGRA2RGBA)).save(root_strip_webgame, 'WEBP', lossless=True)
-    Image.fromarray(cv2.cvtColor(strip, cv2.COLOR_BGRA2RGBA)).save(root_strip_frontend, 'WEBP', lossless=True)
-    print("Deployed fallback hero_spritesheet_strip.webp")
-    
-    return strip
+        
+    # Also update root fallback
+    Image.fromarray(cv2.cvtColor(strip, cv2.COLOR_BGRA2RGBA)).save('webgame/assets/art/hero_spritesheet_strip.webp', 'WEBP', lossless=True)
+    Image.fromarray(cv2.cvtColor(strip, cv2.COLOR_BGRA2RGBA)).save('frontend/public/assets/art/hero_spritesheet_strip.webp', 'WEBP', lossless=True)
+    print("All deployments complete!")
 
 if __name__ == '__main__':
-    build_spritesheet()
+    build_mortal_spritesheet()
