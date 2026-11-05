@@ -4,16 +4,7 @@ import {
   EquipmentSlotKey,
   getItemRarityMeta,
 } from '../game/rules';
-import {
-  Hammer,
-  Shield,
-  Flame,
-  Sparkles,
-  Zap,
-  X,
-  ChevronRight,
-  Package,
-} from 'lucide-react';
+import { X, ChevronRight } from 'lucide-react';
 
 export interface LootToastItem {
   id: string;
@@ -29,13 +20,13 @@ interface LootNotificationFeedProps {
   onOpenInventory: () => void;
 }
 
-const SLOT_ICONS: Record<EquipmentSlotKey, React.ComponentType<{ className?: string }>> = {
-  hammer: Hammer,
-  anvil: Shield,
-  bellows: Flame,
-  gauntlets: Zap,
-  apron: Shield,
-  relic: Sparkles,
+const ITEM_ART_URLS: Record<EquipmentSlotKey, string> = {
+  hammer: '/assets/art/items/item_hammer.webp',
+  anvil: '/assets/art/items/item_anvil.webp',
+  bellows: '/assets/art/items/item_bellows.webp',
+  gauntlets: '/assets/art/items/item_gauntlets.webp',
+  apron: '/assets/art/items/item_apron.webp',
+  relic: '/assets/art/items/item_relic.webp',
 };
 
 export const LootNotificationFeed: React.FC<LootNotificationFeedProps> = ({
@@ -85,8 +76,7 @@ const LootToastCard: React.FC<{
 
   const { item, type, salvageYield } = toast;
   const meta = getItemRarityMeta(item.rarity);
-  const SlotIcon = SLOT_ICONS[item.slotKey] || Package;
-
+  const itemArtSrc = ITEM_ART_URLS[item.slotKey] || '/assets/art/items/item_relic.webp';
   const isLegendaryOrMythic = meta.tier === 'S' || meta.tier === 'A';
 
   return (
@@ -94,10 +84,16 @@ const LootToastCard: React.FC<{
       onClick={type === 'drop' ? onOpenInventory : undefined}
       className={`pointer-events-auto relative overflow-hidden rounded-2xl bg-gradient-to-r from-slate-950/98 via-[#0B0F19]/95 to-slate-950/98 border backdrop-blur-xl shadow-2xl transition-all duration-300 hover:scale-[1.02] cursor-pointer group animate-in slide-in-from-right-8 duration-300 ${
         isLegendaryOrMythic
-          ? `${meta.borderColor} ${meta.glow} ring-1 ring-amber-400/30`
+          ? `${meta.borderColor} ${meta.glow} ring-1 ring-amber-400/40`
           : `${meta.borderColor} shadow-black/80`
       }`}
     >
+      {/* Ornate Xianxia Corner Flairs */}
+      <div className="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 border-amber-400/40 pointer-events-none" />
+      <div className="absolute top-0 right-0 w-3 h-3 border-t-2 border-r-2 border-amber-400/40 pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-3 h-3 border-b-2 border-l-2 border-amber-400/40 pointer-events-none" />
+      <div className="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 border-amber-400/40 pointer-events-none" />
+
       {/* Subtle Rarity Aura Glow */}
       <div
         className="absolute -top-12 -right-12 w-28 h-28 rounded-full blur-2xl opacity-25 pointer-events-none"
@@ -105,16 +101,22 @@ const LootToastCard: React.FC<{
       />
 
       <div className="p-2.5 sm:p-3 flex items-start gap-3">
-        {/* Item Icon Box */}
+        {/* Handcrafted Xianxia Item Icon Box */}
         <div
-          className={`relative w-11 h-11 rounded-xl flex items-center justify-center border shrink-0 shadow-inner ${
-            meta.bgColor
-          } ${meta.borderColor}`}
+          className={`relative w-12 h-12 rounded-xl flex items-center justify-center border shrink-0 bg-slate-950/90 overflow-hidden shadow-inner ${meta.borderColor}`}
+          style={{
+            boxShadow: `0 0 12px ${meta.hex}33`,
+          }}
         >
-          <SlotIcon className={`w-5 h-5 ${meta.textColor}`} />
-          {/* Small Tier Tag in bottom-right */}
+          <img
+            src={itemArtSrc}
+            alt={item.name}
+            className="w-11 h-11 object-contain drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)] transition-transform group-hover:scale-110 duration-300"
+            loading="lazy"
+          />
+          {/* Tier Emblem Badge */}
           <span
-            className="absolute -bottom-1 -right-1 text-[9px] font-mono font-black px-1 rounded bg-black/90 border border-slate-700 text-slate-200"
+            className="absolute -bottom-0.5 -right-0.5 text-[9px] font-mono font-black px-1.5 py-0.2 rounded bg-black/95 border border-slate-700 text-slate-100 shadow-sm"
           >
             {meta.tier}
           </span>

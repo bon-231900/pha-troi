@@ -30,6 +30,15 @@ import {
   ascendEquipmentTier,
   PlayerClassMeta,
 } from '../game/rules';
+
+const ITEM_ART_URLS: Record<EquipmentSlotKey, string> = {
+  hammer: '/assets/art/items/item_hammer.webp',
+  anvil: '/assets/art/items/item_anvil.webp',
+  bellows: '/assets/art/items/item_bellows.webp',
+  gauntlets: '/assets/art/items/item_gauntlets.webp',
+  apron: '/assets/art/items/item_apron.webp',
+  relic: '/assets/art/items/item_relic.webp',
+};
 import {
   Hammer,
   Sparkles,
@@ -371,12 +380,30 @@ export const RightProgressionPanel: React.FC<RightProgressionPanelProps> = ({
                             )}
                           </div>
 
-                          <div
-                            className={`font-semibold text-[11px] truncate ${
-                              rMeta ? rMeta.textColor : 'text-slate-500'
-                            }`}
-                          >
-                            {item ? item.name : 'Chưa Trang Bị'}
+                          <div className="flex items-center gap-2 mt-1">
+                            <div className="w-9 h-9 rounded-lg bg-black/70 border border-slate-800/80 flex items-center justify-center shrink-0 overflow-hidden shadow-inner">
+                              <img
+                                src={ITEM_ART_URLS[slotKey]}
+                                alt={slotMeta.name}
+                                className={`w-8 h-8 object-contain drop-shadow transition-transform ${item ? 'opacity-100 group-hover:scale-105' : 'opacity-40 grayscale'}`}
+                              />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <div
+                                className={`font-semibold text-[11px] truncate ${
+                                  rMeta ? rMeta.textColor : 'text-slate-500'
+                                }`}
+                              >
+                                {item ? item.name : 'Chưa Trang Bị'}
+                              </div>
+                              {item ? (
+                                <div className="text-[9px] font-tech text-cyan-300">
+                                  +{item.baseStatValue} {item.baseStatUnit}
+                                </div>
+                              ) : (
+                                <div className="text-[8.5px] font-tech text-slate-600">Trống</div>
+                              )}
+                            </div>
                           </div>
                         </div>
 
@@ -543,10 +570,12 @@ export const RightProgressionPanel: React.FC<RightProgressionPanelProps> = ({
                     >
                       {bagItem ? (
                         <>
-                          <div className={`text-[9px] font-tech font-bold ${rMeta?.textColor}`}>
-                            {bagItem.slotName.substring(0, 2)}
-                          </div>
-                          <div className="text-[7.5px] font-tech text-slate-400">
+                          <img
+                            src={ITEM_ART_URLS[bagItem.slotKey]}
+                            alt={bagItem.name}
+                            className="w-6 h-6 object-contain drop-shadow-[0_1px_4px_rgba(0,0,0,0.8)]"
+                          />
+                          <div className="text-[7.5px] font-tech text-slate-300 leading-none mt-0.5 font-bold">
                             +{bagItem.baseStatValue}
                           </div>
                           {/* Tier Badge / Pip */}

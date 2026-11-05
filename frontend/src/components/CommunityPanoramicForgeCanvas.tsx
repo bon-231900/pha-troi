@@ -94,6 +94,8 @@ interface FloatingCombatText2D {
   kind: 'damage' | 'skill';
   valueText: string;
   badgeText?: string;
+  isGolden?: boolean;
+  isCrit?: boolean;
   x: number;
   y: number;
   vx: number;
@@ -560,6 +562,8 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
       peerSheet: { src: `${cleanBase}assets/art/peer_blacksmith_strip.webp`, img: new Image(), loaded: false },
       peerShadowSheet: { src: `${cleanBase}assets/art/peer_blacksmith_shadow_strip.webp`, img: new Image(), loaded: false },
       heroSheet: { src: `${cleanBase}assets/art/hero_spritesheet_strip.webp`, img: new Image(), loaded: false },
+      badgeHoangKim: { src: `${cleanBase}assets/art/ui/badge_hoang_kim.webp`, img: new Image(), loaded: false },
+      badgeBaoKich: { src: `${cleanBase}assets/art/ui/badge_bao_kich.webp`, img: new Image(), loaded: false },
     };
 
     Object.values(assets).forEach((asset) => {
@@ -811,6 +815,8 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
         kind: 'damage',
         valueText: `-${damage}`,
         badgeText,
+        isGolden,
+        isCrit,
         x: heroX + (Math.random() - 0.5) * 44,
         y: groundY - 55 - Math.random() * 20,
         vx: (Math.random() - 0.5) * 110,
@@ -1558,14 +1564,19 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
           ctx.fill();
           ctx.restore();
 
-          // Forge Aura Ring
+          // Forge Aura Glow (Soft ethereal ambient radial glow without crude perimeter wireframe)
           ctx.save();
-          ctx.strokeStyle = activeSectColor.glow;
-          ctx.lineWidth = 1.6;
-          ctx.globalAlpha = 0.55 + Math.sin(now * 0.004) * 0.2;
+          const auraGrad = ctx.createRadialGradient(
+            heroFootX + 8, stageFootY, 8,
+            heroFootX + 8, stageFootY, 70
+          );
+          auraGrad.addColorStop(0, `${activeSectColor.glow}66`);
+          auraGrad.addColorStop(0.5, `${activeSectColor.glow}20`);
+          auraGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+          ctx.fillStyle = auraGrad;
           ctx.beginPath();
-          ctx.ellipse(heroFootX + 8, stageFootY, 62, 14, 0, 0, Math.PI * 2);
-          ctx.stroke();
+          ctx.ellipse(heroFootX + 8, stageFootY, 72, 18, 0, 0, Math.PI * 2);
+          ctx.fill();
           ctx.restore();
 
           // Hero Sprite
@@ -1577,16 +1588,18 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
           ctx.drawImage(sheet, sx, sy, FRAME_W, FRAME_H, spriteLeft, spriteTop, dw, dh);
           ctx.restore();
 
-          // Contracting Rhythm Ring (100 BPM) on Hero Anvil
+          // Contracting Rhythm Ring (100 BPM) on Hero Anvil - Glowing Multi-Layer Qi Pulse
           const anvilImpactX = spriteLeft + 213 * renderScale;
           const anvilImpactY = spriteTop + 342 * renderScale;
           const ringScale = 1 - rhythmPhase;
           const isSweetSpot = Math.abs(rhythmPhase - 0.78) <= 0.18;
 
           ctx.save();
-          ctx.strokeStyle = isSweetSpot ? '#FFD166' : activeSectColor.glow;
-          ctx.lineWidth = isSweetSpot ? 2.6 : 1.5;
-          ctx.globalAlpha = 0.35 + rhythmPhase * 0.55;
+          ctx.shadowColor = isSweetSpot ? '#FFD700' : activeSectColor.glow;
+          ctx.shadowBlur = isSweetSpot ? 14 : 7;
+          ctx.strokeStyle = isSweetSpot ? '#FFF3B0' : activeSectColor.light;
+          ctx.lineWidth = isSweetSpot ? 2.5 : 1.4;
+          ctx.globalAlpha = 0.4 + rhythmPhase * 0.55;
           ctx.beginPath();
           ctx.ellipse(
             anvilImpactX,
@@ -1598,6 +1611,23 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
             Math.PI * 2
           );
           ctx.stroke();
+
+          if (isSweetSpot) {
+            ctx.strokeStyle = '#FFFFFF';
+            ctx.lineWidth = 1.0;
+            ctx.globalAlpha = 0.8;
+            ctx.beginPath();
+            ctx.ellipse(
+              anvilImpactX,
+              anvilImpactY,
+              14 + ringScale * 38 * 0.96,
+              5 + ringScale * 14 * 0.96,
+              0,
+              0,
+              Math.PI * 2
+            );
+            ctx.stroke();
+          }
           ctx.restore();
 
           // Balanced Overhead Plaque (Charm / Caveat Calligraphy)
@@ -1687,8 +1717,26 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
           ctx.textBaseline = 'middle';
 
           if (ft.kind === 'damage') {
-            // 1. Sleek Compact Badge Pill (for Golden & Crit)
-            if (ft.badgeText) {
+            // 1. Ornate Game Art Badges (HOÀNG KIM / BẠO KÍCH)
+            if (ft.isGolden && assets.badgeHoangKim.loaded) {
+              const bImg = assets.badgeHoangKim.img;
+              const bW = 104;
+              const bH = bW * (bImg.height / bImg.width);
+              ctx.save();
+              ctx.shadowColor = '#F59E0B';
+              ctx.shadowBlur = 8;
+              ctx.drawImage(bImg, -bW * 0.5, -bH - 10, bW, bH);
+              ctx.restore();
+            } else if (ft.isCrit && assets.badgeBaoKich.loaded) {
+              const bImg = assets.badgeBaoKich.img;
+              const bW = 96;
+              const bH = bW * (bImg.height / bImg.width);
+              ctx.save();
+              ctx.shadowColor = '#00F0FF';
+              ctx.shadowBlur = 8;
+              ctx.drawImage(bImg, -bW * 0.5, -bH - 10, bW, bH);
+              ctx.restore();
+            } else if (ft.badgeText) {
               ctx.save();
               ctx.font = '700 11px "Chakra Petch", sans-serif';
               const bw = ctx.measureText(ft.badgeText).width + 14;
@@ -1710,21 +1758,21 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
 
             // 2. Bold Modern Damage Number
             ctx.save();
-            ctx.font = '900 28px "Chakra Petch", sans-serif';
+            ctx.font = '900 29px "Chakra Petch", sans-serif';
             ctx.shadowColor = ft.glowColor;
-            ctx.shadowBlur = ft.scale > 1.1 ? 12 : 5;
+            ctx.shadowBlur = ft.scale > 1.1 ? 14 : 6;
             ctx.lineWidth = 4.5;
             ctx.strokeStyle = '#050811';
-            ctx.strokeText(ft.valueText, 0, 0);
+            ctx.strokeText(ft.valueText, 0, 4);
 
             ctx.fillStyle = ft.color;
-            ctx.fillText(ft.valueText, 0, 0);
+            ctx.fillText(ft.valueText, 0, 4);
             ctx.restore();
           } else {
-            // Majestic Skill Banner
+            // Majestic Skill Banner (No sloppy cursive font)
             ctx.save();
-            ctx.font = '800 22px "Cinzel", "Chakra Petch", serif';
-            ctx.lineWidth = 4.5;
+            ctx.font = '800 20px "Cinzel", "Chakra Petch", serif';
+            ctx.lineWidth = 4.0;
             ctx.strokeStyle = '#050811';
             ctx.shadowColor = ft.glowColor;
             ctx.shadowBlur = 10;
@@ -1733,11 +1781,12 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
             ctx.fillText(ft.valueText, 0, 0);
 
             if (ft.badgeText) {
-              ctx.font = '700 12.5px "Charm", "Caveat", cursive';
+              ctx.font = '700 12px "Chakra Petch", sans-serif';
               ctx.lineWidth = 3;
-              ctx.strokeText(ft.badgeText, 0, 20);
+              ctx.strokeStyle = '#050811';
+              ctx.strokeText(ft.badgeText, 0, 18);
               ctx.fillStyle = '#F8FAFC';
-              ctx.fillText(ft.badgeText, 0, 20);
+              ctx.fillText(ft.badgeText, 0, 18);
             }
             ctx.restore();
           }
