@@ -7,11 +7,12 @@ Generate 5 authentic, completely distinct character spritesheets for Webgame Ph�
 4. skin_mountain_robe: Bất Chu Nham Giáp (Mountain Sect - Sơn Nhạc)
 5. skin_mystic_robe: Thanh Mộc Tiên Y (Mystic Sect - Huyền Âm)
 
-Features:
-- Solid alpha extraction with enhanced brightness, contrast & cel-shaded rim lighting
-- Dynamic 6-frame frame-by-frame animation: Idle, Windup, Apex, Strike Slam, Recoil, Return
-- Custom sect anvil prop embedded at anvil impact position (x=213, y=342)
-- Sect-specific impact VFX and ambient particle auras
+CORE PRINCIPLE:
+- The entire character is ALWAYS 100% WHOLE, SEAMLESS and INTACT in every frame.
+- ZERO body cuts, ZERO horizontal seams, ZERO slicing.
+- Kinematic whole-body transformation anchored at feet (CHAR_X, BASELINE_Y).
+- Custom sect anvil placed firmly in front.
+- Frame-by-frame hammer strike animation with elemental impact blast.
 """
 import os
 import sys
@@ -42,7 +43,6 @@ SKIN_CONFIGS = [
         'spark_color': (255, 230, 140),
         'rim_color': (255, 200, 100),
         'scale_h': 330,
-        'waist_pct': 0.52,
         'char_x_offset': 0,
         'lum_boost': 1.25,
     },
@@ -56,7 +56,6 @@ SKIN_CONFIGS = [
         'spark_color': (224, 242, 254),
         'rim_color': (125, 211, 252),
         'scale_h': 330,
-        'waist_pct': 0.53,
         'char_x_offset': -4,
         'lum_boost': 1.15,
     },
@@ -70,9 +69,8 @@ SKIN_CONFIGS = [
         'spark_color': (254, 215, 170),
         'rim_color': (249, 115, 22),
         'scale_h': 330,
-        'waist_pct': 0.52,
         'char_x_offset': -2,
-        'lum_boost': 1.35, # Boost dark armor so details pop
+        'lum_boost': 1.35,
     },
     {
         'id': 'skin_mountain_robe',
@@ -84,7 +82,6 @@ SKIN_CONFIGS = [
         'spark_color': (253, 230, 138),
         'rim_color': (251, 191, 36),
         'scale_h': 330,
-        'waist_pct': 0.50,
         'char_x_offset': -6,
         'lum_boost': 1.28,
     },
@@ -98,21 +95,20 @@ SKIN_CONFIGS = [
         'spark_color': (167, 243, 208),
         'rim_color': (52, 211, 153),
         'scale_h': 330,
-        'waist_pct': 0.53,
         'char_x_offset': -4,
         'lum_boost': 1.18,
     },
 ]
 
-# 6 Frame Transformation Keyframes (matches initial Tiên Nhân sprite strike motion):
-# (angle_deg, dx, dy, upper_scale_y, aura_alpha, is_strike, is_recoil)
-TRANSFORMS = [
-    (0,    0,   0, 1.00, 0.25, False, False), # 0: Ready Idle (hammer resting near anvil)
-    (-6,  -6,  -5, 1.03, 0.55, False, False), # 1: Wind-up (drawing hammer back and raising)
-    (-12,-11, -11, 1.06, 0.95, False, False), # 2: High Apex (hammer raised overhead with glowing aura)
-    (8,   15,   8, 0.96, 1.00, True,  False), # 3: Heavy Strike Slam (hammer slamming down onto anvil)
-    (3,    6,  -2, 1.00, 0.75, False, True),  # 4: Recoil Rebound (hammer bouncing with sparks)
-    (-2,  -3,  -1, 1.00, 0.40, False, False), # 5: Recovery (settling back to idle)
+# 6 Frame Keyframes (whole-body kinematic motion around feet anchor (CHAR_X, BASELINE_Y)):
+# (angle_deg, scale_x, scale_y, dx, dy, aura_alpha, is_strike, is_recoil)
+KEYFRAMES = [
+    (0,   1.00, 1.00,  0,  0, 0.25, False, False), # 0: Ready Idle (hammer resting near anvil)
+    (-4,  0.98, 1.02, -3, -4, 0.55, False, False), # 1: Wind-up (drawing hammer back, lifting body)
+    (-7,  0.97, 1.04, -6, -8, 0.95, False, False), # 2: High Apex (hammer poised at peak, fully charged)
+    (5,   1.04, 0.95, 10,  5, 1.00, True,  False), # 3: Heavy Strike Slam (surging forward into anvil)
+    (2,   1.01, 0.98,  3, -2, 0.75, False, True),  # 4: Recoil Rebound (bouncing off anvil, sparks flying)
+    (-1,  0.99, 1.01, -1, -1, 0.40, False, False), # 5: Recovery (settling smoothly back to idle)
 ]
 
 def enhance_sprite_clarity(img, lum_boost, rim_color):
@@ -143,6 +139,19 @@ def enhance_sprite_clarity(img, lum_boost, rim_color):
     out_arr = np.stack([r, g, b, a], axis=-1).astype(np.uint8)
     return Image.fromarray(out_arr)
 
+def transform_whole_body(img, angle_deg, scale_x, scale_y, dx, dy, anchor_x, anchor_y):
+    """Transform the whole character image around the feet anchor with ZERO cuts"""
+    arr = np.array(img)
+    rad = np.radians(angle_deg)
+    cos_a = np.cos(rad) * scale_x
+    sin_a = np.sin(rad) * scale_y
+    M = np.float32([
+        [cos_a, -sin_a, (1 - cos_a) * anchor_x + sin_a * anchor_y + dx],
+        [sin_a,  cos_a, -sin_a * anchor_x + (1 - cos_a) * anchor_y + dy]
+    ])
+    transformed = cv2.warpAffine(arr, M, (FRAME_W, FRAME_H), flags=cv2.INTER_LANCZOS4, borderMode=cv2.BORDER_CONSTANT, borderValue=(0,0,0,0))
+    return Image.fromarray(transformed)
+
 def load_and_tint_anvil(anvil_path, anvil_type):
     im = Image.open(anvil_path).convert('RGBA')
     aw, ah = im.size
@@ -151,7 +160,6 @@ def load_and_tint_anvil(anvil_path, anvil_type):
     scaled = im.resize((target_w, target_h), Image.Resampling.LANCZOS)
     
     if anvil_type == 'mystic':
-        # Tint anvil with ethereal jade green & golden resonance veins
         arr = np.array(scaled, dtype=np.float32)
         r, g, b, a = arr[:, :, 0], arr[:, :, 1], arr[:, :, 2], arr[:, :, 3]
         opaque = a > 30
@@ -251,7 +259,7 @@ def add_recoil_sparks(frame, impact_x, impact_y, spark_color):
 
 def generate_skin_spritesheet(cfg):
     print(f"\n==========================================")
-    print(f"Generating Spritesheet for: {cfg['name']} ({cfg['id']})")
+    print(f"Generating Whole-Body Spritesheet (ZERO CUTS) for: {cfg['name']} ({cfg['id']})")
     print(f"==========================================")
     
     # 1. Load and enhance cutout
@@ -263,29 +271,16 @@ def generate_skin_spritesheet(cfg):
     target_w = int(cw * (target_h / ch))
     c_scaled = cutout.resize((target_w, target_h), Image.Resampling.LANCZOS)
     
-    # Placement
+    # Base character frame (placed on 360x480 canvas, feet at BASELINE_Y)
     char_base_x = CHAR_X + cfg['char_x_offset']
+    base_frame = Image.new('RGBA', (FRAME_W, FRAME_H), (0, 0, 0, 0))
     base_px = char_base_x - target_w // 2
     base_py = BASELINE_Y - target_h
-    waist_rel_y = int(target_h * cfg['waist_pct'])
+    base_frame.paste(c_scaled, (base_px, base_py), c_scaled)
     
-    # Split into lower and upper body with smooth feathering
-    c_arr = np.array(c_scaled)
-    upper_arr = c_arr.copy()
-    upper_arr[waist_rel_y:, :, :] = 0
-    blend_px = 12
-    for i in range(blend_px):
-        factor = 1.0 - (i / float(blend_px))
-        upper_arr[waist_rel_y - blend_px + i, :, 3] = (upper_arr[waist_rel_y - blend_px + i, :, 3] * factor).astype(np.uint8)
-        
-    lower_arr = c_arr.copy()
-    lower_arr[:waist_rel_y - blend_px, :, :] = 0
-    for i in range(blend_px):
-        factor = i / float(blend_px)
-        lower_arr[waist_rel_y - blend_px + i, :, 3] = (lower_arr[waist_rel_y - blend_px + i, :, 3] * factor).astype(np.uint8)
-        
-    upper_img = Image.fromarray(upper_arr)
-    lower_img = Image.fromarray(lower_arr)
+    # Feet anchor for whole-body transformation
+    anchor_x = char_base_x
+    anchor_y = BASELINE_Y
     
     # 2. Load Sect Anvil
     anvil_scaled = load_and_tint_anvil(cfg['anvil'], cfg['anvil_type'])
@@ -295,36 +290,24 @@ def generate_skin_spritesheet(cfg):
     impact_x = 213
     impact_y = 342
     
-    # 3. Create 6 Frames
+    # 3. Create 6 Frames with Whole-Body Transformation (ZERO CUTS)
     sheet = Image.new('RGBA', (FRAME_W * 6, FRAME_H), (0, 0, 0, 0))
     sect_type = cfg['id'].replace('skin_', '').replace('_robe', '')
     if sect_type == 'default':
         sect_type = 'mortal'
         
-    for f_idx, (angle, dx, dy, sy, aura_a, is_strike, is_recoil) in enumerate(TRANSFORMS):
-        frame = Image.new('RGBA', (FRAME_W, FRAME_H), (0, 0, 0, 0))
+    for f_idx, (angle, sx, sy, dx, dy, aura_a, is_strike, is_recoil) in enumerate(KEYFRAMES):
+        # Transform the WHOLE character around feet anchor with zero slicing
+        frame = transform_whole_body(base_frame, angle, sx, sy, dx, dy, anchor_x, anchor_y)
         
-        # A. Lower body
-        frame.paste(lower_img, (base_px, base_py), lower_img)
-        
-        # B. Upper body transformed
-        u_w, u_h = upper_img.size
-        u_scaled = upper_img.resize((u_w, int(u_h * sy)), Image.Resampling.LANCZOS)
-        u_rot = u_scaled.rotate(angle, resample=Image.Resampling.BICUBIC, expand=True)
-        rot_w, rot_h = u_rot.size
-        up_x = base_px + (u_w - rot_w) // 2 + dx
-        up_y = base_py + (u_h - rot_h) // 2 + dy - int((sy - 1.0) * u_h * 0.5)
-        
-        frame.paste(u_rot, (up_x, up_y), u_rot)
-        
-        # C. Anvil in front
+        # Anvil placed firmly in front on dais
         frame.paste(anvil_scaled, (an_px, an_py), anvil_scaled)
         
-        # D. Elemental Aura
+        # Elemental Aura
         if aura_a > 0:
             frame = add_elemental_aura(frame, base_px, base_py, target_w, target_h, cfg['theme_color'], aura_a, sect_type)
             
-        # E. Impact FX
+        # Impact Blast FX
         if is_strike:
             frame = add_impact_blast(frame, impact_x, impact_y, cfg['theme_color'], cfg['spark_color'], sect_type)
         elif is_recoil:
@@ -332,6 +315,7 @@ def generate_skin_spritesheet(cfg):
             
         sheet.paste(frame, (f_idx * FRAME_W, 0))
         
+    # Save to both frontend and webgame
     out_dirs = [
         os.path.join(FRONTEND_SKINS, cfg['id']),
         os.path.join(WEBGAME_SKINS, cfg['id'])
@@ -343,10 +327,10 @@ def generate_skin_spritesheet(cfg):
         print(f"-> Saved: {out_webp} ({sheet.size[0]}x{sheet.size[1]})")
 
 def main():
-    print("Starting generation of 5 completely distinct character spritesheets...")
+    print("Starting generation of 5 completely distinct, UNBROKEN character spritesheets...")
     for cfg in SKIN_CONFIGS:
         generate_skin_spritesheet(cfg)
-    print("\n[SUCCESS] All 5 distinct sect spritesheets generated successfully!")
+    print("\n[SUCCESS] All 5 distinct sect spritesheets generated successfully with ZERO cuts!")
 
 if __name__ == '__main__':
     main()
