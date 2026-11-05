@@ -7,16 +7,15 @@ Generate 5 authentic, completely distinct character spritesheets for Webgame Ph�
 4. skin_mountain_robe: Bất Chu Nham Giáp (Mountain Sect - Sơn Nhạc)
 5. skin_mystic_robe: Thanh Mộc Tiên Y (Mystic Sect - Huyền Âm)
 
-Each spritesheet has 6 frames (360x480 each, total 2160x480):
-Frame 0: Idle stance by the anvil with ambient sect aura
-Frame 1: Wind-up (drawing hammer back, energy gathering)
-Frame 2: High Apex (hammer raised high, blazing elemental power)
-Frame 3: Strike Slam (hammer slamming anvil at x=213, y=342 with impact explosion)
-Frame 4: Recoil & Shockwave (impact rebound, spark shards flying)
-Frame 5: Return to ready stance
+Features:
+- Solid alpha extraction with enhanced brightness, contrast & cel-shaded rim lighting
+- Dynamic 6-frame frame-by-frame animation: Idle, Windup, Apex, Strike Slam, Recoil, Return
+- Custom sect anvil prop embedded at anvil impact position (x=213, y=342)
+- Sect-specific impact VFX and ambient particle auras
 """
 import os
 import sys
+import cv2
 import numpy as np
 from PIL import Image, ImageEnhance, ImageFilter, ImageDraw
 
@@ -40,10 +39,12 @@ SKIN_CONFIGS = [
         'anvil': f'{BRAIN}/clean_anvil_crop.png',
         'anvil_type': 'iron',
         'theme_color': (255, 180, 70),
-        'spark_color': (255, 210, 110),
+        'spark_color': (255, 230, 140),
+        'rim_color': (255, 200, 100),
         'scale_h': 330,
         'waist_pct': 0.52,
         'char_x_offset': 0,
+        'lum_boost': 1.25,
     },
     {
         'id': 'skin_thunder_robe',
@@ -53,9 +54,11 @@ SKIN_CONFIGS = [
         'anvil_type': 'lightning',
         'theme_color': (56, 189, 248),
         'spark_color': (224, 242, 254),
+        'rim_color': (125, 211, 252),
         'scale_h': 330,
         'waist_pct': 0.53,
         'char_x_offset': -4,
+        'lum_boost': 1.15,
     },
     {
         'id': 'skin_flame_robe',
@@ -65,9 +68,11 @@ SKIN_CONFIGS = [
         'anvil_type': 'fire',
         'theme_color': (239, 68, 68),
         'spark_color': (254, 215, 170),
+        'rim_color': (249, 115, 22),
         'scale_h': 330,
         'waist_pct': 0.52,
         'char_x_offset': -2,
+        'lum_boost': 1.35, # Boost dark armor so details pop
     },
     {
         'id': 'skin_mountain_robe',
@@ -77,34 +82,66 @@ SKIN_CONFIGS = [
         'anvil_type': 'mountain',
         'theme_color': (245, 158, 11),
         'spark_color': (253, 230, 138),
+        'rim_color': (251, 191, 36),
         'scale_h': 330,
         'waist_pct': 0.50,
         'char_x_offset': -6,
+        'lum_boost': 1.28,
     },
     {
         'id': 'skin_mystic_robe',
         'name': 'Thanh Mộc Tiên Y',
         'cutout': f'{BRAIN}/clean_cutout_mystic.png',
-        'anvil': f'{BRAIN}/clean_anvil_crop.png', # tinted jade
+        'anvil': f'{BRAIN}/clean_anvil_crop.png',
         'anvil_type': 'mystic',
         'theme_color': (16, 185, 129),
         'spark_color': (167, 243, 208),
+        'rim_color': (52, 211, 153),
         'scale_h': 330,
         'waist_pct': 0.53,
         'char_x_offset': -4,
+        'lum_boost': 1.18,
     },
 ]
 
-# Transformation definitions for 6 frames:
+# 6 Frame Transformation Keyframes (matches initial Tiên Nhân sprite strike motion):
 # (angle_deg, dx, dy, upper_scale_y, aura_alpha, is_strike, is_recoil)
 TRANSFORMS = [
-    (0,    0,   0, 1.00, 0.20, False, False), # Frame 0: Idle
-    (-5,  -5,  -4, 1.02, 0.50, False, False), # Frame 1: Wind-up
-    (-10, -9,  -9, 1.05, 0.90, False, False), # Frame 2: Apex
-    (6,   12,   7, 0.97, 1.00, True,  False), # Frame 3: Strike Impact
-    (2,    5,  -2, 1.00, 0.70, False, True),  # Frame 4: Recoil
-    (-1,  -2,  -1, 1.00, 0.35, False, False), # Frame 5: Return
+    (0,    0,   0, 1.00, 0.25, False, False), # 0: Ready Idle (hammer resting near anvil)
+    (-6,  -6,  -5, 1.03, 0.55, False, False), # 1: Wind-up (drawing hammer back and raising)
+    (-12,-11, -11, 1.06, 0.95, False, False), # 2: High Apex (hammer raised overhead with glowing aura)
+    (8,   15,   8, 0.96, 1.00, True,  False), # 3: Heavy Strike Slam (hammer slamming down onto anvil)
+    (3,    6,  -2, 1.00, 0.75, False, True),  # 4: Recoil Rebound (hammer bouncing with sparks)
+    (-2,  -3,  -1, 1.00, 0.40, False, False), # 5: Recovery (settling back to idle)
 ]
+
+def enhance_sprite_clarity(img, lum_boost, rim_color):
+    """Enhance visibility against dark backgrounds with shadow lifting & luminous cel-shaded rim light"""
+    arr = np.array(img, dtype=np.float32)
+    r, g, b, a = arr[:, :, 0], arr[:, :, 1], arr[:, :, 2], arr[:, :, 3]
+    opaque = a > 25
+    
+    # Lift shadows so dark armor and robes are crisp and readable
+    lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255.0
+    shadow_curve = np.where(opaque, np.clip(lum_boost - lum * 0.35, 1.0, 1.5), 1.0)
+    
+    r = np.clip(r * shadow_curve * 1.10, 0, 255)
+    g = np.clip(g * shadow_curve * 1.08, 0, 255)
+    b = np.clip(b * shadow_curve * 1.06, 0, 255)
+    
+    # Calculate silhouette rim light mask
+    mask = (a > 60).astype(np.uint8) * 255
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
+    eroded = cv2.erode(mask, kernel, iterations=1)
+    rim_mask = (mask > 0) & (eroded == 0)
+    
+    rr, rg, rb = rim_color
+    r[rim_mask] = np.clip(r[rim_mask] * 0.35 + rr * 0.65, 0, 255)
+    g[rim_mask] = np.clip(g[rim_mask] * 0.35 + rg * 0.65, 0, 255)
+    b[rim_mask] = np.clip(b[rim_mask] * 0.35 + rb * 0.65, 0, 255)
+    
+    out_arr = np.stack([r, g, b, a], axis=-1).astype(np.uint8)
+    return Image.fromarray(out_arr)
 
 def load_and_tint_anvil(anvil_path, anvil_type):
     im = Image.open(anvil_path).convert('RGBA')
@@ -119,24 +156,21 @@ def load_and_tint_anvil(anvil_path, anvil_type):
         r, g, b, a = arr[:, :, 0], arr[:, :, 1], arr[:, :, 2], arr[:, :, 3]
         opaque = a > 30
         lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255.0
-        new_r = np.where(opaque, lum * 90 + 15, r)
-        new_g = np.where(opaque, lum * 220 + 35, g)
-        new_b = np.where(opaque, lum * 170 + 25, b)
+        new_r = np.where(opaque, lum * 90 + 20, r)
+        new_g = np.where(opaque, lum * 230 + 40, g)
+        new_b = np.where(opaque, lum * 180 + 30, b)
         scaled = Image.fromarray(np.stack([new_r, new_g, new_b, a], axis=-1).astype(np.uint8))
         
     return scaled
 
 def add_elemental_aura(frame, char_x, char_y, target_w, target_h, theme_color, aura_alpha, sect_type):
-    """Draw ambient elemental energy around character"""
     aura_layer = Image.new('RGBA', (FRAME_W, FRAME_H), (0, 0, 0, 0))
     draw = ImageDraw.Draw(aura_layer)
     cx = char_x + target_w // 2
     cy = char_y + int(target_h * 0.4)
-    
     tr, tg, tb = theme_color
     
     if sect_type == 'thunder':
-        # Electric lightning arcs
         for _ in range(int(8 * aura_alpha)):
             start_x = cx + np.random.randint(-40, 40)
             start_y = cy + np.random.randint(-60, 60)
@@ -144,85 +178,75 @@ def add_elemental_aura(frame, char_x, char_y, target_w, target_h, theme_color, a
             end_y = start_y + np.random.randint(-25, 25)
             mid_x = (start_x + end_x) // 2 + np.random.randint(-12, 12)
             mid_y = (start_y + end_y) // 2 + np.random.randint(-12, 12)
-            alpha = int(180 * aura_alpha)
+            alpha = int(190 * aura_alpha)
             draw.line([(start_x, start_y), (mid_x, mid_y), (end_x, end_y)], fill=(tr, tg, tb, alpha), width=2)
             draw.ellipse([mid_x-2, mid_y-2, mid_x+2, mid_y+2], fill=(240, 250, 255, alpha))
             
     elif sect_type == 'fire':
-        # Molten ember motes floating up
-        for _ in range(int(12 * aura_alpha)):
+        for _ in range(int(14 * aura_alpha)):
             ex = cx + np.random.randint(-50, 50)
             ey = cy + np.random.randint(-60, 80)
             rad = np.random.randint(2, 4)
-            alpha = int(210 * aura_alpha)
+            alpha = int(220 * aura_alpha)
             draw.ellipse([ex - rad, ey - rad, ex + rad, ey + rad], fill=(255, np.random.randint(120, 220), 30, alpha))
             
     elif sect_type == 'mountain':
-        # Floating golden basalt rune fragments
-        for _ in range(int(7 * aura_alpha)):
+        for _ in range(int(8 * aura_alpha)):
             mx = cx + np.random.randint(-45, 45)
             my = cy + np.random.randint(-60, 60)
             sz = np.random.randint(3, 6)
-            alpha = int(190 * aura_alpha)
+            alpha = int(200 * aura_alpha)
             draw.rectangle([mx, my, mx + sz, my + sz], fill=(245, 180, 30, alpha))
             
     elif sect_type == 'mystic':
-        # Floating jade wind ribbons & spirit petals
-        for _ in range(int(9 * aura_alpha)):
+        for _ in range(int(10 * aura_alpha)):
             wx = cx + np.random.randint(-50, 50)
             wy = cy + np.random.randint(-60, 60)
-            alpha = int(180 * aura_alpha)
+            alpha = int(190 * aura_alpha)
             draw.ellipse([wx - 3, wy - 6, wx + 3, wy + 6], fill=(110, 240, 180, alpha))
             
     return Image.alpha_composite(frame, aura_layer)
 
 def add_impact_blast(frame, impact_x, impact_y, theme_color, spark_color, sect_type):
-    """Draw dramatic impact blast on anvil at (impact_x, impact_y)"""
     fx_layer = Image.new('RGBA', (FRAME_W, FRAME_H), (0, 0, 0, 0))
     draw = ImageDraw.Draw(fx_layer)
     tr, tg, tb = theme_color
     sr, sg, sb = spark_color
     
-    # 1. Radiant central flash
-    for r in range(32, 4, -4):
-        alpha = int(160 * (1.0 - r / 32.0))
+    for r in range(36, 4, -4):
+        alpha = int(180 * (1.0 - r / 36.0))
         draw.ellipse([impact_x - r, impact_y - int(r * 0.5), impact_x + r, impact_y + int(r * 0.5)], fill=(tr, tg, tb, alpha))
-    draw.ellipse([impact_x - 14, impact_y - 7, impact_x + 14, impact_y + 7], fill=(sr, sg, sb, 255))
+    draw.ellipse([impact_x - 16, impact_y - 8, impact_x + 16, impact_y + 8], fill=(sr, sg, sb, 255))
     
-    # 2. Explosive sparks / debris fountain
     np.random.seed(1337)
-    num_sparks = 36 if sect_type in ['fire', 'thunder'] else 26
+    num_sparks = 36 if sect_type in ['fire', 'thunder'] else 28
     for _ in range(num_sparks):
-        # Angle pointing mostly upward and outwards (-160 deg to -20 deg)
         ang = np.random.uniform(np.pi * 0.85, np.pi * 2.15)
-        dist = np.random.uniform(18, 75)
+        dist = np.random.uniform(18, 80)
         ex = int(impact_x + np.cos(ang) * dist)
         ey = int(impact_y + np.sin(ang) * dist * 0.6)
         width = np.random.randint(2, 4)
-        alpha = np.random.randint(180, 255)
+        alpha = np.random.randint(190, 255)
         draw.line([(impact_x, impact_y), (ex, ey)], fill=(sr, sg, sb, alpha), width=width)
-        # Spark tip
         draw.ellipse([ex - 2, ey - 2, ex + 2, ey + 2], fill=(255, 255, 255, alpha))
         
-    # 3. Expanding Qi Shockwave Ring
-    for ring_r in [26, 36]:
-        draw.ellipse([impact_x - ring_r, impact_y - int(ring_r * 0.45), impact_x + ring_r, impact_y + int(ring_r * 0.45)], outline=(sr, sg, sb, 160), width=2)
+    for ring_r in [28, 40]:
+        draw.ellipse([impact_x - ring_r, impact_y - int(ring_r * 0.45), impact_x + ring_r, impact_y + int(ring_r * 0.45)], outline=(sr, sg, sb, 180), width=2)
         
     return Image.alpha_composite(frame, fx_layer)
 
 def add_recoil_sparks(frame, impact_x, impact_y, spark_color):
-    """Draw dissipating spark shards for recoil frame"""
     fx_layer = Image.new('RGBA', (FRAME_W, FRAME_H), (0, 0, 0, 0))
     draw = ImageDraw.Draw(fx_layer)
     sr, sg, sb = spark_color
     np.random.seed(999)
-    for _ in range(16):
+    for _ in range(18):
         ang = np.random.uniform(np.pi * 0.7, np.pi * 2.3)
-        dist = np.random.uniform(35, 85)
+        dist = np.random.uniform(35, 90)
         ex = int(impact_x + np.cos(ang) * dist)
         ey = int(impact_y + np.sin(ang) * dist * 0.65)
         rad = np.random.randint(2, 4)
-        draw.ellipse([ex - rad, ey - rad, ex + rad, ey + rad], fill=(sr, sg, sb, 180))
+        draw.ellipse([ex - rad, ey - rad, ex + rad, ey + rad], fill=(sr, sg, sb, 200))
     return Image.alpha_composite(frame, fx_layer)
 
 def generate_skin_spritesheet(cfg):
@@ -230,8 +254,10 @@ def generate_skin_spritesheet(cfg):
     print(f"Generating Spritesheet for: {cfg['name']} ({cfg['id']})")
     print(f"==========================================")
     
-    # 1. Load Character Cutout
+    # 1. Load and enhance cutout
     cutout = Image.open(cfg['cutout']).convert('RGBA')
+    cutout = enhance_sprite_clarity(cutout, cfg['lum_boost'], cfg['rim_color'])
+    
     cw, ch = cutout.size
     target_h = cfg['scale_h']
     target_w = int(cw * (target_h / ch))
@@ -243,7 +269,7 @@ def generate_skin_spritesheet(cfg):
     base_py = BASELINE_Y - target_h
     waist_rel_y = int(target_h * cfg['waist_pct'])
     
-    # Split into lower and upper body with feathering
+    # Split into lower and upper body with smooth feathering
     c_arr = np.array(c_scaled)
     upper_arr = c_arr.copy()
     upper_arr[waist_rel_y:, :, :] = 0
@@ -271,7 +297,6 @@ def generate_skin_spritesheet(cfg):
     
     # 3. Create 6 Frames
     sheet = Image.new('RGBA', (FRAME_W * 6, FRAME_H), (0, 0, 0, 0))
-    
     sect_type = cfg['id'].replace('skin_', '').replace('_robe', '')
     if sect_type == 'default':
         sect_type = 'mortal'
@@ -279,7 +304,7 @@ def generate_skin_spritesheet(cfg):
     for f_idx, (angle, dx, dy, sy, aura_a, is_strike, is_recoil) in enumerate(TRANSFORMS):
         frame = Image.new('RGBA', (FRAME_W, FRAME_H), (0, 0, 0, 0))
         
-        # A. Lower body (anchored)
+        # A. Lower body
         frame.paste(lower_img, (base_px, base_py), lower_img)
         
         # B. Upper body transformed
@@ -307,7 +332,6 @@ def generate_skin_spritesheet(cfg):
             
         sheet.paste(frame, (f_idx * FRAME_W, 0))
         
-    # Save Spritesheet
     out_dirs = [
         os.path.join(FRONTEND_SKINS, cfg['id']),
         os.path.join(WEBGAME_SKINS, cfg['id'])
