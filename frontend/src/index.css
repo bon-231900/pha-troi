@@ -2,9 +2,10 @@
 
 @layer base {
   :root {
-    --font-display: 'Cinzel', Georgia, serif;
+    --font-display: 'Playfair Display', Georgia, serif;
+    --font-serif: 'Lora', Georgia, serif;
     --font-sans: 'Be Vietnam Pro', system-ui, -apple-system, sans-serif;
-    --font-mono: 'Chakra Petch', monospace;
+    --font-mono: 'Saira', sans-serif;
   }
 
   body {
@@ -42,6 +43,10 @@
 
 .font-display {
   font-family: var(--font-display);
+}
+
+.font-serif-vn {
+  font-family: var(--font-serif);
 }
 
 .font-sans-vn {
@@ -101,25 +106,6 @@
   }
 }
 
-.animate-hit-float {
-  animation: float-hit-up 850ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-/* Custom subtle scrollbars for panels */
-::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
-}
-
-::-webkit-scrollbar-track {
-  background: #080A10;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #1E293B;
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #334155;
+.animate-float-hit {
+  animation: float-hit-up 850ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
 }

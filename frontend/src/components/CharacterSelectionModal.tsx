@@ -203,7 +203,7 @@ export const CharacterSelectionModal: React.FC<CharacterSelectionModalProps> = (
                     <div className="mb-2">
                       <h2
                         className="text-lg sm:text-xl font-bold text-amber-200 drop-shadow truncate"
-                        style={{ fontFamily: "'Charm', 'Caveat', cursive" }}
+                        style={{ fontFamily: "'Lora', Georgia, serif" }}
                       >
                         {profile.characterName}
                       </h2>

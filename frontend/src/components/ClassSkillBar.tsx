@@ -25,6 +25,22 @@ interface ClassSkillBarProps {
   hudVisible?: boolean;
 }
 
+/**
+ * Clean & authentic 2-word Xianxia technique naming for HUD buttons
+ * e.g., 'Viêm Dương Chùy' -> 'Viêm Dương', 'Thuật Khống Hỏa' -> 'Khống Hỏa'
+ */
+function formatSkillDisplayTitle(name: string): string {
+  const cleaned = name
+    .replace(/^Thuật\s+/, '')
+    .replace(/\s+Chùy$/, '')
+    .trim();
+  const words = cleaned.split(/\s+/);
+  if (words.length >= 2) {
+    return `${words[0]} ${words[1]}`;
+  }
+  return words[0] || name;
+}
+
 export const ClassSkillBar: React.FC<ClassSkillBarProps> = ({
   playerClass,
   overdriveCharge,
@@ -68,11 +84,11 @@ export const ClassSkillBar: React.FC<ClassSkillBarProps> = ({
               className="w-4 h-4 object-contain"
             />
           </div>
-          <span className="font-bold text-amber-300 tracking-wide font-cinzel text-xs">
+          <span className="font-bold text-amber-300 tracking-wide font-display text-xs">
             {playerClass.name}
           </span>
           <span className="text-amber-500/60">✦</span>
-          <span className="text-slate-300 font-serif truncate max-w-[150px] sm:max-w-[200px]">
+          <span className="text-slate-300 font-serif-vn text-xs truncate max-w-[150px] sm:max-w-[200px]">
             {playerClass.sectTitle.split('·')[0]}
           </span>
         </div>
@@ -95,7 +111,7 @@ export const ClassSkillBar: React.FC<ClassSkillBarProps> = ({
             hapticEngine.playStrike();
             onHeroStrike?.();
           }}
-          className="relative p-1 rounded-xl flex flex-col items-center justify-between text-center select-none cursor-pointer transition-all hover:brightness-125 active:scale-95 group overflow-hidden"
+          className="relative p-1 rounded-xl flex flex-col items-center justify-between text-center select-none cursor-pointer transition-all hover:brightness-125 active:scale-95 group overflow-hidden min-h-[96px] sm:min-h-[102px] pb-1.5"
           title={`[Q] ${playerClass.skills.Q.name}: Bấm hoặc nhấn SPACE để gõ đe`}
         >
           {/* Frame Asset Background */}
@@ -124,8 +140,8 @@ export const ClassSkillBar: React.FC<ClassSkillBarProps> = ({
 
           {/* Skill Title & Action Text */}
           <div className="relative z-10 w-full pb-0.5">
-            <div className="text-[10px] font-tech font-bold text-slate-100 truncate drop-shadow">
-              {playerClass.skills.Q.name.split(' ')[0]}
+            <div className="text-[9.5px] sm:text-[10px] font-sans-vn font-bold text-slate-100 truncate drop-shadow leading-tight">
+              {formatSkillDisplayTitle(playerClass.skills.Q.name)}
             </div>
             <div className="text-[8px] text-amber-300 font-tech uppercase truncate font-bold drop-shadow">
               GÕ ĐE ⚡
@@ -198,8 +214,8 @@ export const ClassSkillBar: React.FC<ClassSkillBarProps> = ({
 
               {/* Skill Title & Action Text */}
               <div className="relative z-10 w-full pb-0.5">
-                <div className="text-[10px] font-tech font-bold text-slate-100 truncate drop-shadow">
-                  {sk.name.split(' ')[0]}
+                <div className="text-[9.5px] sm:text-[10px] font-sans-vn font-bold text-slate-100 truncate drop-shadow leading-tight">
+                  {formatSkillDisplayTitle(sk.name)}
                 </div>
                 <div
                   className={`text-[8px] font-tech uppercase truncate font-bold drop-shadow ${
@@ -280,8 +296,8 @@ export const ClassSkillBar: React.FC<ClassSkillBarProps> = ({
 
               {/* Skill Title & Action Text */}
               <div className="relative z-10 w-full pb-0.5">
-                <div className="text-[10px] font-tech font-bold text-slate-100 truncate drop-shadow">
-                  {sk.name.split(' ')[0]}
+                <div className="text-[9.5px] sm:text-[10px] font-sans-vn font-bold text-slate-100 truncate drop-shadow leading-tight">
+                  {formatSkillDisplayTitle(sk.name)}
                 </div>
                 <div
                   className={`text-[8px] font-tech uppercase truncate font-bold drop-shadow ${
@@ -362,8 +378,8 @@ export const ClassSkillBar: React.FC<ClassSkillBarProps> = ({
 
               {/* Skill Title & Action Text */}
               <div className="relative z-10 w-full pb-0.5">
-                <div className="text-[10px] font-tech font-bold text-slate-100 truncate drop-shadow">
-                  {sk.name.split(' ')[0]}
+                <div className="text-[9.5px] sm:text-[10px] font-sans-vn font-bold text-slate-100 truncate drop-shadow leading-tight">
+                  {formatSkillDisplayTitle(sk.name)}
                 </div>
                 <div
                   className={`text-[8px] font-tech uppercase truncate font-bold drop-shadow ${
@@ -387,15 +403,15 @@ export const ClassSkillBar: React.FC<ClassSkillBarProps> = ({
           backgroundColor: 'rgba(5, 7, 15, 0.92)',
         }}
       >
-        <div className="flex items-center justify-between text-[10px] sm:text-[11px] font-tech mb-1.5">
-          <span className="font-bold flex items-center gap-1.5" style={{ color: tierInfo.color }}>
+        <div className="flex items-center justify-between gap-2 text-[10px] sm:text-[11px] font-tech mb-1.5 min-w-0">
+          <span className="font-bold flex items-center gap-1.5 min-w-0 truncate" style={{ color: tierInfo.color }}>
             <Sparkles className="w-3.5 h-3.5" />
-            <span className="tracking-wide">{tierInfo.label}</span>
+            <span className="tracking-wide truncate">{tierInfo.label}</span>
           </span>
 
-          <span className="font-bold font-mono text-slate-200">
+          <span className="font-bold font-mono text-slate-200 shrink-0 text-right ml-auto">
             {overdriveCharge.toFixed(1)} / {OVERDRIVE_TOTAL_CAP}
-            <span className="text-slate-400 text-[9px] ml-1">
+            <span className="text-slate-400 text-[9px] ml-1.5">
               ({tierInfo.tierCharge.toFixed(1)}/8 T{tierInfo.tier})
             </span>
           </span>

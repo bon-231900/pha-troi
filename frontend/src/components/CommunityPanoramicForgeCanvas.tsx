@@ -212,8 +212,8 @@ function drawXianxiaPlaque(
   const pal = isHero ? PLAQUE_PALETTES.hero : (PLAQUE_PALETTES[sect] || PLAQUE_PALETTES.thunder);
 
   ctx.font = isHero
-    ? '700 15px "Charm", "Caveat", cursive'
-    : '700 13.5px "Charm", "Caveat", cursive';
+    ? '700 15px "Lora", serif'
+    : '700 13.5px "Lora", serif';
   const tw = ctx.measureText(text).width;
 
   // Harmonious compact width
@@ -352,8 +352,8 @@ function drawXianxiaPlaque(
   // 6. True Tiên Hiệp Handwritten Calligraphy Text
   ctx.save();
   ctx.font = isHero
-    ? '700 15px "Charm", "Caveat", cursive'
-    : '700 13.5px "Charm", "Caveat", cursive';
+    ? '700 15px "Lora", serif'
+    : '700 13.5px "Lora", serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.fillStyle = isReal ? pal.text : 'rgba(148, 163, 184, 0.75)';
@@ -516,9 +516,9 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
 
     // Load fonts
     if (document.fonts) {
-      document.fonts.load('700 15px "Charm"');
-      document.fonts.load('700 13.5px "Charm"');
-      document.fonts.load('700 14px "Caveat"');
+      document.fonts.load('700 15px "Lora"');
+      document.fonts.load('700 13.5px "Lora"');
+      document.fonts.load('900 29px "Saira"');
     }
 
     const base = import.meta.env.BASE_URL || './';
@@ -1693,7 +1693,7 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
               ctx.restore();
             } else if (ft.badgeText) {
               ctx.save();
-              ctx.font = '700 11px "Chakra Petch", sans-serif';
+              ctx.font = '700 11px "Saira", sans-serif';
               const bw = ctx.measureText(ft.badgeText).width + 14;
               const bh = 17;
               ctx.fillStyle = 'rgba(6, 9, 18, 0.88)';
@@ -1713,7 +1713,7 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
 
             // 2. Bold Modern Damage Number
             ctx.save();
-            ctx.font = '900 29px "Chakra Petch", sans-serif';
+            ctx.font = '900 29px "Saira", sans-serif';
             ctx.shadowColor = ft.glowColor;
             ctx.shadowBlur = ft.scale > 1.1 ? 14 : 6;
             ctx.lineWidth = 4.5;
@@ -1726,7 +1726,7 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
           } else {
             // Majestic Skill Banner (No sloppy cursive font)
             ctx.save();
-            ctx.font = '800 20px "Cinzel", "Chakra Petch", serif';
+            ctx.font = '900 20px "Playfair Display", serif';
             ctx.lineWidth = 4.0;
             ctx.strokeStyle = '#050811';
             ctx.shadowColor = ft.glowColor;
@@ -1736,7 +1736,7 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
             ctx.fillText(ft.valueText, 0, 0);
 
             if (ft.badgeText) {
-              ctx.font = '700 12px "Chakra Petch", sans-serif';
+              ctx.font = '700 12px "Saira", sans-serif';
               ctx.lineWidth = 3;
               ctx.strokeStyle = '#050811';
               ctx.strokeText(ft.badgeText, 0, 18);

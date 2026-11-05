@@ -113,7 +113,7 @@ function drawDaoistPlaque(
   const pal = SECT_PALETTES[classId];
 
   // Font typography
-  ctx.font = '700 14px "Charm", "Caveat", cursive';
+  ctx.font = '700 14px "Lora", serif';
   const tw = ctx.measureText(title).width;
 
   const padX = 18;
@@ -197,7 +197,7 @@ function drawDaoistPlaque(
 
   // 5. Text with Handwriting Calligraphy
   ctx.save();
-  ctx.font = '700 14px "Charm", "Caveat", cursive';
+  ctx.font = '700 14px "Lora", serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.fillStyle = 'rgba(0, 0, 0, 0.9)';
@@ -767,7 +767,7 @@ export const InteractiveAltarPreview = forwardRef<InteractiveAltarPreviewRef, In
         }
 
         ctx.save();
-        ctx.font = `800 ${14 * ft.scale}px "Cinzel", "Charm", sans-serif`;
+        ctx.font = `800 ${14 * ft.scale}px "Playfair Display", serif`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.globalAlpha = Math.max(0, ft.alpha);
