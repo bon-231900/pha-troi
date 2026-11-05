@@ -2761,10 +2761,8 @@ export default function App() {
     };
 
     window.addEventListener('keydown', onKeyDown, true);
-    document.addEventListener('keydown', onKeyDown, true);
     return () => {
       window.removeEventListener('keydown', onKeyDown, true);
-      document.removeEventListener('keydown', onKeyDown, true);
     };
   }, [
     activeSlotId,
