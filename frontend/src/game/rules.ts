@@ -1122,15 +1122,15 @@ export interface FloorTierWeights {
 }
 
 export const FLOOR_TIER_DROP_WEIGHTS: Record<number, FloorTierWeights> = {
-  1: { tierE: 62.0, tierD: 30.0, tierC: 7.20, tierB: 0.78, tierA: 0.02, tierS: 0.00 },
-  2: { tierE: 48.0, tierD: 36.0, tierC: 13.5, tierB: 2.40, tierA: 0.10, tierS: 0.00 },
-  3: { tierE: 35.0, tierD: 38.0, tierC: 21.0, tierB: 5.65, tierA: 0.34, tierS: 0.01 },
-  4: { tierE: 24.0, tierD: 36.0, tierC: 28.5, tierB: 10.6, tierA: 0.87, tierS: 0.03 },
-  5: { tierE: 15.0, tierD: 31.0, tierC: 34.0, tierB: 17.8, tierA: 2.12, tierS: 0.08 },
-  6: { tierE: 8.0,  tierD: 25.0, tierC: 38.0, tierB: 24.5, tierA: 4.30, tierS: 0.20 },
-  7: { tierE: 4.0,  tierD: 18.0, tierC: 39.0, tierB: 31.0, tierA: 7.55, tierS: 0.45 },
-  8: { tierE: 1.5,  tierD: 11.5, tierC: 36.0, tierB: 37.5, tierA: 12.5, tierS: 1.00 },
-  9: { tierE: 0.0,  tierD: 6.0,  tierC: 30.0, tierB: 43.0, tierA: 19.0, tierS: 2.00 },
+  1: { tierE: 40.0, tierD: 38.0, tierC: 17.0, tierB: 4.50, tierA: 0.50, tierS: 0.00 },
+  2: { tierE: 28.0, tierD: 38.0, tierC: 23.0, tierB: 8.50, tierA: 2.30, tierS: 0.20 },
+  3: { tierE: 18.0, tierD: 32.0, tierC: 30.0, tierB: 14.5, tierA: 4.80, tierS: 0.70 },
+  4: { tierE: 10.0, tierD: 26.0, tierC: 35.0, tierB: 20.0, tierA: 7.50, tierS: 1.50 },
+  5: { tierE: 5.0,  tierD: 20.0, tierC: 36.0, tierB: 26.0, tierA: 10.5, tierS: 2.50 },
+  6: { tierE: 2.0,  tierD: 14.0, tierC: 36.0, tierB: 30.0, tierA: 14.0, tierS: 4.00 },
+  7: { tierE: 0.5,  tierD: 8.0,  tierC: 32.0, tierB: 35.0, tierA: 18.5, tierS: 6.00 },
+  8: { tierE: 0.0,  tierD: 4.0,  tierC: 26.0, tierB: 40.0, tierA: 21.0, tierS: 9.00 },
+  9: { tierE: 0.0,  tierD: 1.0,  tierC: 20.0, tierB: 42.0, tierA: 24.0, tierS: 13.0 },
 };
 
 export function pickTierFromWeights(weights: FloorTierWeights): ItemRarity {
@@ -1156,6 +1156,7 @@ export interface RollLootDropOptions {
   magicFindPct?: number;
   vaultFloorId?: number;
   anvilPityCount?: number;
+  forceDrop?: boolean;
 }
 
 export interface RollLootDropResult {
@@ -1178,12 +1179,13 @@ export function rollLootDrop(options: RollLootDropOptions): RollLootDropResult {
     return { item: null, newPityCount: anvilPityCount, isPityTriggered: false };
   }
 
-  // Base Trigger Chances (Section 5.2):
-  // Normal (GREAT): 0.40%, Perfect: 1.20%, Overdrive: 2.50%, Shield Break: 100%
-  let triggerChance = 0.004;
-  if (grade === 'PERFECT') triggerChance = 0.012;
-  if (isOverdrive) triggerChance = Math.max(triggerChance, 0.025);
-  if (isShieldBreak) triggerChance = 1.0;
+  // Base Trigger Chances (Balanced ARPG progression):
+  // Normal (GREAT): 2.5%, Perfect (HOÀNG KIM): 5.5%, Overdrive: 9.0%, Shield Break: 15.0%
+  let triggerChance = 0.025;
+  if (grade === 'PERFECT') triggerChance = 0.055;
+  if (isOverdrive) triggerChance = Math.max(triggerChance, 0.090);
+  if (isShieldBreak) triggerChance = Math.max(triggerChance, 0.150);
+  if (options.forceDrop) triggerChance = 1.0;
 
   // Apply Magic Find from SPI (Soft capped at +50%)
   const mfMult = 1 + Math.min(50, Math.max(0, magicFindPct)) / 100;

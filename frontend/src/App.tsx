@@ -247,6 +247,7 @@ export default function App() {
 
   // Bottom-Right Corner Loot Drop Notification Feed
   const [lootToasts, setLootToasts] = useState<LootToastItem[]>([]);
+  const lastBagFullToastTimeRef = useRef<number>(0);
 
   const addLootToast = useCallback((toast: Omit<LootToastItem, 'id' | 'timestamp'>) => {
     const id = `loot_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
@@ -1776,11 +1777,16 @@ export default function App() {
             setLinhThach((lt) => lt + salvage.linhThach);
             setIronDust((d) => d + salvage.ironDust);
             if (salvage.tinhHoa > 0) setTinhHoa((th) => th + salvage.tinhHoa);
-            addLootToast({
-              type: 'salvage',
-              item: droppedItem,
-              salvageYield: salvage,
-            });
+
+            // Only trigger a visible popup toast for rare auto-salvages (Tier C+ or yielded Tinh Hoa)
+            // to avoid spamming the screen with grey/green junk notifications
+            if (droppedItem.rarity !== 'common' && droppedItem.rarity !== 'uncommon' || salvage.tinhHoa > 0) {
+              addLootToast({
+                type: 'salvage',
+                item: droppedItem,
+                salvageYield: salvage,
+              });
+            }
             appendCombatLog(
               `⚡ [TỰ ĐỘNG NUNG] Rơi [${droppedItem.name}] [Tier ${rMeta.tier}] -> Tự nung ra +${salvage.ironDust} Bụi Thiết, +${salvage.linhThach} LT!`,
               'cyan'
@@ -1789,14 +1795,19 @@ export default function App() {
             const currentCapacity = getMaxInventorySlots(forgerRank.tier);
             setInventory((prevInv) => {
               if (prevInv.length >= currentCapacity) {
-                addLootToast({
-                  type: 'full',
-                  item: droppedItem,
-                });
-                appendCombatLog(
-                  `⚠️ [TÚI ĐỒ ĐẦY] Rơi [${droppedItem.name}] nhưng rương đã kín chỗ (${currentCapacity}/${currentCapacity})! Hãy phân giải bớt.`,
-                  'red'
-                );
+                const now = Date.now();
+                // Debounce full-bag notification to once every 5.5 seconds
+                if (now - lastBagFullToastTimeRef.current >= 5500) {
+                  lastBagFullToastTimeRef.current = now;
+                  addLootToast({
+                    type: 'full',
+                    item: droppedItem,
+                  });
+                  appendCombatLog(
+                    `⚠️ [TÚI ĐỒ ĐẦY] Rơi [${droppedItem.name}] nhưng rương đã kín chỗ (${currentCapacity}/${currentCapacity})! Hãy phân giải bớt.`,
+                    'red'
+                  );
+                }
                 return prevInv;
               }
               soundEngine.playGlobalBurstFanfare();

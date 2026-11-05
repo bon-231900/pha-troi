@@ -81,7 +81,7 @@ const LootToastCard: React.FC<{
 
   return (
     <div
-      onClick={type === 'drop' ? onOpenInventory : undefined}
+      onClick={type === 'drop' || type === 'full' ? onOpenInventory : undefined}
       className={`pointer-events-auto relative overflow-hidden rounded-2xl bg-gradient-to-r from-slate-950/98 via-[#0B0F19]/95 to-slate-950/98 border backdrop-blur-xl shadow-2xl transition-all duration-300 hover:scale-[1.02] cursor-pointer group animate-in slide-in-from-right-8 duration-300 ${
         isLegendaryOrMythic
           ? `${meta.borderColor} ${meta.glow} ring-1 ring-amber-400/40`
@@ -158,9 +158,14 @@ const LootToastCard: React.FC<{
               ) : null}
             </p>
           ) : type === 'full' ? (
-            <p className="text-[11px] text-red-300 font-tech mt-0.5">
-              Rương đã kín chỗ! Phân giải bớt.
-            </p>
+            <div className="flex items-center justify-between mt-0.5">
+              <span className="text-[11px] text-amber-300 font-tech">
+                Rương đã đầy! Mở túi phân giải.
+              </span>
+              <span className="text-[10px] text-amber-400 group-hover:translate-x-0.5 transition-transform flex items-center font-tech ml-1 shrink-0 font-bold">
+                Mở Túi <ChevronRight className="w-3 h-3" />
+              </span>
+            </div>
           ) : (
             <div className="flex items-center justify-between mt-0.5">
               <span className="text-[11px] text-slate-300 font-tech truncate">
