@@ -2597,6 +2597,7 @@ export default function App() {
           bossMaxHp={currentVault.maxHp}
           activeStance={activeStance}
           gameState={gameState}
+          playerName={playerName}
           onHeroStrikeAction={() => handleHeroStrike(false)}
           onPeerAutonomousDamage={(chip) => {
             setBossHp((prev) => Math.max(0, prev - chip));

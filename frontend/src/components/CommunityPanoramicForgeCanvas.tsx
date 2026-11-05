@@ -13,6 +13,7 @@ import {
   type StanceKey,
   type Point2D,
 } from '../game/rules';
+import { hapticEngine } from '../game/haptics';
 
 export interface RemotePeerStrikePayload {
   peerId: string;
@@ -52,6 +53,7 @@ export interface CommunityPanoramicForgeCanvasProps {
   bossMaxHp: number;
   activeStance: StanceKey;
   gameState: 'title' | 'playing' | 'paused' | 'gameover';
+  playerName?: string;
   onHeroStrikeAction?: (forceGolden: boolean) => void;
   onPeerAutonomousDamage?: (damageAmount: number) => void;
   className?: string;
@@ -189,6 +191,8 @@ function drawXianxiaPlaque(
   isHero = false,
   isReal = true
 ) {
+  if (!text || !text.trim()) return;
+
   ctx.save();
   ctx.translate(x, y);
 
@@ -383,12 +387,12 @@ interface PeerSlotConfig {
 }
 
 const DEFAULT_PEER_SLOTS: PeerSlotConfig[] = [
-  { id: 0, xNorm: 0.12, yOffset: 6, scale: 0.34, facing: 1, speed: 1.15, phase: 0.1, isReal: false, name: 'Tàn Ảnh #01', stance: 'Q' },
-  { id: 1, xNorm: 0.24, yOffset: 2, scale: 0.35, facing: 1, speed: 0.95, phase: 0.35, isReal: true, name: '★ Tiêu Viêm', stance: 'W' },
-  { id: 2, xNorm: 0.36, yOffset: 0, scale: 0.36, facing: 1, speed: 1.05, phase: 0.7, isReal: true, name: '★ Thạch Hạo', stance: 'Q' },
-  { id: 3, xNorm: 0.64, yOffset: 0, scale: 0.36, facing: -1, speed: 1.0, phase: 0.55, isReal: true, name: '★ Hàn Lập', stance: 'R' },
-  { id: 4, xNorm: 0.76, yOffset: 2, scale: 0.35, facing: -1, speed: 1.2, phase: 0.85, isReal: true, name: '★ Diệp Phàm', stance: 'E' },
-  { id: 5, xNorm: 0.88, yOffset: 6, scale: 0.34, facing: -1, speed: 1.1, phase: 0.65, isReal: false, name: 'Tàn Ảnh #06', stance: 'W' },
+  { id: 0, xNorm: 0.12, yOffset: 6, scale: 0.34, facing: 1, speed: 1.15, phase: 0.1, isReal: false, name: '', stance: 'Q' },
+  { id: 1, xNorm: 0.24, yOffset: 2, scale: 0.35, facing: 1, speed: 0.95, phase: 0.35, isReal: false, name: '', stance: 'W' },
+  { id: 2, xNorm: 0.36, yOffset: 0, scale: 0.36, facing: 1, speed: 1.05, phase: 0.7, isReal: false, name: '', stance: 'Q' },
+  { id: 3, xNorm: 0.64, yOffset: 0, scale: 0.36, facing: -1, speed: 1.0, phase: 0.55, isReal: false, name: '', stance: 'R' },
+  { id: 4, xNorm: 0.76, yOffset: 2, scale: 0.35, facing: -1, speed: 1.2, phase: 0.85, isReal: false, name: '', stance: 'E' },
+  { id: 5, xNorm: 0.88, yOffset: 6, scale: 0.34, facing: -1, speed: 1.1, phase: 0.65, isReal: false, name: '', stance: 'W' },
 ];
 
 export const CommunityPanoramicForgeCanvas = forwardRef<
@@ -400,6 +404,7 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
     bossMaxHp,
     activeStance,
     gameState,
+    playerName = '',
     onHeroStrikeAction,
     onPeerAutonomousDamage,
     className = '',
@@ -414,6 +419,7 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
   const bossMaxHpRef = useRef<number>(bossMaxHp);
   const activeStanceRef = useRef<StanceKey>(activeStance);
   const gameStateRef = useRef<string>(gameState);
+  const playerNameRef = useRef<string>(playerName);
   const onHeroStrikeActionRef = useRef(onHeroStrikeAction);
   const onPeerAutonomousDamageRef = useRef(onPeerAutonomousDamage);
 
@@ -421,6 +427,7 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
   bossMaxHpRef.current = bossMaxHp;
   activeStanceRef.current = activeStance;
   gameStateRef.current = gameState;
+  playerNameRef.current = playerName;
   onHeroStrikeActionRef.current = onHeroStrikeAction;
   onPeerAutonomousDamageRef.current = onPeerAutonomousDamage;
 
@@ -824,9 +831,9 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
           slot.name = `★ ${rp.name}`;
           slot.stance = rp.stance;
         } else {
-          // Keep default named bots
-          slot.isReal = DEFAULT_PEER_SLOTS[idx].isReal;
-          slot.name = DEFAULT_PEER_SLOTS[idx].name;
+          // Keep default empty bot slot
+          slot.isReal = false;
+          slot.name = '';
           slot.stance = DEFAULT_PEER_SLOTS[idx].stance;
         }
       });
@@ -1298,13 +1305,7 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
             ctx.drawImage(sheetShadow, sx, 0, FW, FH, -bw * 0.42, -bh + 6, bw, bh);
             ctx.restore();
 
-            // Handwriting label
-            ctx.save();
-            ctx.font = '700 12.5px "Charm", "Caveat", cursive';
-            ctx.textAlign = 'center';
-            ctx.fillStyle = 'rgba(148, 163, 184, 0.55)';
-            ctx.fillText(bot.label, bx, by - bh - 2);
-            ctx.restore();
+            // (Ambient handwriting label omitted to maintain clean terrace view)
           });
         }
 
@@ -1395,9 +1396,11 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
             ctx.drawImage(activeImg, sx, sy, PEER_FW, PEER_FH, -pw * 0.42, -ph + 12, pw, ph);
             ctx.restore();
 
-            // Tiên Hiệp Plaque Nameplate (Charm / Caveat Calligraphy)
-            const nameY = py - ph + 4;
-            drawXianxiaPlaque(ctx, px, nameY, slot.name, slot.stance, false, slot.isReal);
+            // Tiên Hiệp Plaque Nameplate (Charm / Caveat Calligraphy) - Only for real connected remote peers
+            if (slot.isReal && slot.name && slot.name.trim()) {
+              const nameY = py - ph + 4;
+              drawXianxiaPlaque(ctx, px, nameY, slot.name, slot.stance, false, slot.isReal);
+            }
           });
         }
 
@@ -1522,7 +1525,8 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
 
           // Balanced Overhead Plaque (Charm / Caveat Calligraphy)
           const stanceMeta = HERO_STANCE_PALETTES[activeStanceRef.current] || HERO_STANCE_PALETTES.Q;
-          const labelText = `Thợ Rèn Chính · [${stanceMeta.nameVn}]`;
+          const heroName = playerNameRef.current.trim() || 'Thợ Rèn Chính';
+          const labelText = `${heroName} · [${stanceMeta.nameVn}]`;
           const tagY = stageFootY - 140;
           drawXianxiaPlaque(ctx, centerX - currentMouseX * 64, tagY, labelText, activeStanceRef.current, true, true);
         }

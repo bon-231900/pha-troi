@@ -564,14 +564,14 @@
     // Tier 3 (Tiền Đài): Các thợ rèn danh xưng đứng trên Bệ Thần Đài độc lập đàng hoàng
     const PEER_SLOTS = [
       // Cánh Trái (Tả Thần Đài):
-      { id: 0, xNorm: 0.12, yOffset: 6, scale: 0.34, facing: 1, speed: 1.15, phase: 0.1, isReal: false, name: 'Tàn Ảnh #01', stance: 'thunder' },
-      { id: 1, xNorm: 0.24, yOffset: 2, scale: 0.35, facing: 1, speed: 0.95, phase: 0.35, isReal: true, name: '★ Tiêu Viêm', stance: 'fire' },
-      { id: 2, xNorm: 0.36, yOffset: 0, scale: 0.36, facing: 1, speed: 1.05, phase: 0.7, isReal: true, name: '★ Thạch Hạo', stance: 'thunder' },
+      { id: 0, xNorm: 0.12, yOffset: 6, scale: 0.34, facing: 1, speed: 1.15, phase: 0.1, isReal: false, name: '', stance: 'thunder' },
+      { id: 1, xNorm: 0.24, yOffset: 2, scale: 0.35, facing: 1, speed: 0.95, phase: 0.35, isReal: true, name: '', stance: 'fire' },
+      { id: 2, xNorm: 0.36, yOffset: 0, scale: 0.36, facing: 1, speed: 1.05, phase: 0.7, isReal: true, name: '', stance: 'thunder' },
 
       // Cánh Phải (Hữu Thần Đài):
-      { id: 3, xNorm: 0.64, yOffset: 0, scale: 0.36, facing: -1, speed: 1.0, phase: 0.55, isReal: true, name: '★ Hàn Lập', stance: 'mystic' },
-      { id: 4, xNorm: 0.76, yOffset: 2, scale: 0.35, facing: -1, speed: 1.2, phase: 0.85, isReal: true, name: '★ Diệp Phàm', stance: 'gravity' },
-      { id: 5, xNorm: 0.88, yOffset: 6, scale: 0.34, facing: -1, speed: 1.1, phase: 0.65, isReal: false, name: 'Tàn Ảnh #06', stance: 'fire' }
+      { id: 3, xNorm: 0.64, yOffset: 0, scale: 0.36, facing: -1, speed: 1.0, phase: 0.55, isReal: true, name: '', stance: 'mystic' },
+      { id: 4, xNorm: 0.76, yOffset: 2, scale: 0.35, facing: -1, speed: 1.2, phase: 0.85, isReal: true, name: '', stance: 'gravity' },
+      { id: 5, xNorm: 0.88, yOffset: 6, scale: 0.34, facing: -1, speed: 1.1, phase: 0.65, isReal: false, name: '', stance: 'fire' }
     ];
 
     // Strike Timers and VFX
@@ -1214,7 +1214,7 @@
 
           // Khung Thẻ Tên Tiên Hiệp trên đầu (Chí Tôn / Phù Lệnh Bài)
           const nameY = py - ph + 4;
-          drawXianxiaPlaque(ctx, px, nameY, slot.name, slot.stance, false, slot.isReal);
+          if (slot.isReal && slot.name) { drawXianxiaPlaque(ctx, px, nameY, slot.name, slot.stance, false, slot.isReal); }
         });
       }
 
