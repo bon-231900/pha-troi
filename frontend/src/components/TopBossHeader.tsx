@@ -149,7 +149,7 @@ export const TopBossHeader: React.FC<TopBossHeaderProps> = ({
       <div className="flex md:hidden flex-col gap-1 w-full pointer-events-auto bg-[#070A14]/95 border border-amber-500/40 px-2.5 py-1.5 rounded-2xl shadow-2xl backdrop-blur-md">
         {/* Row 1: Actions Left + Boss HP Center + Actions Right */}
         <div className="flex items-center justify-between gap-2">
-          {/* Left Actions: Thế Trận + Đổi Tu Sĩ */}
+          {/* Left Actions: Thế Trận */}
           <div className="flex items-center gap-1 shrink-0">
             {onToggleLeftPanel && (
               <button
@@ -169,18 +169,6 @@ export const TopBossHeader: React.FC<TopBossHeaderProps> = ({
                 />
               </button>
             )}
-
-            {playerClass && onSwitchCharacter && (
-              <button
-                type="button"
-                onClick={onSwitchCharacter}
-                className={`flex items-center gap-1 px-1.5 py-1 rounded-lg text-[10px] font-tech font-bold border cursor-pointer active:scale-95 ${playerClass.badgeBg}`}
-                title="Đổi Tu Sĩ (3 Slots)"
-              >
-                <span>{playerClass.icon}</span>
-                <span className="truncate max-w-[60px]">{playerClass.name}</span>
-              </button>
-            )}
           </div>
 
           {/* Center: Boss Title & HP % */}
@@ -194,18 +182,18 @@ export const TopBossHeader: React.FC<TopBossHeaderProps> = ({
             </div>
           </div>
 
-          {/* Right Actions: Mute + Lò Rèn */}
+          {/* Right Actions: Tạm Dừng [ESC] + Lò Rèn */}
           <div className="flex items-center gap-1 shrink-0">
             <button
               type="button"
-              onClick={onToggleMute}
-              className="p-1 rounded-lg bg-slate-900/90 border border-slate-800 text-slate-300 cursor-pointer"
-              title={muted ? 'Bật âm thanh' : 'Tắt âm thanh'}
+              onClick={onPause}
+              className="p-1.5 rounded-lg bg-slate-900/90 border border-amber-500/30 text-amber-300 hover:border-amber-400 cursor-pointer active:scale-95 shadow-md"
+              title="Tạm Dừng Lò Rèn & Cài Đặt (Đổi Tu Sĩ, Tắt/Bật Âm) [Phím ESC]"
             >
               <img
-                src={muted ? HEADER_ICON_ASSETS.soundOff : HEADER_ICON_ASSETS.soundOn}
-                alt="Sound"
-                className="w-4 h-4 object-contain"
+                src={HEADER_ICON_ASSETS.pauseTalisman}
+                alt="Tạm Dừng"
+                className="w-4 h-4 object-contain filter drop-shadow-[0_0_4px_#F59E0B]"
               />
             </button>
 
@@ -484,29 +472,8 @@ export const TopBossHeader: React.FC<TopBossHeaderProps> = ({
           )}
         </div>
 
-        {/* 3. Right Floating Capsule: Utilities + Toggle Lò Rèn */}
+        {/* 3. Right Floating Capsule: Google Save + Tạm Dừng [ESC] + Toggle Lò Rèn */}
         <div className="pointer-events-auto flex items-center gap-2">
-          {/* Player Class / Sect Commitment Badge -> Clickable to Switch Characters (3 Slots) */}
-          {playerClass && (
-            <button
-              type="button"
-              onClick={onSwitchCharacter}
-              className="relative flex items-center gap-1.5 px-3 py-1.5 rounded-xl select-none cursor-pointer group transition-all hover:brightness-125 active:scale-95 shadow-md overflow-hidden text-xs font-tech font-bold"
-              title="Bấm để Đổi Tu Sĩ / Quản lý 3 Slot & Trải nghiệm Bệ Đá Bát Quái Nện Thử Búa"
-            >
-              <img
-                src={HEADER_FRAME_ASSETS.tokenIdle}
-                alt="Frame"
-                className="absolute inset-0 w-full h-full object-fill pointer-events-none drop-shadow"
-              />
-              <span className="relative z-10 text-sm filter drop-shadow">{playerClass.icon}</span>
-              <span className="relative z-10 font-bold text-amber-200 drop-shadow">{playerClass.name}</span>
-              <span className="relative z-10 text-[10px] text-amber-400 border-l border-amber-500/40 pl-1.5 font-bold">
-                ĐỔI TU SĨ ▾
-              </span>
-            </button>
-          )}
-
           {/* Google Cloud Save Button or User Profile */}
           {googleProfile ? (
             <div className="flex items-center gap-1.5 bg-[#070B16]/90 backdrop-blur-md border border-emerald-500/40 px-2.5 py-1.5 rounded-xl text-xs font-tech text-slate-200 shadow-md">
@@ -552,42 +519,30 @@ export const TopBossHeader: React.FC<TopBossHeaderProps> = ({
             </button>
           ) : null}
 
-          {/* Sound Mute & Pause Utility Cluster */}
-          <div className="flex items-center gap-0.5 sm:gap-1 bg-[#070B16]/90 backdrop-blur-md border border-slate-800/90 p-1 rounded-xl shadow-md">
-            <button
-              type="button"
-              tabIndex={-1}
-              aria-label={muted ? 'Bật âm thanh [M]' : 'Tắt âm thanh [M]'}
-              onClick={(e) => {
-                e.currentTarget.blur();
-                onToggleMute();
-              }}
-              className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg hover:bg-amber-500/10 flex items-center justify-center transition-all cursor-pointer group"
-            >
-              <img
-                src={muted ? HEADER_ICON_ASSETS.soundOff : HEADER_ICON_ASSETS.soundOn}
-                alt={muted ? 'Muted' : 'Sound On'}
-                className="w-4 h-4 object-contain filter drop-shadow group-hover:scale-110 transition-transform"
-              />
-            </button>
-
-            <button
-              type="button"
-              tabIndex={-1}
-              aria-label="Tạm dừng lò rèn [P]"
-              onClick={(e) => {
-                e.currentTarget.blur();
-                onPause();
-              }}
-              className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg hover:bg-amber-500/10 flex items-center justify-center transition-all cursor-pointer group"
-            >
-              <img
-                src={HEADER_ICON_ASSETS.pauseTalisman}
-                alt="Pause"
-                className="w-4 h-4 object-contain filter drop-shadow-[0_0_4px_#F59E0B] group-hover:scale-110 transition-transform"
-              />
-            </button>
-          </div>
+          {/* Pause Modal Trigger Token Button [ESC / P] */}
+          <button
+            type="button"
+            onClick={onPause}
+            className="relative flex items-center gap-1.5 px-3 py-2 rounded-xl select-none cursor-pointer group transition-all hover:brightness-125 active:scale-95 shadow-md overflow-hidden text-xs font-tech font-bold"
+            title="Tạm dừng lò rèn & Cài đặt (Đổi Tu Sĩ, Tắt/Bật Âm) [Phím ESC hoặc P]"
+          >
+            <img
+              src={HEADER_FRAME_ASSETS.tokenIdle}
+              alt="Frame"
+              className="absolute inset-0 w-full h-full object-fill pointer-events-none drop-shadow"
+            />
+            <img
+              src={HEADER_ICON_ASSETS.pauseTalisman}
+              alt="Tạm Dừng"
+              className="relative z-10 w-4 h-4 object-contain filter drop-shadow-[0_0_6px_#F59E0B] group-hover:scale-110 transition-transform"
+            />
+            <span className="relative z-10 text-amber-200 tracking-wider hidden sm:inline drop-shadow">
+              Tạm Dừng
+            </span>
+            <span className="relative z-10 text-[9px] font-mono text-amber-400 bg-amber-950/80 px-1 py-0.2 rounded border border-amber-500/30">
+              ESC
+            </span>
+          </button>
 
           {/* Lò Rèn Toggle Button */}
           {onToggleRightPanel && (

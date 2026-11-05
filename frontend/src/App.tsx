@@ -2680,6 +2680,11 @@ export default function App() {
       }
 
       if (currentSt === 'character_select') {
+        if (e.code === 'Escape' || e.key === 'Escape') {
+          e.preventDefault();
+          setGameState('playing');
+          return;
+        }
         if (isSpace || e.code === 'Enter' || e.key === 'Enter') {
           if (creatingSlotId !== null) return;
           e.preventDefault();
@@ -2697,6 +2702,12 @@ export default function App() {
 
       if (e.code === 'KeyP' || e.code === 'Escape' || e.key === 'p' || e.key === 'P' || e.key === 'Escape') {
         e.preventDefault();
+        // Priority: If side panels are open, close them first on Escape
+        if ((e.code === 'Escape' || e.key === 'Escape') && (leftPanelOpen || rightPanelOpen)) {
+          setLeftPanelOpen(false);
+          setRightPanelOpen(false);
+          return;
+        }
         setGameState((prev) =>
           prev === 'playing' ? 'paused' : prev === 'paused' ? 'playing' : prev
         );
@@ -3098,6 +3109,16 @@ export default function App() {
           onSwitchCharacter={() => {
             setGameState('character_select');
           }}
+          muted={muted}
+          onToggleMute={() => {
+            setMuted((prev) => {
+              const next = !prev;
+              soundEngine.muted = next;
+              return next;
+            });
+          }}
+          playerClass={getPlayerClass(playerClassId || 'thunder')}
+          activeCharacterName={playerName}
         />
       )}
     </div>
