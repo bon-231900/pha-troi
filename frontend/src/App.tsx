@@ -822,11 +822,16 @@ export default function App() {
           setCurrentVaultId((prevVault) => (prevVault !== state.vaultId ? state.vaultId : prevVault));
         }
 
-        // Synchronize Boss HP: snap if drift > 15 HP or on initial room sync
-        // When Cloudflare Server is active, Cloudflare is the master authority for Boss HP
-        if (isServerSynced) return;
-        // Monotonic sync: never snap backward
-        setBossHp((localHp) => Math.min(localHp, state.bossHp));
+        // Synchronize Boss HP across P2P tabs:
+        // Ensure all connected browser tabs and peers maintain the exact same Boss HP
+        if (typeof state.bossHp === 'number') {
+          setBossHp((localHp) => {
+            if (Math.abs(localHp - state.bossHp) > 10) {
+              return state.bossHp;
+            }
+            return localHp;
+          });
+        }
 
         // Synchronize Server Furnace Heat
         if (typeof state.serverFurnaceHeat === 'number') {
@@ -893,15 +898,19 @@ export default function App() {
         const state = await serverSyncClient.fetchBossState(currentVaultId);
         if (state && !isCancelled) {
           setIsServerSynced(true);
-          // Snap boss HP if drift > 20 HP or on initial load
           setBossHp((localHp) => {
             if (!hasReceivedInitialSyncRef.current) {
               hasReceivedInitialSyncRef.current = true;
               setBossTrailHp(state.currentHp);
               return state.currentHp;
             }
-            // Monotonic: smoothly pull down if server has lower HP (community progress)
-            return Math.min(localHp, state.currentHp);
+            // Cloudflare D1 is the authoritative single source of truth across all devices
+            const pendingDmg = pendingServerBatchRef.current?.damage || 0;
+            const targetHp = Math.max(0, state.currentHp - pendingDmg);
+            if (Math.abs(localHp - targetHp) > 10) {
+              return targetHp;
+            }
+            return localHp;
           });
 
           if (typeof state.serverFurnaceHeat === 'number') {
@@ -964,9 +973,9 @@ export default function App() {
       const resState = await serverSyncClient.sendBatchedStrike(payload);
       if (resState) {
         setIsServerSynced(true);
-        setBossHp((localHp) => {
-          // Monotonic: smoothly pull down if server has lower HP
-          return Math.min(localHp, resState.currentHp);
+        setBossHp(() => {
+          const pendingDmg = pendingServerBatchRef.current?.damage || 0;
+          return Math.max(0, resState.currentHp - pendingDmg);
         });
         if (typeof resState.serverFurnaceHeat === 'number') {
           setServerFurnaceHeat((localHeat) => (Math.abs(localHeat - resState.serverFurnaceHeat) > 20 ? resState.serverFurnaceHeat : localHeat));
@@ -1457,12 +1466,10 @@ export default function App() {
       // 3. Anvil Heat idle cooling (-2.5°C per 500ms down to 100°C)
       setAnvilHeat((prev) => Math.max(MIN_ANVIL_HEAT, Math.round(prev - HEAT_DECAY_PER_SEC * 0.5)));
 
-      // 3B. Viêm Dương Burn DoT tick (every 500ms)
+      // 3B. Viêm Dương Burn Stacks (Tro Tàn): Decays naturally when idle.
+      // ZERO idle damage: Boss HP ONLY decreases on active player strikes or skill casts!
       setBurnStacks((currentBurn) => {
         if (currentBurn <= 0) return 0;
-        const burnTickDmg = Math.max(1, Math.round(currentBurn * 1.5));
-        setBossHp((prevHp) => Math.max(0, prevHp - burnTickDmg));
-        setPlayerTotalDamage((prevDmg) => prevDmg + burnTickDmg);
         return Math.random() < 0.25 ? currentBurn - 1 : currentBurn;
       });
 

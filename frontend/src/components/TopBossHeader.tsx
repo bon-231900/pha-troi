@@ -232,16 +232,12 @@ export const TopBossHeader: React.FC<TopBossHeaderProps> = ({
         </div>
 
         {/* Row 2: Sleek Dragon Jade HP Track */}
-        <div className="relative h-3 w-full flex items-center justify-center my-0.5">
-          <img
-            src={HEADER_FRAME_ASSETS.hpWell}
-            alt="HP Well"
-            className="absolute inset-0 w-full h-full object-fill pointer-events-none z-10 drop-shadow-[0_0_4px_rgba(16,185,129,0.3)]"
-          />
-          <div className="relative w-[94%] h-1.5 rounded-full overflow-hidden bg-black/85">
+        <div className="relative h-4 sm:h-4.5 w-full flex items-center justify-center my-0.5">
+          {/* Active Trough Background & Bars */}
+          <div className="absolute inset-x-[3.2%] top-[30%] bottom-[28%] rounded-sm overflow-hidden bg-black/90">
             {/* Visual Ghost Trail Bar (Máu tuột vàng rực) */}
             <div
-              className="absolute inset-y-0 left-0 bg-gradient-to-r from-amber-200 to-amber-400 shadow-[0_0_8px_#F59E0B] transition-all duration-300"
+              className="absolute inset-y-0 left-0 bg-gradient-to-r from-amber-200 via-amber-300 to-amber-500 shadow-[0_0_8px_#F59E0B] transition-all duration-300"
               style={{ width: `${effectiveTrailPct}%` }}
             />
             {/* Active HP Bar */}
@@ -252,6 +248,12 @@ export const TopBossHeader: React.FC<TopBossHeaderProps> = ({
               style={{ width: `${hpPct}%` }}
             />
           </div>
+          {/* Dragon Jade Well Bezel Frame */}
+          <img
+            src={HEADER_FRAME_ASSETS.hpWell}
+            alt="HP Well"
+            className="absolute inset-0 w-full h-full object-fill pointer-events-none z-20 drop-shadow-[0_0_4px_rgba(16,185,129,0.3)]"
+          />
         </div>
 
         {/* Row 3: World Raid Mini Ticker */}
@@ -366,16 +368,12 @@ export const TopBossHeader: React.FC<TopBossHeaderProps> = ({
           </div>
 
           {/* Ornate Dragon Jade HP Trough with Animated Ghost Bar */}
-          <div className="relative z-10 h-4.5 sm:h-5 w-full flex items-center justify-center my-0.5">
-            <img
-              src={HEADER_FRAME_ASSETS.hpWell}
-              alt="Dragon Jade Well"
-              className="absolute inset-0 w-full h-full object-fill pointer-events-none z-10 drop-shadow-[0_0_6px_rgba(16,185,129,0.35)]"
-            />
-            <div className="relative w-[94%] h-2 sm:h-2.5 rounded-full overflow-hidden bg-black/85">
+          <div className="relative z-10 h-5 sm:h-6 w-full flex items-center justify-center my-0.5">
+            {/* Active Trough Background & Bars */}
+            <div className="absolute inset-x-[3%] top-[30%] bottom-[28%] rounded-sm overflow-hidden bg-black/90 shadow-inner">
               {/* Visual Ghost Trail Bar (Máu tuột vàng rực) */}
               <div
-                className="absolute inset-y-0 left-0 bg-gradient-to-r from-amber-200 to-amber-400 shadow-[0_0_10px_#F59E0B] transition-all duration-300"
+                className="absolute inset-y-0 left-0 bg-gradient-to-r from-amber-200 via-amber-300 to-amber-500 shadow-[0_0_12px_#F59E0B] transition-all duration-300"
                 style={{ width: `${effectiveTrailPct}%` }}
               />
               {/* Active HP Bar with Combat Hit Flash */}
@@ -386,6 +384,12 @@ export const TopBossHeader: React.FC<TopBossHeaderProps> = ({
                 style={{ width: `${hpPct}%` }}
               />
             </div>
+            {/* Dragon Jade Well Bezel Frame */}
+            <img
+              src={HEADER_FRAME_ASSETS.hpWell}
+              alt="Dragon Jade Well"
+              className="absolute inset-0 w-full h-full object-fill pointer-events-none z-20 drop-shadow-[0_0_6px_rgba(16,185,129,0.35)]"
+            />
           </div>
 
           {/* World Raid v3.1 4-Meter HUD Row */}
