@@ -43,6 +43,14 @@ import {
   getMaxInventorySlots,
   rollLootDrop,
   openWorldRaidClearChest,
+  RuneGem,
+  RuneType,
+  RuneTier,
+  RUNE_GEM_POOL,
+  getTemperCost,
+  temperEquipment,
+  getAscensionCost,
+  getUnlockedSockets,
   ascendEquipmentTier,
   getSalvageYield,
   getItemRarityMeta,
@@ -493,6 +501,20 @@ export default function App() {
     return [];
   });
 
+  // Bag of Ancient Rune Gems (Phù Thạch Khảm Nạm)
+  const [runePouch, setRunePouch] = useState<RuneGem[]>(() => {
+    try {
+      const s = getInitialSaveString();
+      if (s) {
+        const parsed = JSON.parse(s);
+        if (Array.isArray(parsed.runePouch)) {
+          return parsed.runePouch;
+        }
+      }
+    } catch {}
+    return [];
+  });
+
   // Phase 2: Kỹ Pháp Tứ Thế & Stance Skills Progression
   const [stanceSkills, setStanceSkills] = useState<StanceSkillNode[]>(() => {
     try {
@@ -672,6 +694,7 @@ export default function App() {
           stanceSkills,
           equippedItems,
           inventory,
+          runePouch,
           playerTotalDamage,
           claimedMilestones,
           currentVaultId,
@@ -1013,8 +1036,38 @@ export default function App() {
       if (Array.isArray(parsed.upgrades)) setUpgrades(parsed.upgrades);
       if (Array.isArray(parsed.spiritNodes)) setSpiritNodes(parsed.spiritNodes);
       if (Array.isArray(parsed.stanceSkills)) setStanceSkills(parsed.stanceSkills);
-      if (parsed.equippedItems && typeof parsed.equippedItems === 'object') setEquippedItems(parsed.equippedItems);
-      if (Array.isArray(parsed.inventory)) setInventory(parsed.inventory);
+      if (Array.isArray(parsed.runePouch)) setRunePouch(parsed.runePouch);
+      if (parsed.equippedItems && typeof parsed.equippedItems === 'object') {
+        const validatedEquipped: Record<EquipmentSlotKey, EquipmentItem> = { ...INITIAL_EQUIPPED_SLOTS };
+        for (const k of Object.keys(INITIAL_EQUIPPED_SLOTS) as EquipmentSlotKey[]) {
+          if (parsed.equippedItems[k]) {
+            const item = parsed.equippedItems[k];
+            const unlocked = getUnlockedSockets(item.rarity || 'common');
+            validatedEquipped[k] = {
+              ...item,
+              level: typeof item.level === 'number' && item.level >= 1 ? item.level : 1,
+              unlockedSockets: unlocked,
+              sockets: Array.isArray(item.sockets) ? item.sockets : [],
+            };
+          }
+        }
+        setEquippedItems(validatedEquipped);
+      }
+      if (Array.isArray(parsed.inventory) && parsed.inventory.length > 0) {
+        let extraDust = 0;
+        let extraLT = 0;
+        let extraTH = 0;
+        for (const it of parsed.inventory) {
+          const y = getSalvageYield(it);
+          extraDust += y.ironDust;
+          extraLT += y.linhThach;
+          extraTH += y.tinhHoa;
+        }
+        if (extraDust > 0) setIronDust((d) => d + extraDust);
+        if (extraLT > 0) setLinhThach((lt) => lt + extraLT);
+        if (extraTH > 0) setTinhHoa((th) => th + extraTH);
+        setInventory([]);
+      }
       if (typeof parsed.playerTotalDamage === 'number') setPlayerTotalDamage(parsed.playerTotalDamage);
       if (typeof parsed.raidContributionScore === 'number') setRaidContributionScore(parsed.raidContributionScore);
       if (typeof parsed.currentVaultId === 'number' && parsed.currentVaultId >= 1) setCurrentVaultId(parsed.currentVaultId);
@@ -1762,66 +1815,35 @@ export default function App() {
           setAnvilPityCount(dropResult.newPityCount);
         }
 
-        if (dropResult.item) {
-          const droppedItem = dropResult.item;
-          const rMeta = getItemRarityMeta(droppedItem.rarity);
+        // 1. Regular Material Drop: Iron Dust (Bụi Thiết)
+        if (dropResult.ironDustDrop && dropResult.ironDustDrop > 0) {
+          const dust = dropResult.ironDustDrop;
+          setIronDust((d) => d + dust);
+          appendCombatLog(`⚙️ Thu nhặt +${dust} Bụi Thiết từ tàn dư đe thép!`, 'cyan');
+        }
 
-          // Auto-salvage check
-          const shouldAutoSalvage =
-            (droppedItem.rarity === 'common' && autoSalvageTiers.tierE) ||
-            (droppedItem.rarity === 'uncommon' && autoSalvageTiers.tierD) ||
-            (droppedItem.rarity === 'rare' && autoSalvageTiers.tierC);
+        // 2. Super Rare Material: Tinh Hoa Thần Hồn
+        if (dropResult.tinhHoaDrop && dropResult.tinhHoaDrop > 0) {
+          const th = dropResult.tinhHoaDrop;
+          setTinhHoa((prev) => prev + th);
+          addLootToast({
+            type: 'tinhHoa',
+            tinhHoaAmount: th,
+          });
+          soundEngine.playGlobalBurstFanfare();
+          appendCombatLog(`✨ [THIÊN ĐỊA TINH HOA] Nhát búa Hoàng Kim ngưng tụ +${th} Tinh Hoa Thần Hồn!`, 'gold');
+        }
 
-          if (shouldAutoSalvage) {
-            const salvage = getSalvageYield(droppedItem);
-            setLinhThach((lt) => lt + salvage.linhThach);
-            setIronDust((d) => d + salvage.ironDust);
-            if (salvage.tinhHoa > 0) setTinhHoa((th) => th + salvage.tinhHoa);
-
-            // Only trigger a visible popup toast for rare auto-salvages (Tier C+ or yielded Tinh Hoa)
-            // to avoid spamming the screen with grey/green junk notifications
-            if (droppedItem.rarity !== 'common' && droppedItem.rarity !== 'uncommon' || salvage.tinhHoa > 0) {
-              addLootToast({
-                type: 'salvage',
-                item: droppedItem,
-                salvageYield: salvage,
-              });
-            }
-            appendCombatLog(
-              `⚡ [TỰ ĐỘNG NUNG] Rơi [${droppedItem.name}] [Tier ${rMeta.tier}] -> Tự nung ra +${salvage.ironDust} Bụi Thiết, +${salvage.linhThach} LT!`,
-              'cyan'
-            );
-          } else {
-            const currentCapacity = getMaxInventorySlots(forgerRank.tier);
-            setInventory((prevInv) => {
-              if (prevInv.length >= currentCapacity) {
-                const now = Date.now();
-                // Debounce full-bag notification to once every 5.5 seconds
-                if (now - lastBagFullToastTimeRef.current >= 5500) {
-                  lastBagFullToastTimeRef.current = now;
-                  addLootToast({
-                    type: 'full',
-                    item: droppedItem,
-                  });
-                  appendCombatLog(
-                    `⚠️ [TÚI ĐỒ ĐẦY] Rơi [${droppedItem.name}] nhưng rương đã kín chỗ (${currentCapacity}/${currentCapacity})! Hãy phân giải bớt.`,
-                    'red'
-                  );
-                }
-                return prevInv;
-              }
-              soundEngine.playGlobalBurstFanfare();
-              addLootToast({
-                type: 'drop',
-                item: droppedItem,
-              });
-              appendCombatLog(
-                `🎁 [RƠI TRANG BỊ] Bạn vừa nhặt được [${droppedItem.name}] [Tier ${rMeta.tier} - ${rMeta.label}]! Đã chuyển vào Túi Đồ.`,
-                droppedItem.rarity === 'mythic' || droppedItem.rarity === 'legendary' ? 'gold' : 'cyan'
-              );
-              return [droppedItem, ...prevInv];
-            });
-          }
+        // 3. Truly Rare Rune Gem Drop (Phù Thạch Khảm Nạm)
+        if (dropResult.gemDrop) {
+          const gem = dropResult.gemDrop;
+          setRunePouch((prev) => [gem, ...prev]);
+          addLootToast({
+            type: 'gem',
+            gem,
+          });
+          soundEngine.playGlobalBurstFanfare();
+          appendCombatLog(`💎 [THẦN KHÍ KHẢM BẢO] Chấn động rớt xuống Phù Thạch: [${gem.name}] (${gem.statLabel})!`, 'gold');
         }
       }
 
@@ -2204,6 +2226,173 @@ export default function App() {
       [tierKey]: !prev[tierKey],
     }));
   }, []);
+
+  // =========================================================================
+  // PERMANENT ARSENAL HANDLERS: TEMPERING, ASCENSION & RUNE SOCKETING
+  // =========================================================================
+  const handleTemperEquipment = useCallback(
+    (slotKey: EquipmentSlotKey) => {
+      const item = equippedItems[slotKey];
+      if (!item) return;
+      const currentLvl = item.level || 1;
+      if (currentLvl >= 20) {
+        appendCombatLog(`⚠️ [${item.name}] đã đạt cấp tối đa 20/20! Hãy thối hỏa đột phá bậc.`, 'gold');
+        return;
+      }
+      const cost = getTemperCost(item);
+      if (ironDust < cost.ironDust || linhThach < cost.linhThach) {
+        appendCombatLog(
+          `⚠️ Không đủ tài nguyên Tôi Luyện! Cần ${cost.ironDust} Bụi Thiết & ${cost.linhThach.toLocaleString()} Linh Thạch.`,
+          'red'
+        );
+        return;
+      }
+
+      setIronDust((d) => d - cost.ironDust);
+      setLinhThach((lt) => lt - cost.linhThach);
+
+      const tempered = temperEquipment(item);
+      setEquippedItems((prev) => ({
+        ...prev,
+        [slotKey]: tempered,
+      }));
+
+      soundEngine.playAnvilStrike('GREAT', activeStance, false);
+      canvasHandleRef.current?.spawnCombatText(
+        `CẤP ${tempered.level}!`,
+        `+${tempered.baseStatValue} ${tempered.baseStatUnit}`,
+        '#F59E0B',
+        '#FFD700',
+        true
+      );
+      appendCombatLog(
+        `🔥 [TÔI LUYỆN] Đã rèn [${item.name}] lên Cấp ${tempered.level}/20! (${tempered.baseStatLabel}: +${tempered.baseStatValue} ${tempered.baseStatUnit})`,
+        'cyan'
+      );
+    },
+    [equippedItems, ironDust, linhThach, activeStance, appendCombatLog]
+  );
+
+  const handleAscendEquipment = useCallback(
+    (slotKey: EquipmentSlotKey) => {
+      const item = equippedItems[slotKey];
+      if (!item) return;
+      const currentLvl = item.level || 1;
+      if (currentLvl < 20) {
+        appendCombatLog(
+          `⚠️ Cần tôi luyện [${item.name}] đạt Cấp 20 mới có thể thối hỏa đột phá bậc! (Hiện tại: Cấp ${currentLvl}/20)`,
+          'red'
+        );
+        return;
+      }
+      const cost = getAscensionCost(item);
+      if (!cost) {
+        appendCombatLog(`⚠️ [${item.name}] đã đạt cảnh giới tối cao Thiên Đạo Thần Khí!`, 'gold');
+        return;
+      }
+      if (ironDust < cost.ironDust || tinhHoa < cost.tinhHoa || celestialStars < cost.celestialStars) {
+        appendCombatLog(
+          `⚠️ Chưa đủ nguyên liệu Đột Phá Bậc: Cần ${cost.ironDust.toLocaleString()} Bụi Thiết, ${cost.tinhHoa} Tinh Hoa${
+            cost.celestialStars > 0 ? `, ${cost.celestialStars} Thiên Tinh` : ''
+          }!`,
+          'red'
+        );
+        return;
+      }
+
+      setIronDust((d) => d - cost.ironDust);
+      setTinhHoa((th) => th - cost.tinhHoa);
+      if (cost.celestialStars > 0) {
+        setCelestialStars((cs) => cs - cost.celestialStars);
+      }
+
+      const ascended = ascendEquipmentTier(item);
+      if (!ascended) return;
+
+      setEquippedItems((prev) => ({
+        ...prev,
+        [slotKey]: ascended,
+      }));
+
+      soundEngine.playGlobalBurstFanfare();
+      canvasHandleRef.current?.spawnCombatText(
+        '🌟 ĐỘT PHÁ THẦN KHÍ!',
+        `${ascended.name} [${cost.targetTierName}]`,
+        '#EC4899',
+        '#F59E0B',
+        true
+      );
+      appendCombatLog(
+        `⚡ [THỐI HỎA ĐỘT PHÁ] Kỳ tích xuất hiện! [${item.name}] đã đột phá lên [${cost.targetTierName}] - [${ascended.name}]! Khai mở ${
+          ascended.unlockedSockets || 0
+        } Lỗ Khảm Phù Thạch!`,
+        'gold'
+      );
+    },
+    [equippedItems, ironDust, tinhHoa, celestialStars, appendCombatLog]
+  );
+
+  const handleSocketGem = useCallback(
+    (slotKey: EquipmentSlotKey, socketIndex: number, gemId: string) => {
+      const item = equippedItems[slotKey];
+      if (!item) return;
+      const unlocked = item.unlockedSockets || getUnlockedSockets(item.rarity);
+      if (socketIndex < 0 || socketIndex >= unlocked) {
+        appendCombatLog('⚠️ Lỗ khảm này chưa mở khóa! Hãy đột phá phẩm bậc trang bị.', 'red');
+        return;
+      }
+
+      const gem = runePouch.find((g) => g.id === gemId);
+      if (!gem) return;
+
+      const currentSockets = [...(item.sockets || [])];
+      while (currentSockets.length < unlocked) currentSockets.push(null);
+
+      const oldGem = currentSockets[socketIndex];
+      currentSockets[socketIndex] = gem;
+
+      setEquippedItems((prev) => ({
+        ...prev,
+        [slotKey]: {
+          ...item,
+          sockets: currentSockets,
+        },
+      }));
+
+      setRunePouch((prev) => {
+        const remaining = prev.filter((g) => g.id !== gemId);
+        return oldGem ? [oldGem, ...remaining] : remaining;
+      });
+
+      soundEngine.playStanceSwitch('Q');
+      appendCombatLog(`🔮 [KHẢM NẠM] Đã khảm [${gem.name}] vào ${item.slotName}! (+${gem.value} ${gem.statLabel})`, 'cyan');
+    },
+    [equippedItems, runePouch, appendCombatLog]
+  );
+
+  const handleUnsocketGem = useCallback(
+    (slotKey: EquipmentSlotKey, socketIndex: number) => {
+      const item = equippedItems[slotKey];
+      if (!item || !item.sockets || !item.sockets[socketIndex]) return;
+
+      const removedGem = item.sockets[socketIndex]!;
+      const updatedSockets = [...item.sockets];
+      updatedSockets[socketIndex] = null;
+
+      setEquippedItems((prev) => ({
+        ...prev,
+        [slotKey]: {
+          ...item,
+          sockets: updatedSockets,
+        },
+      }));
+
+      setRunePouch((prev) => [removedGem, ...prev]);
+      soundEngine.playStanceSwitch('E');
+      appendCombatLog(`✨ [THÁO PHÙ THẠCH] Đã gỡ [${removedGem.name}] về Túi Phù Thạch an toàn.`, 'gold');
+    },
+    [equippedItems, appendCombatLog]
+  );
 
   const handleAscendItem = useCallback(
     (item: EquipmentItem) => {
@@ -2846,6 +3035,11 @@ export default function App() {
             onAscendItem={handleAscendItem}
             onToggleAutoSalvage={handleToggleAutoSalvage}
             playerClass={getPlayerClass(playerClassId || 'thunder')}
+            runePouch={runePouch}
+            onTemperEquipment={handleTemperEquipment}
+            onAscendEquipment={handleAscendEquipment}
+            onSocketGem={handleSocketGem}
+            onUnsocketGem={handleUnsocketGem}
               />
         </div>
       </div>

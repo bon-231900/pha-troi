@@ -815,6 +815,21 @@ export interface ItemAffix {
 
 export type QuenchType = 'ice' | 'magma' | 'thunder';
 
+export type RuneType = 'thunder' | 'fire' | 'gravity' | 'mystic' | 'fortune';
+export type RuneTier = 'common' | 'rare' | 'epic' | 'legendary';
+
+export interface RuneGem {
+  id: string;
+  name: string;
+  type: RuneType;
+  tier: RuneTier;
+  statLabel: string;
+  statKey: 'flatDamage' | 'critChancePct' | 'perfectWindowMs' | 'heatGainPerHit' | 'magicFindPct' | 'damageMultiplierPct';
+  value: number;
+  specialPerk?: string;
+  color: string;
+}
+
 export interface EquipmentItem {
   id: string;
   slotKey: EquipmentSlotKey;
@@ -833,6 +848,45 @@ export interface EquipmentItem {
   quench?: QuenchType;
   setId?: EquipmentSetId;
   setName?: string;
+  level?: number;                 // 1 to 20 per tier
+  sockets?: (RuneGem | null)[];  // Slot array of socketed runes
+  unlockedSockets?: number;      // 0 to 4 unlocked by tier
+}
+
+export const RUNE_GEM_POOL: RuneGem[] = [
+  // Lôi (Thunder) - Tốc độ & Bạo Kích
+  { id: 'gem_thunder_1', name: 'Lôi Quang Phù', type: 'thunder', tier: 'common', statLabel: 'Bạo Kích', statKey: 'critChancePct', value: 2, color: '#38BDF8' },
+  { id: 'gem_thunder_2', name: 'Cực Lôi Thạch', type: 'thunder', tier: 'rare', statLabel: 'Bạo Kích & Sét', statKey: 'critChancePct', value: 5, specialPerk: '+2 Sát thương sấm sét', color: '#00F0FF' },
+  { id: 'gem_thunder_3', name: 'Cửu Thiên Lôi Châu', type: 'thunder', tier: 'epic', statLabel: 'Bạo Kích & Phóng Sét Lan', statKey: 'critChancePct', value: 10, specialPerk: 'Phóng tia sét phụ sang đồng môn', color: '#67E8F9' },
+
+  // Hỏa (Fire) - Tích Nhiệt & Cháy DoT
+  { id: 'gem_fire_1', name: 'Hỏa Tinh Phù', type: 'fire', tier: 'common', statLabel: 'Hỏa Hầu', statKey: 'heatGainPerHit', value: 2, color: '#FB923C' },
+  { id: 'gem_fire_2', name: 'Địa Hỏa Tinh Thạch', type: 'fire', tier: 'rare', statLabel: 'Hỏa Hầu & Đốt Cháy', statKey: 'heatGainPerHit', value: 5, specialPerk: '+3 Sát thương thiêu đốt', color: '#F97316' },
+  { id: 'gem_fire_3', name: 'Xích Diễm Ma Châu', type: 'fire', tier: 'epic', statLabel: 'Hỏa Hầu & Tích Lửa x2', statKey: 'heatGainPerHit', value: 10, specialPerk: 'Nhát Hoàng Kim tích x2 tầng cháy', color: '#EA580C' },
+
+  // Sơn (Gravity) - Sức Nặng & Phá Giáp
+  { id: 'gem_gravity_1', name: 'Trọng Thạch Phù', type: 'gravity', tier: 'common', statLabel: 'Sát Thương Cơ Bản', statKey: 'flatDamage', value: 3, color: '#C084FC' },
+  { id: 'gem_gravity_2', name: 'Thái Sơn Cương Thạch', type: 'gravity', tier: 'rare', statLabel: 'Sát Thương & Khóa Giáp', statKey: 'flatDamage', value: 8, specialPerk: '+15 Sức Đập Phá Giáp', color: '#A855F7' },
+  { id: 'gem_gravity_3', name: 'Hỗn Độn Thạch Châu', type: 'gravity', tier: 'epic', statLabel: 'Sát Thương Thuần', statKey: 'flatDamage', value: 18, specialPerk: 'Bỏ qua 20% giáp trời', color: '#9333EA' },
+
+  // Âm (Mystic) - Cửa Sổ Hoàng Kim & Kinh Tế
+  { id: 'gem_mystic_1', name: 'Huyền Âm Ngọc', type: 'mystic', tier: 'common', statLabel: 'Vùng Hoàng Kim', statKey: 'perfectWindowMs', value: 6, color: '#34D399' },
+  { id: 'gem_mystic_2', name: 'Bích Tinh Linh Châu', type: 'mystic', tier: 'rare', statLabel: 'Vùng Hoàng Kim & Linh Thạch', statKey: 'perfectWindowMs', value: 12, specialPerk: '+25% Linh Thạch rơi', color: '#10B981' },
+
+  // Vận (Fortune) - Thần Thoại Tối Thượng
+  { id: 'gem_fortune_1', name: 'Thiên Mệnh Tinh Thạch', type: 'fortune', tier: 'legendary', statLabel: 'Toàn Diện & Magic Find', statKey: 'damageMultiplierPct', value: 25, specialPerk: 'Cực Phẩm: +25% Sát thương toàn thể & +35% Magic Find', color: '#F59E0B' },
+];
+
+export function getUnlockedSockets(rarity: ItemRarity): number {
+  switch (rarity) {
+    case 'common': return 0;
+    case 'uncommon': return 1;
+    case 'rare': return 2;
+    case 'epic': return 3;
+    case 'legendary': return 4;
+    case 'mythic': return 4;
+    default: return 0;
+  }
 }
 
 export interface ArsenalBonuses {
@@ -1165,13 +1219,22 @@ export interface RollLootDropResult {
   isPityTriggered: boolean;
 }
 
+export interface RollLootDropResult {
+  ironDustDrop?: number;
+  linhThachDrop?: number;
+  tinhHoaDrop?: number;
+  gemDrop?: RuneGem | null;
+  item: EquipmentItem | null;
+  newPityCount: number;
+  isPityTriggered: boolean;
+}
+
 export function rollLootDrop(options: RollLootDropOptions): RollLootDropResult {
   const {
     grade,
     isOverdrive = false,
     isShieldBreak = false,
     magicFindPct = 0,
-    vaultFloorId = 1,
     anvilPityCount = 0,
   } = options;
 
@@ -1179,48 +1242,68 @@ export function rollLootDrop(options: RollLootDropOptions): RollLootDropResult {
     return { item: null, newPityCount: anvilPityCount, isPityTriggered: false };
   }
 
-  // Base Trigger Chances (Balanced ARPG progression):
-  // Normal (GREAT): 2.5%, Perfect (HOÀNG KIM): 5.5%, Overdrive: 9.0%, Shield Break: 15.0%
-  let triggerChance = 0.025;
-  if (grade === 'PERFECT') triggerChance = 0.055;
-  if (isOverdrive) triggerChance = Math.max(triggerChance, 0.090);
-  if (isShieldBreak) triggerChance = Math.max(triggerChance, 0.150);
-  if (options.forceDrop) triggerChance = 1.0;
+  // 1. Regular Material Drop: Iron Dust (Bụi Thiết)
+  let ironDustChance = 0.10;
+  if (grade === 'PERFECT') ironDustChance = 0.22;
+  if (isOverdrive) ironDustChance = 0.35;
+  if (isShieldBreak) ironDustChance = 0.48;
 
-  // Apply Magic Find from SPI (Soft capped at +50%)
-  const mfMult = 1 + Math.min(50, Math.max(0, magicFindPct)) / 100;
-  triggerChance = Math.min(1.0, triggerChance * mfMult);
-
-  if (Math.random() > triggerChance) {
-    return { item: null, newPityCount: anvilPityCount, isPityTriggered: false };
+  let ironDustDrop: number | undefined = undefined;
+  if (Math.random() < ironDustChance || options.forceDrop) {
+    const minDust = isShieldBreak ? 12 : grade === 'PERFECT' ? 6 : 2;
+    const maxDust = isShieldBreak ? 24 : grade === 'PERFECT' ? 14 : 6;
+    ironDustDrop = Math.floor(Math.random() * (maxDust - minDust + 1)) + minDust;
   }
 
-  // A drop triggered! Now check Pity:
+  // 2. Super Rare Material: Tinh Hoa Thần Hồn (0.10% chance on PERFECT hits only)
+  let tinhHoaDrop: number | undefined = undefined;
+  if (grade === 'PERFECT' && Math.random() < 0.001) {
+    tinhHoaDrop = 1;
+  }
+
+  // 3. Truly Rare Drops: Rune Gems (Phù Thạch Khảm Nạm) - Severely Reduced
+  // Normal: 0.05% (1 in 2000), Perfect: 0.15% (1 in 660), Shield Break: 0.35% (1 in 280)
+  let gemChance = 0.0005;
+  if (grade === 'PERFECT') gemChance = 0.0015;
+  if (isOverdrive) gemChance = 0.0025;
+  if (isShieldBreak) gemChance = 0.0035;
+
+  const mfMult = 1 + Math.min(50, Math.max(0, magicFindPct)) / 100;
+  gemChance *= mfMult;
+
+  let gemDrop: RuneGem | null = null;
   let updatedPity = anvilPityCount + 1;
-  let rolledRarity: ItemRarity = 'common';
   let isPityTriggered = false;
 
-  if (updatedPity >= 200) {
-    // 200 drops pity: Guaranteed Tier A (legendary)
-    rolledRarity = 'legendary';
+  if (Math.random() < gemChance || options.forceDrop) {
     updatedPity = 0;
     isPityTriggered = true;
-  } else if (updatedPity >= 50 && Math.random() < 0.5) {
-    // 50 drops pity: Guaranteed Tier B (epic)
-    rolledRarity = 'epic';
-    isPityTriggered = true;
-  } else {
-    const weights = FLOOR_TIER_DROP_WEIGHTS[vaultFloorId] || FLOOR_TIER_DROP_WEIGHTS[1];
-    rolledRarity = pickTierFromWeights(weights);
+
+    // Roll Rune Gem Tier (Drastically Reduced high tiers)
+    // Common: 82%, Rare: 15%, Epic: 2.8%, Legendary: 0.2%
+    const rRoll = Math.random() * 100;
+    let targetTier: RuneTier = 'common';
+    if (rRoll < 0.2) targetTier = 'legendary';
+    else if (rRoll < 3.0) targetTier = 'epic';
+    else if (rRoll < 18.0) targetTier = 'rare';
+    else targetTier = 'common';
+
+    const eligibleGems = RUNE_GEM_POOL.filter((g) => g.tier === targetTier);
+    const chosen = eligibleGems[Math.floor(Math.random() * eligibleGems.length)] || RUNE_GEM_POOL[0];
+    gemDrop = {
+      ...chosen,
+      id: `gem_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+    };
   }
 
-  // If Tier B, A, or S drops naturally, reset pity counter
-  if (rolledRarity === 'mythic' || rolledRarity === 'legendary' || rolledRarity === 'epic') {
-    updatedPity = 0;
-  }
-
-  const item = generateProceduralItem({ minRarity: rolledRarity, itemLevel: vaultFloorId });
-  return { item, newPityCount: updatedPity, isPityTriggered };
+  return {
+    ironDustDrop,
+    tinhHoaDrop,
+    gemDrop,
+    item: null,
+    newPityCount: updatedPity,
+    isPityTriggered,
+  };
 }
 
 // ============================================================================
@@ -1327,18 +1410,92 @@ export function openWorldRaidClearChest(options: {
   };
 }
 
-export function ascendEquipmentTier(item: EquipmentItem): EquipmentItem | null {
-  const meta = getItemRarityMeta(item.rarity);
-  if (meta.tier !== 'A') return null;
+export function getTemperCost(item: EquipmentItem): { ironDust: number; linhThach: number } {
+  const currentLvl = item.level || 1;
+  const tierMult = item.rarity === 'mythic' ? 6 : item.rarity === 'legendary' ? 4 : item.rarity === 'epic' ? 2.5 : item.rarity === 'rare' ? 1.8 : item.rarity === 'uncommon' ? 1.3 : 1.0;
+  const ironDust = Math.round((10 + currentLvl * 5) * tierMult);
+  const linhThach = Math.round((25 + currentLvl * 20) * tierMult);
+  return { ironDust, linhThach };
+}
 
-  const newBaseVal = Math.round(item.baseStatValue * (5.5 / 3.8));
+export function temperEquipment(item: EquipmentItem): EquipmentItem {
+  const currentLvl = item.level || 1;
+  if (currentLvl >= 20) return item;
+
+  const nextLvl = currentLvl + 1;
+  let statGain = 1;
+  if (item.slotKey === 'apron') statGain = 5;
+  else if (item.slotKey === 'relic') statGain = 1;
+  else if (item.slotKey === 'gauntlets') statGain = 0.5;
+  else if (item.slotKey === 'anvil') statGain = 1;
+  else if (item.slotKey === 'bellows') statGain = 1;
+  else if (item.slotKey === 'hammer') statGain = (item.rarity === 'mythic' || item.rarity === 'legendary') ? 2 : 1;
+
   return {
     ...item,
-    id: `ascended_${Date.now()}_${item.id}`,
-    rarity: 'mythic',
-    name: item.name.replace('Địa Linh Kim', 'Thiên Đạo Thần Khí'),
+    level: nextLvl,
+    baseStatValue: Number((item.baseStatValue + statGain).toFixed(1)),
+  };
+}
+
+export interface AscensionCost {
+  ironDust: number;
+  tinhHoa: number;
+  celestialStars: number;
+  targetTier: ItemRarity;
+  targetTierName: string;
+}
+
+export function getAscensionCost(item: EquipmentItem): AscensionCost | null {
+  switch (item.rarity) {
+    case 'common':
+      return { ironDust: 150, tinhHoa: 2, celestialStars: 0, targetTier: 'uncommon', targetTierName: 'Tier D · Tinh Thiết' };
+    case 'uncommon':
+      return { ironDust: 600, tinhHoa: 8, celestialStars: 0, targetTier: 'rare', targetTierName: 'Tier C · Lam Tinh' };
+    case 'rare':
+      return { ironDust: 2200, tinhHoa: 25, celestialStars: 1, targetTier: 'epic', targetTierName: 'Tier B · Tử Kim' };
+    case 'epic':
+      return { ironDust: 8000, tinhHoa: 60, celestialStars: 2, targetTier: 'legendary', targetTierName: 'Tier A · Địa Linh Kim' };
+    case 'legendary':
+      return { ironDust: 25000, tinhHoa: 150, celestialStars: 5, targetTier: 'mythic', targetTierName: 'Tier S · Thiên Đạo Thần Khí' };
+    case 'mythic':
+      return null;
+  }
+}
+
+export function ascendEquipmentTier(item: EquipmentItem): EquipmentItem | null {
+  const cost = getAscensionCost(item);
+  if (!cost) return null;
+
+  const targetTier = cost.targetTier;
+  const basePool = BASE_ITEM_POOL[item.slotKey];
+  const eligibleBases = basePool.filter((b) => {
+    const rarityOrder: ItemRarity[] = ['common', 'uncommon', 'rare', 'epic', 'legendary', 'mythic'];
+    return rarityOrder.indexOf(b.minRarity) <= rarityOrder.indexOf(targetTier);
+  });
+  const evolvedBase = eligibleBases[eligibleBases.length - 1] || basePool[0];
+
+  const newUnlockedSockets = getUnlockedSockets(targetTier);
+  const existingSockets = item.sockets || [];
+  const updatedSockets = [...existingSockets];
+  while (updatedSockets.length < newUnlockedSockets) {
+    updatedSockets.push(null);
+  }
+
+  const newBaseVal = Math.round(item.baseStatValue * 1.6 + 3);
+
+  return {
+    ...item,
+    id: `ascended_${Date.now()}_${item.slotKey}`,
+    rarity: targetTier,
+    level: 1,
+    baseName: evolvedBase.name,
+    name: `${evolvedBase.name}`,
     baseStatValue: newBaseVal,
-    itemLevel: item.itemLevel + 5,
+    itemLevel: item.itemLevel + 4,
+    unlockedSockets: newUnlockedSockets,
+    sockets: updatedSockets,
+    loreDescription: evolvedBase.lore,
   };
 }
 
@@ -1647,6 +1804,18 @@ export function calculateArsenalBonuses(
       }
     }
 
+    // Add socketed RuneGem bonuses
+    if (item.sockets && item.sockets.length > 0) {
+      for (const gem of item.sockets) {
+        if (!gem) continue;
+        if (gem.statKey === 'flatDamage') flatDamage += gem.value;
+        else if (gem.statKey === 'critChancePct') critChancePct += gem.value;
+        else if (gem.statKey === 'perfectWindowMs') perfectWindowMs += gem.value;
+        else if (gem.statKey === 'heatGainPerHit') heatPerHitBonus += gem.value;
+        else if (gem.statKey === 'damageMultiplierPct') damageMultiplier += gem.value / 100;
+        else if (gem.statKey === 'magicFindPct') magicFindPct += gem.value;
+      }
+    }
     const allAffixes = [...item.prefixes, ...item.suffixes];
     for (const aff of allAffixes) {
       switch (aff.statKey) {

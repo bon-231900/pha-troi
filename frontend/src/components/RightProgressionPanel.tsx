@@ -29,6 +29,12 @@ import {
   getMaxInventorySlots,
   ascendEquipmentTier,
   PlayerClassMeta,
+  RuneGem,
+  RuneType,
+  RuneTier,
+  getTemperCost,
+  getAscensionCost,
+  getUnlockedSockets,
 } from '../game/rules';
 
 const ITEM_ART_URLS: Record<EquipmentSlotKey, string> = {
@@ -54,6 +60,9 @@ import {
   PackageOpen,
   ArrowRightLeft,
   Info,
+  Gem,
+  ChevronRight,
+  Plus,
 } from 'lucide-react';
 
 export interface LeaderboardEntry {
@@ -96,6 +105,11 @@ interface RightProgressionPanelProps {
   autoSalvageTiers?: { tierE: boolean; tierD: boolean; tierC: boolean };
   onToggleAutoSalvage?: (tierKey: 'tierE' | 'tierD' | 'tierC') => void;
   playerClass?: PlayerClassMeta;
+  runePouch?: RuneGem[];
+  onTemperEquipment?: (slotKey: EquipmentSlotKey) => void;
+  onAscendEquipment?: (slotKey: EquipmentSlotKey) => void;
+  onSocketGem?: (slotKey: EquipmentSlotKey, socketIndex: number, gemId: string) => void;
+  onUnsocketGem?: (slotKey: EquipmentSlotKey, socketIndex: number) => void;
 }
 
 export const RightProgressionPanel: React.FC<RightProgressionPanelProps> = ({
@@ -129,8 +143,15 @@ export const RightProgressionPanel: React.FC<RightProgressionPanelProps> = ({
   autoSalvageTiers = { tierE: false, tierD: false, tierC: false },
   onToggleAutoSalvage,
   playerClass,
+  runePouch = [],
+  onTemperEquipment,
+  onAscendEquipment,
+  onSocketGem,
+  onUnsocketGem,
 }) => {
   const [activeTab, setActiveTab] = useState<'arsenal' | 'upgrades' | 'spirit' | 'leaderboard'>('arsenal');
+  const [selectedSlotKey, setSelectedSlotKey] = useState<EquipmentSlotKey>('hammer');
+  const [gemPouchFilter, setGemPouchFilter] = useState<RuneType | 'all'>('all');
   const [selectedItem, setSelectedItem] = useState<EquipmentItem | null>(() => {
     return equippedItems.hammer || inventory[0] || null;
   });
@@ -271,52 +292,58 @@ export const RightProgressionPanel: React.FC<RightProgressionPanelProps> = ({
         {/* ================================================================= */}
         {activeTab === 'arsenal' && (
           <div className="flex flex-col gap-2.5">
-            {/* Ngũ Đại Thuộc Tính Rèn (Stat Triad & Synergy MMORPG Card) */}
-            <div className="p-2.5 rounded-xl bg-[#080A10] border border-amber-500/30 flex flex-col gap-2">
+            {/* 1. Ngũ Đại Thuộc Tính Rèn (MMORPG Stats Card) */}
+            <div className="p-2.5 rounded-xl bg-[#080A10] border border-amber-500/30 flex flex-col gap-2 shadow-inner">
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-tech font-bold text-amber-300">
-                  NGŨ ĐẠI THUỘC TÍNH RÈN (MMORPG STATS)
+                <span className="text-[11px] font-tech font-bold text-amber-300 flex items-center gap-1.5">
+                  <Shield className="w-3.5 h-3.5 text-amber-400" />
+                  NGŨ ĐẠI THUỘC TÍNH RÈN (BẢN MỆNH THẦN LỰC)
                 </span>
-                <span className="text-[10px] font-tech text-slate-400">
-                  {arsenalBonuses.totalEquippedCount}/6 Món Trang Bị
+                <span className="text-[10px] font-tech text-cyan-300 font-mono">
+                  {arsenalBonuses.totalEquippedCount}/6 Món Thần Khí
                 </span>
               </div>
 
-              {/* 5 Core Attributes Pills */}
+              {/* 5 Core Attributes */}
               <div className="grid grid-cols-5 gap-1 text-center font-tech">
-                <div className="p-1 rounded bg-slate-900/80 border border-red-500/30">
-                  <div className="text-[8px] text-red-400 font-bold">STR</div>
-                  <div className="text-xs font-bold text-red-300">{arsenalBonuses.coreStats.str}</div>
-                  <div className="text-[7px] text-slate-400 truncate">Lực Chùy</div>
+                <div className="p-1 rounded bg-[#0E1322] border border-slate-800">
+                  <div className="text-[9px] text-slate-400">Sức Mạnh</div>
+                  <div className="text-xs font-bold text-red-400 font-mono">
+                    {arsenalBonuses.coreStats.str}
+                  </div>
                 </div>
-                <div className="p-1 rounded bg-slate-900/80 border border-yellow-500/30">
-                  <div className="text-[8px] text-yellow-400 font-bold">DEX</div>
-                  <div className="text-xs font-bold text-yellow-300">{arsenalBonuses.coreStats.dex}</div>
-                  <div className="text-[7px] text-slate-400 truncate">Chuẩn Xác</div>
+                <div className="p-1 rounded bg-[#0E1322] border border-slate-800">
+                  <div className="text-[9px] text-slate-400">Khéo Léo</div>
+                  <div className="text-xs font-bold text-emerald-400 font-mono">
+                    {arsenalBonuses.coreStats.dex}
+                  </div>
                 </div>
-                <div className="p-1 rounded bg-slate-900/80 border border-orange-500/30">
-                  <div className="text-[8px] text-orange-400 font-bold">INT</div>
-                  <div className="text-xs font-bold text-orange-300">{arsenalBonuses.coreStats.int}</div>
-                  <div className="text-[7px] text-slate-400 truncate">Nhiệt Lực</div>
+                <div className="p-1 rounded bg-[#0E1322] border border-slate-800">
+                  <div className="text-[9px] text-slate-400">Trí Tuệ</div>
+                  <div className="text-xs font-bold text-blue-400 font-mono">
+                    {arsenalBonuses.coreStats.int}
+                  </div>
                 </div>
-                <div className="p-1 rounded bg-slate-900/80 border border-purple-500/30">
-                  <div className="text-[8px] text-purple-400 font-bold">PEN</div>
-                  <div className="text-xs font-bold text-purple-300">{arsenalBonuses.coreStats.pen}</div>
-                  <div className="text-[7px] text-slate-400 truncate">Phá Phách</div>
+                <div className="p-1 rounded bg-[#0E1322] border border-slate-800">
+                  <div className="text-[9px] text-slate-400">Xuyên Giáp</div>
+                  <div className="text-xs font-bold text-amber-400 font-mono">
+                    {arsenalBonuses.coreStats.pen}
+                  </div>
                 </div>
-                <div className="p-1 rounded bg-slate-900/80 border border-emerald-500/30">
-                  <div className="text-[8px] text-emerald-400 font-bold">SPI</div>
-                  <div className="text-xs font-bold text-emerald-300">{arsenalBonuses.coreStats.spi}</div>
-                  <div className="text-[7px] text-slate-400 truncate">Cộng Hưởng</div>
+                <div className="p-1 rounded bg-[#0E1322] border border-slate-800">
+                  <div className="text-[9px] text-slate-400">Tâm Thần</div>
+                  <div className="text-xs font-bold text-purple-400 font-mono">
+                    {arsenalBonuses.coreStats.spi}
+                  </div>
                 </div>
               </div>
 
-              {/* Stat Synergy Indicators */}
-              <div className="flex items-center justify-between text-[10px] font-tech text-slate-300 pt-1 border-t border-slate-800/80">
-                <div className="flex items-center gap-1">
+              {/* Equilibrium, Pierce, Magic Find, Crit */}
+              <div className="flex items-center justify-between text-[10px] font-tech pt-1 border-t border-slate-800/80">
+                <div className="flex items-center gap-1.5">
                   {arsenalBonuses.glancingHitPenalty ? (
-                    <span className="text-red-400 font-bold bg-red-950/60 px-1.5 py-0.5 rounded border border-red-500/40 animate-pulse">
-                      ⚠️ DỘI BÚA (STR &gt; 2.5 INT: -35% DMG)
+                    <span className="text-red-400 bg-red-950/60 px-1.5 py-0.5 rounded border border-red-500/40">
+                      ⚠️ Dội Búa: STR &gt; 2.5x INT (-30% DMG)
                     </span>
                   ) : (
                     <span className="text-emerald-400 bg-emerald-950/60 px-1.5 py-0.5 rounded border border-emerald-500/40">
@@ -325,7 +352,7 @@ export const RightProgressionPanel: React.FC<RightProgressionPanelProps> = ({
                   )}
                 </div>
                 <div className="flex items-center gap-2 text-cyan-300">
-                  <span>Xuyên Giáp: +{arsenalBonuses.piercePct}%</span>
+                  <span>Xuyên: +{arsenalBonuses.piercePct}%</span>
                   <span>·</span>
                   <span>MF: +{arsenalBonuses.magicFindPct}%</span>
                   <span>·</span>
@@ -334,91 +361,111 @@ export const RightProgressionPanel: React.FC<RightProgressionPanelProps> = ({
               </div>
             </div>
 
-            {/* 6 Equipped Slots Grid */}
+            {/* 2. LỤC ĐẠI BẢN MỆNH THẦN KHÍ (6 Fixed Equipment Slots) */}
             <div>
               <div className="text-[11px] font-tech text-slate-300 mb-1.5 flex items-center justify-between">
-                <span className="font-bold text-amber-300">6 VỊ TRÍ KHÍ GIỚI ĐANG MANG</span>
-                <span className="text-[10px] text-slate-400">Click để kiểm tra & tháo đồ</span>
+                <span className="font-bold text-amber-300 flex items-center gap-1">
+                  <Flame className="w-3.5 h-3.5 text-orange-400" />
+                  LỤC ĐẠI BẢN MỆNH THẦN KHÍ (VĨNH CỬU)
+                </span>
+                <span className="text-[9.5px] text-slate-400">Click chọn món để Tôi Luyện & Khảm Phù Thạch</span>
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 {(['hammer', 'anvil', 'bellows', 'gauntlets', 'apron', 'relic'] as EquipmentSlotKey[]).map(
                   (slotKey) => {
                     const item = equippedItems[slotKey];
                     const slotMeta = SLOT_INFO[slotKey];
-                    const isSelected = selectedItem?.id === item?.id;
+                    const isSelected = selectedSlotKey === slotKey;
                     const rMeta = item ? getItemRarityMeta(item.rarity) : null;
+                    const itemLvl = item?.level || 1;
+                    const unlockedSockets = item?.unlockedSockets ?? (item ? getUnlockedSockets(item.rarity) : 0);
+                    const sockets = item?.sockets || [];
 
                     return (
                       <button
                         key={slotKey}
                         type="button"
-                        onClick={() => {
-                          if (item) setSelectedItem(item);
-                        }}
-                        className={`p-2 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between min-h-[82px] ${
+                        onClick={() => setSelectedSlotKey(slotKey)}
+                        className={`p-2 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between min-h-[92px] ${
                           isSelected
-                            ? 'bg-slate-900/90 border-amber-400 ring-1 ring-amber-400/50 shadow-md'
-                            : item
-                            ? 'bg-[#080A10] border-slate-800 hover:border-slate-700'
-                            : 'bg-[#06080F]/60 border-dashed border-slate-800 opacity-60'
+                            ? 'bg-slate-900/95 border-amber-400 ring-2 ring-amber-400/40 shadow-lg shadow-amber-500/10'
+                            : 'bg-[#080A10] border-slate-800 hover:border-slate-700'
                         }`}
                       >
                         <div>
-                          <div className="flex items-center justify-between mb-0.5">
-                            <span className="text-[9px] font-tech uppercase text-slate-400">
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-[9px] font-tech uppercase text-slate-400 font-bold">
                               {slotMeta.name}
                             </span>
                             {item && (
-                              <span
-                                className={`text-[8px] px-1 rounded font-tech ${
-                                  rMeta?.badgeBg
-                                }`}
-                              >
-                                {rMeta?.label}
+                              <span className={`text-[8px] px-1 py-0.2 rounded font-tech ${rMeta?.badgeBg}`}>
+                                Tier {rMeta?.tier}
                               </span>
                             )}
                           </div>
 
-                          <div className="flex items-center gap-2 mt-1">
-                            <div className="w-9 h-9 rounded-lg bg-black/70 border border-slate-800/80 flex items-center justify-center shrink-0 overflow-hidden shadow-inner">
+                          <div className="flex items-center gap-2">
+                            <div className="w-10 h-10 rounded-lg bg-black/80 border border-slate-800 flex items-center justify-center shrink-0 overflow-hidden shadow-inner">
                               <img
                                 src={ITEM_ART_URLS[slotKey]}
                                 alt={slotMeta.name}
-                                className={`w-8 h-8 object-contain drop-shadow transition-transform ${item ? 'opacity-100 group-hover:scale-105' : 'opacity-40 grayscale'}`}
+                                className="w-8 h-8 object-contain drop-shadow"
                               />
                             </div>
                             <div className="min-w-0 flex-1">
-                              <div
-                                className={`font-semibold text-[11px] truncate ${
-                                  rMeta ? rMeta.textColor : 'text-slate-500'
-                                }`}
-                              >
-                                {item ? item.name : 'Chưa Trang Bị'}
+                              <div className={`font-semibold text-[11px] truncate ${rMeta?.textColor || 'text-slate-200'}`}>
+                                {item ? item.name : slotMeta.name}
                               </div>
-                              {item ? (
-                                <div className="text-[9px] font-tech text-cyan-300">
-                                  +{item.baseStatValue} {item.baseStatUnit}
-                                </div>
-                              ) : (
-                                <div className="text-[8.5px] font-tech text-slate-600">Trống</div>
-                              )}
+                              <div className="text-[9.5px] font-tech text-cyan-300 font-mono">
+                                +{item?.baseStatValue || 1} {item?.baseStatUnit || 'DMG'}
+                              </div>
                             </div>
                           </div>
                         </div>
 
-                        {item ? (
-                          <div className="mt-1 pt-1 border-t border-slate-800/80 flex items-center justify-between text-[9px] font-tech">
-                            <span className="text-cyan-300">
-                              +{item.baseStatValue} {item.baseStatUnit}
-                            </span>
-                            <span className="text-slate-400">
-                              {item.prefixes.length + item.suffixes.length} Dòng Affix
-                            </span>
+                        {/* Level & Socket pips */}
+                        <div className="mt-1.5 pt-1 border-t border-slate-800/80 flex items-center justify-between text-[9px] font-tech">
+                          <span className="text-amber-300 font-mono font-bold">
+                            Lv.{itemLvl}/20
+                          </span>
+                          {/* Socket Pips */}
+                          <div className="flex items-center gap-0.5">
+                            {Array.from({ length: 4 }).map((_, sIdx) => {
+                              const isUnlocked = sIdx < unlockedSockets;
+                              const gem = isUnlocked ? sockets[sIdx] : null;
+
+                              if (!isUnlocked) {
+                                return (
+                                  <span key={sIdx} className="w-2 h-2 rounded-full bg-slate-950 border border-slate-800 text-[6px] text-slate-700 flex items-center justify-center" title="Lỗ khảm bị khóa">
+                                    ·
+                                  </span>
+                                );
+                              }
+                              if (gem) {
+                                return (
+                                  <span
+                                    key={sIdx}
+                                    className="w-2.5 h-2.5 rounded-full flex items-center justify-center text-[7px] shadow-sm animate-pulse"
+                                    style={{ backgroundColor: gem.color }}
+                                    title={`Đã khảm: ${gem.name} (+${gem.value} ${gem.statLabel})`}
+                                  >
+                                    ★
+                                  </span>
+                                );
+                              }
+                              return (
+                                <span
+                                  key={sIdx}
+                                  className="w-2.5 h-2.5 rounded-full border border-dashed border-cyan-400/80 bg-cyan-950/40 text-[7px] text-cyan-300 flex items-center justify-center"
+                                  title="Lỗ khảm trống"
+                                >
+                                  ○
+                                </span>
+                              );
+                            })}
                           </div>
-                        ) : (
-                          <div className="text-[9px] text-slate-500 italic">Đập đe để nhặt đồ</div>
-                        )}
+                        </div>
                       </button>
                     );
                   }
@@ -426,413 +473,469 @@ export const RightProgressionPanel: React.FC<RightProgressionPanelProps> = ({
               </div>
             </div>
 
-            {/* Backpack / Inventory Section with Dynamic Capacity & Pity Counters */}
-            <div className="pt-2 border-t border-slate-800 space-y-2">
-              {/* Dual Pity Bar & Drop Luck Indicators */}
-              <div className="p-2 rounded-xl bg-gradient-to-r from-slate-950 via-[#0B0F1C] to-slate-950 border border-slate-800 text-[10px] font-tech flex flex-col gap-1.5">
-                <div className="flex items-center justify-between text-slate-300">
-                  <span className="flex items-center gap-1 font-bold text-amber-300">
-                    <Sparkles className="w-3 h-3 text-amber-400" />
-                    BẢO HIỂM NỆN BÚA (ANVIL PITY):
-                  </span>
-                  <span className="text-cyan-300 font-mono">
-                    {anvilPityCount}/200 {anvilPityCount >= 50 && anvilPityCount < 200 ? '(Đã bảo hiểm Tier B)' : anvilPityCount >= 200 ? '(Nổ Tier A!)' : `(Tier B: ${anvilPityCount}/50)`}
-                  </span>
-                </div>
-                <div className="w-full bg-slate-900 h-1.5 rounded-full overflow-hidden border border-slate-800">
-                  <div
-                    className="bg-gradient-to-r from-cyan-500 via-purple-500 to-amber-400 h-full transition-all duration-300"
-                    style={{ width: `${Math.min(100, (anvilPityCount / 200) * 100)}%` }}
-                  />
-                </div>
+            {/* 3. BÀN RÈN & NÂNG CẤP KHÍ GIỚI ĐƯỢC CHỌN (SELECTED WEAPON STATION) */}
+            {(() => {
+              const item = equippedItems[selectedSlotKey];
+              if (!item) return null;
 
-                <div className="flex items-center justify-between text-slate-400 pt-0.5">
-                  <span className="flex items-center gap-1 font-bold text-red-300">
-                    <Shield className="w-3 h-3 text-red-400" />
-                    BẢO HIỂM RƯƠNG RAID (TIER S PITY):
-                  </span>
-                  <span className="text-red-300 font-mono">
-                    {raidPityCount}/50 Ấn Ký {raidPityCount >= 50 ? '(Nổ Thần Khí Tier S!)' : ''}
-                  </span>
-                </div>
-                <div className="w-full bg-slate-900 h-1 rounded-full overflow-hidden border border-slate-800">
-                  <div
-                    className="bg-gradient-to-r from-purple-500 to-red-500 h-full transition-all duration-300"
-                    style={{ width: `${Math.min(100, (raidPityCount / 50) * 100)}%` }}
-                  />
-                </div>
-              </div>
+              const slotMeta = SLOT_INFO[selectedSlotKey];
+              const rMeta = getItemRarityMeta(item.rarity);
+              const itemLvl = item.level || 1;
+              const unlockedSockets = item.unlockedSockets ?? getUnlockedSockets(item.rarity);
+              const sockets = item.sockets || [];
+              const temperCost = getTemperCost(item);
+              const ascensionCost = getAscensionCost(item);
 
-              {/* Inventory Header & Quick Salvage Actions */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
-                <div className="flex items-center gap-1.5 text-xs font-tech">
-                  <PackageOpen className="w-3.5 h-3.5 text-cyan-400" />
-                  <span className="font-bold text-slate-200">RƯƠNG KHÍ GIỚI</span>
-                  <span className="text-[10px] text-amber-300 font-mono">
-                    [{inventory.length}/{maxInventorySlots} Ô]
-                  </span>
-                </div>
+              const statGain =
+                item.slotKey === 'apron'
+                  ? 5
+                  : item.slotKey === 'gauntlets'
+                  ? 0.5
+                  : (item.rarity === 'mythic' || item.rarity === 'legendary') && item.slotKey === 'hammer'
+                  ? 2
+                  : 1;
 
-                {/* Quick Salvage Actions */}
-                <div className="flex items-center gap-1 flex-wrap">
-                  {tierECount > 0 && (
-                    <button
-                      type="button"
-                      onClick={() => onQuickSalvage(['common'])}
-                      className="px-1.5 py-0.5 rounded bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 text-[9px] font-tech cursor-pointer transition-colors"
-                      title="Phân giải toàn bộ Tier E (Phàm Thiết) ra Bụi Thiết"
-                    >
-                      Tách Tier E ({tierECount})
-                    </button>
-                  )}
-                  {tierDCount > 0 && (
-                    <button
-                      type="button"
-                      onClick={() => onQuickSalvage(['uncommon'])}
-                      className="px-1.5 py-0.5 rounded bg-emerald-950/60 hover:bg-emerald-900/80 border border-emerald-500/40 text-emerald-300 text-[9px] font-tech cursor-pointer transition-colors"
-                      title="Phân giải toàn bộ Tier D (Tinh Thiết) ra Bụi Thiết"
-                    >
-                      Tách Tier D ({tierDCount})
-                    </button>
-                  )}
-                  {tierCCount > 0 && (
-                    <button
-                      type="button"
-                      onClick={() => onQuickSalvage(['rare'])}
-                      className="px-1.5 py-0.5 rounded bg-blue-950/60 hover:bg-blue-900/80 border border-blue-500/40 text-blue-300 text-[9px] font-tech cursor-pointer transition-colors"
-                      title="Phân giải toàn bộ Tier C (Cổ Đồng) ra Bụi Thiết"
-                    >
-                      Tách Tier C ({tierCCount})
-                    </button>
-                  )}
-                </div>
-              </div>
+              const canAffordTemper =
+                (ironDust || 0) >= temperCost.ironDust && linhThach >= temperCost.linhThach && itemLvl < 20;
 
-              {/* Auto-Salvage Checkbox Filters */}
-              {onToggleAutoSalvage && (
-                <div className="flex items-center gap-3 px-2 py-1 rounded-lg bg-slate-950/60 border border-slate-800/80 text-[10px] font-tech text-slate-400">
-                  <span className="text-slate-300 font-semibold">Tự động nung:</span>
-                  <label className="flex items-center gap-1 cursor-pointer hover:text-slate-200">
-                    <input
-                      type="checkbox"
-                      checked={autoSalvageTiers.tierE}
-                      onChange={() => onToggleAutoSalvage('tierE')}
-                      className="accent-amber-400 w-3 h-3 rounded"
-                    />
-                    <span>Tier E</span>
-                  </label>
-                  <label className="flex items-center gap-1 cursor-pointer hover:text-slate-200">
-                    <input
-                      type="checkbox"
-                      checked={autoSalvageTiers.tierD}
-                      onChange={() => onToggleAutoSalvage('tierD')}
-                      className="accent-emerald-400 w-3 h-3 rounded"
-                    />
-                    <span>Tier D</span>
-                  </label>
-                  <label className="flex items-center gap-1 cursor-pointer hover:text-slate-200">
-                    <input
-                      type="checkbox"
-                      checked={autoSalvageTiers.tierC}
-                      onChange={() => onToggleAutoSalvage('tierC')}
-                      className="accent-blue-400 w-3 h-3 rounded"
-                    />
-                    <span>Tier C</span>
-                  </label>
-                </div>
-              )}
+              const canAffordAscension =
+                ascensionCost &&
+                (ironDust || 0) >= ascensionCost.ironDust &&
+                tinhHoa >= ascensionCost.tinhHoa &&
+                (celestialStars || 0) >= ascensionCost.celestialStars &&
+                itemLvl >= 20;
 
-              {/* Dynamic Bag Grid (Scales up to 64 slots based on Forger Rank) */}
-              <div className="grid grid-cols-6 sm:grid-cols-8 gap-1.5 p-2 rounded-xl bg-[#070912] border border-slate-800/90 max-h-56 overflow-y-auto">
-                {Array.from({ length: maxInventorySlots }).map((_, idx) => {
-                  const bagItem = inventory[idx] || null;
-                  const isSelected = selectedItem?.id === bagItem?.id;
-                  const rMeta = bagItem ? getItemRarityMeta(bagItem.rarity) : null;
-
-                  return (
-                    <button
-                      key={bagItem ? bagItem.id : `empty_${idx}`}
-                      type="button"
-                      disabled={!bagItem}
-                      onClick={() => {
-                        if (bagItem) setSelectedItem(bagItem);
-                      }}
-                      className={`relative aspect-square rounded-lg border flex flex-col items-center justify-center transition-all ${
-                        bagItem
-                          ? `cursor-pointer ${
-                              isSelected
-                                ? 'border-amber-400 ring-2 ring-amber-400/40 bg-slate-800 shadow-md scale-105'
-                                : `${rMeta?.borderColor} ${rMeta?.bgColor} hover:brightness-125`
-                            }`
-                          : 'border-dashed border-slate-800/60 bg-slate-950/40 cursor-default'
-                      }`}
-                      title={bagItem ? `${bagItem.name} [Tier ${rMeta?.tier} - ${rMeta?.label}]` : `Ô trống #${idx + 1}`}
-                    >
-                      {bagItem ? (
-                        <>
-                          <img
-                            src={ITEM_ART_URLS[bagItem.slotKey]}
-                            alt={bagItem.name}
-                            className="w-6 h-6 object-contain drop-shadow-[0_1px_4px_rgba(0,0,0,0.8)]"
-                          />
-                          <div className="text-[7.5px] font-tech text-slate-300 leading-none mt-0.5 font-bold">
-                            +{bagItem.baseStatValue}
-                          </div>
-                          {/* Tier Badge / Pip */}
-                          <span
-                            className={`absolute top-0.5 right-0.5 w-2 h-2 rounded-full text-[6px] font-bold flex items-center justify-center ${
-                              bagItem.rarity === 'mythic'
-                                ? 'bg-red-500 text-white animate-pulse'
-                                : bagItem.rarity === 'legendary'
-                                ? 'bg-amber-400 text-slate-950'
-                                : bagItem.rarity === 'epic'
-                                ? 'bg-purple-400 text-slate-950'
-                                : bagItem.rarity === 'rare'
-                                ? 'bg-blue-400 text-slate-950'
-                                : bagItem.rarity === 'uncommon'
-                                ? 'bg-emerald-400 text-slate-950'
-                                : 'bg-slate-600 text-white'
-                            }`}
-                          >
-                            {rMeta?.tier}
+              return (
+                <div className="p-3 rounded-xl bg-[#090C15] border border-amber-500/40 space-y-3 shadow-xl">
+                  {/* Item Header */}
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-12 h-12 rounded-xl bg-black/90 border border-amber-500/50 flex items-center justify-center shrink-0 overflow-hidden shadow-md">
+                        <img
+                          src={ITEM_ART_URLS[selectedSlotKey]}
+                          alt={slotMeta.name}
+                          className="w-10 h-10 object-contain drop-shadow"
+                        />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[10px] font-tech text-amber-400 font-bold uppercase tracking-wider">
+                            {slotMeta.name}
                           </span>
-                        </>
-                      ) : (
-                        <span className="text-[10px] text-slate-700">·</span>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Selected Item Inspector & Comparison Card */}
-            {activeSelected && (
-              <div className="p-3.5 rounded-xl bg-[#080A10] border border-slate-800 space-y-2.5">
-                {/* Header */}
-                <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-[10px] font-tech text-cyan-400 uppercase">
-                        [{activeSelected.slotName}]
-                      </span>
-                      <span
-                        className={`text-[9px] px-1.5 py-0.2 rounded border font-tech ${
-                          getItemRarityMeta(activeSelected.rarity).badgeBg
-                        }`}
-                      >
-                        {getItemRarityMeta(activeSelected.rarity).label}
-                      </span>
-                      {isEquipped(activeSelected) && (
-                        <span className="text-[9px] px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-tech">
-                          ĐANG TRANG BỊ
-                        </span>
-                      )}
+                          <span className={`text-[9px] px-1.5 py-0.2 rounded font-tech ${rMeta.badgeBg}`}>
+                            Tier {rMeta.tier} · {rMeta.label}
+                          </span>
+                        </div>
+                        <h4 className={`text-sm font-bold truncate ${rMeta.textColor}`}>
+                          {item.name}
+                        </h4>
+                        <div className="text-[11px] font-tech text-cyan-300 font-mono">
+                          {item.baseStatLabel}: +{item.baseStatValue} {item.baseStatUnit}
+                        </div>
+                      </div>
                     </div>
-                    <h4
-                      className={`font-semibold text-sm ${
-                        getItemRarityMeta(activeSelected.rarity).textColor
-                      }`}
-                    >
-                      {activeSelected.name}
-                    </h4>
                   </div>
 
-                  <span className="text-xs font-tech font-bold text-slate-400 whitespace-nowrap">
-                    Lv.{activeSelected.itemLevel}
-                  </span>
-                </div>
+                  {item.loreDescription && (
+                    <p className="text-[10px] text-slate-400 italic bg-black/40 p-2 rounded-lg border border-slate-800/80">
+                      "{item.loreDescription}"
+                    </p>
+                  )}
 
-                {/* Lore quote */}
-                <p className="text-[11px] text-slate-400 italic leading-relaxed border-l-2 border-slate-700 pl-2">
-                  "{activeSelected.loreDescription}"
-                </p>
-
-                {/* Base Stat */}
-                <div className="p-2 rounded-lg bg-[#111625] border border-slate-800 text-xs font-tech flex items-center justify-between">
-                  <span className="text-slate-400">{activeSelected.baseStatLabel}:</span>
-                  <span className="text-cyan-300 font-bold">
-                    +{activeSelected.baseStatValue} {activeSelected.baseStatUnit}
-                  </span>
-                </div>
-
-                {/* Prefixes (Tiền Tố) */}
-                {activeSelected.prefixes.length > 0 && (
-                  <div className="space-y-1">
-                    <div className="text-[10px] font-tech text-amber-300 uppercase tracking-wider">
-                      ⚡ Tiền Tố (Prefix):
+                  {/* MODULE A: TÔI LUYỆN THÉP (TEMPERING LV.1 -> 20) */}
+                  <div className="p-2.5 rounded-xl bg-[#0E1322] border border-slate-800 space-y-2">
+                    <div className="flex items-center justify-between text-xs font-tech">
+                      <span className="flex items-center gap-1.5 font-bold text-slate-200">
+                        <Hammer className="w-3.5 h-3.5 text-amber-400" />
+                        TÔI LUYỆN CẤP ĐỘ KHÍ GIỚI:
+                      </span>
+                      <span className="text-amber-300 font-mono font-bold">
+                        Cấp {itemLvl} / 20
+                      </span>
                     </div>
-                    {activeSelected.prefixes.map((pref) => (
+
+                    {/* Level Progress Bar */}
+                    <div className="w-full bg-slate-950 h-2 rounded-full overflow-hidden border border-slate-800">
                       <div
-                        key={pref.id}
-                        className="px-2 py-1 rounded-lg bg-amber-500/10 border border-amber-500/20 text-[11px] font-tech text-amber-200 flex items-center justify-between"
-                      >
-                        <span className="font-bold">[{pref.name}]</span>
-                        <span>{pref.label}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {/* Suffixes (Hậu Tố) */}
-                {activeSelected.suffixes.length > 0 && (
-                  <div className="space-y-1">
-                    <div className="text-[10px] font-tech text-purple-300 uppercase tracking-wider">
-                      🔮 Hậu Tố (Suffix / Affix):
+                        className="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-300 h-full transition-all duration-300"
+                        style={{ width: `${Math.min(100, (itemLvl / 20) * 100)}%` }}
+                      />
                     </div>
-                    {activeSelected.suffixes.map((suf) => (
-                      <div
-                        key={suf.id}
-                        className="px-2 py-1 rounded-lg bg-purple-500/10 border border-purple-500/20 text-[11px] font-tech text-purple-200 flex items-center justify-between"
-                      >
-                        <span className="font-bold">[{suf.name}]</span>
-                        <span>{suf.label}</span>
+
+                    {itemLvl < 20 ? (
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1">
+                        <div className="text-[10px] font-tech text-slate-400 flex items-center gap-2">
+                          <span>Chi phí:</span>
+                          <span className="text-cyan-300 font-mono font-bold">
+                            {temperCost.ironDust} Bụi Thiết
+                          </span>
+                          <span>+</span>
+                          <span className="text-amber-300 font-mono font-bold">
+                            {temperCost.linhThach.toLocaleString()} LT
+                          </span>
+                          <span className="text-slate-500">|</span>
+                          <span className="text-emerald-400 font-bold">
+                            +{statGain} {item.baseStatUnit}
+                          </span>
+                        </div>
+
+                        <button
+                          type="button"
+                          disabled={!canAffordTemper}
+                          onClick={() => onTemperEquipment?.(selectedSlotKey)}
+                          className={`py-1.5 px-3 rounded-lg font-tech font-bold text-xs tracking-wider transition-all flex items-center justify-center gap-1.5 ${
+                            canAffordTemper
+                              ? 'bg-amber-400 hover:bg-amber-300 text-slate-950 cursor-pointer shadow-md shadow-amber-500/20 active:scale-95'
+                              : 'bg-slate-900 border border-slate-800 text-slate-500 cursor-not-allowed opacity-60'
+                          }`}
+                        >
+                          <Hammer className="w-3.5 h-3.5" />
+                          <span>TÔI LUYỆN CẤP {itemLvl + 1}</span>
+                        </button>
                       </div>
-                    ))}
-                  </div>
-                )}
-
-                {/* Comparison with currently equipped slot (if inspecting a bag item) */}
-                {!isEquipped(activeSelected) && (() => {
-                  const currentEq = equippedItems[activeSelected.slotKey];
-                  const diff = currentEq
-                    ? activeSelected.baseStatValue - currentEq.baseStatValue
-                    : activeSelected.baseStatValue;
-
-                  return (
-                    <div className="p-2 rounded-lg bg-[#0E1322] border border-slate-800 text-[11px] font-tech flex items-center justify-between">
-                      <div className="flex items-center gap-1.5 text-slate-400">
-                        <ArrowRightLeft className="w-3.5 h-3.5 text-cyan-400" />
-                        <span>So với đồ đang mặc ({currentEq ? currentEq.name : 'Trống'}):</span>
-                      </div>
-                      <span
-                        className={`font-bold ${
-                          diff > 0
-                            ? 'text-emerald-400'
-                            : diff < 0
-                            ? 'text-red-400'
-                            : 'text-slate-400'
-                        }`}
-                      >
-                        {diff > 0 ? `+${diff}` : `${diff}`} {activeSelected.baseStatUnit}
-                      </span>
-                    </div>
-                  );
-                })()}
-
-                {/* Phase 3: Nghi Thức Tôi Lửa (Elemental Tempering / Quenching) */}
-                <div className="pt-2 border-t border-slate-800 space-y-1.5">
-                  <div className="flex items-center justify-between text-[11px] font-tech text-amber-300">
-                    <span className="flex items-center gap-1 font-bold">
-                      <Flame className="w-3.5 h-3.5 text-orange-400" />
-                      NGHI THỨC TÔI LỬA (TEMPERING):
-                    </span>
-                    {activeSelected.quench ? (
-                      <span className="text-[10px] text-emerald-300 font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 border border-emerald-500/40">
-                        ✓ {QUENCH_OPTIONS.find((q) => q.type === activeSelected.quench)?.name.split(' ')[1] || 'ĐÃ TÔI LỬA'}
-                      </span>
                     ) : (
-                      <span className="text-[10px] text-slate-400 font-mono">150 LT + 1 TH</span>
+                      <div className="p-1.5 rounded-lg bg-amber-500/10 border border-amber-500/30 text-center text-[10.5px] font-tech text-amber-300 font-bold">
+                        ⚡ ĐÃ ĐẠT CỰC HẠN CẤP 20/20 · SẴN SÀNG THỐI HỎA ĐỘT PHÁ BẬC!
+                      </div>
                     )}
                   </div>
 
-                  <div className="grid grid-cols-3 gap-1.5">
-                    {QUENCH_OPTIONS.map((q) => {
-                      const isApplied = activeSelected.quench === q.type;
-                      const canAfford = linhThach >= q.costLinhThach && tinhHoa >= q.costTinhHoa;
+                  {/* MODULE B: THỐI HỎA ĐỘT PHÁ BẬC (MULTI-TIER ASCENSION) */}
+                  {ascensionCost && (
+                    <div className="p-2.5 rounded-xl bg-gradient-to-r from-purple-950/40 via-red-950/30 to-purple-950/40 border border-purple-500/40 space-y-2">
+                      <div className="flex items-center justify-between text-xs font-tech">
+                        <span className="flex items-center gap-1.5 font-bold text-purple-200">
+                          <Sparkles className="w-3.5 h-3.5 text-purple-400 animate-spin" />
+                          THỐI HỎA ĐỘT PHÁ PHẨM BẬC:
+                        </span>
+                        <span className="text-amber-300 font-bold font-mono">
+                          Tiến Lên {ascensionCost.targetTierName}
+                        </span>
+                      </div>
 
-                      return (
-                        <button
-                          key={q.type}
-                          type="button"
-                          disabled={isApplied || !canAfford}
-                          onClick={() => {
-                            onQuenchItem?.(activeSelected.id, q.type);
-                            setSelectedItem((prev) => (prev ? { ...prev, quench: q.type } : null));
-                          }}
-                          className={`p-2 rounded-lg border text-center transition-all flex flex-col items-center justify-center gap-0.5 ${
-                            isApplied
-                              ? 'bg-emerald-950/40 border-emerald-500/60 text-emerald-300 ring-1 ring-emerald-500/30'
-                              : canAfford
-                              ? 'bg-slate-900/60 border-slate-700 hover:border-amber-400 cursor-pointer active:scale-95 text-slate-200'
-                              : 'bg-slate-900/20 border-slate-800 text-slate-500 cursor-not-allowed opacity-60'
-                          }`}
-                          title={`${q.name}: ${q.bonusDesc}`}
-                        >
-                          <span className="text-base">{q.icon}</span>
-                          <span className="text-[10px] font-tech font-bold truncate max-w-full">
-                            {q.name.split(' ')[1]}
+                      <div className="text-[10px] font-tech text-slate-300 flex items-center gap-2 flex-wrap">
+                        <span>Đột phá sẽ khai mở:</span>
+                        <span className="text-cyan-300 font-bold bg-cyan-950/60 px-1.5 py-0.5 rounded border border-cyan-500/40">
+                          +1 Lỗ Khảm Phù Thạch
+                        </span>
+                        <span>&amp;</span>
+                        <span className="text-emerald-300 font-bold bg-emerald-950/60 px-1.5 py-0.5 rounded border border-emerald-500/40">
+                          +60% Chỉ Số Cơ Bản
+                        </span>
+                      </div>
+
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1 border-t border-purple-900/50">
+                        <div className="text-[10px] font-tech text-slate-400 flex items-center gap-2 flex-wrap">
+                          <span>Chi phí:</span>
+                          <span className="text-cyan-300 font-mono font-bold">
+                            {ascensionCost.ironDust.toLocaleString()} Bụi
                           </span>
-                          <span className="text-[9px] font-mono text-slate-400">
-                            {isApplied ? 'Đang dùng' : '150 LT'}
+                          <span>+</span>
+                          <span className="text-amber-300 font-mono font-bold">
+                            {ascensionCost.tinhHoa} Tinh Hoa
+                          </span>
+                          {ascensionCost.celestialStars > 0 && (
+                            <>
+                              <span>+</span>
+                              <span className="text-purple-300 font-mono font-bold">
+                                {ascensionCost.celestialStars} Thiên Tinh
+                              </span>
+                            </>
+                          )}
+                        </div>
+
+                        <button
+                          type="button"
+                          disabled={!canAffordAscension}
+                          onClick={() => onAscendEquipment?.(selectedSlotKey)}
+                          className={`py-2 px-3 rounded-lg font-tech font-bold text-xs tracking-wider transition-all flex items-center justify-center gap-1.5 ${
+                            canAffordAscension
+                              ? 'bg-gradient-to-r from-red-600 via-purple-600 to-amber-500 hover:brightness-125 text-white shadow-lg shadow-purple-500/30 cursor-pointer active:scale-95 animate-pulse'
+                              : 'bg-slate-900 border border-slate-800 text-slate-500 cursor-not-allowed opacity-60'
+                          }`}
+                        >
+                          <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                          <span>
+                            {itemLvl < 20 ? 'CẦN ĐẠT CẤP 20 ĐỂ ĐỘT PHÁ' : '🔥 THỐI HỎA ĐỘT PHÁ BẬC'}
                           </span>
                         </button>
-                      );
-                    })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* MODULE C: KHẢM NẠM PHÙ THẠCH (SOCKETS) */}
+                  <div className="p-2.5 rounded-xl bg-[#0E1322] border border-cyan-500/30 space-y-2">
+                    <div className="flex items-center justify-between text-xs font-tech">
+                      <span className="flex items-center gap-1.5 font-bold text-cyan-300">
+                        <Gem className="w-3.5 h-3.5 text-cyan-400" />
+                        KHẢM NẠM PHÙ THẠCH THƯỢNG CỔ:
+                      </span>
+                      <span className="text-slate-400 font-mono text-[10px]">
+                        {sockets.filter(Boolean).length}/{unlockedSockets} Lỗ Đang Khảm
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                      {Array.from({ length: 4 }).map((_, sIdx) => {
+                        const isUnlocked = sIdx < unlockedSockets;
+                        const gem = isUnlocked ? sockets[sIdx] : null;
+
+                        if (!isUnlocked) {
+                          return (
+                            <div
+                              key={sIdx}
+                              className="p-2 rounded-lg bg-black/40 border border-dashed border-slate-800/80 text-[10px] font-tech text-slate-600 flex items-center justify-between"
+                            >
+                              <div className="flex items-center gap-1.5">
+                                <Lock className="w-3 h-3 text-slate-700" />
+                                <span>Lỗ Khảm #{sIdx + 1} (Khóa)</span>
+                              </div>
+                              <span className="text-[8.5px] italic text-slate-600">Đột phá bậc để mở</span>
+                            </div>
+                          );
+                        }
+
+                        if (gem) {
+                          return (
+                            <div
+                              key={sIdx}
+                              className="p-2 rounded-lg bg-[#070912] border border-slate-700 flex items-center justify-between gap-1 shadow-inner"
+                              style={{ borderLeftColor: gem.color, borderLeftWidth: '3px' }}
+                            >
+                              <div className="min-w-0 flex-1">
+                                <div className="flex items-center gap-1">
+                                  <span className="text-[10px] font-bold text-slate-200 truncate">
+                                    {gem.name}
+                                  </span>
+                                  <span className="text-[8px] font-tech px-1 rounded bg-slate-800 text-cyan-300">
+                                    +{gem.value} {gem.statLabel}
+                                  </span>
+                                </div>
+                                <div className="text-[8.5px] text-slate-400 truncate mt-0.5">
+                                  {gem.specialPerk}
+                                </div>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => onUnsocketGem?.(selectedSlotKey, sIdx)}
+                                className="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-[9px] font-tech cursor-pointer shrink-0 transition-colors"
+                                title="Tháo ngọc về Túi Phù Thạch (Miễn phí)"
+                              >
+                                Tháo
+                              </button>
+                            </div>
+                          );
+                        }
+
+                        return (
+                          <div
+                            key={sIdx}
+                            className="p-2 rounded-lg bg-cyan-950/20 border border-dashed border-cyan-500/40 text-[10px] font-tech text-cyan-300 flex items-center justify-between"
+                          >
+                            <div className="flex items-center gap-1.5">
+                              <span className="w-2.5 h-2.5 rounded-full border border-dashed border-cyan-400 flex items-center justify-center text-[7px]">○</span>
+                              <span>Lỗ Khảm #{sIdx + 1} (Trống)</span>
+                            </div>
+                            <span className="text-[9px] text-amber-300 italic">
+                              Chọn ngọc bên dưới để khảm
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
 
-                {/* Tier A -> Tier S Ascension (Thăng Bậc Thần Khí) */}
-                {activeSelected.rarity === 'legendary' && onAscendItem && (
-                  <div className="pt-2 border-t border-purple-900/50 flex flex-col gap-1.5">
-                    <button
-                      type="button"
-                      onClick={() => onAscendItem(activeSelected)}
-                      disabled={ironDust < 1000 || tinhHoa < 10 || celestialStars < 1}
-                      className={`w-full py-2 px-3 rounded-xl font-tech font-bold text-xs tracking-wider transition-all flex items-center justify-center gap-1.5 ${
-                        ironDust >= 1000 && tinhHoa >= 10 && celestialStars >= 1
-                          ? 'bg-gradient-to-r from-red-600 via-purple-600 to-amber-500 hover:brightness-125 text-white shadow-lg shadow-purple-500/30 cursor-pointer active:scale-95'
-                          : 'bg-slate-900 border border-slate-800 text-slate-500 cursor-not-allowed opacity-60'
-                      }`}
-                      title="Nâng cấp trang bị Tier A (Địa Linh Kim) lên Tier S (Thiên Đạo Thần Khí) giữ nguyên toàn bộ Affix"
-                    >
-                      <Sparkles className="w-3.5 h-3.5 text-amber-300 animate-spin" />
-                      <span>THĂNG BẬC TIER S (1000 Bụi + 10 TH + 1 Thiên Tinh)</span>
-                    </button>
-                  </div>
-                )}
+                  {/* MODULE D: TIỀN TỐ, HẬU TỐ & TÔI LỬA (AFFIXES & QUENCHING) */}
+                  {(item.prefixes.length > 0 || item.suffixes.length > 0) && (
+                    <div className="space-y-1 pt-1 border-t border-slate-800">
+                      <div className="text-[10px] font-tech text-slate-400 uppercase tracking-wider">
+                        Trận Đồ Cổ Thuật (Affix):
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 font-tech text-[10px]">
+                        {item.prefixes.map((p) => (
+                          <div key={p.id} className="p-1.5 rounded bg-amber-500/10 border border-amber-500/20 text-amber-200 flex items-center justify-between">
+                            <span className="font-bold">[{p.name}]</span>
+                            <span>{p.label}</span>
+                          </div>
+                        ))}
+                        {item.suffixes.map((s) => (
+                          <div key={s.id} className="p-1.5 rounded bg-purple-500/10 border border-purple-500/20 text-purple-200 flex items-center justify-between">
+                            <span className="font-bold">[{s.name}]</span>
+                            <span>{s.label}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
-                {/* Action Buttons: Equip or Salvage */}
-                <div className="pt-2 border-t border-slate-800 flex items-center gap-2">
-                  {!isEquipped(activeSelected) ? (
-                    <>
-                      <button
-                        type="button"
-                        onClick={() => onEquipItem(activeSelected)}
-                        className="flex-1 py-2 px-3 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-tech font-bold text-xs tracking-wider cursor-pointer shadow-md shadow-amber-500/20 active:scale-95 transition-all text-center"
-                      >
-                        TRANG BỊ NGAY
-                      </button>
+                  {/* Quenching / Elemental Seasoning */}
+                  <div className="pt-2 border-t border-slate-800 space-y-1.5">
+                    <div className="flex items-center justify-between text-[11px] font-tech text-amber-300">
+                      <span className="flex items-center gap-1 font-bold">
+                        <Flame className="w-3.5 h-3.5 text-orange-400" />
+                        NGHI THỨC TÔI LỬA NGUYÊN TỐ:
+                      </span>
+                      {item.quench ? (
+                        <span className="text-[10px] text-emerald-300 font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 border border-emerald-500/40">
+                          ✓ {QUENCH_OPTIONS.find((q) => q.type === item.quench)?.name.split(' ')[1] || 'ĐÃ TÔI LỬA'}
+                        </span>
+                      ) : (
+                        <span className="text-[10px] text-slate-400 font-mono">150 LT + 1 TH</span>
+                      )}
+                    </div>
 
-                      {(() => {
-                        const salvage = getSalvageYield(activeSelected);
+                    <div className="grid grid-cols-3 gap-1.5">
+                      {QUENCH_OPTIONS.map((q) => {
+                        const isApplied = item.quench === q.type;
+                        const canAfford = linhThach >= q.costLinhThach && tinhHoa >= q.costTinhHoa;
+
                         return (
                           <button
+                            key={q.type}
                             type="button"
-                            onClick={() => onSalvageItem(activeSelected)}
-                            className="py-2 px-3 rounded-xl bg-red-950/40 hover:bg-red-900/60 border border-red-500/40 text-red-300 font-tech font-bold text-xs flex items-center gap-1 cursor-pointer transition-colors"
-                            title={`Tách: +${salvage.ironDust} Bụi Thiết, +${salvage.linhThach} LT${
-                              salvage.tinhHoa > 0 ? `, +${salvage.tinhHoa} TH` : ''
-                            }${salvage.celestialStar > 0 ? `, +${salvage.celestialStar} Thiên Tinh` : ''}`}
+                            disabled={isApplied || !canAfford}
+                            onClick={() => onQuenchItem?.(item.id, q.type)}
+                            className={`p-2 rounded-lg border text-center transition-all flex flex-col items-center justify-center gap-0.5 ${
+                              isApplied
+                                ? 'bg-emerald-950/40 border-emerald-500/60 text-emerald-300 ring-1 ring-emerald-500/30'
+                                : canAfford
+                                ? 'bg-slate-900/60 border-slate-700 hover:border-amber-400 cursor-pointer active:scale-95 text-slate-200'
+                                : 'bg-slate-900/20 border-slate-800 text-slate-500 cursor-not-allowed opacity-60'
+                            }`}
+                            title={`${q.name}: ${q.bonusDesc}`}
                           >
-                            <Trash2 className="w-3.5 h-3.5" />
-                            <span>Tách (+{salvage.ironDust} Bụi)</span>
+                            <span className="text-base">{q.icon}</span>
+                            <span className="text-[10px] font-tech font-bold truncate max-w-full">
+                              {q.name.split(' ')[1]}
+                            </span>
+                            <span className="text-[9px] font-mono text-slate-400">
+                              {isApplied ? 'Đang dùng' : '150 LT'}
+                            </span>
                           </button>
                         );
-                      })()}
-                    </>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => onUnequipItem(activeSelected.slotKey)}
-                      className="w-full py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 font-tech font-bold text-xs cursor-pointer transition-colors text-center"
-                    >
-                      THÁO RA TÚI ĐỒ
-                    </button>
-                  )}
+                      })}
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* 4. TÚI PHÙ THẠCH THƯỢNG CỔ (ANCIENT RUNE GEM POUCH) */}
+            <div className="pt-2 border-t border-slate-800 space-y-2">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
+                <div className="flex items-center gap-1.5 text-xs font-tech">
+                  <Gem className="w-3.5 h-3.5 text-cyan-400" />
+                  <span className="font-bold text-slate-200">TÚI PHÙ THẠCH THƯỢNG CỔ</span>
+                  <span className="text-[10px] text-amber-300 font-mono">
+                    [{runePouch.length} Viên Ngọc]
+                  </span>
+                </div>
+
+                {/* Filter Chips */}
+                <div className="flex items-center gap-1 flex-wrap">
+                  {(['all', 'lightning', 'fire', 'mountain', 'dark', 'fortune'] as const).map((elem) => {
+                    const label =
+                      elem === 'all'
+                        ? `Tất cả (${runePouch.length})`
+                        : elem === 'lightning'
+                        ? `⚡ Lôi (${runePouch.filter((g) => g.type === 'lightning').length})`
+                        : elem === 'fire'
+                        ? `🔥 Hỏa (${runePouch.filter((g) => g.type === 'fire').length})`
+                        : elem === 'mountain'
+                        ? `⛰️ Sơn (${runePouch.filter((g) => g.type === 'mountain').length})`
+                        : elem === 'dark'
+                        ? `❄️ Âm (${runePouch.filter((g) => g.type === 'dark').length})`
+                        : `🌟 Vận (${runePouch.filter((g) => g.type === 'fortune').length})`;
+
+                    const isActive = gemPouchFilter === elem;
+
+                    return (
+                      <button
+                        key={elem}
+                        type="button"
+                        onClick={() => setGemPouchFilter(elem)}
+                        className={`px-1.5 py-0.5 rounded text-[9px] font-tech cursor-pointer transition-colors ${
+                          isActive
+                            ? 'bg-amber-400 text-slate-950 font-bold'
+                            : 'bg-slate-800 text-slate-400 hover:text-slate-200'
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
-            )}
+
+              {/* Gem Cards Grid */}
+              {runePouch.length === 0 ? (
+                <div className="p-4 rounded-xl bg-[#070912] border border-slate-800/80 text-center space-y-1">
+                  <div className="text-xs font-tech text-slate-300 font-bold">
+                    Túi Phù Thạch Hiện Đang Trống
+                  </div>
+                  <p className="text-[10px] text-slate-500 max-w-sm mx-auto">
+                    Phù Thạch là kỳ trân dị bảo cực hiếm trong vũ trụ (rơi với tỉ lệ cực thấp khi nhát gõ Hoàng Kim hoặc phá vỡ Khiên Vòm Trời). Hãy kiên trì rèn đúc!
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-72 overflow-y-auto p-1.5 rounded-xl bg-[#070912] border border-slate-800/90">
+                  {runePouch
+                    .filter((gem) => (gemPouchFilter === 'all' ? true : gem.type === gemPouchFilter))
+                    .map((gem) => {
+                      const currentSelected = equippedItems[selectedSlotKey];
+                      const unlockedCount =
+                        currentSelected?.unlockedSockets ?? (currentSelected ? getUnlockedSockets(currentSelected.rarity) : 0);
+                      const sockets = currentSelected?.sockets || [];
+                      const firstEmptyIndex = sockets.findIndex((s, idx) => idx < unlockedCount && s === null);
+                      const canSocket = firstEmptyIndex !== -1 && currentSelected !== null;
+
+                      return (
+                        <div
+                          key={gem.id}
+                          className="p-2 rounded-lg bg-[#0C101D] border border-slate-800 flex flex-col justify-between gap-1.5 shadow"
+                          style={{ borderTopColor: gem.color, borderTopWidth: '2px' }}
+                        >
+                          <div>
+                            <div className="flex items-center justify-between gap-1">
+                              <span className="font-bold text-[11px] text-slate-200 truncate">
+                                {gem.name}
+                              </span>
+                              <span className="text-[8px] font-tech px-1 rounded uppercase font-bold" style={{ backgroundColor: `${gem.color}20`, color: gem.color }}>
+                                {gem.tier}
+                              </span>
+                            </div>
+                            <div className="text-[9.5px] font-tech text-cyan-300 font-mono mt-0.5">
+                              +{gem.value} {gem.statLabel}
+                            </div>
+                            <div className="text-[8.5px] text-slate-400 mt-0.5 line-clamp-2">
+                              {gem.specialPerk}
+                            </div>
+                          </div>
+
+                          <div className="pt-1 border-t border-slate-800/80 flex items-center justify-between">
+                            <span className="text-[8.5px] font-tech uppercase" style={{ color: gem.color }}>
+                              Hệ {gem.type}
+                            </span>
+                            {canSocket ? (
+                              <button
+                                type="button"
+                                onClick={() => onSocketGem?.(selectedSlotKey, firstEmptyIndex, gem.id)}
+                                className="px-2 py-0.5 rounded bg-cyan-600 hover:bg-cyan-500 text-white font-tech font-bold text-[9px] cursor-pointer shadow transition-all active:scale-95"
+                              >
+                                Khảm Vào {SLOT_INFO[selectedSlotKey].name}
+                              </button>
+                            ) : (
+                              <span className="text-[8.5px] font-tech text-slate-500 italic">
+                                {currentSelected ? 'Hết lỗ trống' : 'Chưa chọn vũ khí'}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                </div>
+              )}
+            </div>
           </div>
         )}
 
