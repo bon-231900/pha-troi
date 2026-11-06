@@ -541,6 +541,22 @@ export const CHARACTER_SKINS: Record<string, CharacterSkinMeta> = {
     cardPath: 'assets/art/skins/skin_thunder_robe/card.webp?v=20261105_v3',
     bonusStatText: 'Lôi Điện Cuộn Trào · Hiệu ứng Lôi Quang hào nhoáng',
   },
+  skin_thunder_god: {
+    id: 'skin_thunder_god',
+    name: 'Thái Cổ Lôi Thần Giáp',
+    sectId: 'thunder',
+    sectTitle: 'Cửu Tiêu · Thái Cổ Thần Thoại',
+    description: 'Chiến giáp long đầu bích ngọc ngậm lôi, tóc hóa thiên lôi vạn trượng, vung Lôi Chùy khai thiên tích địa.',
+    rarity: 'thần_thoại',
+    rarityColor: '#38BDF8',
+    rarityBadgeBg: 'bg-sky-500/20 text-sky-300 border-sky-500/40',
+    rarityBorder: 'border-sky-400',
+    icon: '⚡',
+    paletteColor: '#38BDF8',
+    spritesheetPath: 'assets/art/skins/skin_thunder_god/spritesheet_strip.webp?v=20261105_v3',
+    cardPath: 'assets/art/skins/skin_thunder_god/card.webp?v=20261105_v3',
+    bonusStatText: 'Lôi Thần Giáng Thế · Hiệu ứng Lôi Quang Thần Thoại rực rỡ',
+  },
   skin_flame_robe: {
     id: 'skin_flame_robe',
     name: 'Hắc Diệm Minh Bào',
@@ -556,6 +572,22 @@ export const CHARACTER_SKINS: Record<string, CharacterSkinMeta> = {
     spritesheetPath: 'assets/art/skins/skin_flame_robe/spritesheet_strip.webp?v=20261105_v3',
     cardPath: 'assets/art/skins/skin_flame_robe/card.webp?v=20261105_v3',
     bonusStatText: 'Nhiệt Lửa Luyện Kim · Hỏa Hẩu rực lửa lò rèn',
+  },
+  skin_flame_lord: {
+    id: 'skin_flame_lord',
+    name: 'Phần Thiên Ma Tổ',
+    sectId: 'fire',
+    sectTitle: 'Phần Thiên · Thái Cổ Thần Thoại',
+    description: 'Hắc diệm ma giáp nung chảy bởi nghiệp hỏa hồng liên, tóc bốc khói magma, vung Phần Thiên Hỏa Chùy thiêu đốt vạn giới.',
+    rarity: 'thần_thoại',
+    rarityColor: '#FF4D00',
+    rarityBadgeBg: 'bg-red-500/20 text-red-300 border-red-500/40',
+    rarityBorder: 'border-red-500',
+    icon: '🔥',
+    paletteColor: '#FF4D00',
+    spritesheetPath: 'assets/art/skins/skin_flame_lord/spritesheet_strip.webp?v=20261105_v3',
+    cardPath: 'assets/art/skins/skin_flame_lord/card.webp?v=20261105_v3',
+    bonusStatText: 'Nghiệp Hỏa Thiêu Thiên · Hiệu ứng Hỏa Quang Ma Tổ rực rỡ',
   },
   skin_mountain_robe: {
     id: 'skin_mountain_robe',
@@ -1394,10 +1426,19 @@ export function rollLootDrop(options: RollLootDropOptions): RollLootDropResult {
   gemChance *= mfMult;
 
   let gemDrop: RuneGem | null = null;
+  let itemDrop: EquipmentItem | null = null;
   let updatedPity = anvilPityCount + 1;
   let isPityTriggered = false;
 
-  if (Math.random() < gemChance || options.forceDrop) {
+  // 4. Guaranteed Pity System: At 200 strikes without Tier A+, guarantee Legendary Item
+  if (updatedPity >= 200) {
+    updatedPity = 0;
+    isPityTriggered = true;
+    itemDrop = generateProceduralItem({
+      minRarity: 'legendary',
+      itemLevel: options.vaultFloorId || 1,
+    });
+  } else if (Math.random() < gemChance || options.forceDrop) {
     updatedPity = 0;
     isPityTriggered = true;
 
@@ -1422,7 +1463,7 @@ export function rollLootDrop(options: RollLootDropOptions): RollLootDropResult {
     ironDustDrop,
     tinhHoaDrop,
     gemDrop,
-    item: null,
+    item: itemDrop,
     newPityCount: updatedPity,
     isPityTriggered,
   };
@@ -1582,7 +1623,10 @@ export function getAscensionCost(item: EquipmentItem): AscensionCost | null {
       return { ironDust: 25000, tinhHoa: 150, celestialStars: 5, targetTier: 'mythic', targetTierName: 'Tier S · Thiên Đạo Thần Khí' };
     case 'mythic':
       return null;
+    default:
+      return null;
   }
+  return null;
 }
 
 export function ascendEquipmentTier(item: EquipmentItem): EquipmentItem | null {
@@ -1875,6 +1919,7 @@ export function calculateArsenalBonuses(
   let afkLinhThachPerMin = 0;
   let essenceDropChancePct = 0;
   let synergyChargeBonusPct = 0;
+  let magicFindBonus = 0;
   let totalEquippedCount = 0;
 
   const setCounts: Record<EquipmentSetId, number> = {
@@ -1935,7 +1980,7 @@ export function calculateArsenalBonuses(
         else if (gem.statKey === 'perfectWindowMs') perfectWindowMs += gem.value;
         else if (gem.statKey === 'heatGainPerHit') heatPerHitBonus += gem.value;
         else if (gem.statKey === 'damageMultiplierPct') damageMultiplier += gem.value / 100;
-        else if (gem.statKey === 'magicFindPct') magicFindPct += gem.value;
+        else if (gem.statKey === 'magicFindPct') magicFindBonus += gem.value;
       }
     }
     const allAffixes = [...item.prefixes, ...item.suffixes];
@@ -2082,7 +2127,7 @@ export function calculateArsenalBonuses(
     glancingHitPenalty,
     critRateEffective,
     piercePct,
-    magicFindPct: Math.min(50, Math.round(rawSPI * 0.4)),
+    magicFindPct: Math.min(50, Math.round(rawSPI * 0.4 + magicFindBonus)),
   };
 }
 

@@ -162,7 +162,7 @@ export const CharacterCreationModal: React.FC<CharacterCreationModalProps> = ({
               </div>
 
               {/* 5 Outfit Cards Row */}
-              <div className="grid grid-cols-5 gap-1.5">
+              <div className="grid grid-cols-4 sm:grid-cols-7 gap-1.5">
                 {Object.values(CHARACTER_SKINS).map((sk) => {
                   const isSelected = selectedSkinId === sk.id;
                   const isSectMatch = sk.sectId === selectedClassId;
@@ -200,7 +200,7 @@ export const CharacterCreationModal: React.FC<CharacterCreationModalProps> = ({
                       <span className={`text-[9px] font-tech font-bold leading-tight truncate w-full ${
                         isSelected ? 'text-amber-300' : 'text-slate-300'
                       }`}>
-                        {sk.name.replace('Phàm Nhân ', '').replace('Cửu Tiêu ', '').replace('Hắc Diệm ', '').replace('Bất Chu ', '').replace('Thanh Mộc ', '')}
+                        {sk.name.replace('Phàm Nhân ', '').replace('Cửu Tiêu ', '').replace('Hắc Diệm ', '').replace('Bất Chu ', '').replace('Thanh Mộc ', '').replace('Thái Cổ ', '').replace('Phần Thiên ', '')}
                       </span>
                     </button>
                   );

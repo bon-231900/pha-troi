@@ -833,18 +833,18 @@ export const RightProgressionPanel: React.FC<RightProgressionPanelProps> = ({
 
                 {/* Filter Chips */}
                 <div className="flex items-center gap-1 flex-wrap">
-                  {(['all', 'lightning', 'fire', 'mountain', 'dark', 'fortune'] as const).map((elem) => {
+                  {(['all', 'thunder', 'fire', 'gravity', 'mystic', 'fortune'] as const).map((elem) => {
                     const label =
                       elem === 'all'
                         ? `Tất cả (${runePouch.length})`
-                        : elem === 'lightning'
-                        ? `⚡ Lôi (${runePouch.filter((g) => g.type === 'lightning').length})`
+                        : elem === 'thunder'
+                        ? `⚡ Lôi (${runePouch.filter((g) => g.type === 'thunder').length})`
                         : elem === 'fire'
                         ? `🔥 Hỏa (${runePouch.filter((g) => g.type === 'fire').length})`
-                        : elem === 'mountain'
-                        ? `⛰️ Sơn (${runePouch.filter((g) => g.type === 'mountain').length})`
-                        : elem === 'dark'
-                        ? `❄️ Âm (${runePouch.filter((g) => g.type === 'dark').length})`
+                        : elem === 'gravity'
+                        ? `⛰️ Sơn (${runePouch.filter((g) => g.type === 'gravity').length})`
+                        : elem === 'mystic'
+                        ? `🎵 Âm (${runePouch.filter((g) => g.type === 'mystic').length})`
                         : `🌟 Vận (${runePouch.filter((g) => g.type === 'fortune').length})`;
 
                     const isActive = gemPouchFilter === elem;
@@ -1111,7 +1111,7 @@ export const RightProgressionPanel: React.FC<RightProgressionPanelProps> = ({
                         {playerClass.name} · {playerClass.sectTitle}
                       </h4>
                       <div className="text-[10px] text-slate-400">
-                        {playerClass.role} ({playerClass.guildTitle})
+                        {playerClass.roleSummary}
                       </div>
                     </div>
                   </div>

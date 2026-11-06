@@ -179,7 +179,7 @@ export const StatusModal: React.FC<StatusModalProps> = ({
                     </span>
                   </div>
 
-                  <div className="grid grid-cols-5 gap-1.5">
+                  <div className="grid grid-cols-4 sm:grid-cols-7 gap-1.5">
                     {Object.values(CHARACTER_SKINS).map((sk) => {
                       const isEquipped = (equippedSkinId || 'skin_default') === sk.id;
                       return (
@@ -211,7 +211,7 @@ export const StatusModal: React.FC<StatusModalProps> = ({
                           <span className={`text-[9px] font-tech font-bold leading-tight truncate w-full ${
                             isEquipped ? 'text-amber-300' : 'text-slate-300'
                           }`}>
-                            {sk.name.replace('Phàm Nhân ', '').replace('Cửu Tiêu ', '').replace('Hắc Diệm ', '').replace('Bất Chu ', '').replace('Thanh Mộc ', '')}
+                            {sk.name.replace('Phàm Nhân ', '').replace('Cửu Tiêu ', '').replace('Hắc Diệm ', '').replace('Bất Chu ', '').replace('Thanh Mộc ', '').replace('Thái Cổ ', '').replace('Phần Thiên ', '')}
                           </span>
                         </button>
                       );

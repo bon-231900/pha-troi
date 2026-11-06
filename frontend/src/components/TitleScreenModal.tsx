@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { soundEngine } from '../game/audio';
 import { Play } from 'lucide-react';
 import { GoogleUserProfile } from '../game/googleAuth';
+import { TitlePagesOverlay, TitleNavTab } from './TitlePages';
 
 interface TitleScreenModalProps {
   onStart: () => void;
@@ -15,6 +16,13 @@ export const TitleScreenModal: React.FC<TitleScreenModalProps> = ({
   onGoogleLogin,
 }) => {
   const [isStarting, setIsStarting] = useState(false);
+  const [activeTab, setActiveTab] = useState<TitleNavTab>('home');
+
+  const handleTabClick = (tab: TitleNavTab) => {
+    setActiveTab(tab);
+    soundEngine.unlockAudio();
+    soundEngine.playAnvilStrike('GREAT', 'Q', false);
+  };
 
   const handleStart = () => {
     if (isStarting) return;
@@ -54,21 +62,40 @@ export const TitleScreenModal: React.FC<TitleScreenModalProps> = ({
       {/* 2. Top Navigation Bar (matching reference layout) */}
       <div className="w-full flex items-center justify-between max-w-7xl mx-auto z-10">
         {/* Top-left small brand insignia */}
-        <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => handleTabClick('home')}
+          className="flex items-center gap-2 cursor-pointer bg-transparent border-none text-left p-0 transition-transform active:scale-95"
+        >
           <div className="w-8 h-8 rounded-full border border-amber-400/50 flex items-center justify-center bg-slate-950/50 backdrop-blur-md shadow-[0_0_12px_rgba(255,180,0,0.3)]">
             <span className="text-amber-300 font-display font-bold text-xs">破</span>
           </div>
           <span className="font-display font-bold text-sm tracking-wider text-amber-200/90">PHÁ TRỜI</span>
-        </div>
+        </button>
 
-        {/* Center Nav items */}
-        <div className="hidden md:flex items-center gap-8 text-xs font-tech tracking-[0.2em] text-slate-300 uppercase">
-          <span className="text-amber-300 font-semibold cursor-pointer">TRANG CHỦ</span>
-          <span className="hover:text-amber-200 transition-colors cursor-pointer">THẾ GIỚI</span>
-          <span className="hover:text-amber-200 transition-colors cursor-pointer">NHÂN VẬT</span>
-          <span className="hover:text-amber-200 transition-colors cursor-pointer">TÍNH NĂNG</span>
-          <span className="hover:text-amber-200 transition-colors cursor-pointer">TIN TỨC</span>
-        </div>
+        {/* Center Nav items (Responsive for Mobile & Desktop) */}
+        <nav className="flex items-center gap-3 sm:gap-6 md:gap-8 text-xs font-tech tracking-[0.18em] uppercase overflow-x-auto py-1 px-1 no-scrollbar">
+          {[
+            { tab: 'home' as TitleNavTab, label: 'TRANG CHỦ' },
+            { tab: 'world' as TitleNavTab, label: 'THẾ GIỚI' },
+            { tab: 'character' as TitleNavTab, label: 'NHÂN VẬT' },
+            { tab: 'features' as TitleNavTab, label: 'TÍNH NĂNG' },
+            { tab: 'news' as TitleNavTab, label: 'TIN TỨC' },
+          ].map((item) => (
+            <button
+              key={item.tab}
+              type="button"
+              onClick={() => handleTabClick(item.tab)}
+              className={`transition-all pb-1 cursor-pointer whitespace-nowrap bg-transparent ${
+                activeTab === item.tab
+                  ? 'text-amber-300 font-bold border-b-2 border-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.6)]'
+                  : 'text-slate-300/80 hover:text-amber-200 font-medium border-b-2 border-transparent hover:border-amber-400/30'
+              }`}
+            >
+              {item.label}
+            </button>
+          ))}
+        </nav>
 
         {/* Top-right Status */}
         <div className="flex items-center gap-2 text-xs font-tech text-amber-300/80 tracking-wider">
@@ -192,6 +219,13 @@ export const TitleScreenModal: React.FC<TitleScreenModalProps> = ({
           <span className="font-mono text-amber-400/60">v3.2 Cloud Edition</span>
         </div>
       </div>
+
+      {/* 6. Rich Informational Pages Overlay (Thế Giới, Nhân Vật, Tính Năng, Tin Tức) */}
+      <TitlePagesOverlay
+        activeTab={activeTab}
+        onSelectTab={handleTabClick}
+        onStartGame={handleStart}
+      />
     </div>
   );
 };

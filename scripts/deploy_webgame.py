@@ -62,7 +62,7 @@ def deploy():
         f"git remote add origin {repo_remote}",
         "git checkout -B gh-pages",
         "git add -A",
-        'git commit -m "feat(mobile): AAA Mobile UI/UX for iOS & Android - Safe Area, Adaptive Canvas, Thumb Dock, Haptics & PWA"',
+        'git commit -m "feat(navigation): Interactive 5 Content Pages for World, Characters, Features and News"',
         "git push -u origin gh-pages --force"
     ]
     full_cmd = " && ".join(commands)

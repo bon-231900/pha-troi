@@ -13,6 +13,7 @@ export interface LootToastItem {
   item?: EquipmentItem;
   gem?: RuneGem;
   dustAmount?: number;
+  tinhHoaAmount?: number;
   salvageYield?: { ironDust: number; linhThach: number; tinhHoa?: number };
   timestamp: number;
 }
@@ -177,7 +178,7 @@ const LootToastCard: React.FC<{
             ✨ CỰC PHẨM
           </span>
           <div className="text-xs font-bold text-purple-200 mt-0.5">
-            Thu Được +1 Tinh Hoa Thần Hồn!
+            Thu Được +{toast.tinhHoaAmount || 1} Tinh Hoa Thần Hồn!
           </div>
         </div>
         <button

@@ -60,7 +60,7 @@ export interface CommunityPanoramicForgeCanvasProps {
   bossHp: number;
   bossMaxHp: number;
   activeStance: StanceKey;
-  gameState: 'title' | 'playing' | 'paused' | 'gameover';
+  gameState: 'title' | 'character_select' | 'playing' | 'paused' | 'gameover';
   playerName?: string;
   onHeroStrikeAction?: (forceGolden: boolean) => void;
   onPeerAutonomousDamage?: (damageAmount: number) => void;

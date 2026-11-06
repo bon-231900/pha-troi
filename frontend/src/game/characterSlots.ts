@@ -20,10 +20,10 @@ export interface CharacterSlotProgress {
   equippedItems: Record<string, any>;
   inventory: any[];
   playerTotalDamage: number;
-  claimedMilestones: Record<number, boolean> | number[];
+  claimedMilestones: string[] | number[] | Record<string | number, boolean>;
   currentVaultId: number;
   userGuildId?: string | null;
-  guildHearths?: any[];
+  guildHearths?: Record<string, any>;
   serverFurnaceHeat?: number;
   serverAnvilHp?: number;
   raidContributionScore?: number;

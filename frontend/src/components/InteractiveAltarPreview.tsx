@@ -211,7 +211,7 @@ function drawDaoistPlaque(
 }
 
 export const InteractiveAltarPreview = forwardRef<InteractiveAltarPreviewRef, InteractiveAltarPreviewProps>((
-  { selectedClassId, characterName, onStrikeStatsUpdate },
+  { selectedClassId, characterName, skinId, onStrikeStatsUpdate },
   ref
 ) => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -332,7 +332,7 @@ export const InteractiveAltarPreview = forwardRef<InteractiveAltarPreviewRef, In
 
     // Sound feedback
     const stanceKey = cls.stanceKey as StanceKey;
-    soundEngine.playAnvilStrike(rating, stanceKey, rating === 'PERFECT');
+    soundEngine.playAnvilStrike(rating === 'HIT' ? 'GREAT' : rating, stanceKey, rating === 'PERFECT');
 
     // Trigger visual hero strike animation
     strikeTimerRef.current = 0; // Starts strike timer

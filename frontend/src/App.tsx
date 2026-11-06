@@ -1157,7 +1157,7 @@ export default function App() {
       setEquippedItems(prog.equippedItems && typeof prog.equippedItems === 'object' ? prog.equippedItems : INITIAL_EQUIPPED_SLOTS);
       setInventory(Array.isArray(prog.inventory) ? prog.inventory : []);
       setPlayerTotalDamage(prog.playerTotalDamage || 0);
-      setClaimedMilestones(Array.isArray(prog.claimedMilestones) ? prog.claimedMilestones : []);
+      setClaimedMilestones(Array.isArray(prog.claimedMilestones) ? prog.claimedMilestones.map(String) : []);
       setCurrentVaultId(typeof prog.currentVaultId === 'number' ? prog.currentVaultId : 1);
       setUserGuildId(prog.userGuildId || 'thiet_hai');
 
@@ -2404,6 +2404,7 @@ export default function App() {
       setCelestialStars((s) => s - 1);
 
       const ascended = ascendEquipmentTier(item);
+      if (!ascended) return;
       if (equippedItems[item.slotKey]?.id === item.id) {
         setEquippedItems((prev) => ({
           ...prev,

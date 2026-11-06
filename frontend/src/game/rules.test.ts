@@ -249,12 +249,12 @@ test('v3.2 MMORPG drop tables, 6 tiers (E -> S) and pity counter work determinis
   assert.equal(metaS.label, 'Tier S · Thiên Đạo Thần Khí');
 
   // 2. Salvage yields verification
-  const salvageS = getSalvageYield({ rarity: 'mythic' });
+  const salvageS = getSalvageYield({ rarity: 'mythic' } as any);
   assert.equal(salvageS.ironDust, 1000);
   assert.equal(salvageS.celestialStar, 1);
   assert.equal(salvageS.tinhHoa, 20);
 
-  const salvageE = getSalvageYield({ rarity: 'common' });
+  const salvageE = getSalvageYield({ rarity: 'common' } as any);
   assert.equal(salvageE.ironDust, 5);
   assert.equal(salvageE.linhThach, 10);
 
