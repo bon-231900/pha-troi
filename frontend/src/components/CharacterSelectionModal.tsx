@@ -105,6 +105,7 @@ export const CharacterSelectionModal: React.FC<CharacterSelectionModalProps> = (
       const isEnter = e.code === 'Enter' || e.key === 'Enter';
 
       if (isSpace || isEnter) {
+        if (e.repeat) return;
         e.preventDefault();
         e.stopPropagation();
         const slotNumber = (selectedSlotIndex + 1) as 1 | 2 | 3;

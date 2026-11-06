@@ -439,6 +439,8 @@ export const InteractiveAltarPreview = forwardRef<InteractiveAltarPreviewRef, In
   }));
 
   // Keyboard Space listener (capture mode, supports all space variants)
+  const isSpaceHeldRef = useRef(false);
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const isSpace =
@@ -457,12 +459,37 @@ export const InteractiveAltarPreview = forwardRef<InteractiveAltarPreviewRef, In
 
       e.preventDefault();
       e.stopPropagation();
+
+      // Chống giữ im phím Space gõ liên tục
+      if (e.repeat || isSpaceHeldRef.current) return;
+      isSpaceHeldRef.current = true;
+
       executeStrike();
     };
 
+    const handleKeyUp = (e: KeyboardEvent) => {
+      const isSpace =
+        e.code === 'Space' ||
+        e.key === ' ' ||
+        e.key === 'Spacebar' ||
+        e.keyCode === 32 ||
+        e.which === 32;
+      if (isSpace) {
+        isSpaceHeldRef.current = false;
+      }
+    };
+
+    const handleBlur = () => {
+      isSpaceHeldRef.current = false;
+    };
+
     window.addEventListener('keydown', handleKeyDown, true);
+    window.addEventListener('keyup', handleKeyUp, true);
+    window.addEventListener('blur', handleBlur);
     return () => {
       window.removeEventListener('keydown', handleKeyDown, true);
+      window.removeEventListener('keyup', handleKeyUp, true);
+      window.removeEventListener('blur', handleBlur);
     };
   }, [executeStrike]);
 

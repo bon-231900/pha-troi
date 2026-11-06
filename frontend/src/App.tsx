@@ -2679,6 +2679,8 @@ export default function App() {
   }, [gameState]);
 
   // Keyboard Shortcuts: Space, Q/W/E/R, P/Esc, M, [ and ]
+  const heldKeysRef = useRef<Set<string>>(new Set());
+
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       const isInput =
@@ -2705,6 +2707,15 @@ export default function App() {
           }
         }
       }
+
+      // CHỐNG GIỮ IM PHÍM SPACE HOẶC CÁC PHÍM HÀNH ĐỘNG ĐỂ GÕ LIÊN TỤC (Anti-Key Hold Spam)
+      // Bắt buộc người chơi phải nhấc tay ra và gõ từng nhát theo đúng nhịp điệu (1 cú nhấn = 1 cú nện)
+      const keyId = e.code || e.key || String(e.keyCode);
+      if (e.repeat || heldKeysRef.current.has(keyId)) {
+        if (isSpace) e.preventDefault();
+        return;
+      }
+      heldKeysRef.current.add(keyId);
 
       const currentSt = gameStateRef.current;
 
@@ -2798,9 +2809,22 @@ export default function App() {
       }
     };
 
+    const onKeyUp = (e: KeyboardEvent) => {
+      const keyId = e.code || e.key || String(e.keyCode);
+      heldKeysRef.current.delete(keyId);
+    };
+
+    const onBlur = () => {
+      heldKeysRef.current.clear();
+    };
+
     window.addEventListener('keydown', onKeyDown, true);
+    window.addEventListener('keyup', onKeyUp, true);
+    window.addEventListener('blur', onBlur);
     return () => {
       window.removeEventListener('keydown', onKeyDown, true);
+      window.removeEventListener('keyup', onKeyUp, true);
+      window.removeEventListener('blur', onBlur);
     };
   }, [
     activeSlotId,
