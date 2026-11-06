@@ -76,16 +76,15 @@ export const TitleScreenModal: React.FC<TitleScreenModalProps> = ({
         {/* Center Nav items (Responsive for Mobile & Desktop) */}
         <nav className="flex items-center gap-3 sm:gap-6 md:gap-8 text-xs font-tech tracking-[0.18em] uppercase overflow-x-auto py-1 px-1 no-scrollbar">
           {[
-            { tab: 'home' as TitleNavTab, label: 'TRANG CHỦ' },
-            { tab: 'world' as TitleNavTab, label: 'THẾ GIỚI' },
-            { tab: 'character' as TitleNavTab, label: 'NHÂN VẬT' },
-            { tab: 'features' as TitleNavTab, label: 'TÍNH NĂNG' },
-            { tab: 'news' as TitleNavTab, label: 'TIN TỨC' },
+            { tab: 'home' as TitleNavTab, label: 'TRANG CHỦ', href: './index.html' },
+            { tab: 'world' as TitleNavTab, label: 'THẾ GIỚI', href: './the-gioi.html' },
+            { tab: 'character' as TitleNavTab, label: 'NHÂN VẬT', href: './nhan-vat.html' },
+            { tab: 'features' as TitleNavTab, label: 'TÍNH NĂNG', href: './tinh-nang.html' },
+            { tab: 'news' as TitleNavTab, label: 'TIN TỨC', href: './tin-tuc.html' },
           ].map((item) => (
-            <button
+            <a
               key={item.tab}
-              type="button"
-              onClick={() => handleTabClick(item.tab)}
+              href={item.href}
               className={`transition-all pb-1 cursor-pointer whitespace-nowrap bg-transparent ${
                 activeTab === item.tab
                   ? 'text-amber-300 font-bold border-b-2 border-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.6)]'
@@ -93,7 +92,7 @@ export const TitleScreenModal: React.FC<TitleScreenModalProps> = ({
               }`}
             >
               {item.label}
-            </button>
+            </a>
           ))}
         </nav>
 
