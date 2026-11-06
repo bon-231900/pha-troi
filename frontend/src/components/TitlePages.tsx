@@ -44,7 +44,7 @@ export const TitlePagesOverlay: React.FC<TitlePageProps> = ({
               {activeTab === 'news' && 'TIN TỨC · BẢN CẬP NHẬT MÁY CHỦ PHÁ TRỜI'}
             </h2>
             <p className="text-[10px] sm:text-[11px] text-slate-400 font-tech">
-              Hệ thống tra cứu thông tin chính thức của Webgame Phá Trời (phatroi.com)
+              Cẩm nang chiến trường & bí kíp dành cho cộng đồng thợ rèn (phatroi.com)
             </p>
           </div>
         </div>
@@ -388,37 +388,37 @@ export const TitlePagesOverlay: React.FC<TitlePageProps> = ({
           <div className="space-y-4 max-w-4xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-300">
             {[
               {
-                version: 'v3.4 · BẢN CẬP NHẬT Y PHỤC THẦN THOẠI & AUDIT TOÀN DIỆN',
+                version: 'v3.4 · [LÔI MA GIÁNG THẾ] — Y PHỤC THẦN THOẠI & BẢO HIỂM PITY',
                 date: '06/11/2026',
                 tag: 'MỚI NHẤT',
                 tagColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
                 points: [
-                  'Ra mắt 2 bộ Y Phục Thần Thoại đỉnh cao: [Thái Cổ Lôi Thần Giáp] & [Phần Thiên Ma Tổ] với chuyển động nện búa thực tế 6 khung hình.',
-                  'Khắc phục triệt để lỗi cơ chế Bảo Hiểm Pity (Đảm bảo rớt trang bị Bậc S sau 200 nhát gõ).',
-                  'Sửa toàn bộ lỗi bộ lọc Túi Phù Thạch (⚡ Lôi, 🔥 Hỏa, ⛰️ Sơn, 🎵 Âm, 🌟 Vận).',
-                  'Khắc phục lỗi màn hình thử đồ và tối ưu hóa 100% TypeScript type safety.',
+                  'Khai mở 2 bộ Y Phục Thần Thoại tối thượng: [Thái Cổ Lôi Thần Giáp] (+25% Crit) & [Phần Thiên Ma Tổ] (+30% Burn) với cử động vung búa 6 khung hình cuồng nộ.',
+                  'Chuẩn hóa cơ chế Bảo Hiểm Pity (200 Hits): Đảm bảo 100% người chơi nhận Thần Khí Bậc S ở cú gõ 201 nếu chưa may mắn.',
+                  'Nâng cấp Túi Phù Thạch Bát Quái: Phân loại thông minh 5 nguồn năng lượng ngũ hành (⚡ Lôi, 🔥 Hỏa, ⛰️ Sơn, 🎵 Âm, 🌟 Vận).',
+                  'Tinh chỉnh độ nhạy va chạm đe thép và phản hồi rung Haptic, mang lại trải nghiệm canh nhịp Perfect siêu mượt.',
                 ]
               },
               {
-                version: 'v3.3 · ĐẠI CHIẾN TỨ ĐẠI MÔN PHÁI (Q W E R SYSTEM)',
+                version: 'v3.3 · [TỨ ĐẠI TÔNG MÔN] — KHỞI TRANH TUYỆT KỸ Q - W - E - R',
                 date: '05/11/2026',
-                tag: 'TÍNH NĂNG LỚN',
+                tag: 'MÔN PHÁI & KỸ NĂNG',
                 tagColor: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40',
                 points: [
-                  'Chính thức ra mắt Tứ Đại Môn Phái: Lôi Đình, Phần Thiên, Bất Chu Sơn, Thái Ất Tông.',
-                  'Mỗi môn phái sở hữu 4 kỹ năng Q W E R độc bản với thời gian hồi chiêu và tiêu hao Overdrive riêng biệt.',
-                  'Đồng bộ tư thế và hiệu ứng đòn đánh tới toàn bộ thợ rèn trong phòng chơi nhiều người.',
+                  'Chính thức khai mở Tứ Đại Môn Phái: Lôi Đình Tông, Viêm Dương Phái, Sơn Nhạc Tông, Huyền Âm Phái.',
+                  'Trang bị 16 Tuyệt Kỹ chân truyền Q - W - E - R tương ứng với hệ thống nhiệt lượng Overdrive riêng biệt.',
+                  'Đồng bộ tư thế vung búa và hiệu ứng đòn đánh chân thực tới toàn bộ thợ rèn trong phòng chơi đa người.',
                 ]
               },
               {
-                version: 'v3.2 · HỆ THỐNG TRANG BỊ MMORPG & TỔ ĐỂ BÁT QUÁI',
+                version: 'v3.2 · [THẦN BINH XUẤT THẾ] — HỆ THỐNG TRANG BỊ 6 BẬC & ĐÁM MÂY',
                 date: '04/11/2026',
-                tag: 'HỆ THỐNG ĐÚC',
+                tag: 'TRANG BỊ & CLOUD',
                 tagColor: 'bg-amber-500/20 text-amber-300 border-amber-500/40',
                 points: [
-                  'Hệ thống trang bị 6 bậc từ Tier E đến Tier S Thần Khí.',
-                  'Mở tính năng Tôi Luyện Quench (Băng, Hỏa, Lôi) và Khảm Nạp Phù Thạch.',
-                  'Nâng cấp giao diện Mobile AAA: hỗ trợ Safe Area, Thumb Dock và phản hồi rung Haptics.',
+                  'Hệ thống trang bị 6 bậc từ Tier E Phàm Thiết đến Tier S Thần Khí Thiên Đạo.',
+                  'Mở bể Tôi Luyện Quench (Băng, Hỏa, Lôi) tẩy dòng thuộc tính và Khảm Nạp Ngọc Bát Quái.',
+                  'Đăng nhập Google 1 chạm giữ nguyên túi đồ khi đổi máy; Tối ưu giao diện di động êm tay.',
                 ]
               },
             ].map((n, i) => (
