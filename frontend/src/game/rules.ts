@@ -621,6 +621,22 @@ export const CHARACTER_SKINS: Record<string, CharacterSkinMeta> = {
     cardPath: 'assets/art/skins/skin_mystic_robe/card.webp?v=20261105_v3',
     bonusStatText: 'Linh Khí Phục Hồi · Hào quang Bích Ngọc thoát tục',
   },
+  skin_mystic_fairy: {
+    id: 'skin_mystic_fairy',
+    name: 'Bích Lạc Tiên Cơ',
+    sectId: 'mystic',
+    sectTitle: 'Thái Ất Tông · Cửu Thiên Thần Thoại (Nữ)',
+    description: 'Nữ Tiên Đúc Thần Sư hạ phàm: Y phục Bích Lạc Tạo Hóa Thần Bào bằng bạch ngọc tơ lụa, dải lụa phi thiên phấp phới, tay cầm Tạo Hóa Ngọc Chùy giáng sinh mệnh linh quang lên Đe Sen Tịnh Đế.',
+    rarity: 'thần_thoại',
+    rarityColor: '#10B981',
+    rarityBadgeBg: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
+    rarityBorder: 'border-emerald-400',
+    icon: '🪷',
+    paletteColor: '#10B981',
+    spritesheetPath: 'assets/art/skins/skin_mystic_fairy/spritesheet_strip.webp?v=20261106_v1',
+    cardPath: 'assets/art/skins/skin_mystic_fairy/card.webp?v=20261106_v1',
+    bonusStatText: 'Tạo Hóa Vạn Vật · Hiệu Ứng Bích Lạc Tiên Quang rực rỡ',
+  },
 };
 
 export const SECT_DEFAULT_SKIN: Record<PlayerClassId, string> = {
