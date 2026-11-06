@@ -591,7 +591,7 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
       mainAltar: { src: `${cleanBase}assets/art/altar_platform.webp`, img: new Image(), loaded: false },
       peerSheet: { src: `${cleanBase}assets/art/peer_blacksmith_strip.webp`, img: new Image(), loaded: false },
       peerShadowSheet: { src: `${cleanBase}assets/art/peer_blacksmith_shadow_strip.webp`, img: new Image(), loaded: false },
-      heroSheet: { src: `${cleanBase}assets/art/hero_spritesheet_strip.webp`, img: new Image(), loaded: false },
+      heroSheet: { src: `${cleanBase}assets/art/hero_spritesheet_strip.webp?v=20261106_whitehair`, img: new Image(), loaded: false },
       badgeHoangKim: { src: `${cleanBase}assets/art/ui/badge_hoang_kim.webp`, img: new Image(), loaded: false },
       badgeBaoKich: { src: `${cleanBase}assets/art/ui/badge_bao_kich.webp`, img: new Image(), loaded: false },
       amphitheater: { src: `${cleanBase}assets/art/grand_amphitheater_terraces.webp`, img: new Image(), loaded: false },

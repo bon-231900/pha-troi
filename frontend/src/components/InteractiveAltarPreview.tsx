@@ -278,7 +278,7 @@ export const InteractiveAltarPreview = forwardRef<InteractiveAltarPreviewRef, In
     }
 
     const skinMeta = CHARACTER_SKINS[activeSkinId];
-    const srcPath = skinMeta ? `${cleanBase}${skinMeta.spritesheetPath}` : `${cleanBase}assets/art/hero_spritesheet_strip.webp`;
+    const srcPath = skinMeta ? `${cleanBase}${skinMeta.spritesheetPath}` : `${cleanBase}assets/art/hero_spritesheet_strip.webp?v=20261106_whitehair`;
     const skinImg = new Image();
     skinImg.onload = () => {
       if (active) {
