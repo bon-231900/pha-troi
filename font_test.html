@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>DEMO KHUNG TÊN TIÊN HIỆP · PHÁ TRỜI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Charm:wght@700&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background: #04060E;
+      color: #E2E8F0;
+      margin: 0;
+      padding: 30px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-family: sans-serif;
+    }
+    h2 {
+      color: #FDE68A;
+      margin-bottom: 20px;
+      font-size: 18px;
+    }
+    canvas {
+      border: 1px solid rgba(245, 158, 11, 0.2);
+      border-radius: 12px;
+      background: #020409;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+    }
+  </style>
+</head>
+<body>
+  <h2>DEMO CÁC MẪU KHUNG THẺ TÊN TIÊN HIỆP (THỦ CÔNG CHUẨN XIANXIA)</h2>
+  <canvas id="c" width="800" height="520"></canvas>
+
+  <script>
+    const canvas = document.getElementById('c');
+    const ctx = canvas.getContext('2d');
+
+    const SECT_PALETTES = {
+      hero: {
+        gold: '#FFD700',
+        rim: '#F59E0B',
+        glow: '#00F0FF',
+        gem: '#00F0FF',
+        text: '#FFFFFF',
+        bg1: 'rgba(12, 18, 36, 0.96)',
+        bg2: 'rgba(4, 7, 16, 0.98)'
+      },
+      thunder: {
+        gold: '#7DD3FC',
+        rim: '#00F0FF',
+        glow: '#00F0FF',
+        gem: '#38BDF8',
+        text: '#E0F2FE',
+        bg1: 'rgba(8, 18, 36, 0.95)',
+        bg2: 'rgba(3, 8, 20, 0.98)'
+      },
+      fire: {
+        gold: '#FDE68A',
+        rim: '#FF7700',
+        glow: '#FF5500',
+        gem: '#FB923C',
+        text: '#FED7AA',
+        bg1: 'rgba(28, 12, 8, 0.95)',
+        bg2: 'rgba(12, 4, 3, 0.98)'
+      },
+      mystic: {
+        gold: '#A7F3D0',
+        rim: '#10B981',
+        glow: '#10B981',
+        gem: '#34D399',
+        text: '#D1FAE5',
+        bg1: 'rgba(6, 26, 18, 0.95)',
+        bg2: 'rgba(2, 12, 8, 0.98)'
+      },
+      gravity: {
+        gold: '#E9D5FF',
+        rim: '#A855F7',
+        glow: '#C084FC',
+        gem: '#C084FC',
+        text: '#F3E8FF',
+        bg1: 'rgba(20, 10, 32, 0.95)',
+        bg2: 'rgba(8, 4, 16, 0.98)'
+      }
+    };
+
+    /**
+     * VẼ KHUNG THẺ TÊN TIÊN HIỆP (XIANXIA DAOIST NAMEPLATE)
+     */
+    function drawXianxiaPlaque(ctx, x, y, text, stance = 'thunder', isHero = false) {
+      ctx.save();
+      ctx.translate(x, y);
+
+      const pal = isHero ? SECT_PALETTES.hero : (SECT_PALETTES[stance] || SECT_PALETTES.thunder);
+
+      ctx.font = isHero ? '700 16px "Charm", "Caveat", cursive' : '700 14px "Charm", "Caveat", cursive';
+      const textMetrics = ctx.measureText(text);
+      const tw = textMetrics.width;
+
+      // Kích thước khung tự thích ứng theo độ dài tên
+      const padX = isHero ? 32 : 24;
+      const bw = Math.max(isHero ? 220 : 140, tw + padX * 2);
+      const bh = isHero ? 32 : 26;
+      const halfW = bw * 0.5;
+      const halfH = bh * 0.5;
+
+      // 1. Bóng đổ thẻ bài
+      ctx.save();
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
+      ctx.filter = 'blur(6px)';
+      ctx.beginPath();
+      ctx.roundRect(-halfW - 6, -halfH - 2, bw + 12, bh + 8, 8);
+      ctx.fill();
+      ctx.restore();
+
+      // 2. Thân thẻ bài (Phiến đá Tiên Lệnh góc vát đuôi én)
+      const chamfer = isHero ? 9 : 7;
+      const wingNotch = isHero ? 8 : 6;
+
+      ctx.save();
+      const bodyGrad = ctx.createLinearGradient(0, -halfH, 0, halfH);
+      bodyGrad.addColorStop(0, pal.bg1);
+      bodyGrad.addColorStop(1, pal.bg2);
+      ctx.fillStyle = bodyGrad;
+
+      ctx.beginPath();
+      ctx.moveTo(-halfW + chamfer, -halfH);
+      ctx.lineTo(halfW - chamfer, -halfH);
+      ctx.lineTo(halfW, -halfH + chamfer);
+      ctx.lineTo(halfW + wingNotch, 0); // Đuôi én cánh phải
+      ctx.lineTo(halfW, halfH - chamfer);
+      ctx.lineTo(halfW - chamfer, halfH);
+      ctx.lineTo(-halfW + chamfer, halfH);
+      ctx.lineTo(-halfW, halfH - chamfer);
+      ctx.lineTo(-halfW - wingNotch, 0); // Đuôi én cánh trái
+      ctx.lineTo(-halfW, -halfH + chamfer);
+      ctx.closePath();
+      ctx.fill();
+
+      // Viền kim loại cổ phong
+      ctx.strokeStyle = pal.rim;
+      ctx.lineWidth = isHero ? 1.8 : 1.3;
+      ctx.shadowColor = pal.glow;
+      ctx.shadowBlur = isHero ? 10 : 6;
+      ctx.stroke();
+      ctx.restore();
+
+      // 3. Đường chỉ viền nội phù văn (Inner engraved line)
+      ctx.save();
+      ctx.strokeStyle = pal.gold;
+      ctx.lineWidth = 0.9;
+      ctx.globalAlpha = 0.45;
+      const inPad = 3.5;
+      ctx.beginPath();
+      ctx.moveTo(-halfW + chamfer + inPad, -halfH + inPad);
+      ctx.lineTo(halfW - chamfer - inPad, -halfH + inPad);
+      ctx.lineTo(halfW - inPad, -halfH + chamfer + inPad);
+      ctx.lineTo(halfW + wingNotch - inPad, 0);
+      ctx.lineTo(halfW - inPad, halfH - chamfer - inPad);
+      ctx.lineTo(halfW - chamfer - inPad, halfH - inPad);
+      ctx.lineTo(-halfW + chamfer + inPad, halfH - inPad);
+      ctx.lineTo(-halfW + inPad, halfH - chamfer - inPad);
+      ctx.lineTo(-halfW - wingNotch + inPad, 0);
+      ctx.lineTo(-halfW + inPad, -halfH + chamfer + inPad);
+      ctx.closePath();
+      ctx.stroke();
+      ctx.restore();
+
+      // 4. Hoa văn tai triện / Mây cách điệu 2 đầu (Cloud curls on wingtips)
+      ctx.save();
+      ctx.strokeStyle = pal.gold;
+      ctx.lineWidth = 1.4;
+      ctx.lineCap = 'round';
+      ctx.shadowColor = pal.glow;
+      ctx.shadowBlur = 4;
+
+      // Tai mây trái
+      ctx.beginPath();
+      ctx.moveTo(-halfW + 4, -halfH + 3);
+      ctx.quadraticCurveTo(-halfW - 8, -halfH - 2, -halfW - wingNotch - 4, 0);
+      ctx.quadraticCurveTo(-halfW - 8, halfH + 2, -halfW + 4, halfH - 3);
+      ctx.stroke();
+      // Mắt ngọc đầu trái
+      ctx.fillStyle = pal.gem;
+      ctx.beginPath();
+      ctx.arc(-halfW - 2, 0, isHero ? 2.8 : 2.2, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Tai mây phải
+      ctx.beginPath();
+      ctx.moveTo(halfW - 4, -halfH + 3);
+      ctx.quadraticCurveTo(halfW + 8, -halfH - 2, halfW + wingNotch + 4, 0);
+      ctx.quadraticCurveTo(halfW + 8, halfH + 2, halfW - 4, halfH - 3);
+      ctx.stroke();
+      // Mắt ngọc đầu phải
+      ctx.fillStyle = pal.gem;
+      ctx.beginPath();
+      ctx.arc(halfW + 2, 0, isHero ? 2.8 : 2.2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+
+      // 5. Đỉnh phù ấn (Top & Bottom Crest)
+      ctx.save();
+      // Đỉnh ngọc thoi (Top diamond jewel)
+      ctx.fillStyle = pal.gold;
+      ctx.beginPath();
+      ctx.moveTo(0, -halfH - (isHero ? 5 : 4));
+      ctx.lineTo(isHero ? 5 : 4, -halfH);
+      ctx.lineTo(0, -halfH + (isHero ? 5 : 4));
+      ctx.lineTo(-(isHero ? 5 : 4), -halfH);
+      ctx.closePath();
+      ctx.fill();
+
+      // Hạt ngọc ở tâm đỉnh
+      ctx.fillStyle = pal.gem;
+      ctx.beginPath();
+      ctx.arc(0, -halfH, isHero ? 2.2 : 1.6, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Đáy nút thắt tiên kết (Bottom tail notch)
+      ctx.fillStyle = pal.gold;
+      ctx.beginPath();
+      ctx.moveTo(-3, halfH);
+      ctx.lineTo(0, halfH + (isHero ? 4 : 3));
+      ctx.lineTo(3, halfH);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+
+      // 6. Chữ viết tay Thư Pháp (Handwritten Calligraphy Name)
+      ctx.save();
+      ctx.font = isHero ? '700 16px "Charm", "Caveat", cursive' : '700 14.5px "Charm", "Caveat", cursive';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = pal.text;
+      ctx.shadowColor = pal.glow;
+      ctx.shadowBlur = isHero ? 8 : 4;
+      ctx.fillText(text, 0, 1);
+      ctx.restore();
+
+      ctx.restore();
+    }
+
+    // Render loop demo
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // 1. Thợ Rèn Chính (Chí Tôn Tiên Lệnh)
+      drawXianxiaPlaque(ctx, 400, 70, 'Thợ Rèn Chính · [LÔI ĐỈNH]', 'thunder', true);
+
+      // 2. Hệ Lôi Đỉnh
+      drawXianxiaPlaque(ctx, 220, 160, 'Đồng Môn · Lôi', 'thunder', false);
+      drawXianxiaPlaque(ctx, 580, 160, 'Đồng Môn · Lôi', 'thunder', false);
+
+      // 3. Hệ Viêm Dương
+      drawXianxiaPlaque(ctx, 220, 250, 'Đồng Môn · Viêm', 'fire', false);
+      drawXianxiaPlaque(ctx, 580, 250, 'Đồng Môn · Viêm', 'fire', false);
+
+      // 4. Hệ Huyền Âm
+      drawXianxiaPlaque(ctx, 220, 340, 'Đồng Môn · Âm', 'mystic', false);
+      drawXianxiaPlaque(ctx, 580, 340, 'Đồng Môn · Âm', 'mystic', false);
+
+      // 5. Hệ Trọng Lực
+      drawXianxiaPlaque(ctx, 220, 430, 'Đồng Môn · Trọng', 'gravity', false);
+      drawXianxiaPlaque(ctx, 580, 430, 'Đồng Môn · Trọng', 'gravity', false);
+
+      requestAnimationFrame(draw);
+    }
+
+    document.fonts.ready.then(() => {
+      draw();
+    });
+  </script>
+</body>
+</html>

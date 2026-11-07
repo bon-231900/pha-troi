@@ -1,0 +1,2408 @@
+// ============================================================================
+// TOÀN DÂN PHÁ TRỜI: THE CELESTIAL FORGE - CORE ENGINE (PHASE 4: FULL LAUNCH)
+// WebSocket 2Hz, Redis Atomic Last-Hit, Anti-Cheat, Hall of Eternity & Persistence
+// ============================================================================
+
+// Formatter số lớn gọn đẹp
+function formatNum(n) {
+    if (n === null || n === undefined || isNaN(n)) return "0";
+    if (n < 1000) return Math.floor(n).toLocaleString('vi-VN');
+    const suffixes = ["", "K", "M", "B", "T", "Qa", "Qi", "Sx", "Sp", "Oc", "No", "Dc"];
+    const i = Math.floor(Math.log10(Math.max(1, n)) / 3);
+    if (i >= suffixes.length) return n.toExponential(2);
+    const formatted = (n / Math.pow(10, i * 3)).toFixed(2);
+    return `${formatted} ${suffixes[i]}`;
+}
+
+// Cửu Trọng Thiên Cấm (9 Mái Vòm Thiên Giới - Mức máu cân bằng trải nghiệm đơn & đa người chơi)
+const CELESTIAL_LAYERS = [
+    { layer: 1, name: "Thiết Vân Vòm (Vòm Mây Sắt)", baseHp: 50000 },
+    { layer: 2, name: "Đồng Lôi Vòm (Vòm Sấm Đồng)", baseHp: 250000 },
+    { layer: 3, name: "Ngân Cực Vòm (Vòm Cực Quang Bạc)", baseHp: 1500000 },
+    { layer: 4, name: "Xích Diễm Vòm (Vòm Lửa Đỏ)", baseHp: 10000000 },
+    { layer: 5, name: "Huyền Băng Vòm (Vòm Băng Đen)", baseHp: 80000000 },
+    { layer: 6, name: "Tử Tiêu Vòm (Vòm Mây Tím)", baseHp: 500000000 },
+    { layer: 7, name: "Hỗn Độn Vòm (Vòm Hỗn Độn)", baseHp: 3000000000 },
+    { layer: 8, name: "Thái Cổ Vòm (Vòm Thái Cổ)", baseHp: 20000000000 },
+    { layer: 9, name: "Vĩnh Hằng Vòm (Vòm Vĩnh Hằng)", baseHp: 150000000000 }
+];
+
+// 4 Loại Thần Chùy (Arsenal)
+const HAMMERS = {
+    1: { id: 1, name: "Lôi Đình Chùy", icon: "⚡", trait: "+3 Cộng Hưởng", k_hammer: 0.85, res_bonus: 3, ore_bonus: 0 },
+    2: { id: 2, name: "Viêm Dương Chùy", icon: "🔥", trait: "Thiêu Đốt & +30% Quặng", k_hammer: 1.0, res_bonus: 1, ore_bonus: 0.3 },
+    3: { id: 3, name: "Trọng Lực Chùy", icon: "🌌", trait: "x12 Khi Trúng Hoàng Kim", k_hammer: 12.0, res_bonus: 1, ore_bonus: 0 },
+    4: { id: 4, name: "Huyền Âm Chùy", icon: "🎵", trait: "+15% Quặng & Tự Động (Solo) / +15% Đội", k_hammer: 0.7, res_bonus: 1, ore_bonus: 0.15 }
+};
+
+// ============================================================================
+// HỆ THỐNG THÀNH TỰU CÔNG TRƯỜNG (ACHIEVEMENTS DEFINITIONS)
+// ============================================================================
+const ACHIEVEMENTS_DEF = [
+    {
+        id: 'first_10_strikes',
+        icon: '🔨',
+        title: 'Nhát Búa Khai Thiên',
+        desc: 'Thực hiện 10 nhát búa rèn đầu tiên vào Mái Vòm.',
+        rewardDesc: '+88 Vụn Thiên Thiết',
+        check: (g) => g.totalStrikes >= 10,
+        progress: (g) => ({ cur: Math.min(10, g.totalStrikes), max: 10 }),
+        reward: (g) => {
+            g.skyIron += 88;
+            g.lifetimeIron += 88;
+        }
+    },
+    {
+        id: 'streak_4',
+        icon: '🎯',
+        title: 'Nhịp Điệu Chuẩn Xác',
+        desc: 'Đạt Chuỗi Hoàng Kim 4 nhát búa liên tiếp.',
+        rewardDesc: '+188 Vụn Thiên Thiết',
+        check: (g) => (g.goldenStreak >= 4 || (g.maxGoldenStreak || 0) >= 4),
+        progress: (g) => ({ cur: Math.min(4, Math.max(g.goldenStreak, g.maxGoldenStreak || 0)), max: 4 }),
+        reward: (g) => {
+            g.skyIron += 188;
+            g.lifetimeIron += 188;
+        }
+    },
+    {
+        id: 'streak_8',
+        icon: '⚡',
+        title: 'Cực Cảnh Hoàng Kim',
+        desc: 'Đạt tối đa Chuỗi Hoàng Kim (8/8 nhát) và kích hoạt Overdrive.',
+        rewardDesc: '+388 Vụn Thiên Thiết & +10 Điểm Cộng Hưởng',
+        check: (g) => (g.goldenStreak >= 8 || (g.maxGoldenStreak || 0) >= 8),
+        progress: (g) => ({ cur: Math.min(8, Math.max(g.goldenStreak, g.maxGoldenStreak || 0)), max: 8 }),
+        reward: (g) => {
+            g.skyIron += 388;
+            g.lifetimeIron += 388;
+            g.addResonance(10);
+        }
+    },
+    {
+        id: 'first_shatter',
+        icon: '💥',
+        title: 'Chấn Động Thiên Cấm',
+        desc: 'Kích hoạt trạng thái Phá Giáp (100/100 Cộng Hưởng) lần đầu tiên.',
+        rewardDesc: '+5 Tinh Thể Thiên Cấm & +500 Vụn Thiên Thiết',
+        check: (g) => (g.hasTriggeredShatter || Date.now() < g.shatterUntil),
+        progress: (g) => ({ cur: (g.hasTriggeredShatter || Date.now() < g.shatterUntil) ? 1 : 0, max: 1 }),
+        reward: (g) => {
+            g.domeShards += 5;
+            g.skyIron += 500;
+            g.lifetimeIron += 500;
+        }
+    },
+    {
+        id: 'hammer_lvl_10',
+        icon: '⚒️',
+        title: 'Thần Chùy Đột Phá I',
+        desc: 'Nâng cấp Rèn Cường Hóa Thần Chùy chạm mốc Cấp 10.',
+        rewardDesc: '+688 Vụn Thiên Thiết',
+        check: (g) => g.hammerLevel >= 10,
+        progress: (g) => ({ cur: Math.min(10, g.hammerLevel), max: 10 }),
+        reward: (g) => {
+            g.skyIron += 688;
+            g.lifetimeIron += 688;
+        }
+    },
+    {
+        id: 'hammer_lvl_25',
+        icon: '⭐',
+        title: 'Thần Chùy Đột Phá II',
+        desc: 'Nâng cấp Rèn Cường Hóa Thần Chùy chạm mốc Cấp 25.',
+        rewardDesc: '+10 Tinh Thể Thiên Cấm & +1.50 K Vụn Thiên Thiết',
+        check: (g) => g.hammerLevel >= 25,
+        progress: (g) => ({ cur: Math.min(25, g.hammerLevel), max: 25 }),
+        reward: (g) => {
+            g.domeShards += 10;
+            g.skyIron += 1500;
+            g.lifetimeIron += 1500;
+        }
+    },
+    {
+        id: 'first_prestige',
+        icon: '🌀',
+        title: 'Tôi Luyện Thần Hồn',
+        desc: 'Thực hiện Tái sinh lần đầu tiên tại tab Thần Hồn.',
+        rewardDesc: '+1 SP Thần Hồn & +1 Thiên Hỏa Tâm',
+        check: (g) => g.spiritPointsClaimed > 0,
+        progress: (g) => ({ cur: g.spiritPointsClaimed > 0 ? 1 : 0, max: 1 }),
+        reward: (g) => {
+            g.spiritPoints += 1;
+            g.celestialCores += 1;
+        }
+    }
+];
+
+class CelestialForgeGame {
+    constructor() {
+        // Tài nguyên người chơi
+        this.skyIron = 0;             // Vụn Thiên Thiết
+        this.domeShards = 0;          // Tinh Thể Thiên Cấm
+        this.celestialCores = 0;       // Thiên Hỏa Tâm
+        this.eclipseEssence = 0;       // Tinh Hoa Nguyệt Thực (Ca Đêm)
+        this.lifetimeIron = 0;         // Tổng quặng tích lũy toàn bộ game
+        this.playerDamageDealt = 0;    // Tổng sát thương người chơi đã đóng góp
+
+        // Cấp búa và Đe
+        this.hammerLevel = 1;
+        this.activeHammer = 1;
+
+        // Chuyển Sinh & Cây Kỹ Năng Thần Hồn (Prestige)
+        this.spiritPoints = 0;         // SP hiện có
+        this.spiritPointsClaimed = 0;  // Tổng SP đã nhận qua các lần
+        this.talents = {
+            thanLuc: 0,                // Thần Lực Quán Thế (Damage & Ore)
+            nhanQuan: 0,               // Nhãn Quan Thợ Rèn (Mở rộng Điểm Hoàng Kim)
+            tamPhap: 0,                // Khôi Lỗi Tâm Pháp (Offline Idle rate)
+            tietKiem: 0                // Thiên Công Tiết Kiệm (Giảm giá búa)
+        };
+
+        // Bộ đếm Pity (Bảo hiểm nhân phẩm)
+        this.pityCoresCounter = 0;     // Soft Pity: 120, Hard Pity: 149
+        this.goldenStreak = 0;         // Chuỗi gõ Hoàng Kim liên tiếp
+
+        // Mở khóa tính năng theo tiến độ (Progressive Disclosure / Onboarding)
+        this.totalStrikes = 0;         // Tổng số nhát búa đã nện
+        this.onboardingStage = 0;      // 0: Khởi đầu, 1: Thanh Nhịp Điệu, 2: Cộng Hưởng & Vũ Khí, 3: Toàn Bộ
+        this.skipOnboarding = false;   // Người chơi chủ động bấm Bỏ Qua Hướng Dẫn
+        this.claimedFirstForgeLuck = false; // Thưởng Khởi Đầu "Khai Lò Đại Cát" (Chuỗi 3 Hoàng Kim)
+        this.buyMultiplier = '1';      // Hệ số mua nâng cấp: '1', '10', '25', 'next', 'max'
+
+        // Hệ thống Thành Tựu Công Trường (Achievements & Milestones)
+        this.unlockedAchievements = [];
+        this.claimedAchievements = [];
+        this.maxGoldenStreak = 0;
+        this.hasTriggeredShatter = false;
+
+        // Trạng thái Thanh Nhịp Điệu (Forge Rhythm Bar)
+        this.cursorPos = 0;            // 0 -> 100%
+        this.cursorDirection = 1;      // 1: tới, -1: lùi
+        this.cursorSpeed = 65;         // % / giây (chu kỳ ~1.5s)
+        this.sweetSpotCenter = 68;     // Tọa độ Điểm Hoàng Kim (%)
+        this.baseSweetSpotWidth = 14;  // Độ rộng cơ bản (%)
+
+        // Trạng thái Cuồng Nhiệt (Overdrive Fever)
+        this.overdriveActive = false;
+        this.overdriveTimeLeft = 0;
+
+        // Trạng thái Mái Vòm Thiên Cấm (Client-Side Interpolation & 2Hz Sync)
+        this.domeLayer = 1;
+        this.domeMaxHp = 50000;        // 50K HP Tầng 1 (Hợp lý cho chơi đơn & lên cấp)
+        this.domeCurrentHp = 50000;
+        this.domeTargetHp = 50000;
+        this.resonance = 0;
+        this.resonanceReq = 100;       // Tích 100 nhát búa kích hoạt Phá Giáp
+        this.goldenShowerUntil = 0;    // Timestamp kết thúc 15 Phút Mưa Thiên Lộc (Phase 4)
+        this.domeName = "Thiết Vân Vòm (Vòm Mây Sắt)";
+        this.ccu = 1;                  // Số thợ rèn online (1 ở chế độ độc hành)
+        this.serverDps = 0;            // DPS server (0 khi độc hành, chỉ trừ máu khi người chơi nện!)
+
+        // WebSocket State (Phase 3 & 4: Multiplayer Batched Ticks, District Sharding & Global Beat Pulse)
+        this.ws = null;
+        this.isOnline = false;
+        this.wsReconnectTimer = null;
+        this.districtId = "D-1";
+        this.pendingBatchHits = [];
+        this.globalPulse = {
+            phase: 'countdown',
+            timeRemaining: 180,
+            perfectRatio: 0.0,
+            buffActive: false,
+            buffMultiplier: 1.0
+        };
+
+        // Định danh & Tabs
+        this.username = localStorage.getItem("phatroi_user") || `Thợ Rèn #${Math.floor(Math.random() * 8999 + 1000)}`;
+        this.activeTab = 'forge';
+
+        // Bảng Vàng (Leaderboard giả lập chuẩn TAD)
+        this.topContributors = [
+            { name: "Sơn Lâm", dmg: 142500000 },
+            { name: "Hắc Báo", dmg: 128900000 },
+            { name: "Thiên Kình", dmg: 114200000 },
+            { name: "Ngọc Kiếm", dmg: 98400000 },
+            { name: "Thiết Cốt", dmg: 86500000 },
+            { name: "Quang Khải", dmg: 72000000 },
+            { name: "Bạch Sa", dmg: 64100000 },
+            { name: "Hàn Băng", dmg: 55400000 },
+            { name: "Lôi Chấn", dmg: 48900000 }
+        ];
+
+        // Đài Tưởng Niệm Vĩnh Hằng (Hall of Eternity - Lịch sử các tầng đã vỡ)
+        this.hallOfFame = [
+            {
+                layer: "Khởi Nguyên",
+                name: "Thái Sơ Mái Vòm (Kỷ Nguyên Cổ)",
+                shatteredAt: "2026-10-31",
+                lastHitPlayer: "Bàn Cổ Thợ Rèn",
+                topDamager: "Vạn Cổ Đệ Nhất (500.0M)"
+            }
+        ];
+
+        this.lastFrameTime = performance.now();
+        this.init();
+    }
+
+    init() {
+        this.loadSave();
+        this.bindEvents();
+        this.setupFxCanvas();
+        this.updateNightWatchStatus();
+        this.updateNetworkBadge(false);
+        this.fetchHallOfFame();
+        this.connectWebSocket();
+        this.renderAll();
+
+        // Vòng lặp đồ họa 60 FPS
+        requestAnimationFrame((t) => this.animationLoop(t));
+
+        // Nếu offline, chạy giả lập Server Tick 2Hz (500ms)
+        setInterval(() => {
+            if (!this.isOnline) {
+                this.serverTick2HzSimulation();
+            }
+        }, 500);
+
+        // Auto Save mỗi 3 giây
+        setInterval(() => this.saveGame(), 3000);
+
+        // Kiểm tra giờ trực đêm mỗi phút
+        setInterval(() => this.updateNightWatchStatus(), 60000);
+
+        // Kiểm tra thưởng offline khi mở lại
+        this.checkOfflineProgress();
+
+        // Khởi động chu kỳ gom đòn đánh Client-Side Batched Ticks 1.0s (Task 2)
+        setInterval(() => this.flushBatchedStrikes(), 1000);
+    }
+
+    // =========================================================================
+    // PHASE 3 & 4: WEBSOCKET GATEWAY & REST API INTEGRATION
+    // =========================================================================
+    async fetchHallOfFame() {
+        try {
+            const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+            const protocol = window.location.protocol === 'https:' ? 'https:' : 'http:';
+            const endpoint = isLocal ? 'http://localhost:8080/api/hall-of-fame' : `${protocol}//api.phatroi.com/api/hall-of-fame`;
+            const res = await fetch(endpoint, { mode: 'cors' });
+            if (res.ok) {
+                const data = await res.json();
+                if (data && Array.isArray(data.hallOfFame) && data.hallOfFame.length > 0) {
+                    this.hallOfFame = data.hallOfFame;
+                    if (data.currentLayer) this.domeLayer = data.currentLayer;
+                    if (data.currentDomeName) this.domeName = data.currentDomeName;
+                    this.renderLeaderboardTab();
+                    this.renderFirmamentStatus();
+                }
+            }
+        } catch (e) {
+            // Standalone or offline fallback
+        }
+    }
+
+    connectWebSocket() {
+        try {
+            const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            // Cổng 8080 cho localhost, hoặc wss://api.phatroi.com cho production
+            const endpoint = isLocal ? 'ws://localhost:8080' : `${protocol}//api.phatroi.com`;
+
+            this.ws = new WebSocket(endpoint);
+
+            this.ws.onopen = () => {
+                this.isOnline = true;
+                this.updateNetworkBadge(true);
+                this.pushTicker(`🌐 [MẠNG LƯỚI TOÀN DÂN] Đã kết nối thành công tới WebSocket Gateway!`);
+            };
+
+            this.ws.onmessage = (event) => {
+                try {
+                    const data = JSON.parse(event.data);
+                    if (data.type === 'init') {
+                        if (data.districtId) this.districtId = data.districtId;
+                        if (data.layer) this.domeLayer = Number(data.layer);
+                        if (data.name) this.domeName = data.name;
+                        if (data.hp) this.domeTargetHp = Number(data.hp);
+                        if (data.maxHp) this.domeMaxHp = Number(data.maxHp);
+                        if (data.res) this.resonance = Number(data.res);
+                        if (data.resReq) this.resonanceReq = Number(data.resReq);
+                        if (data.shatterUntil) this.shatterUntil = Number(data.shatterUntil) * 1000;
+                        if (data.goldenShowerUntil) this.goldenShowerUntil = Number(data.goldenShowerUntil);
+                        if (data.globalPulse) this.globalPulse = data.globalPulse;
+                    } else if (data.hp) {
+                        // Nhận Broadcast 2Hz từ Server
+                        if (data.districtId) this.districtId = data.districtId;
+                        if (data.layer) this.domeLayer = Number(data.layer);
+                        if (data.name) this.domeName = data.name;
+                        this.domeTargetHp = Number(data.hp);
+                        if (data.maxHp) this.domeMaxHp = Number(data.maxHp);
+                        this.resonance = Number(data.res);
+                        this.resonanceReq = Number(data.resReq);
+                        this.serverDps = Number(data.dps);
+                        this.ccu = Number(data.ccu);
+                        if (data.shatter_sec > 0) {
+                            this.shatterUntil = Date.now() + (data.shatter_sec * 1000);
+                        }
+                        if (typeof data.golden_shower_sec !== 'undefined') {
+                            if (data.golden_shower_sec > 0) {
+                                this.goldenShowerUntil = Date.now() + (data.golden_shower_sec * 1000);
+                            } else if (this.goldenShowerUntil > Date.now()) {
+                                this.goldenShowerUntil = 0;
+                            }
+                        }
+
+                        // Đại Hợp Âm State (Global Beat Pulse - Task 2)
+                        if (data.globalPulse) {
+                            const prevPulse = this.globalPulse || {};
+                            this.globalPulse = data.globalPulse;
+                            if (prevPulse.phase !== data.globalPulse.phase) {
+                                if (data.globalPulse.phase === 'pulse_window') {
+                                    this.pushTicker(`🎶 [ĐẠI HỢP ÂM] Bắt đầu 30s hòa nhịp toàn server! Gõ trúng Hoàng Kim để kích hoạt Buff x5!`);
+                                    window.soundManager.playUpgrade();
+                                } else if (data.globalPulse.phase === 'buff_active') {
+                                    this.pushTicker(`⚡ [VẠN DÂN HỢP NHẤT] Kích hoạt thành công Buff x5 Quặng & Sát Thương 45 giây toàn server!`);
+                                    window.soundManager.playFirmamentShatter();
+                                }
+                            }
+                        }
+
+                        // Ghost Sparks từ Khu Rèn hiện tại
+                        if (Array.isArray(data.districtSparks) && data.districtSparks.length > 0) {
+                            data.districtSparks.forEach(sp => {
+                                const hIdx = sp.stance === 'SOLAR_FLAME' ? 2 : (sp.stance === 'GRAVITY_BURST' ? 3 : (sp.stance === 'MYSTIC_RESONANCE' ? 4 : 1));
+                                this.spawnStrikeFx(hIdx, false);
+                            });
+                        } else if (Array.isArray(data.fx)) {
+                            data.fx.forEach((count, hIdx) => {
+                                for (let i = 0; i < Math.min(6, count); i++) {
+                                    const delay = Math.random() * 450;
+                                    setTimeout(() => this.spawnStrikeFx(hIdx + 1, false), delay);
+                                }
+                            });
+                        }
+                    }
+                    this.renderDomeHp();
+                    this.renderFirmamentStatus();
+                } catch (e) {
+                    console.warn("Lỗi phân giải gói tin WebSocket:", e);
+                }
+            };
+
+            this.ws.onerror = () => {
+                this.handleWsDisconnect();
+            };
+
+            this.ws.onclose = () => {
+                this.handleWsDisconnect();
+            };
+        } catch (e) {
+            this.handleWsDisconnect();
+        }
+    }
+
+    handleWsDisconnect() {
+        this.isOnline = false;
+        this.updateNetworkBadge(false);
+        // Tự động thử kết nối lại sau 15 giây
+        if (!this.wsReconnectTimer) {
+            this.wsReconnectTimer = setTimeout(() => {
+                this.wsReconnectTimer = null;
+                this.connectWebSocket();
+            }, 15000);
+        }
+    }
+
+    updateNetworkBadge(online) {
+        const modeBadge = document.getElementById('gameModeBadge');
+        const liveNetBadge = document.getElementById('liveNetBadge');
+        const ccuEl = document.getElementById('ccuText');
+        const dpsEl = document.getElementById('dpsText');
+
+        if (online) {
+            if (modeBadge) {
+                modeBadge.style.background = 'rgba(16, 185, 129, 0.15)';
+                modeBadge.style.borderColor = 'rgba(16, 185, 129, 0.4)';
+                modeBadge.style.color = '#6ee7b7';
+                modeBadge.innerText = '🌐 CHẾ ĐỘ: VẠN DÂN (CO-OP)';
+            }
+            if (liveNetBadge) {
+                liveNetBadge.className = 'ticker-icon connected';
+                liveNetBadge.innerText = '🟢 LIVE · ĐỒNG BỘ SERVER:';
+            }
+            if (ccuEl) ccuEl.innerText = `🔥 ${this.ccu} Thợ Rèn`;
+            if (dpsEl) dpsEl.innerText = `${formatNum(this.serverDps)} DMG/s`;
+        } else {
+            if (modeBadge) {
+                modeBadge.style.background = 'rgba(168, 85, 247, 0.15)';
+                modeBadge.style.borderColor = 'rgba(168, 85, 247, 0.4)';
+                modeBadge.style.color = '#d8b4fe';
+                modeBadge.innerText = '🎮 CHẾ ĐỘ: ĐỘC HÀNH (SOLO)';
+            }
+            if (liveNetBadge) {
+                liveNetBadge.className = 'ticker-icon offline';
+                liveNetBadge.innerText = '⚪ NGOẠI TUYẾN (OFFLINE):';
+            }
+            if (ccuEl) ccuEl.innerText = `👤 1 Thợ Rèn`;
+            const currentDmg = this.calcFinalDamage('normal', false);
+            if (dpsEl) dpsEl.innerText = `Sức đập: ${formatNum(currentDmg)} DMG`;
+        }
+    }
+
+    // =========================================================================
+    // HỆ THỐNG TOÁN HỌC & CÂY KỸ NĂNG THẦN HỒN TIỆM CẬN (MMD)
+    // =========================================================================
+
+    getCostDiscount() {
+        const lv = this.talents.tietKiem;
+        return 0.50 * (1 - Math.exp(-0.06 * lv));
+    }
+
+    getSweetSpotWidth() {
+        const lv = this.talents.nhanQuan;
+        const bonus = 18 * (1 - Math.exp(-0.08 * lv));
+        return this.baseSweetSpotWidth + bonus;
+    }
+
+    getSpiritDamageBonus() {
+        const lv = this.talents.thanLuc;
+        const talentBonus = 0.25 * lv * Math.pow(1.05, lv);
+        const baseSpBonus = this.spiritPointsClaimed * 0.10;
+        return talentBonus + baseSpBonus;
+    }
+
+    getIdleEfficiency() {
+        const lv = this.talents.tamPhap || 0;
+        const bonus = 0.50 * (1 - Math.exp(-0.07 * lv));
+        let eff = 0.35 + bonus;
+        // Nếu kích hoạt Huyền Âm Chùy: +15% công suất gõ tự động (Auto-Forge / Idle)
+        if (this.activeHammer === 4) {
+            eff += 0.15;
+        }
+        return Math.min(1.0, eff);
+    }
+
+    calcHammerUpgradeCost(L) {
+        const discount = this.getCostDiscount();
+        return Math.floor(10 * Math.pow(1.18, L - 1) * (1 - discount));
+    }
+
+    calcIronDrop(L, m_rhythm) {
+        const hammer = HAMMERS[this.activeHammer];
+        const b_ore = hammer.ore_bonus + (this.talents.thanLuc * 0.15);
+        // Đột phá Cột mốc Cấp 5: x1.5 Sản Lượng Quặng
+        const oreMilestone = L >= 5 ? 1.5 : 1.0;
+        let drop = Math.floor(2 * Math.pow(1.11, L - 1) * m_rhythm * (1 + b_ore) * oreMilestone);
+        
+        // Phase 4: Sự kiện 15 Phút Mưa Thiên Lộc (x5 quặng toàn server)
+        if (Date.now() < this.goldenShowerUntil) {
+            drop *= 5;
+        }
+
+        return Math.max(1, drop);
+    }
+
+    calcMilestoneMultiplier(L) {
+        // Cột mốc đột phá sớm Cấp 5: x1.5 Sát Thương & Quặng
+        const m5 = L >= 5 ? 1.5 : 1.0;
+        const m10 = Math.floor(L / 10);
+        const m25 = Math.floor(L / 25);
+        return m5 * Math.pow(2, m10) * Math.pow(3, m25);
+    }
+
+    calcBaseDamage(L) {
+        const milestone = this.calcMilestoneMultiplier(L);
+        // Tăng nhẹ lượng tăng trưởng tuyệt đối ở 5 cấp đầu (+2 DMG/cấp cho L=2..5)
+        const earlyBonus = L <= 5 ? (L - 1) * 2 : 8;
+        return Math.floor(10 * Math.pow(1.11, L - 1) * milestone) + earlyBonus;
+    }
+
+    calcFinalDamage(zone, isCrit) {
+        const base = this.calcBaseDamage(this.hammerLevel);
+        const hammer = HAMMERS[this.activeHammer];
+
+        let k_rhythm = 1.0;
+        if (this.overdriveActive) k_rhythm = 1.8;
+        else if (zone === 'golden') k_rhythm = 3.5;
+        else if (zone === 'cold') k_rhythm = 0.5;
+
+        let k_hammer = hammer.k_hammer;
+        if (this.activeHammer === 3 && zone !== 'golden') {
+            k_hammer = 0.2;
+        }
+
+        const k_crit = isCrit ? 2.5 : 1.0;
+        const b_spirit = 1 + this.getSpiritDamageBonus();
+
+        const isShattered = Date.now() < this.shatterUntil;
+        const k_armor = isShattered ? 3.0 : 0.10;
+
+        let finalDmg = base * k_rhythm * k_hammer * k_crit * b_spirit * k_armor;
+        return Math.max(1, Math.floor(finalDmg));
+    }
+
+    calcTotalPrestigeSP() {
+        if (this.lifetimeIron < 1000000) return 0;
+        return Math.floor(12 * Math.pow(this.lifetimeIron / 1000000, 0.24));
+    }
+
+    calcClaimableSP() {
+        return Math.max(0, this.calcTotalPrestigeSP() - this.spiritPointsClaimed);
+    }
+
+    triggerPrestige() {
+        const gain = this.calcClaimableSP();
+        if (gain <= 0 && this.hammerLevel < 75) {
+            this.openModal(
+                "CHƯA ĐỦ ĐIỀU KIỆN TÔI LUYỆN",
+                "Bạn cần đạt tối thiểu <b>Cấp Búa 75</b> hoặc tích lũy hơn <b>1.000.000 Vụn Thiên Thiết</b> để có thể ngưng tụ Điểm Thần Hồn!"
+            );
+            return;
+        }
+
+        const confirmRebirth = confirm(
+            `Tôi Luyện Thần Hồn sẽ ném Búa hiện tại vào Lò Hỗn Độn để quay về Cấp 1 và Vụn Thiên Thiết = 0.\n\nĐổi lại, bạn nhận được ${gain} ĐIỂM THẦN HỒN để nâng cấp Cổ Ngữ Vĩnh Viễn!\n\nBạn có chắc chắn muốn chuyển sinh không?`
+        );
+        if (!confirmRebirth) return;
+
+        this.spiritPoints += gain;
+        this.spiritPointsClaimed += gain;
+        this.skyIron = 0;
+        this.hammerLevel = 1;
+        this.goldenStreak = 0;
+
+        this.checkAchievements();
+        window.soundManager.playRebirthGong();
+        this.saveGame();
+        this.renderAll();
+
+        this.openModal(
+            "TÔI LUYỆN THẦN HỒN THÀNH CÔNG!",
+            `Bạn đã tái sinh với thể phách thợ rèn tối thượng và nhận được <b>+${gain} Điểm Thần Hồn</b>!<br>Hãy vào tab 'Thần Hồn' để mở khóa các đặc quyền Cổ Ngữ.`
+        );
+    }
+
+    upgradeTalent(talentKey) {
+        const lv = this.talents[talentKey];
+        const costs = {
+            thanLuc: Math.floor(2 * Math.pow(1.35, lv)),
+            nhanQuan: Math.floor(5 * Math.pow(1.50, lv)),
+            tamPhap: Math.floor(4 * Math.pow(1.45, lv)),
+            tietKiem: Math.floor(5 * Math.pow(1.55, lv))
+        };
+        const cost = costs[talentKey] || 9999;
+
+        if (this.spiritPoints >= cost) {
+            this.spiritPoints -= cost;
+            this.talents[talentKey]++;
+            window.soundManager.playUpgrade();
+            this.renderAll();
+        }
+    }
+
+    // =========================================================================
+    // THAO TÁC NỆN BÚA & GỬI GÓI TIN WEBSOCKET
+    // =========================================================================
+
+    updateNightWatchStatus() {
+        const hour = new Date().getHours();
+        const isNight = hour >= 0 && hour < 6;
+        const badge = document.getElementById('nightBadge');
+        if (badge) {
+            badge.style.display = isNight ? 'flex' : 'none';
+        }
+        this.isNightWatch = isNight;
+    }
+
+    handleStrike(event = null) {
+        window.soundManager.ensureContext();
+        this.totalStrikes++;
+
+        // 1. Chế độ Overdrive Fever
+        if (this.overdriveActive) {
+            this.executeOverdriveStrike(event);
+            return;
+        }
+
+        // 2. Canh nhịp
+        const currentWidth = this.getSweetSpotWidth();
+        const diff = Math.abs(this.cursorPos - this.sweetSpotCenter);
+        const halfWidth = currentWidth / 2;
+
+        let zone = 'cold';
+        let m_rhythm = 0.3;
+
+        // Nếu đang ở Giai đoạn 0 (chưa mở khóa Thanh Nhịp Điệu), luôn tính chuẩn Warm để người mới không bị phạt
+        if (this.onboardingStage === 0 && !this.skipOnboarding) {
+            zone = 'warm';
+            m_rhythm = 1.0;
+            this.goldenStreak = 0;
+        } else if (diff <= halfWidth) {
+            zone = 'golden';
+            m_rhythm = 2.5;
+            this.goldenStreak++;
+            this.maxGoldenStreak = Math.max(this.maxGoldenStreak || 0, this.goldenStreak);
+        } else if (diff <= halfWidth * 2.5) {
+            zone = 'warm';
+            m_rhythm = 1.0;
+            this.goldenStreak = 0;
+        } else {
+            zone = 'cold';
+            m_rhythm = 0.3;
+            this.goldenStreak = 0;
+        }
+
+        let critChance = zone === 'golden' ? 0.20 : 0.05;
+        if (this.isNightWatch) critChance = 1.0;
+        const isCrit = Math.random() < critChance;
+
+        const damage = this.calcFinalDamage(zone, isCrit);
+        const ironEarned = this.calcIronDrop(this.hammerLevel, m_rhythm);
+
+        this.skyIron += ironEarned;
+        this.lifetimeIron += ironEarned;
+        this.playerDamageDealt += damage;
+
+        // Kiểm tra tiến trình mở khóa Onboarding
+        this.checkOnboardingProgression();
+
+        // GỬI GÓI TIN HÀNH ĐỘNG VÀO BỘ ĐỆM BATCHED TICKS (Task 2)
+        const hitStanceKey = ['THUNDER_PEAK', 'SOLAR_FLAME', 'GRAVITY_BURST', 'MYSTIC_RESONANCE'][this.activeHammer - 1] || 'THUNDER_PEAK';
+        this.pendingBatchHits.push({
+            stance: hitStanceKey,
+            quality: zone,
+            damage: damage,
+            resonance: resAdd,
+            offsetMs: Math.round(diff * 15),
+            isCrit: isCrit
+        });
+        if (this.pendingBatchHits.length >= 15) {
+            this.flushBatchedStrikes();
+        }
+
+        window.soundManager.playAnvilStrike(zone, isCrit);
+        this.rollDrops(zone);
+
+        const resAdd = HAMMERS[this.activeHammer].res_bonus;
+        this.addResonance(resAdd);
+
+        // Optimistic UI: Rút máu cục bộ trước khi nhận broadcast
+        this.domeTargetHp = Math.max(0, this.domeTargetHp - damage);
+
+        this.showFloatingDamage(event, damage, zone, isCrit);
+        this.triggerAnvilBounce();
+        this.spawnStrikeFx(this.activeHammer, true);
+
+        // Micro-shake rung chấn nếu tầng phong ấn dưới 50% HP khi trúng Hoàng Kim hoặc Bạo Kích
+        const hpPct = this.domeCurrentHp / this.domeMaxHp;
+        if (hpPct <= 0.50 && (zone === 'golden' || isCrit)) {
+            this.triggerFirmamentShake();
+        }
+
+        if (zone === 'golden') {
+            this.shiftSweetSpot();
+
+            // Thưởng Khởi Đầu "Khai Lò Đại Cát": Đạt Chuỗi Hoàng Kim 3 nhát liên tiếp lần đầu
+            if (this.goldenStreak >= 3 && !this.claimedFirstForgeLuck) {
+                this.claimedFirstForgeLuck = true;
+                const luckReward = 88;
+                this.skyIron += luckReward;
+                this.lifetimeIron += luckReward;
+                window.soundManager.playUpgrade();
+                this.pushTicker(`🎉 [KHAI LÒ ĐẠI CÁT] Chuỗi 3 nhịp Hoàng Kim hoàn hảo! Nhận thưởng khởi đầu +${luckReward} Vụn Thiên Thiết để nâng cấp Búa!`);
+                this.showFloatingDamage(event, luckReward, 'golden', true);
+            }
+        }
+
+        if (this.goldenStreak >= 8) {
+            this.triggerOverdrive();
+        }
+
+        this.checkAchievements();
+        this.renderAll();
+    }
+
+    executeOverdriveStrike(event) {
+        this.totalStrikes++;
+        const isCrit = Math.random() < 0.25;
+        const damage = this.calcFinalDamage('golden', isCrit);
+        const ironEarned = this.calcIronDrop(this.hammerLevel, 1.8);
+
+        this.skyIron += ironEarned;
+        this.lifetimeIron += ironEarned;
+        this.playerDamageDealt += damage;
+        this.checkOnboardingProgression();
+        this.renderWallets();
+        this.renderUpgradeCard();
+
+        // Gửi đòn đánh Overdrive vào bộ đệm Batched Ticks (Task 2)
+        const hitStanceKey = ['THUNDER_PEAK', 'SOLAR_FLAME', 'GRAVITY_BURST', 'MYSTIC_RESONANCE'][this.activeHammer - 1] || 'THUNDER_PEAK';
+        this.pendingBatchHits.push({
+            stance: hitStanceKey,
+            quality: 'golden',
+            damage: damage,
+            resonance: 2,
+            offsetMs: 0,
+            isCrit: isCrit
+        });
+        if (this.pendingBatchHits.length >= 15) {
+            this.flushBatchedStrikes();
+        }
+
+        window.soundManager.playOverdriveStrike();
+        this.domeTargetHp = Math.max(0, this.domeTargetHp - damage);
+        this.addResonance(2);
+
+        this.showFloatingDamage(event, damage, 'crit', isCrit);
+        this.spawnStrikeFx(this.activeHammer, true);
+        this.triggerAnvilBounce();
+
+        // Micro-shake khi nện Overdrive nếu dưới 50% HP
+        const hpPct = this.domeCurrentHp / this.domeMaxHp;
+        if (hpPct <= 0.50) {
+            this.triggerFirmamentShake();
+        }
+
+        this.checkAchievements();
+    }
+
+    flushBatchedStrikes() {
+        if (!this.isOnline || !this.ws || this.ws.readyState !== WebSocket.OPEN) return;
+        if (!this.pendingBatchHits || this.pendingBatchHits.length === 0) return;
+
+        const packet = {
+            type: 'batch_strike',
+            playerId: this.username,
+            districtId: this.districtId || "D-1",
+            timestamp: Date.now(),
+            hits: this.pendingBatchHits
+        };
+        this.ws.send(JSON.stringify(packet));
+        this.pendingBatchHits = [];
+    }
+
+    shiftSweetSpot() {
+        this.sweetSpotCenter = Math.floor(45 + Math.random() * 35);
+        const el = document.getElementById('goldenZone');
+        const width = this.getSweetSpotWidth();
+        if (el) {
+            el.style.left = `${this.sweetSpotCenter - width / 2}%`;
+            el.style.width = `${width}%`;
+        }
+    }
+
+    triggerOverdrive() {
+        this.overdriveActive = true;
+        this.overdriveTimeLeft = 10.0;
+        this.goldenStreak = 0;
+        window.soundManager.playOverdriveStart();
+
+        const arena = document.getElementById('anvilArena');
+        const banner = document.getElementById('overdriveBanner');
+        if (arena) arena.classList.add('overdrive-mode');
+        if (banner) banner.style.display = 'block';
+
+        this.pushTicker(`🔥 [OVERDRIVE] ${this.username} vừa kích hoạt Cuồng Nhiệt Bão Sấm Sét 10s!`);
+    }
+
+    rollDrops(zone) {
+        if (zone !== 'golden') return;
+
+        const shardChance = Math.min(0.35, 0.08 + 0.005 * this.goldenStreak);
+        if (Math.random() < shardChance) {
+            this.domeShards++;
+        }
+
+        this.pityCoresCounter++;
+        let coreChance = 0.005;
+        if (this.pityCoresCounter > 120) {
+            coreChance = 0.005 + (this.pityCoresCounter - 120) * 0.035;
+        }
+        if (this.pityCoresCounter >= 149 || Math.random() < coreChance) {
+            this.celestialCores++;
+            this.pityCoresCounter = 0;
+            this.pushTicker(`⭐ [BẢO HIỂM THẦN TÂM] Bạn vừa đập rơi 1 Thiên Hỏa Tâm!`);
+        }
+
+        if (this.isNightWatch && Math.random() < 0.15) {
+            this.eclipseEssence++;
+            this.pushTicker(`🌙 [TRỰC ĐÊM] Bạn vừa thu hoạch được 1 Tinh Hoa Nguyệt Thực!`);
+        }
+    }
+
+    addResonance(amount) {
+        this.resonance += amount;
+        if (this.resonance >= this.resonanceReq) {
+            this.resonance = 0;
+            this.shatterUntil = Date.now() + 60000;
+            this.hasTriggeredShatter = true;
+            this.checkAchievements();
+            window.soundManager.playFirmamentShatter();
+            this.triggerShatterFlash();
+            this.pushTicker(`⚡ [CỘNG HƯỞNG VẠN DÂN] Phá vỡ Giáp Thần Lực! Toàn server x3 Sát Thương trong 60 giây!`);
+        }
+    }
+
+    triggerShatterFlash() {
+        const flash = document.getElementById('shatterFlash');
+        if (flash) {
+            flash.classList.add('active');
+            setTimeout(() => flash.classList.remove('active'), 400);
+        }
+    }
+
+    // =========================================================================
+    // NÂNG CẤP BÚA, HỆ SỐ MUA NHANH & TABS
+    // =========================================================================
+    getNextMilestone(L) {
+        const milestones = [5, 10, 25, 50, 75, 100, 125, 150, 175, 200, 250, 300];
+        for (const m of milestones) {
+            if (L < m) return m;
+        }
+        return Math.ceil((L + 1) / 50) * 50;
+    }
+
+    getMilestoneRewardDesc(m) {
+        if (m === 5) return "x1.5 DMG & Quặng";
+        if (m === 10) return "x2 Sát Thương";
+        if (m === 25) return "x3 Sát Thương";
+        if (m === 50) return "x6 Sát Thương";
+        if (m === 75) return "x3 Sát Thương";
+        if (m === 100) return "x6 Sát Thương";
+        if (m % 50 === 0) return "x6 Sát Thương";
+        return "x3 Sát Thương";
+    }
+
+    checkPassedMilestones(oldLevel, newLevel) {
+        const milestones = [5, 10, 25, 50, 75, 100, 125, 150, 175, 200, 250, 300];
+        let highest = null;
+        for (const m of milestones) {
+            if (oldLevel < m && newLevel >= m) {
+                highest = m;
+            }
+        }
+        return highest;
+    }
+
+    getBulkUpgradeDetails() {
+        const L = this.hammerLevel;
+        let count = 1;
+        let totalCost = 0;
+        let canAfford = false;
+
+        if (this.buyMultiplier === '1') {
+            count = 1;
+            totalCost = this.calcHammerUpgradeCost(L);
+            canAfford = this.skyIron >= totalCost;
+        } else if (this.buyMultiplier === '10') {
+            count = 10;
+            for (let i = 0; i < 10; i++) {
+                totalCost += this.calcHammerUpgradeCost(L + i);
+            }
+            canAfford = this.skyIron >= totalCost;
+        } else if (this.buyMultiplier === '25') {
+            count = 25;
+            for (let i = 0; i < 25; i++) {
+                totalCost += this.calcHammerUpgradeCost(L + i);
+            }
+            canAfford = this.skyIron >= totalCost;
+        } else if (this.buyMultiplier === 'next') {
+            const targetM = this.getNextMilestone(L);
+            count = Math.max(1, targetM - L);
+            for (let i = 0; i < count; i++) {
+                totalCost += this.calcHammerUpgradeCost(L + i);
+            }
+            canAfford = this.skyIron >= totalCost;
+        } else if (this.buyMultiplier === 'max') {
+            let curL = L;
+            let affordableCount = 0;
+            let accumCost = 0;
+            while (true) {
+                const nextCost = this.calcHammerUpgradeCost(curL);
+                if (accumCost + nextCost > this.skyIron) break;
+                accumCost += nextCost;
+                affordableCount++;
+                curL++;
+                if (affordableCount >= 1000) break;
+            }
+            if (affordableCount === 0) {
+                count = 1;
+                totalCost = this.calcHammerUpgradeCost(L);
+                canAfford = false;
+            } else {
+                count = affordableCount;
+                totalCost = accumCost;
+                canAfford = true;
+            }
+        }
+
+        const curBaseDmg = this.calcBaseDamage(L);
+        const nextBaseDmg = this.calcBaseDamage(L + count);
+        const pctIncrease = curBaseDmg > 0 ? Math.round(((nextBaseDmg - curBaseDmg) / curBaseDmg) * 100) : 0;
+
+        return {
+            count,
+            totalCost,
+            canAfford,
+            curBaseDmg,
+            nextBaseDmg,
+            pctIncrease
+        };
+    }
+
+    setBuyMultiplier(mode) {
+        this.buyMultiplier = mode;
+        document.querySelectorAll('.buy-mult-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.getAttribute('data-mode') === mode);
+        });
+        this.renderUpgradeCard();
+        this.saveGame();
+    }
+
+    triggerMilestoneFlash() {
+        const card = document.getElementById('hammerUpgradeCard');
+        if (card) {
+            card.classList.remove('milestone-flash');
+            void card.offsetWidth;
+            card.classList.add('milestone-flash');
+            setTimeout(() => card.classList.remove('milestone-flash'), 950);
+        }
+    }
+
+    upgradeHammer() {
+        const details = this.getBulkUpgradeDetails();
+        if (details.canAfford) {
+            const oldLevel = this.hammerLevel;
+            const newLevel = oldLevel + details.count;
+
+            this.skyIron -= details.totalCost;
+            this.hammerLevel = newLevel;
+
+            // Kiểm tra và thông báo Đột Phá Cột Mốc
+            const hitMilestone = this.checkPassedMilestones(oldLevel, newLevel);
+            if (hitMilestone) {
+                const reward = this.getMilestoneRewardDesc(hitMilestone);
+                this.pushTicker(`⭐ [ĐỘT PHÁ CẤP ${hitMilestone}] Thần Chùy đã đạt Cột Mốc Cấp ${hitMilestone}! Nhận vĩnh viễn ${reward}!`);
+                window.soundManager.playUpgrade();
+                this.triggerMilestoneFlash();
+            } else {
+                window.soundManager.playUpgrade();
+            }
+
+            this.checkOnboardingProgression();
+            this.checkAchievements();
+            this.renderAll();
+        }
+    }
+
+    switchHammer(id) {
+        this.activeHammer = parseInt(id);
+        document.querySelectorAll('.hammer-btn').forEach(b => {
+            b.classList.toggle('active', parseInt(b.getAttribute('data-id')) === this.activeHammer);
+        });
+
+        if (this.activeHammer === 4) {
+            this.pushTicker(`🎵 [HUYỀN ÂM CHÙY] Đã trang bị! Nhận +15% Sản Lượng Quặng & +15% Tự Động Rèn (Solo) / +15% Toàn Đội!`);
+        } else if (this.activeHammer === 1) {
+            this.pushTicker(`⚡ [LÔI ĐÌNH CHÙY] Đã trang bị! +3 Điểm Cộng Hưởng mỗi nhát búa!`);
+        } else if (this.activeHammer === 2) {
+            this.pushTicker(`🔥 [VIÊM DƯƠNG CHÙY] Đã trang bị! Thiêu Đốt liên tục & +30% Quặng!`);
+        } else if (this.activeHammer === 3) {
+            this.pushTicker(`🌌 [TRỌNG LỰC CHÙY] Đã trang bị! x12 Sát Thương cực đại khi trúng Điểm Hoàng Kim!`);
+        }
+
+        this.renderAll();
+    }
+
+    switchTab(tabKey) {
+        if (tabKey === 'prestige' && this.onboardingStage < 3 && !this.skipOnboarding) {
+            this.pushTicker("🔒 Tính năng Thần Hồn sẽ mở khóa khi bạn đạt Cấp búa 15 hoặc 100 nhát búa!");
+            return;
+        }
+        this.activeTab = tabKey;
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.getAttribute('data-tab') === tabKey);
+        });
+        document.querySelectorAll('.tab-pane').forEach(pane => {
+            pane.classList.toggle('active', pane.getAttribute('id') === `pane-${tabKey}`);
+        });
+        this.renderAll();
+    }
+
+    // =========================================================================
+    // CLIENT LERP 60 FPS & ANIMATION LOOP
+    // =========================================================================
+    animationLoop(now) {
+        const dt = (now - this.lastFrameTime) / 1000;
+        this.lastFrameTime = now;
+
+        if (!this.overdriveActive) {
+            this.cursorPos += this.cursorDirection * this.cursorSpeed * dt;
+            if (this.cursorPos >= 100) {
+                this.cursorPos = 100;
+                this.cursorDirection = -1;
+            } else if (this.cursorPos <= 0) {
+                this.cursorPos = 0;
+                this.cursorDirection = 1;
+            }
+            const cursorEl = document.getElementById('rhythmCursor');
+            if (cursorEl) cursorEl.style.left = `${this.cursorPos}%`;
+        } else {
+            this.overdriveTimeLeft -= dt;
+            const timerEl = document.getElementById('overdriveTimer');
+            if (timerEl) timerEl.innerText = `${Math.max(0, this.overdriveTimeLeft).toFixed(1)}s`;
+
+            if (this.overdriveTimeLeft <= 0) {
+                this.overdriveActive = false;
+                const arena = document.getElementById('anvilArena');
+                const banner = document.getElementById('overdriveBanner');
+                if (arena) arena.classList.remove('overdrive-mode');
+                if (banner) banner.style.display = 'none';
+            }
+        }
+
+        // Nội suy tuyến tính (Lerp) 60 FPS mượt mà
+        if (Math.abs(this.domeCurrentHp - this.domeTargetHp) > 0.5) {
+            this.domeCurrentHp += (this.domeTargetHp - this.domeCurrentHp) * 0.15;
+            this.renderDomeHp();
+        } else if (this.domeCurrentHp !== this.domeTargetHp) {
+            this.domeCurrentHp = this.domeTargetHp;
+            this.renderDomeHp();
+        }
+
+        // Phase 4: Sự kiện 15 Phút Mưa Thiên Lộc (x5 quặng)
+        const showerBanner = document.getElementById('goldenShowerBanner');
+        const showerTimer = document.getElementById('showerTimerText');
+        if (Date.now() < this.goldenShowerUntil) {
+            if (showerBanner) showerBanner.style.display = 'block';
+            if (showerTimer) {
+                const secLeft = Math.max(0, Math.ceil((this.goldenShowerUntil - Date.now()) / 1000));
+                const m = Math.floor(secLeft / 60).toString().padStart(2, '0');
+                const s = (secLeft % 60).toString().padStart(2, '0');
+                showerTimer.innerText = `${m}:${s}`;
+            }
+        } else {
+            if (showerBanner) showerBanner.style.display = 'none';
+        }
+
+        // Đếm ngược 60 FPS trạng thái Phá Giáp (Armor Break Countdown)
+        if (this.shatterUntil > Date.now() || this.wasShattered) {
+            this.renderResonanceBar();
+            this.renderFirmamentStatus();
+            this.wasShattered = this.shatterUntil > Date.now();
+        }
+
+        requestAnimationFrame((t) => this.animationLoop(t));
+    }
+
+    // =========================================================================
+    // MÔ PHỎNG CỤC BỘ KHI NGOẠI TUYẾN (OFFLINE STANDBY SIMULATION)
+    // =========================================================================
+    serverTick2HzSimulation() {
+        // Tuyệt đối không tự trừ máu khi chơi đơn/ngoại tuyến (Máu chỉ giảm khi người chơi nện búa!)
+        if (this.isOnline && this.serverDps > 0) {
+            const serverDamageTick = (this.serverDps / 2);
+            this.domeTargetHp = Math.max(0, this.domeTargetHp - serverDamageTick);
+        }
+
+        const hpPct = this.domeTargetHp / this.domeMaxHp;
+        const card = document.getElementById('firmamentCard');
+        if (card) {
+            card.classList.toggle('final-phase', hpPct <= 0.05);
+        }
+
+        if (this.domeTargetHp <= 0) {
+            this.handleFirmamentShattered();
+        }
+
+        this.renderFirmamentStatus();
+    }
+
+    handleFirmamentShattered() {
+        const shatteredLayer = this.domeLayer;
+        const shatteredName = this.domeName;
+
+        // Lưu vào Đài Tưởng Niệm Lịch Sử
+        this.hallOfFame.unshift({
+            layer: shatteredLayer,
+            name: shatteredName,
+            maxHp: this.domeMaxHp,
+            shatteredAt: new Date().toLocaleDateString('vi-VN'),
+            lastHitPlayer: this.username,
+            topContributors: [...this.topContributors].slice(0, 3)
+        });
+
+        // Kích hoạt 15 Phút Mưa Thiên Lộc (x5 quặng rèn toàn server)
+        this.goldenShowerUntil = Date.now() + (15 * 60 * 1000);
+
+        // Phần thưởng phá vỡ Mái Vòm cho người chơi
+        const shardReward = 500 * shatteredLayer;
+        this.domeShards += shardReward;
+        this.celestialCores += 1;
+
+        // Tiến lên tầng tiếp theo trong Cửu Trọng Thiên Cấm
+        this.domeLayer = Math.min(9, this.domeLayer + 1);
+        const nextCfg = CELESTIAL_LAYERS[this.domeLayer - 1] || { name: `Tầng ${this.domeLayer}`, baseHp: this.domeMaxHp * 3.5 };
+        this.domeName = nextCfg.name;
+        this.domeMaxHp = nextCfg.baseHp;
+        this.domeCurrentHp = this.domeMaxHp;
+        this.domeTargetHp = this.domeMaxHp;
+        this.resonance = 0;
+
+        window.soundManager.playFirmamentShatter();
+        this.triggerShatterFlash();
+        this.saveGame();
+        this.renderAll();
+
+        this.openModal(
+            "MÁI VÒM THIÊN CẤM SẬP ĐỔ!",
+            `Toàn thể thợ rèn đã đập tan nát <b>${shatteredName} (Tầng ${shatteredLayer})</b>!<br><br>
+            • <b>Đệ Nhất Phá Thiên Giả (Last Hit)</b>: Khắc tên vàng <b>${this.username}</b> vĩnh viễn lên Đài Tưởng Niệm Vĩnh Hằng!<br>
+            • <b>Thưởng Phá Vòm</b>: Nhận ngay <b>+${formatNum(shardReward)} Tinh Thể Thiên Cấm</b> & <b>+1 Thiên Hỏa Tâm</b>!<br>
+            • <b>Đại Lộc Toàn Server</b>: Kích hoạt <b>15 Phút Mưa Thiên Lộc (x5 Sản Lượng Quặng)</b>!`
+        );
+    }
+
+    // =========================================================================
+    // CANVAS FX RENDERING
+    // =========================================================================
+    setupFxCanvas() {
+        const canvas = document.getElementById('fxCanvas');
+        if (!canvas) return;
+        this.canvasCtx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            this.initHorizonFires();
+        });
+
+        this.fxParticles = [];
+        this.initHorizonFires();
+
+        const renderFx = () => {
+            this.canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
+            this.renderHorizonFires();
+
+            // Phase 4: Sinh hạt Mưa Thiên Lộc (Golden Rain) khi sự kiện đang diễn ra
+            if (Date.now() < this.goldenShowerUntil && Math.random() < 0.45) {
+                this.fxParticles.push({
+                    x: Math.random() * canvas.width,
+                    y: -10,
+                    speedX: (Math.random() - 0.5) * 1.5,
+                    speedY: -(Math.random() * 4 + 2), // Rơi từ trên trời xuống
+                    size: Math.random() * 3 + 1.5,
+                    alpha: 1.0,
+                    color: '#fbbf24'
+                });
+            }
+
+            for (let i = this.fxParticles.length - 1; i >= 0; i--) {
+                const p = this.fxParticles[i];
+                p.y -= p.speedY;
+                p.x += p.speedX;
+                p.alpha -= 0.02;
+                if (p.alpha <= 0 || p.y < -20 || p.y > canvas.height + 20) {
+                    this.fxParticles.splice(i, 1);
+                    continue;
+                }
+                this.canvasCtx.beginPath();
+                this.canvasCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                this.canvasCtx.fillStyle = p.color;
+                this.canvasCtx.globalAlpha = p.alpha;
+                this.canvasCtx.fill();
+            }
+            requestAnimationFrame(renderFx);
+        };
+        requestAnimationFrame(renderFx);
+    }
+
+    initHorizonFires() {
+        this.horizonFires = [];
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+        const fireCount = Math.floor(Math.min(80, width / 18));
+
+        for (let i = 0; i < fireCount; i++) {
+            this.horizonFires.push({
+                x: Math.random() * width,
+                y: height * 0.72 + (Math.random() * height * 0.22),
+                radius: Math.random() * 3 + 1.5,
+                baseAlpha: Math.random() * 0.4 + 0.2,
+                flickerSpeed: Math.random() * 0.08 + 0.02,
+                phase: Math.random() * Math.PI * 2
+            });
+        }
+    }
+
+    renderHorizonFires() {
+        const now = Date.now() / 1000;
+        this.horizonFires.forEach(f => {
+            const alpha = f.baseAlpha + Math.sin(now * f.flickerSpeed * 20 + f.phase) * 0.15;
+            this.canvasCtx.beginPath();
+            this.canvasCtx.arc(f.x, f.y, f.radius, 0, Math.PI * 2);
+            this.canvasCtx.fillStyle = '#f97316';
+            this.canvasCtx.globalAlpha = Math.max(0.05, alpha);
+            this.canvasCtx.fill();
+        });
+    }
+
+    spawnStrikeFx(hammerId, isPlayer = false) {
+        if (!this.canvasCtx) return;
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+
+        const colors = { 1: '#38bdf8', 2: '#ef4444', 3: '#c084fc', 4: '#f59e0b' };
+        const color = colors[hammerId] || '#f59e0b';
+
+        const originX = isPlayer ? width * 0.5 : Math.random() * width;
+        const originY = isPlayer ? height * 0.68 : height * 0.75 + Math.random() * 40;
+
+        const count = isPlayer ? 4 : 2;
+        for (let i = 0; i < count; i++) {
+            this.fxParticles.push({
+                x: originX + (Math.random() * 40 - 20),
+                y: originY,
+                speedX: (Math.random() - 0.5) * 2,
+                speedY: Math.random() * 12 + 10,
+                size: isPlayer ? Math.random() * 3.5 + 2 : Math.random() * 2 + 1,
+                alpha: 1.0,
+                color: color
+            });
+        }
+    }
+
+    showFloatingDamage(event, dmg, zone, isCrit) {
+        const arena = document.getElementById('anvilArena');
+        if (!arena) return;
+
+        const el = document.createElement('div');
+        const kRhythm = this.activeHammer === 3 ? 12 : 3.5;
+        const isShattered = Date.now() < this.shatterUntil;
+
+        if (isCrit && zone === 'golden') {
+            el.className = 'floating-dmg golden-crit';
+            el.innerHTML = `HOÀNG KIM BẠO KÍCH! &times;${kRhythm}<br><span class="fct-num">+${formatNum(dmg)}</span>`;
+        } else if (zone === 'golden') {
+            el.className = 'floating-dmg golden';
+            el.innerHTML = `HOÀNG KIM! &times;${kRhythm}<br><span class="fct-num">+${formatNum(dmg)}</span>`;
+        } else if (isCrit) {
+            el.className = 'floating-dmg crit';
+            el.innerHTML = `BẠO KÍCH!<br><span class="fct-num">+${formatNum(dmg)}</span>`;
+        } else {
+            el.className = 'floating-dmg normal';
+            el.innerText = `+${formatNum(dmg)}`;
+        }
+
+        if (isShattered) {
+            el.classList.add('shattered-boost');
+        }
+
+        let x = arena.clientWidth / 2 + (Math.random() * 80 - 40);
+        let y = arena.clientHeight / 2 - 25 + (Math.random() * 20 - 10);
+
+        el.style.left = `${x}px`;
+        el.style.top = `${y}px`;
+        arena.appendChild(el);
+
+        setTimeout(() => el.remove(), 850);
+    }
+
+    triggerFirmamentShake() {
+        const card = document.getElementById('firmamentCard');
+        if (card) {
+            card.classList.remove('shake-firmament');
+            void card.offsetWidth;
+            card.classList.add('shake-firmament');
+            setTimeout(() => card.classList.remove('shake-firmament'), 180);
+        }
+    }
+
+    triggerAnvilBounce() {
+        const sprite = document.getElementById('anvilSprite');
+        if (sprite) {
+            sprite.style.transform = 'scale(0.88) translateY(6px)';
+            setTimeout(() => sprite.style.transform = 'scale(1) translateY(0)', 70);
+        }
+    }
+
+    pushTicker(text) {
+        const el = document.getElementById('tickerText');
+        if (el) el.innerText = text;
+    }
+
+    // =========================================================================
+    // PROGRESSIVE DISCLOSURE (MỞ KHÓA TÍNH NĂNG THEO TIẾN ĐỘ)
+    // =========================================================================
+    checkOnboardingProgression() {
+        if (this.skipOnboarding || this.onboardingStage >= 3) return;
+
+        let targetStage = 0;
+
+        // Giai đoạn 3: Cấp búa >= 15 HOẶC nhát búa >= 100 HOẶC có tài nguyên hiếm HOẶC đã có SP
+        if (this.hammerLevel >= 15 || this.totalStrikes >= 100 || this.domeShards > 0 || this.celestialCores > 0 || this.spiritPointsClaimed > 0) {
+            targetStage = 3;
+        }
+        // Giai đoạn 2: Nhát búa >= 40 HOẶC cấp búa >= 5
+        else if (this.totalStrikes >= 40 || this.hammerLevel >= 5) {
+            targetStage = 2;
+        }
+        // Giai đoạn 1: Nhát búa >= 15 HOẶC cấp búa >= 2
+        else if (this.totalStrikes >= 15 || this.hammerLevel >= 2) {
+            targetStage = 1;
+        }
+
+        if (targetStage > this.onboardingStage) {
+            const unlockedStage = targetStage;
+            this.onboardingStage = targetStage;
+            this.handleOnboardingUnlock(unlockedStage);
+        }
+    }
+
+    handleOnboardingUnlock(stage) {
+        window.soundManager.playUpgrade();
+        if (stage === 1) {
+            this.pushTicker(`✨ [MỚI MỞ KHÓA] Thanh Canh Nhịp Điệu! Canh vạch sáng vào vùng Hoàng Kim (Vàng) khi nện búa để nhận x3.5 Sát Thương & x2.5 Quặng!`);
+            const rhythm = document.getElementById('rhythmSection');
+            if (rhythm) {
+                rhythm.classList.add('unlock-reveal');
+                setTimeout(() => rhythm.classList.remove('unlock-reveal'), 1000);
+            }
+        } else if (stage === 2) {
+            this.pushTicker(`⚡ [MỚI MỞ KHÓA] Thanh Cộng Hưởng & Giá Treo 4 Thần Chùy (Lôi Đình, Viêm Dương, Trọng Lực, Huyền Âm)! Chuyển đổi linh hoạt theo chiến thuật!`);
+            const res = document.getElementById('resonanceContainer');
+            const arsenal = document.getElementById('arsenalBar');
+            if (res) {
+                res.classList.add('unlock-reveal');
+                setTimeout(() => res.classList.remove('unlock-reveal'), 1000);
+            }
+            if (arsenal) {
+                arsenal.classList.add('unlock-reveal');
+                setTimeout(() => arsenal.classList.remove('unlock-reveal'), 1000);
+            }
+        } else if (stage >= 3) {
+            this.pushTicker(`💎 [MỞ KHÓA TOÀN BỘ] Đầy đủ 4 Kho Tài Nguyên Cấp Cao & Con Đường Tu Luyện Thần Hồn đã khai mở!`);
+            const walletGrid = document.getElementById('walletGrid');
+            const prestigeTab = document.getElementById('tabBtnPrestige');
+            const spItem = document.getElementById('walletSpItem');
+            if (walletGrid) {
+                walletGrid.classList.add('unlock-reveal');
+                setTimeout(() => walletGrid.classList.remove('unlock-reveal'), 1000);
+            }
+            if (spItem) {
+                spItem.classList.add('unlock-reveal');
+                setTimeout(() => spItem.classList.remove('unlock-reveal'), 1000);
+            }
+            if (prestigeTab) {
+                prestigeTab.classList.add('unlock-reveal');
+                setTimeout(() => prestigeTab.classList.remove('unlock-reveal'), 1000);
+            }
+        }
+        this.renderOnboarding();
+    }
+
+    renderOnboarding() {
+        const isFull = this.skipOnboarding || this.onboardingStage >= 3;
+        const stage = isFull ? 3 : this.onboardingStage;
+
+        const rhythmSection = document.getElementById('rhythmSection');
+        const arsenalBar = document.getElementById('arsenalBar');
+        const resContainer = document.getElementById('resonanceContainer');
+        const walletGrid = document.getElementById('walletGrid');
+        const spItem = document.getElementById('walletSpItem');
+        const shardsItem = document.getElementById('walletShardsItem');
+        const coresItem = document.getElementById('walletCoresItem');
+        const eclipseItem = document.getElementById('walletEclipseItem');
+        const quickSkipBtn = document.getElementById('btnQuickSkipOnboarding');
+        const prestigeTab = document.getElementById('tabBtnPrestige');
+
+        if (stage === 0) {
+            if (rhythmSection) rhythmSection.classList.add('onboarding-hidden');
+            if (arsenalBar) arsenalBar.classList.add('onboarding-hidden');
+            if (resContainer) resContainer.classList.add('onboarding-hidden');
+            if (walletGrid) walletGrid.classList.add('stage-compact');
+            if (spItem) spItem.classList.add('onboarding-hidden');
+            if (shardsItem) shardsItem.classList.add('onboarding-hidden');
+            if (coresItem) coresItem.classList.add('onboarding-hidden');
+            if (eclipseItem) eclipseItem.classList.add('onboarding-hidden');
+            if (quickSkipBtn) quickSkipBtn.style.display = 'inline-flex';
+            if (prestigeTab) {
+                prestigeTab.classList.add('locked');
+                prestigeTab.title = "Mở khóa ở Cấp búa 15 hoặc 100 nhát búa";
+                prestigeTab.innerHTML = "🔒 THẦN HỒN";
+            }
+        } else if (stage === 1) {
+            if (rhythmSection) rhythmSection.classList.remove('onboarding-hidden');
+            if (arsenalBar) arsenalBar.classList.add('onboarding-hidden');
+            if (resContainer) resContainer.classList.add('onboarding-hidden');
+            if (walletGrid) walletGrid.classList.add('stage-compact');
+            if (spItem) spItem.classList.add('onboarding-hidden');
+            if (shardsItem) shardsItem.classList.add('onboarding-hidden');
+            if (coresItem) coresItem.classList.add('onboarding-hidden');
+            if (eclipseItem) eclipseItem.classList.add('onboarding-hidden');
+            if (quickSkipBtn) quickSkipBtn.style.display = 'inline-flex';
+            if (prestigeTab) {
+                prestigeTab.classList.add('locked');
+                prestigeTab.title = "Mở khóa ở Cấp búa 15 hoặc 100 nhát búa";
+                prestigeTab.innerHTML = "🔒 THẦN HỒN";
+            }
+        } else if (stage === 2) {
+            if (rhythmSection) rhythmSection.classList.remove('onboarding-hidden');
+            if (arsenalBar) arsenalBar.classList.remove('onboarding-hidden');
+            if (resContainer) resContainer.classList.remove('onboarding-hidden');
+            if (walletGrid) walletGrid.classList.add('stage-compact');
+            if (spItem) spItem.classList.add('onboarding-hidden');
+            if (shardsItem) shardsItem.classList.add('onboarding-hidden');
+            if (coresItem) coresItem.classList.add('onboarding-hidden');
+            if (eclipseItem) eclipseItem.classList.add('onboarding-hidden');
+            if (quickSkipBtn) quickSkipBtn.style.display = 'inline-flex';
+            if (prestigeTab) {
+                prestigeTab.classList.add('locked');
+                prestigeTab.title = "Mở khóa ở Cấp búa 15 hoặc 100 nhát búa";
+                prestigeTab.innerHTML = "🔒 THẦN HỒN";
+            }
+        } else {
+            // Stage 3 (hoặc Bỏ qua): Mở toàn bộ
+            if (rhythmSection) rhythmSection.classList.remove('onboarding-hidden');
+            if (arsenalBar) arsenalBar.classList.remove('onboarding-hidden');
+            if (resContainer) resContainer.classList.remove('onboarding-hidden');
+            if (walletGrid) walletGrid.classList.remove('stage-compact');
+            if (spItem) spItem.classList.remove('onboarding-hidden');
+            if (shardsItem) shardsItem.classList.remove('onboarding-hidden');
+            if (coresItem) coresItem.classList.remove('onboarding-hidden');
+            if (eclipseItem) eclipseItem.classList.remove('onboarding-hidden');
+            if (quickSkipBtn) quickSkipBtn.style.display = 'none';
+            if (prestigeTab) {
+                prestigeTab.classList.remove('locked');
+                prestigeTab.title = "Tôi Luyện Thần Hồn (Prestige)";
+                prestigeTab.innerHTML = "🌀 THẦN HỒN";
+            }
+        }
+    }
+
+    skipTutorial() {
+        this.skipOnboarding = true;
+        this.onboardingStage = 3;
+        this.renderOnboarding();
+        this.saveGame();
+        this.pushTicker(`⚡ [GIAO DIỆN] Đã mở khóa hiển thị toàn bộ tính năng trò chơi!`);
+        window.soundManager.playUpgrade();
+    }
+
+    // =========================================================================
+    // UI RENDERING
+    // =========================================================================
+    renderAll() {
+        this.renderWallets();
+        this.renderDomeHp();
+        this.renderFirmamentStatus();
+        this.renderUpgradeCard();
+        this.renderPrestigeTab();
+        this.renderLeaderboardTab();
+        this.renderAchievementsTab();
+        this.renderOnboarding();
+        this.updateAchievementBadge();
+    }
+
+    renderWallets() {
+        const ironEl = document.getElementById('valSkyIron');
+        const shardEl = document.getElementById('valDomeShards');
+        const coreEl = document.getElementById('valCelestialCores');
+        const eclipseEl = document.getElementById('valEclipse');
+        const spEl = document.getElementById('valWalletSp');
+
+        if (ironEl) ironEl.innerText = formatNum(this.skyIron);
+        if (shardEl) shardEl.innerText = formatNum(this.domeShards);
+        if (coreEl) coreEl.innerText = `${this.celestialCores} (Pity: ${this.pityCoresCounter}/149)`;
+        if (eclipseEl) eclipseEl.innerText = formatNum(this.eclipseEssence);
+        if (spEl) spEl.innerText = `${this.spiritPoints} SP`;
+
+        const streakEl = document.getElementById('streakVal');
+        if (streakEl) streakEl.innerText = `${this.goldenStreak}/8`;
+    }
+
+    renderDomeHp() {
+        const fill = document.getElementById('domeHpFill');
+        const text = document.getElementById('domeHpText');
+        const card = document.getElementById('firmamentCard');
+
+        if (fill && text) {
+            const pct = Math.max(0, Math.min(100, (this.domeCurrentHp / this.domeMaxHp) * 100));
+            fill.style.width = `${pct}%`;
+            fill.classList.toggle('final', pct <= 5);
+            text.innerText = `${formatNum(this.domeCurrentHp)} / ${formatNum(this.domeMaxHp)} (${pct.toFixed(2)}%)`;
+
+            // Cập nhật 4 cấp độ biến đổi thị giác theo % HP của tầng phong ấn
+            if (card) {
+                card.classList.remove('hp-stage-1', 'hp-stage-2', 'hp-stage-3', 'hp-stage-4');
+                if (pct > 75) {
+                    card.classList.add('hp-stage-1');
+                } else if (pct > 50) {
+                    card.classList.add('hp-stage-2');
+                } else if (pct > 25) {
+                    card.classList.add('hp-stage-3');
+                } else {
+                    card.classList.add('hp-stage-4');
+                }
+            }
+
+            const sealEl = document.getElementById('subSealText');
+            if (sealEl) {
+                let sealName = "Phong Ấn 1 (100% ➔ 85%)";
+                if (pct <= 5) sealName = "🔥 GIAI ĐOẠN CUỐI (5% ➔ 0% SĂN LAST HIT)";
+                else if (pct <= 15) sealName = "Phong Ấn 6 (15% ➔ 0%)";
+                else if (pct <= 30) sealName = "Phong Ấn 5 (30% ➔ 15%)";
+                else if (pct <= 50) sealName = "Phong Ấn 4 (50% ➔ 30%)";
+                else if (pct <= 70) sealName = "Phong Ấn 3 (70% ➔ 50%)";
+                else if (pct <= 85) sealName = "Phong Ấn 2 (85% ➔ 70%)";
+                sealEl.innerText = `• ${sealName}`;
+            }
+        }
+
+        this.renderResonanceBar();
+    }
+
+    renderResonanceBar() {
+        const resContainer = document.getElementById('resonanceContainer');
+        const resTitle = document.getElementById('resTitle');
+        const resFill = document.getElementById('resFill');
+        const resText = document.getElementById('resText');
+        const anvil = document.getElementById('anvilWrapper');
+
+        const isShattered = Date.now() < this.shatterUntil;
+
+        if (isShattered) {
+            const shatterSec = Math.max(0, (this.shatterUntil - Date.now()) / 1000);
+            const shatterPct = Math.min(100, (shatterSec / 60) * 100);
+
+            if (resContainer) resContainer.classList.add('shatter-active');
+            if (resFill) {
+                resFill.classList.add('shatter-active');
+                resFill.style.width = `${shatterPct}%`;
+            }
+            if (resTitle) {
+                resTitle.innerText = `🔥 PHÁ GIÁP ĐANG KÍCH HOẠT: x3 SÁT THƯƠNG (60s)!`;
+            }
+            if (resText) {
+                resText.innerText = `${shatterSec.toFixed(1)}s / 60.0s`;
+            }
+            if (anvil) {
+                anvil.classList.add('shatter-aura');
+            }
+        } else {
+            if (resContainer) resContainer.classList.remove('shatter-active');
+            if (resFill) {
+                resFill.classList.remove('shatter-active');
+                const resPct = Math.min(100, (this.resonance / this.resonanceReq) * 100);
+                resFill.style.width = `${resPct}%`;
+            }
+            if (resTitle) {
+                resTitle.innerText = `⚡ Thanh Cộng Hưởng (Tích 100 nhát búa ➔ Phá Giáp x3 DMG trong 60s)`;
+            }
+            if (resText) {
+                resText.innerText = `${formatNum(this.resonance)} / ${formatNum(this.resonanceReq)}`;
+            }
+            if (anvil) {
+                anvil.classList.remove('shatter-aura');
+            }
+        }
+    }
+
+    renderFirmamentStatus() {
+        const card = document.getElementById('firmamentCard');
+        const pill = document.getElementById('domeStatusPill');
+        const isShattered = Date.now() < this.shatterUntil;
+        const hpPct = this.domeCurrentHp / this.domeMaxHp;
+        const isFinalPhase = hpPct <= 0.05;
+
+        if (card) {
+            card.classList.toggle('shatter-mode', isShattered);
+            card.classList.toggle('final-phase', isFinalPhase);
+        }
+
+        const nameEl = document.getElementById('domeNameText');
+        const layerEl = document.getElementById('domeLayerPill');
+        if (nameEl) nameEl.innerText = `🌌 Tầng ${this.domeLayer}: ${this.domeName}`;
+        if (layerEl) layerEl.innerText = `Tầng ${this.domeLayer}/9`;
+
+        if (pill) {
+            if (isShattered) {
+                const remainSec = Math.ceil((this.shatterUntil - Date.now()) / 1000);
+                pill.className = 'dome-status-pill shattered';
+                pill.innerText = `🔥 PHÁ GIÁP VẠN DÂN x3 SÁT THƯƠNG (${remainSec}s)`;
+            } else {
+                pill.className = 'dome-status-pill armored';
+                const armorName = this.domeLayer === 1 ? "THIẾT VÂN" : this.domeName.split(' ')[0].toUpperCase();
+                pill.innerText = `🛡️ GIÁP ${armorName} (GIẢM 90% DMG)`;
+            }
+        }
+    }
+
+    renderUpgradeCard() {
+        const details = this.getBulkUpgradeDetails();
+        const card = document.getElementById('hammerUpgradeCard');
+        const lvlEl = document.getElementById('upgradeLvl');
+        const descEl = document.getElementById('upgradeDesc');
+        const costEl = document.getElementById('upgradeCost');
+
+        if (card) {
+            card.className = `upgrade-card ${details.canAfford ? '' : 'disabled'}`;
+        }
+
+        if (lvlEl) {
+            if (details.count === 1) {
+                lvlEl.innerText = `Cấp ${this.hammerLevel}`;
+            } else {
+                lvlEl.innerText = `Cấp ${this.hammerLevel} ➔ ${this.hammerLevel + details.count} (+${details.count})`;
+            }
+        }
+
+        if (descEl) {
+            const sign = details.pctIncrease >= 0 ? '+' : '';
+            if (this.buyMultiplier === 'next') {
+                descEl.innerText = `Đột phá mốc Cấp ${this.hammerLevel + details.count}: Sát thương ${formatNum(details.curBaseDmg)} ➔ ${formatNum(details.nextBaseDmg)} (${sign}${details.pctIncrease}%)`;
+            } else {
+                descEl.innerText = `Sát thương cơ bản: ${formatNum(details.curBaseDmg)} ➔ ${formatNum(details.nextBaseDmg)} (${sign}${details.pctIncrease}%)`;
+            }
+        }
+
+        if (costEl) {
+            costEl.innerText = `⚡ ${formatNum(details.totalCost)} Vụn Thiên Thiết`;
+        }
+
+        // Cập nhật Milestone Progress Bar
+        const nextM = this.getNextMilestone(this.hammerLevel);
+        const rewardDesc = this.getMilestoneRewardDesc(nextM);
+        const pctProgress = Math.min(100, Math.max(0, Math.floor((this.hammerLevel / nextM) * 100)));
+
+        const targetTextEl = document.getElementById('milestoneTargetText');
+        const progressPctEl = document.getElementById('milestoneProgressPct');
+        const fillEl = document.getElementById('milestoneProgressFill');
+
+        if (targetTextEl) targetTextEl.innerText = `Mốc Kế: Cấp ${nextM} (${rewardDesc})`;
+        if (progressPctEl) progressPctEl.innerText = `Cấp ${this.hammerLevel}/${nextM} (${pctProgress}%)`;
+        if (fillEl) fillEl.style.width = `${pctProgress}%`;
+    }
+
+    renderPrestigeTab() {
+        const claimable = this.calcClaimableSP();
+        const spEl = document.getElementById('spBalanceText');
+        const claimBtn = document.getElementById('btnPrestigeClaim');
+
+        if (spEl) spEl.innerText = `${this.spiritPoints} SP`;
+        if (claimBtn) {
+            claimBtn.innerText = `TÔI LUYỆN THẦN HỒN (+${claimable} SP)`;
+            claimBtn.disabled = claimable <= 0 && this.hammerLevel < 75;
+        }
+
+        const talentsDef = [
+            { key: 'thanLuc', name: 'Thần Lực Quán Thế', desc: '+25% Sát Thương & Quặng/cấp', costFn: (lv) => Math.floor(2 * Math.pow(1.35, lv)) },
+            { key: 'nhanQuan', name: 'Nhãn Quan Thợ Rèn', desc: `Mở rộng Điểm Hoàng Kim (+${(18 * (1 - Math.exp(-0.08 * this.talents.nhanQuan))).toFixed(1)}% / Max +18%)`, costFn: (lv) => Math.floor(5 * Math.pow(1.50, lv)) },
+            { key: 'tamPhap', name: 'Khôi Lỗi Tâm Pháp', desc: `Tăng công suất gõ Offline (${(this.getIdleEfficiency() * 100).toFixed(1)}% / Max 85%)`, costFn: (lv) => Math.floor(4 * Math.pow(1.45, lv)) },
+            { key: 'tietKiem', name: 'Thiên Công Tiết Kiệm', desc: `Giảm chi phí nâng búa (-${(this.getCostDiscount() * 100).toFixed(1)}% / Max 50%)`, costFn: (lv) => Math.floor(5 * Math.pow(1.55, lv)) }
+        ];
+
+        talentsDef.forEach(t => {
+            const lv = this.talents[t.key];
+            const cost = t.costFn(lv);
+            const canAfford = this.spiritPoints >= cost;
+
+            const card = document.getElementById(`talent-${t.key}`);
+            if (card) {
+                card.className = `upgrade-card ${canAfford ? '' : 'disabled'}`;
+                card.querySelector('.upgrade-lvl').innerText = `Cấp ${lv}`;
+                card.querySelector('.upgrade-desc').innerText = t.desc;
+                card.querySelector('.upgrade-cost-row').innerText = `⭐ ${cost} SP`;
+            }
+        });
+    }
+
+    // =========================================================================
+    // THÀNH TỰU & MILESTONES
+    // =========================================================================
+    checkAchievements(silent = false) {
+        let newlyUnlocked = false;
+        ACHIEVEMENTS_DEF.forEach(ach => {
+            if (!this.unlockedAchievements.includes(ach.id)) {
+                if (ach.check(this)) {
+                    this.unlockedAchievements.push(ach.id);
+                    newlyUnlocked = true;
+                    if (!silent) {
+                        this.showAchievementToast(ach);
+                        this.pushTicker(`🏆 [THÀNH TỰU] Đột phá: ${ach.title}! Hãy vào tab Thành Tựu nhận quà!`);
+                        window.soundManager.playUpgrade();
+                    }
+                }
+            }
+        });
+
+        if (newlyUnlocked) {
+            this.updateAchievementBadge();
+            this.renderAchievementsTab();
+        }
+    }
+
+    showAchievementToast(def) {
+        const container = document.getElementById('toastContainer');
+        if (!container) return;
+
+        const toast = document.createElement('div');
+        toast.className = 'ach-toast';
+        toast.innerHTML = `
+            <div class="ach-toast-icon">${def.icon}</div>
+            <div class="ach-toast-body">
+                <div class="ach-toast-tag">🏆 THÀNH TỰU MỞ KHÓA!</div>
+                <div class="ach-toast-title">${def.title}</div>
+                <div class="ach-toast-desc">Thưởng: <span style="color:#fbbf24;font-weight:700;">${def.rewardDesc}</span></div>
+            </div>
+        `;
+
+        toast.onclick = () => {
+            this.switchTab('achievements');
+            toast.remove();
+        };
+
+        container.appendChild(toast);
+
+        setTimeout(() => {
+            toast.classList.add('fade-out');
+            setTimeout(() => toast.remove(), 400);
+        }, 4500);
+    }
+
+    updateAchievementBadge() {
+        const badge = document.getElementById('achBadge');
+        if (!badge) return;
+        const claimableCount = this.unlockedAchievements.filter(id => !this.claimedAchievements.includes(id)).length;
+        if (claimableCount > 0) {
+            badge.style.display = 'inline-block';
+            badge.innerText = claimableCount;
+        } else {
+            badge.style.display = 'none';
+        }
+    }
+
+    renderAchievementsTab() {
+        const textEl = document.getElementById('achProgressText');
+        if (textEl) {
+            textEl.innerText = `${this.unlockedAchievements.length} / ${ACHIEVEMENTS_DEF.length} ĐÃ ĐẠT`;
+        }
+
+        const container = document.getElementById('achievementsList');
+        if (!container) return;
+
+        container.innerHTML = ACHIEVEMENTS_DEF.map(def => {
+            const isUnlocked = this.unlockedAchievements.includes(def.id);
+            const isClaimed = this.claimedAchievements.includes(def.id);
+            const prog = def.progress(this);
+            const pct = Math.min(100, Math.round((prog.cur / prog.max) * 100));
+
+            let btnHtml = '';
+            if (isClaimed) {
+                btnHtml = `<button class="ach-btn claimed" disabled>✓ ĐÃ NHẬN</button>`;
+            } else if (isUnlocked) {
+                btnHtml = `<button class="ach-btn claimable" onclick="window.game.claimAchievement('${def.id}')">NHẬN THƯỞNG</button>`;
+            } else {
+                btnHtml = `<button class="ach-btn locked" disabled>${prog.cur}/${prog.max}</button>`;
+            }
+
+            return `
+                <div class="ach-card ${isUnlocked ? 'unlocked' : ''} ${isClaimed ? 'claimed' : ''}">
+                    <div class="ach-icon-box">${def.icon}</div>
+                    <div class="ach-info">
+                        <div class="ach-top-row">
+                            <span class="ach-title">${def.title}</span>
+                        </div>
+                        <div class="ach-desc">${def.desc}</div>
+                        <div class="ach-reward-tag">🎁 ${def.rewardDesc}</div>
+                        ${!isUnlocked ? `
+                            <div style="margin-top: 4px;">
+                                <div class="ach-progress-bar-track">
+                                    <div class="ach-progress-bar-fill" style="width: ${pct}%"></div>
+                                </div>
+                            </div>
+                        ` : ''}
+                    </div>
+                    <div>
+                        ${btnHtml}
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    claimAchievement(id) {
+        const def = ACHIEVEMENTS_DEF.find(a => a.id === id);
+        if (!def) return;
+        if (!this.unlockedAchievements.includes(id)) return;
+        if (this.claimedAchievements.includes(id)) return;
+
+        this.claimedAchievements.push(id);
+        def.reward(this);
+        window.soundManager.playUpgrade();
+        this.pushTicker(`🎉 [NHẬN THƯỞNG] Đã nhận ${def.rewardDesc} từ thành tựu: ${def.title}!`);
+        this.saveGame();
+        this.renderAll();
+    }
+
+    renderLeaderboardTab() {
+        const titleEl = document.getElementById('currentDomeHofTitle');
+        if (titleEl) {
+            titleEl.innerText = `🏆 ĐÀI TƯỞNG NIỆM TẦNG ${this.domeLayer}: ${this.domeName.toUpperCase()}`;
+        }
+
+        const container = document.getElementById('hofList');
+        if (container) {
+            container.innerHTML = "";
+            const list = [...this.topContributors, { name: `${this.username} (Bạn)`, dmg: this.playerDamageDealt }]
+                .sort((a, b) => b.dmg - a.dmg)
+                .slice(0, 10);
+
+            list.forEach((item, idx) => {
+                const div = document.createElement('div');
+                div.className = 'hof-item';
+                div.innerHTML = `
+                    <span class="hof-rank">#${idx + 1}</span>
+                    <span class="hof-name">${item.name}</span>
+                    <span class="hof-dmg">${formatNum(item.dmg)} DMG</span>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        const eternityContainer = document.getElementById('eternityList');
+        if (eternityContainer) {
+            eternityContainer.innerHTML = "";
+            if (!this.hallOfFame || this.hallOfFame.length === 0) {
+                eternityContainer.innerHTML = `<div style="font-size: 0.75rem; color: #94a3b8; font-style: italic; padding: 4px;">Chưa có tầng trời nào bị đập tan. Hãy là người đầu tiên!</div>`;
+            } else {
+                this.hallOfFame.forEach(item => {
+                    const card = document.createElement('div');
+                    card.className = 'eternity-card';
+                    card.innerHTML = `
+                        <div class="eternity-header">
+                            <span>⚡ Tầng ${item.layer}: ${item.name || item.domeName}</span>
+                            <span style="font-size: 0.7rem; color: #a855f7;">${item.shatteredAt ? item.shatteredAt.slice(0, 10) : 'Kỷ Nguyên Trước'}</span>
+                        </div>
+                        <div class="eternity-row">
+                            <span>👑 Đệ Nhất Phá Thiên (Last Hit):</span>
+                            <b style="color: #38bdf8;">${item.lastHitPlayer || item.lastHit || 'Khuyết danh'}</b>
+                        </div>
+                        <div class="eternity-row">
+                            <span>⚔️ Top Sát Thương:</span>
+                            <b style="color: #fef08a;">${Array.isArray(item.topContributors) && item.topContributors[0] ? `${item.topContributors[0].name} (${formatNum(item.topContributors[0].dmg)})` : (item.topDamager || 'Sơn Lâm (142.5M)')}</b>
+                        </div>
+                    `;
+                    eternityContainer.appendChild(card);
+                });
+            }
+        }
+    }
+
+    // =========================================================================
+    // EVENT BINDINGS
+    // =========================================================================
+    bindEvents() {
+        const anvil = document.getElementById('anvilWrapper');
+        if (anvil) {
+            anvil.addEventListener('pointerdown', (e) => this.handleStrike(e));
+        }
+
+        // Global Spacebar Handler (Bắt phím SPACE toàn cục)
+        window.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' || e.key === ' ' || e.keyCode === 32) {
+                const active = document.activeElement;
+                const isTyping = active && (
+                    active.tagName === 'INPUT' ||
+                    active.tagName === 'TEXTAREA' ||
+                    active.isContentEditable
+                );
+
+                if (isTyping) return; // Cho phép gõ khoảng trắng trong ô nhập liệu (ví dụ ô dán Save)
+
+                // Chặn hành vi mặc định (cuộn trang hoặc kích hoạt lại button đang focus)
+                e.preventDefault();
+
+                // Blur nút đang focus để tránh nhấp nháy hoặc bấm nhầm
+                if (active && (active.tagName === 'BUTTON' || active.tagName === 'A' || active.getAttribute('role') === 'button')) {
+                    active.blur();
+                }
+
+                if (!e.repeat) {
+                    const anvilWrapper = document.getElementById('anvilWrapper');
+                    if (anvilWrapper) anvilWrapper.classList.add('pressed');
+
+                    // Kích hoạt nhát búa
+                    this.handleStrike();
+                }
+            }
+        }, { capture: true });
+
+        window.addEventListener('keyup', (e) => {
+            if (e.code === 'Space' || e.key === ' ' || e.keyCode === 32) {
+                const anvilWrapper = document.getElementById('anvilWrapper');
+                if (anvilWrapper) anvilWrapper.classList.remove('pressed');
+            }
+        }, { capture: true });
+
+        // Tự động giải phóng focus sau khi click nút bất kỳ để phím SPACE luôn sẵn sàng
+        document.addEventListener('pointerup', (e) => {
+            if (e.target && (e.target.tagName === 'BUTTON' || e.target.closest('button'))) {
+                const btn = e.target.tagName === 'BUTTON' ? e.target : e.target.closest('button');
+                setTimeout(() => {
+                    if (document.activeElement === btn) btn.blur();
+                }, 50);
+            }
+        });
+
+        document.querySelectorAll('.hammer-btn').forEach(btn => {
+            btn.onclick = () => this.switchHammer(btn.getAttribute('data-id'));
+        });
+
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.onclick = () => this.switchTab(btn.getAttribute('data-tab'));
+        });
+
+        // Nút chọn hệ số mua (Bulk Buy Multipliers)
+        document.querySelectorAll('.buy-mult-btn').forEach(btn => {
+            btn.onclick = () => this.setBuyMultiplier(btn.getAttribute('data-mode'));
+        });
+
+        const upCard = document.getElementById('hammerUpgradeCard');
+        if (upCard) {
+            upCard.onclick = () => this.upgradeHammer();
+        }
+
+        const prestigeBtn = document.getElementById('btnPrestigeClaim');
+        if (prestigeBtn) {
+            prestigeBtn.onclick = () => this.triggerPrestige();
+        }
+
+        ['thanLuc', 'nhanQuan', 'tamPhap', 'tietKiem'].forEach(k => {
+            const card = document.getElementById(`talent-${k}`);
+            if (card) {
+                card.onclick = () => this.upgradeTalent(k);
+            }
+        });
+
+        const audioBtn = document.getElementById('btnAudio');
+        if (audioBtn) {
+            audioBtn.onclick = () => {
+                const muted = window.soundManager.toggleMute();
+                audioBtn.innerText = muted ? "🔇 TẮT ÂM" : "🔊 BẬT ÂM";
+            };
+        }
+
+        const nameBtn = document.getElementById('btnName');
+        if (nameBtn) {
+            nameBtn.onclick = () => {
+                const newName = prompt("Nhập Biệt Hiệu Thợ Rèn của bạn:", this.username);
+                if (newName && newName.trim()) {
+                    this.username = newName.trim();
+                    localStorage.setItem("phatroi_user", this.username);
+                    nameBtn.innerText = `👤 ${this.username}`;
+                    this.renderAll();
+                }
+            };
+            nameBtn.innerText = `👤 ${this.username}`;
+        }
+
+        const exportBtn = document.getElementById('btnExportSave');
+        if (exportBtn) {
+            exportBtn.onclick = () => {
+                const data = btoa(JSON.stringify(this.getSaveState()));
+                prompt("Sao chép mã lưu trữ dữ liệu của bạn bên dưới:", data);
+            };
+        }
+
+        const quickSkip = document.getElementById('btnQuickSkipOnboarding');
+        if (quickSkip) {
+            quickSkip.onclick = () => this.skipTutorial();
+        }
+
+        const skipBtn = document.getElementById('btnSkipOnboarding');
+        if (skipBtn) {
+            skipBtn.onclick = () => {
+                this.skipTutorial();
+                alert("Đã mở khóa toàn bộ giao diện trò chơi!");
+            };
+        }
+
+        const importBtn = document.getElementById('btnImportSave');
+        if (importBtn) {
+            importBtn.onclick = () => {
+                const data = prompt("Dán mã lưu trữ dữ liệu vào đây:");
+                if (!data || !data.trim()) return;
+                try {
+                    let parsed = null;
+                    const trimmed = data.trim();
+                    try {
+                        parsed = JSON.parse(atob(trimmed));
+                    } catch (e) {
+                        parsed = JSON.parse(trimmed);
+                    }
+                    if (parsed && (typeof parsed.skyIron !== 'undefined' || typeof parsed.hammerLevel !== 'undefined' || typeof parsed.lifetimeIron !== 'undefined')) {
+                        this.applyLoadedState(parsed);
+                        this.saveGame();
+                        this.renderAll();
+                        alert("Đã khôi phục dữ liệu thành công! Tiến trình cũ đã được tích hợp an toàn.");
+                    } else {
+                        alert("Mã lưu trữ không chứa dữ liệu hợp lệ!");
+                    }
+                } catch (e) {
+                    alert("Mã lưu trữ không hợp lệ!");
+                }
+            };
+        }
+
+        const modalBtn = document.getElementById('modalBtn');
+        if (modalBtn) modalBtn.onclick = () => this.closeModal();
+
+        // Math & Mechanisms Popover Modal
+        const btnOpenMath = document.getElementById('btnOpenMathModal');
+        const btnCloseMath = document.getElementById('btnCloseMathModal');
+        const btnConfirmMath = document.getElementById('btnConfirmMathModal');
+        const mathModal = document.getElementById('mathModal');
+
+        if (btnOpenMath && mathModal) {
+            btnOpenMath.onclick = () => {
+                mathModal.classList.add('open');
+                window.soundManager.playClick();
+            };
+        }
+        if (btnCloseMath && mathModal) {
+            btnCloseMath.onclick = () => {
+                mathModal.classList.remove('open');
+                window.soundManager.playClick();
+            };
+        }
+        if (btnConfirmMath && mathModal) {
+            btnConfirmMath.onclick = () => {
+                mathModal.classList.remove('open');
+                window.soundManager.playClick();
+            };
+        }
+        if (mathModal) {
+            mathModal.addEventListener('click', (e) => {
+                if (e.target === mathModal) {
+                    mathModal.classList.remove('open');
+                }
+            });
+        }
+
+        // Tự động lưu game khi ẩn hoặc đóng tab trình duyệt
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'hidden') {
+                this.saveGame();
+            }
+        });
+        window.addEventListener('beforeunload', () => {
+            this.saveGame();
+        });
+
+        // Báo Cáo Khôi Lỗi Rèn Đêm (Offline Progress Modal)
+        const btnClaimOffline = document.getElementById('btnClaimOffline');
+        const btnCloseOffline = document.getElementById('btnCloseOfflineModal');
+        const offlineModal = document.getElementById('offlineModal');
+
+        if (btnClaimOffline) {
+            btnClaimOffline.onclick = () => this.claimOfflineReward();
+        }
+        if (btnCloseOffline) {
+            btnCloseOffline.onclick = () => this.claimOfflineReward();
+        }
+        if (offlineModal) {
+            offlineModal.addEventListener('click', (e) => {
+                if (e.target === offlineModal) {
+                    this.claimOfflineReward();
+                }
+            });
+        }
+    }
+
+    openModal(title, body) {
+        document.getElementById('modalTitle').innerText = title;
+        document.getElementById('modalBody').innerHTML = body;
+        document.getElementById('infoModal').classList.add('open');
+    }
+
+    closeModal() {
+        document.getElementById('infoModal').classList.remove('open');
+    }
+
+    // =========================================================================
+    // SAVE / OFFLINE
+    // =========================================================================
+    getSaveState() {
+        return {
+            skyIron: this.skyIron,
+            domeShards: this.domeShards,
+            celestialCores: this.celestialCores,
+            eclipseEssence: this.eclipseEssence,
+            lifetimeIron: this.lifetimeIron,
+            playerDamageDealt: this.playerDamageDealt,
+            hammerLevel: this.hammerLevel,
+            activeHammer: this.activeHammer,
+            spiritPoints: this.spiritPoints,
+            spiritPointsClaimed: this.spiritPointsClaimed,
+            talents: this.talents,
+            domeLayer: this.domeLayer,
+            domeName: this.domeName,
+            domeCurrentHp: this.domeCurrentHp,
+            domeMaxHp: this.domeMaxHp,
+            hallOfFame: this.hallOfFame,
+            goldenShowerUntil: this.goldenShowerUntil,
+            totalStrikes: this.totalStrikes,
+            onboardingStage: this.onboardingStage,
+            skipOnboarding: this.skipOnboarding,
+            claimedFirstForgeLuck: this.claimedFirstForgeLuck,
+            buyMultiplier: this.buyMultiplier,
+            unlockedAchievements: this.unlockedAchievements,
+            claimedAchievements: this.claimedAchievements,
+            maxGoldenStreak: this.maxGoldenStreak,
+            hasTriggeredShatter: this.hasTriggeredShatter,
+            pityCoresCounter: this.pityCoresCounter,
+            lastSaveTime: Date.now(),
+            lastActiveTimestamp: Date.now()
+        };
+    }
+
+    applyLoadedState(s) {
+        this.skyIron = s.skyIron || 0;
+        this.domeShards = s.domeShards || 0;
+        this.celestialCores = s.celestialCores || 0;
+        this.eclipseEssence = s.eclipseEssence || 0;
+        this.lifetimeIron = s.lifetimeIron || 0;
+        this.playerDamageDealt = s.playerDamageDealt || 0;
+        this.hammerLevel = s.hammerLevel || 1;
+        this.activeHammer = s.activeHammer || 1;
+        this.spiritPoints = s.spiritPoints || 0;
+        this.spiritPointsClaimed = s.spiritPointsClaimed || 0;
+        this.talents = Object.assign(this.talents, s.talents || {});
+        if (s.domeLayer) this.domeLayer = s.domeLayer;
+        if (s.domeName) this.domeName = s.domeName;
+        if (Array.isArray(s.hallOfFame) && s.hallOfFame.length > 0) this.hallOfFame = s.hallOfFame;
+        if (s.goldenShowerUntil) this.goldenShowerUntil = s.goldenShowerUntil;
+
+        this.totalStrikes = s.totalStrikes || 0;
+        this.skipOnboarding = !!s.skipOnboarding;
+        this.claimedFirstForgeLuck = typeof s.claimedFirstForgeLuck !== 'undefined' ? !!s.claimedFirstForgeLuck : (this.hammerLevel > 1);
+        this.unlockedAchievements = Array.isArray(s.unlockedAchievements) ? s.unlockedAchievements : [];
+        this.claimedAchievements = Array.isArray(s.claimedAchievements) ? s.claimedAchievements : [];
+        this.maxGoldenStreak = s.maxGoldenStreak || 0;
+        this.hasTriggeredShatter = !!s.hasTriggeredShatter;
+        this.pityCoresCounter = typeof s.pityCoresCounter === 'number' ? s.pityCoresCounter : 0;
+        if (s.buyMultiplier) {
+            this.buyMultiplier = s.buyMultiplier;
+            document.querySelectorAll('.buy-mult-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.getAttribute('data-mode') === this.buyMultiplier);
+            });
+        }
+
+        // Tự động mở khóa 100% nếu là người chơi cũ
+        const isVeteranPlayer = (
+            this.hammerLevel > 10 ||
+            this.spiritPointsClaimed > 0 ||
+            this.totalStrikes >= 100 ||
+            this.lifetimeIron > 10000 ||
+            this.playerDamageDealt > 10000 ||
+            this.domeLayer > 1 ||
+            this.domeShards > 0 ||
+            this.celestialCores > 0 ||
+            this.skipOnboarding
+        );
+
+        if (isVeteranPlayer) {
+            this.onboardingStage = 3;
+        } else if (typeof s.onboardingStage !== 'undefined') {
+            this.onboardingStage = s.onboardingStage;
+        } else {
+            // Xác định stage dựa trên chỉ số hiện có
+            if (this.hammerLevel >= 15 || this.totalStrikes >= 100) {
+                this.onboardingStage = 3;
+            } else if (this.hammerLevel >= 5 || this.totalStrikes >= 40) {
+                this.onboardingStage = 2;
+            } else if (this.hammerLevel >= 2 || this.totalStrikes >= 15) {
+                this.onboardingStage = 1;
+            } else {
+                this.onboardingStage = 0;
+            }
+        }
+
+        // Auto-fix cân bằng lại nếu save cũ lưu mức máu 1 tỷ của giai đoạn test
+        const targetBaseHp = CELESTIAL_LAYERS[this.domeLayer - 1]?.baseHp || 50000;
+        if (!s.domeMaxHp || s.domeMaxHp >= 1000000000 || (s.domeCurrentHp && s.domeCurrentHp >= 1000000000)) {
+            this.domeMaxHp = targetBaseHp;
+            this.domeCurrentHp = targetBaseHp;
+            this.domeTargetHp = targetBaseHp;
+        } else if (s.domeCurrentHp && s.domeMaxHp) {
+            this.domeMaxHp = s.domeMaxHp;
+            this.domeCurrentHp = Math.min(s.domeCurrentHp, s.domeMaxHp);
+            this.domeTargetHp = this.domeCurrentHp;
+        } else {
+            this.domeMaxHp = targetBaseHp;
+            this.domeCurrentHp = targetBaseHp;
+            this.domeTargetHp = targetBaseHp;
+        }
+
+        // Kiểm tra hồi tố thành tựu cho save cũ
+        this.checkAchievements(true);
+    }
+
+    saveGame() {
+        localStorage.setItem("phatroi_cforge_save_v2", JSON.stringify(this.getSaveState()));
+    }
+
+    loadSave() {
+        const raw = localStorage.getItem("phatroi_cforge_save_v2") || localStorage.getItem("phatroi_cforge_save");
+        if (raw) {
+            try {
+                const s = JSON.parse(raw);
+                this.lastOfflineTime = s.lastActiveTimestamp || s.lastSaveTime || null;
+                this.applyLoadedState(s);
+            } catch (e) {
+                console.error("Lỗi đọc save:", e);
+            }
+        }
+    }
+
+    formatOfflineDuration(sec) {
+        if (sec < 60) return `${sec} giây`;
+        const hrs = Math.floor(sec / 3600);
+        const mins = Math.floor((sec % 3600) / 60);
+        const remainSec = sec % 60;
+        if (hrs > 0) {
+            return `${hrs.toString().padStart(2, '0')} giờ ${mins.toString().padStart(2, '0')} phút`;
+        }
+        return `${mins} phút ${remainSec.toString().padStart(2, '0')} giây`;
+    }
+
+    checkOfflineProgress() {
+        if (!this.lastOfflineTime) return;
+        const now = Date.now();
+        const offlineSeconds = Math.floor((now - this.lastOfflineTime) / 1000);
+
+        // Chỉ kích hoạt khi vắng mặt từ 60 giây trở lên
+        if (offlineSeconds < 60) return;
+
+        // Giới hạn thời gian tích lũy tối đa 8 giờ (28.800 giây)
+        const MAX_OFFLINE_SECONDS = 8 * 3600;
+        const effectiveSec = Math.min(MAX_OFFLINE_SECONDS, offlineSeconds);
+        const isCapped = offlineSeconds >= MAX_OFFLINE_SECONDS;
+
+        const efficiency = this.getIdleEfficiency();
+        const strikes = Math.floor(effectiveSec / 2); // Khôi lỗi tự động rèn 1 nhát / 2 giây
+        if (strikes <= 0) return;
+
+        const baseIron = this.calcIronDrop(this.hammerLevel, 1.0);
+        const ironEarned = Math.max(1, Math.floor(strikes * baseIron * efficiency));
+
+        // Tinh Thể Thiên Cấm: rơi 1 viên cho mỗi 2 giờ ngoại tuyến
+        const shardsEarned = Math.floor(effectiveSec / 7200);
+
+        // Sát thương đóng góp phá vòm
+        const baseDmg = this.calcFinalDamage('normal', false);
+        const dmgEarned = Math.floor(strikes * baseDmg * efficiency * 0.15);
+
+        this.pendingOfflineReward = {
+            iron: ironEarned,
+            shards: shardsEarned,
+            dmg: dmgEarned,
+            strikes: strikes,
+            offlineSeconds: offlineSeconds,
+            effectiveSec: effectiveSec,
+            efficiency: efficiency,
+            isCapped: isCapped
+        };
+
+        // Render dữ liệu lên Offline Modal
+        const timeValEl = document.getElementById('offlineTimeVal');
+        const capNoteEl = document.getElementById('offlineCapNote');
+        const effValEl = document.getElementById('offlineEffVal');
+        const talentLvEl = document.getElementById('offlineTalentLevel');
+        const ironValEl = document.getElementById('offlineIronVal');
+        const strikesValEl = document.getElementById('offlineStrikesVal');
+        const shardsTagEl = document.getElementById('offlineShardsTag');
+        const shardsValEl = document.getElementById('offlineShardsVal');
+        const dmgTagEl = document.getElementById('offlineDmgTag');
+        const dmgValEl = document.getElementById('offlineDmgVal');
+        const hintTextEl = document.getElementById('offlineHintText');
+
+        if (timeValEl) timeValEl.innerText = this.formatOfflineDuration(offlineSeconds);
+        if (capNoteEl) {
+            capNoteEl.innerText = isCapped ? "⚠️ Đạt giới hạn tích lũy tối đa 8 giờ" : "Tích lũy tối đa 8 giờ";
+            capNoteEl.style.color = isCapped ? "#f59e0b" : "#94a3b8";
+        }
+        if (effValEl) effValEl.innerText = `${(efficiency * 100).toFixed(1)}%`;
+        if (talentLvEl) talentLvEl.innerText = `Cổ Ngữ Khôi Lỗi Cấp ${this.talents.tamPhap || 0}`;
+        if (ironValEl) ironValEl.innerText = `+${formatNum(ironEarned)}`;
+        if (strikesValEl) strikesValEl.innerText = strikes.toLocaleString();
+
+        if (shardsTagEl && shardsValEl) {
+            if (shardsEarned > 0) {
+                shardsValEl.innerText = `+${shardsEarned}`;
+                shardsTagEl.style.display = 'inline-flex';
+            } else {
+                shardsTagEl.style.display = 'none';
+            }
+        }
+
+        if (dmgTagEl && dmgValEl) {
+            if (dmgEarned > 0) {
+                dmgValEl.innerText = `+${formatNum(dmgEarned)}`;
+                dmgTagEl.style.display = 'inline-flex';
+            } else {
+                dmgTagEl.style.display = 'none';
+            }
+        }
+
+        if (hintTextEl) {
+            if (efficiency >= 0.85) {
+                hintTextEl.innerHTML = `✨ Khôi Lỗi Cơ Quan đã đạt <b>công suất tối đa 85%</b>! Bạn đang nhận năng suất ngoại tuyến cao nhất.`;
+            } else {
+                hintTextEl.innerHTML = `Nâng cấp Cổ Ngữ <b>"Khôi Lỗi Tâm Pháp"</b> tại tab <b>Thần Hồn</b> để tăng hiệu suất tối đa lên <b>85%</b>!`;
+            }
+        }
+
+        const modal = document.getElementById('offlineModal');
+        if (modal) {
+            modal.classList.add('open');
+            window.soundManager.playUpgrade();
+        }
+    }
+
+    claimOfflineReward() {
+        const modal = document.getElementById('offlineModal');
+        if (modal) modal.classList.remove('open');
+
+        if (!this.pendingOfflineReward) return;
+        const rew = this.pendingOfflineReward;
+        this.pendingOfflineReward = null;
+
+        // Cộng tài nguyên vào kho
+        this.skyIron += rew.iron;
+        this.lifetimeIron += rew.iron;
+        if (rew.shards > 0) {
+            this.domeShards += rew.shards;
+        }
+        if (rew.dmg > 0 && this.domeTargetHp > 1) {
+            this.domeTargetHp = Math.max(1, this.domeTargetHp - rew.dmg);
+        }
+
+        // Cập nhật UI & Lưu game ngay lập tức
+        this.renderWallets();
+        this.renderUpgradeCard();
+        this.renderDomeHp();
+        this.saveGame();
+
+        // Âm thanh chúc mừng & Log thông báo
+        window.soundManager.playUpgrade();
+        this.pushTicker(`🤖 [KHÔI LỖI RÈN ĐÊM] Đã thu nạp +${formatNum(rew.iron)} Vụn Thiên Thiết từ ${this.formatOfflineDuration(rew.offlineSeconds)} vắng mặt!`);
+    }
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+    window.game = new CelestialForgeGame();
+});

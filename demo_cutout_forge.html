@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Demo 2D Cutout Puppet - Tiên Nhân Đập Búa (Nhất Niệm Tiêu Dao)</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+    body {
+      background: #060913;
+      color: #E2E8F0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+    header {
+      background: rgba(11, 16, 32, 0.95);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid rgba(255, 183, 3, 0.2);
+      padding: 12px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 10;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .badge {
+      background: linear-gradient(135deg, #FFB703, #FB8500);
+      color: #050811;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 3px 8px;
+      border-radius: 4px;
+      letter-spacing: 0.5px;
+    }
+    .title {
+      font-size: 17px;
+      font-weight: 700;
+      color: #F8FAFC;
+    }
+    .subtitle {
+      font-size: 12px;
+      color: #94A3B8;
+    }
+    .status-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: #34D399;
+      padding: 4px 12px;
+      border-radius: 999px;
+    }
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      background: #10B981;
+      border-radius: 50%;
+      box-shadow: 0 0 8px #10B981;
+    }
+
+    main {
+      flex: 1;
+      display: flex;
+      position: relative;
+    }
+    #viewport-container {
+      flex: 1;
+      position: relative;
+      background: radial-gradient(circle at 60% 40%, #0F172A 0%, #060913 80%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: crosshair;
+    }
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Floating control bar */
+    .floating-hud {
+      position: absolute;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      background: rgba(11, 16, 32, 0.85);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 183, 3, 0.3);
+      padding: 10px 18px;
+      border-radius: 50px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+      z-index: 20;
+    }
+    .strike-btn {
+      background: linear-gradient(135deg, #FFB703, #D97706);
+      color: #050811;
+      font-weight: 800;
+      font-size: 15px;
+      padding: 12px 28px;
+      border: none;
+      border-radius: 40px;
+      cursor: pointer;
+      box-shadow: 0 0 20px rgba(255, 183, 3, 0.45);
+      transition: all 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .strike-btn:hover {
+      transform: scale(1.06);
+      box-shadow: 0 0 28px rgba(255, 183, 3, 0.7);
+    }
+    .strike-btn:active {
+      transform: scale(0.95);
+    }
+
+    /* Sidebar controls */
+    .sidebar {
+      width: 320px;
+      background: #0B1020;
+      border-left: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      overflow-y: auto;
+    }
+    .section-title {
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #FFB703;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .control-group {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 8px;
+      padding: 12px;
+    }
+    .control-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .control-row:last-child {
+      margin-bottom: 0;
+    }
+    label {
+      font-size: 13px;
+      color: #CBD5E1;
+    }
+    input[type="range"] {
+      width: 100%;
+      accent-color: #FFB703;
+      margin-top: 6px;
+    }
+    .toggle-btn {
+      background: #1E293B;
+      color: #94A3B8;
+      border: 1px solid #334155;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .toggle-btn.active {
+      background: rgba(255, 183, 3, 0.15);
+      border-color: #FFB703;
+      color: #FFD166;
+      font-weight: 700;
+    }
+    .hint-box {
+      background: rgba(56, 189, 248, 0.08);
+      border-left: 3px solid #38BDF8;
+      padding: 10px 12px;
+      font-size: 11px;
+      line-height: 1.5;
+      color: #94A3B8;
+      border-radius: 0 6px 6px 0;
+    }
+    .hint-box b {
+      color: #38BDF8;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <span class="badge">DEMO 2D CUTOUT</span>
+      <div>
+        <div class="title">Tiên Nhân Rèn Búa · 2D Hierarchical Puppet Rig</div>
+        <div class="subtitle">Mô phỏng khớp xương & vật lý đập đe chuẩn phong cách Nhất Niệm Tiêu Dao</div>
+      </div>
+    </div>
+    <div class="status-pill">
+      <div class="status-dot"></div>
+      <span id="fps-label">60 FPS · 0ms</span>
+    </div>
+  </header>
+
+  <main>
+    <div id="viewport-container">
+      <canvas id="forge-canvas"></canvas>
+
+      <div class="floating-hud">
+        <button id="strike-trigger" class="strike-btn">
+          <span>⚡ ĐẬP BÚA (SPACE)</span>
+        </button>
+        <button id="auto-btn" class="toggle-btn">Tự động đập (Off)</button>
+        <button id="debug-btn" class="toggle-btn active">Hiện Khớp Xương (On)</button>
+      </div>
+    </div>
+
+    <aside class="sidebar">
+      <div>
+        <div class="section-title">🎮 Tham Số Động Học (Kinematics)</div>
+        <div class="control-group">
+          <div class="control-row">
+            <label>Tốc độ vung đập</label>
+            <span id="speed-val" style="font-size: 12px; color: #FFB703;">1.0x</span>
+          </div>
+          <input type="range" id="speed-slider" min="0.3" max="2.0" step="0.1" value="1.0">
+          
+          <div class="control-row" style="margin-top: 14px;">
+            <label>Độ co giãn vật lý (Squash/Stretch)</label>
+            <span id="squash-val" style="font-size: 12px; color: #FFB703;">100%</span>
+          </div>
+          <input type="range" id="squash-slider" min="0" max="200" step="10" value="100">
+
+          <div class="control-row" style="margin-top: 14px;">
+            <label>Âm thanh va đập Web Audio</label>
+            <button id="sound-btn" class="toggle-btn active">Bật âm thanh</button>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="section-title">📐 Khớp Xoay Xương (Shoulder Pivot)</div>
+        <div class="control-group">
+          <div class="control-row">
+            <label>Xoay thủ công (Manual Angle)</label>
+            <span id="angle-val" style="font-size: 12px; color: #38BDF8;">Auto</span>
+          </div>
+          <input type="range" id="angle-slider" min="-90" max="90" step="1" value="0">
+          <div style="font-size: 11px; color: #64748B; margin-top: 4px;">Kéo để xoay thử cánh tay quanh khớp vai</div>
+        </div>
+      </div>
+
+      <div>
+        <div class="section-title">💡 Giải Phẫu 2D Puppet (Bóc Tách)</div>
+        <div class="hint-box">
+          <b>Kiến trúc 3 Lớp Kẹp Thịt (Sandwich):</b><br>
+          1. <b>Body Base</b>: Thân mình, tọa thiền, thở phập phồng theo sóng Sine.<br>
+          2. <b>Arm & Hammer</b>: Cánh tay búa xoay quanh tâm khớp vai Pivot (X=65, Y=100).<br>
+          3. <b>Chest Collar</b>: Cổ áo đè lên trên để che giấu hoàn toàn vết cắt khớp!<br>
+          4. <b>Anvil</b>: Đe thần đặt phía trước mũi búa.
+        </div>
+      </div>
+
+      <div style="margin-top: auto; display: flex; flex-direction: column; gap: 8px;">
+        <a href="demo_spritesheet_forge.html" style="display: inline-block; text-align: center; padding: 10px; background: rgba(6, 182, 212, 0.15); border: 1px solid rgba(6, 182, 212, 0.35); color: #22D3EE; border-radius: 6px; text-decoration: none; font-size: 12px; font-weight: 700; transition: all 0.2s;">👉 Chuyển sang xem Hướng 1 (Sprite Sheet Flipbook)</a>
+        <div style="font-size: 11px; color: #475569; text-align: center;">
+          Chạy nội bộ (Offline Demo) · Chưa đưa lên web chính thức
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <script>
+    const canvas = document.getElementById('forge-canvas');
+    const ctx = canvas.getContext('2d');
+    const container = document.getElementById('viewport-container');
+
+    // UI elements
+    const strikeTrigger = document.getElementById('strike-trigger');
+    const autoBtn = document.getElementById('auto-btn');
+    const debugBtn = document.getElementById('debug-btn');
+    const soundBtn = document.getElementById('sound-btn');
+    const speedSlider = document.getElementById('speed-slider');
+    const speedVal = document.getElementById('speed-val');
+    const squashSlider = document.getElementById('squash-slider');
+    const squashVal = document.getElementById('squash-val');
+    const angleSlider = document.getElementById('angle-slider');
+    const angleVal = document.getElementById('angle-val');
+    const fpsLabel = document.getElementById('fps-label');
+
+    // State
+    let isAutoStrike = false;
+    let isDebugBones = true;
+    let isSoundEnabled = true;
+    let speedMult = 1.0;
+    let squashMult = 1.0;
+    let manualAngle = null;
+
+    // Assets
+    const assets = {
+      body: new Image(),
+      arm: new Image(),
+      collar: new Image(),
+      anvil: new Image()
+    };
+
+    assets.body.src = '/assets/art/demo_body.webp';
+    assets.arm.src = '/assets/art/demo_arm.webp';
+    assets.collar.src = '/assets/art/demo_collar.webp';
+    assets.anvil.src = '/assets/art/demo_anvil.webp';
+
+    let assetsLoaded = 0;
+    Object.values(assets).forEach(img => {
+      img.onload = () => {
+        assetsLoaded++;
+      };
+    });
+
+    // Audio Engine (Web Audio API Synthesizer)
+    let audioCtx = null;
+    function playClangSound() {
+      if (!isSoundEnabled) return;
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+
+      const now = audioCtx.currentTime;
+
+      // 1. Metal Clang
+      const osc1 = audioCtx.createOscillator();
+      const osc2 = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+
+      osc1.type = 'triangle';
+      osc1.frequency.setValueAtTime(840, now);
+      osc1.frequency.exponentialRampToValueAtTime(320, now + 0.35);
+
+      osc2.type = 'sine';
+      osc2.frequency.setValueAtTime(1420, now);
+      osc2.frequency.exponentialRampToValueAtTime(540, now + 0.25);
+
+      gain.gain.setValueAtTime(0.4, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+
+      osc1.connect(gain);
+      osc2.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      osc1.start(now);
+      osc2.start(now);
+      osc1.stop(now + 0.45);
+      osc2.stop(now + 0.45);
+
+      // 2. Thunder Bass
+      const oscSub = audioCtx.createOscillator();
+      const gainSub = audioCtx.createGain();
+      oscSub.type = 'sine';
+      oscSub.frequency.setValueAtTime(130, now);
+      oscSub.frequency.exponentialRampToValueAtTime(45, now + 0.25);
+      gainSub.gain.setValueAtTime(0.6, now);
+      gainSub.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+      oscSub.connect(gainSub);
+      gainSub.connect(audioCtx.destination);
+      oscSub.start(now);
+      oscSub.stop(now + 0.35);
+    }
+
+    // Animation Timings
+    const STRIKE_TOTAL_SEC = 0.42;
+    const STRIKE_DOWNSTROKE_SEC = 0.22;
+    let strikeTimer = -1;
+    let elapsedSec = 0;
+    let screenShake = 0;
+
+    // Sparks Pool
+    const sparks = [];
+    function spawnSparks(x, y, count = 16) {
+      for (let i = 0; i < count; i++) {
+        const angle = (Math.PI * 2 * Math.random());
+        const speed = 120 + Math.random() * 280;
+        sparks.push({
+          x,
+          y,
+          vx: Math.cos(angle) * speed,
+          vy: -Math.abs(Math.sin(angle)) * speed * 1.2,
+          life: 0.35 + Math.random() * 0.25,
+          maxLife: 0.6,
+          color: Math.random() > 0.4 ? '#67E8F9' : '#FDE047',
+          size: 2 + Math.random() * 3
+        });
+      }
+    }
+
+    function triggerStrike() {
+      strikeTimer = 0;
+    }
+
+    // Resize
+    function resize() {
+      const rect = container.getBoundingClientRect();
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    // Event listeners
+    strikeTrigger.addEventListener('click', triggerStrike);
+    window.addEventListener('keydown', (e) => {
+      if (e.code === 'Space') {
+        e.preventDefault();
+        triggerStrike();
+      }
+    });
+
+    autoBtn.addEventListener('click', () => {
+      isAutoStrike = !isAutoStrike;
+      autoBtn.textContent = `Tự động đập (${isAutoStrike ? 'On' : 'Off'})`;
+      autoBtn.classList.toggle('active', isAutoStrike);
+    });
+
+    debugBtn.addEventListener('click', () => {
+      isDebugBones = !isDebugBones;
+      debugBtn.textContent = `Hiện Khớp Xương (${isDebugBones ? 'On' : 'Off'})`;
+      debugBtn.classList.toggle('active', isDebugBones);
+    });
+
+    soundBtn.addEventListener('click', () => {
+      isSoundEnabled = !isSoundEnabled;
+      soundBtn.textContent = isSoundEnabled ? 'Bật âm thanh' : 'Tắt âm thanh';
+      soundBtn.classList.toggle('active', isSoundEnabled);
+    });
+
+    speedSlider.addEventListener('input', (e) => {
+      speedMult = parseFloat(e.target.value);
+      speedVal.textContent = `${speedMult.toFixed(1)}x`;
+    });
+
+    squashSlider.addEventListener('input', (e) => {
+      squashMult = parseInt(e.target.value, 10) / 100.0;
+      squashVal.textContent = `${e.target.value}%`;
+    });
+
+    angleSlider.addEventListener('input', (e) => {
+      manualAngle = parseInt(e.target.value, 10);
+      angleVal.textContent = `${manualAngle}°`;
+    });
+    angleSlider.addEventListener('change', () => {
+      manualAngle = null;
+      angleVal.textContent = 'Auto';
+    });
+
+    // FPS Counter
+    let lastTime = performance.now();
+    let frameCount = 0;
+    let lastFpsUpdate = 0;
+
+    // Main Loop
+    function render(currentTime) {
+      const dt = Math.min((currentTime - lastTime) / 1000.0, 0.1);
+      lastTime = currentTime;
+      elapsedSec += dt;
+
+      // FPS
+      frameCount++;
+      if (currentTime - lastFpsUpdate >= 500) {
+        const fps = Math.round((frameCount * 1000) / (currentTime - lastFpsUpdate));
+        fpsLabel.textContent = `${fps} FPS · ${(dt * 1000).toFixed(1)}ms`;
+        frameCount = 0;
+        lastFpsUpdate = currentTime;
+      }
+
+      // Auto strike
+      if (isAutoStrike && strikeTimer < 0) {
+        if (Math.sin(elapsedSec * 3.5) > 0.85) {
+          triggerStrike();
+        }
+      }
+
+      // Kinematics Evaluation
+      let hammerAngleDeg = 0;
+      let torsoOffsetY = 0;
+      let squashX = 1.0;
+      let squashY = 1.0;
+      let justImpacted = false;
+
+      if (strikeTimer >= 0) {
+        const prevTimer = strikeTimer;
+        strikeTimer += dt * speedMult;
+
+        if (strikeTimer <= STRIKE_DOWNSTROKE_SEC) {
+          // Windup (0..28%) -> Downstroke (28%..100%)
+          const p = Math.min(1, strikeTimer / STRIKE_DOWNSTROKE_SEC);
+          if (p < 0.28) {
+            const windP = p / 0.28;
+            hammerAngleDeg = -8 - 48 * Math.sin(windP * Math.PI * 0.5);
+            torsoOffsetY = -6 * windP;
+            squashY = 1.0 + 0.03 * windP * squashMult;
+            squashX = 1.0 - 0.015 * windP * squashMult;
+          } else {
+            const slamP = (p - 0.28) / 0.72;
+            const slamCurve = Math.pow(slamP, 2.4);
+            hammerAngleDeg = -56 + 74 * slamCurve;
+            torsoOffsetY = -6 + 18 * slamCurve;
+            squashY = (1.03 - 0.15 * slamCurve) * squashMult + (1 - squashMult);
+            squashX = (0.985 + 0.10 * slamCurve) * squashMult + (1 - squashMult);
+          }
+        } else if (strikeTimer <= STRIKE_TOTAL_SEC) {
+          // Recovery
+          const p = (strikeTimer - STRIKE_DOWNSTROKE_SEC) / (STRIKE_TOTAL_SEC - STRIKE_DOWNSTROKE_SEC);
+          const ease = 1 - Math.pow(1 - p, 2.2);
+          hammerAngleDeg = 18 - 26 * ease;
+          torsoOffsetY = 12 * (1 - ease);
+          squashY = (0.88 + 0.12 * ease) * squashMult + (1 - squashMult);
+          squashX = (1.10 - 0.10 * ease) * squashMult + (1 - squashMult);
+        } else {
+          strikeTimer = -1; // back to idle
+        }
+
+        // Trigger Impact
+        if (prevTimer < STRIKE_DOWNSTROKE_SEC && strikeTimer >= STRIKE_DOWNSTROKE_SEC) {
+          justImpacted = true;
+          screenShake = 1.0;
+          playClangSound();
+        }
+      } else {
+        // Idle breathing sine
+        const breath = Math.sin(elapsedSec * 2.8);
+        hammerAngleDeg = -8 + breath * 3.5;
+        torsoOffsetY = breath * 2.5;
+        squashX = 1.0 - breath * 0.012 * squashMult;
+        squashY = 1.0 + 0.015 * breath * squashMult;
+      }
+
+      if (manualAngle !== null) {
+        hammerAngleDeg = manualAngle;
+      }
+
+      // Screen shake decay
+      screenShake = Math.max(0, screenShake - dt * 6.0);
+      const shakeX = (Math.random() - 0.5) * screenShake * 16;
+      const shakeY = (Math.random() - 0.5) * screenShake * 16;
+
+      // Clear Canvas
+      ctx.save();
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.translate(shakeX, shakeY);
+
+      // Setup World Scale
+      const baseW = 1200;
+      const baseH = 900;
+      const scaleFit = Math.min(canvas.width / baseW, canvas.height / baseH);
+      const originX = (canvas.width - baseW * scaleFit) / 2;
+      const originY = (canvas.height - baseH * scaleFit) / 2;
+
+      ctx.save();
+      ctx.translate(originX, originY);
+      ctx.scale(scaleFit, scaleFit);
+
+      // Background Ambiance
+      const bgGrad = ctx.createRadialGradient(600, 450, 50, 600, 450, 600);
+      bgGrad.addColorStop(0, '#0F1A30');
+      bgGrad.addColorStop(0.7, '#080D1A');
+      bgGrad.addColorStop(1, '#05070E');
+      ctx.fillStyle = bgGrad;
+      ctx.fillRect(0, 0, baseW, baseH);
+
+      // Golden Celestial Moon & Mist
+      ctx.save();
+      const moonGrad = ctx.createRadialGradient(840, 220, 20, 840, 220, 190);
+      moonGrad.addColorStop(0, 'rgba(255, 235, 160, 0.45)');
+      moonGrad.addColorStop(0.5, 'rgba(255, 200, 80, 0.18)');
+      moonGrad.addColorStop(0.85, 'rgba(255, 183, 3, 0.05)');
+      moonGrad.addColorStop(1, 'rgba(255, 183, 3, 0)');
+      ctx.fillStyle = moonGrad;
+      ctx.beginPath();
+      ctx.arc(840, 220, 190, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Moon solid crescent
+      ctx.fillStyle = 'rgba(255, 240, 200, 0.12)';
+      ctx.beginPath();
+      ctx.arc(840, 220, 130, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+
+      // Ground Aura
+      ctx.save();
+      ctx.fillStyle = '#FFB703';
+      ctx.globalAlpha = 0.04;
+      ctx.beginPath();
+      ctx.ellipse(580, 780, 420, 45, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+
+      // Entity Positions
+      const scale_b = 680.0 / (assets.body.height || 1066);
+      const scale_an = 380.0 / (assets.anvil.height || 896);
+      const scale_arm = scale_b * 0.55;
+
+      const body_base_x = 220;
+      const body_base_y = 160;
+      const anvil_x = 550;
+      const anvil_y = 445;
+
+      const sh_local_x = 365 * scale_b;
+      const sh_local_y = 245 * scale_b;
+      const col_local_x = 290 * scale_b;
+      const col_local_y = 180 * scale_b;
+
+      const piv_x = 65 * scale_arm;
+      const piv_y = 100 * scale_arm;
+
+      // 1. LAYER 1: HERO BODY BASE
+      const bw = (assets.body.width || 499) * scale_b * squashX;
+      const bh = 680 * squashY;
+      const curr_body_y = body_base_y + torsoOffsetY + (680 - bh);
+
+      if (assets.body.complete) {
+        ctx.drawImage(assets.body, body_base_x, curr_body_y, bw, bh);
+      }
+
+      // 2. LAYER 2: ROTATED ARM & HAMMER
+      const sh_world_x = body_base_x + sh_local_x * squashX;
+      const sh_world_y = curr_body_y + sh_local_y * squashY;
+
+      ctx.save();
+      ctx.translate(sh_world_x, sh_world_y);
+      ctx.rotate((hammerAngleDeg * Math.PI) / 180);
+
+      const armW = (assets.arm.width || 883) * scale_arm;
+      const armH = (assets.arm.height || 874) * scale_arm;
+
+      if (assets.arm.complete) {
+        ctx.drawImage(assets.arm, -piv_x, -piv_y, armW, armH);
+      }
+
+      // Debug Skeleton on Arm
+      if (isDebugBones) {
+        // Red Shoulder Pivot
+        ctx.fillStyle = '#EF4444';
+        ctx.beginPath();
+        ctx.arc(0, 0, 7, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#FFFFFF';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // Bone vector to hand
+        ctx.strokeStyle = '#38BDF8';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(240 * scale_arm, 380 * scale_arm);
+        ctx.stroke();
+
+        // Blue Hand Joint
+        ctx.fillStyle = '#38BDF8';
+        ctx.beginPath();
+        ctx.arc(240 * scale_arm, 380 * scale_arm, 5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
+
+      // 3. LAYER 3: CHEST COLLAR (SANDWICH OVERLAY)
+      if (assets.collar.complete) {
+        const colW = (assets.collar.width || 126) * scale_b * squashX;
+        const colH = (assets.collar.height || 181) * scale_b * squashY;
+        ctx.drawImage(assets.collar, body_base_x + col_local_x * squashX, curr_body_y + col_local_y * squashY, colW, colH);
+      }
+
+      // 4. LAYER 4: GOLDEN ANVIL
+      if (assets.anvil.complete) {
+        const anW = (assets.anvil.width || 898) * scale_an;
+        const anH = 380;
+        ctx.drawImage(assets.anvil, anvil_x, anvil_y, anW, anH);
+      }
+
+      // Spawn sparks if just impacted
+      const impact_x = anvil_x + 190;
+      const impact_y = anvil_y + 120;
+      if (justImpacted) {
+        spawnSparks(impact_x, impact_y, 22);
+      }
+
+      // 5. LAYER 5: SPARKS & ASH PARTICLES
+      for (let i = sparks.length - 1; i >= 0; i--) {
+        const p = sparks[i];
+        p.x += p.vx * dt;
+        p.y += p.vy * dt;
+        p.vy += 450 * dt; // Gravity
+        p.life -= dt;
+        if (p.life <= 0) {
+          sparks.splice(i, 1);
+          continue;
+        }
+        const alpha = p.life / p.maxLife;
+        ctx.save();
+        ctx.globalAlpha = alpha;
+        ctx.fillStyle = p.color;
+        ctx.shadowColor = p.color;
+        ctx.shadowBlur = 8;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+
+      // Impact Shockwave Ring
+      if (strikeTimer >= STRIKE_DOWNSTROKE_SEC && strikeTimer <= STRIKE_DOWNSTROKE_SEC + 0.14) {
+        const prog = (strikeTimer - STRIKE_DOWNSTROKE_SEC) / 0.14;
+        ctx.save();
+        ctx.strokeStyle = '#FDE047';
+        ctx.globalAlpha = 1 - prog;
+        ctx.lineWidth = 3.5 * (1 - prog);
+        ctx.beginPath();
+        ctx.ellipse(impact_x, impact_y, 20 + prog * 90, 8 + prog * 35, 0, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      // Debug Contact Marker on Anvil
+      if (isDebugBones) {
+        ctx.strokeStyle = '#10B981';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(impact_x, impact_y, 10, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.fillStyle = '#10B981';
+        ctx.font = '11px monospace';
+        ctx.fillText('TARGET ORE HITBOX', impact_x - 55, impact_y - 16);
+      }
+
+      ctx.restore();
+      ctx.restore();
+
+      requestAnimationFrame(render);
+    }
+
+    requestAnimationFrame(render);
+  </script>
+</body>
+</html>

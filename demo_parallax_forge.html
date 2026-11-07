@@ -1,0 +1,1399 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DEMO 2.5D PARALLAX · 6 TRẠNG THÁI BẦU TRỜI & ĐÚC THẦN ĐÀI - PHÁ TRỜI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Charm:wght@700&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+    body {
+      background: #020408;
+      color: #E2E8F0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    header {
+      background: rgba(4, 7, 15, 0.95);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid rgba(245, 158, 11, 0.25);
+      padding: 8px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 20;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .badge {
+      background: linear-gradient(135deg, #F59E0B, #EF4444);
+      color: #03060F;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 3px 8px;
+      border-radius: 4px;
+      letter-spacing: 1px;
+    }
+    .title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #F8FAFC;
+    }
+    .subtitle {
+      font-size: 11px;
+      color: #94A3B8;
+    }
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      flex-wrap: wrap;
+    }
+    .btn {
+      padding: 5px 10px;
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(15, 23, 42, 0.65);
+      color: #CBD5E1;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .btn:hover {
+      background: rgba(30, 41, 59, 0.9);
+      color: #FFF;
+      border-color: rgba(245, 158, 11, 0.5);
+    }
+    .btn.active {
+      border-color: #F59E0B;
+      background: rgba(245, 158, 11, 0.18);
+      color: #FBBF24;
+      box-shadow: 0 0 10px rgba(245, 158, 11, 0.25);
+    }
+    .sky-state-btn {
+      padding: 4px 8px;
+      border-radius: 5px;
+      font-size: 10.5px;
+      font-weight: 700;
+      cursor: pointer;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(15, 23, 42, 0.6);
+      color: #94A3B8;
+      transition: all 0.2s;
+    }
+    .sky-state-btn:hover { color: #FFF; border-color: rgba(255,255,255,0.3); }
+    .sky-state-btn.active {
+      border-color: #F59E0B;
+      background: rgba(245, 158, 11, 0.2);
+      color: #FDE68A;
+      box-shadow: 0 0 10px rgba(245, 158, 11, 0.35);
+    }
+    .sky-state-btn[data-s="6"].active {
+      border-color: #EF4444;
+      background: rgba(239, 68, 68, 0.25);
+      color: #FCA5A5;
+      box-shadow: 0 0 14px rgba(239, 68, 68, 0.5);
+    }
+
+    #canvas-container {
+      flex: 1;
+      position: relative;
+      width: 100vw;
+      height: calc(100vh - 54px);
+      overflow: hidden;
+      cursor: crosshair;
+    }
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+    .hud-hint {
+      position: absolute;
+      bottom: 18px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(6, 9, 18, 0.9);
+      border: 1px solid rgba(245, 158, 11, 0.35);
+      backdrop-filter: blur(8px);
+      padding: 7px 22px;
+      border-radius: 30px;
+      font-size: 11.5px;
+      font-weight: 600;
+      color: #FDE68A;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.75);
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      letter-spacing: 0.5px;
+    }
+    .stats-overlay {
+      position: absolute;
+      top: 70px;
+      left: 18px;
+      background: rgba(6, 9, 18, 0.86);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(8px);
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-family: monospace;
+      font-size: 11px;
+      color: #94A3B8;
+      pointer-events: none;
+      line-height: 1.6;
+    }
+    .stats-overlay b {
+      color: #38BDF8;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <span class="badge">VẠN CỔ TIÊN CẢNH</span>
+      <div>
+        <div class="title">BẦU TRỜI 6 TRẠNG THÁI & HỆ THỐNG BỆ THẦN ĐÀI THỢ RÈN</div>
+        <div class="subtitle">Không Gian Mở Ngút Ngàn: 80% Vòm Trời Bao La · Bệ Đá Thần Đài Trang Nghiêm Dưới Chân</div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <!-- 6 Trạng Thái Bầu Trời -->
+      <span style="font-size:11px;color:#94A3B8;margin-right:2px;">Mái Vòm:</span>
+      <button class="sky-state-btn active" data-s="1" onclick="setSkyState(1, this)">1. Lành Lặn (100%)</button>
+      <button class="sky-state-btn" data-s="2" onclick="setSkyState(2, this)">2. Chớm Nứt (80%)</button>
+      <button class="sky-state-btn" data-s="3" onclick="setSkyState(3, this)">3. Rạn Nứt (60%)</button>
+      <button class="sky-state-btn" data-s="4" onclick="setSkyState(4, this)">4. Nứt Nặng (40%)</button>
+      <button class="sky-state-btn" data-s="5" onclick="setSkyState(5, this)">5. Thiên Kiếp (20%)</button>
+      <button class="sky-state-btn" data-s="6" onclick="setSkyState(6, this)">6. Phá Trời (0% 🔥)</button>
+      
+      <div style="width:1px;height:18px;background:rgba(255,255,255,0.15);margin:0 4px;"></div>
+
+      <!-- Hệ phái chính -->
+      <button class="btn active" data-sect="thunder" onclick="setSect('thunder', this)">⚡ Lôi Đỉnh</button>
+      <button class="btn" data-sect="fire" onclick="setSect('fire', this)">🔥 Viêm Dương</button>
+      <button class="btn" data-sect="gravity" onclick="setSect('gravity', this)">⛰️ Trọng Lực</button>
+      <button class="btn" data-sect="mystic" onclick="setSect('mystic', this)">🎵 Huyền Âm</button>
+
+      <div style="width:1px;height:18px;background:rgba(255,255,255,0.15);margin:0 4px;"></div>
+
+      <!-- Tương tác -->
+      <button class="btn" style="border-color:#38BDF8;color:#38BDF8;" onclick="toggleAddPlayer()">👥 +1 Người Chơi Vào</button>
+      <button class="btn" style="border-color:#F59E0B;color:#FDE68A;" onclick="triggerLightningStorm()">⚡ Bão Sét Giáng Xuống</button>
+      <button class="btn" style="background:rgba(245, 158, 11, 0.25);border-color:#F59E0B;color:#FDE68A;" onclick="triggerHeroStrike()">🔨 Nện Búa [Space]</button>
+    </div>
+  </header>
+
+  <div id="canvas-container">
+    <canvas id="parallax-canvas"></canvas>
+
+    <!-- TOP BOSS BAR (CHUẨN GIAO DIỆN PHÁ TRỜI) -->
+    <div style="position:absolute;top:14px;left:50%;transform:translateX(-50%);width:min(860px, 90vw);z-index:25;pointer-events:none;">
+      <div style="display:flex;justify-content:space-between;align-items:center;background:rgba(6,10,22,0.92);backdrop-filter:blur(10px);border:1px solid rgba(245,158,11,0.35);border-radius:8px;padding:7px 16px;box-shadow:0 6px 24px rgba(0,0,0,0.8);">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#EF4444;box-shadow:0 0 10px #EF4444;"></span>
+          <span style="font-weight:800;font-size:12.5px;color:#FDE68A;letter-spacing:1px;" id="boss-name">THIẾT VÂN VÒM · HẮC DIỆM THAO THIẾT</span>
+        </div>
+        <div style="font-family:monospace;font-size:11.5px;color:#CBD5E1;">
+          <span style="color:#EF4444;font-weight:700;" id="boss-hp-text">1,500,000,000</span> / 1,500,000,000 HP 
+          <span style="color:#F59E0B;font-weight:700;" id="boss-crack-text">(Nứt 0.0%)</span>
+        </div>
+      </div>
+      <!-- Boss HP Bar Fill -->
+      <div style="height:5px;background:rgba(15,23,42,0.9);border-radius:3px;overflow:hidden;margin-top:3px;border:1px solid rgba(255,255,255,0.08);">
+        <div id="boss-hp-bar" style="height:100%;width:100%;background:linear-gradient(90deg, #F59E0B, #EF4444);transition:width 0.4s ease-out;box-shadow:0 0 10px #EF4444;"></div>
+      </div>
+    </div>
+
+    <div class="stats-overlay">
+      <div>FPS: <b id="fps-val">60</b> · Khung Cảnh: <b>Bầu Trời Mở Rộng 80% Chiều Cao</b></div>
+      <div>Bầu Trời: <b id="state-desc" style="color:#38BDF8;">Trạng Thái 1: Lành Lặn Nguyên Vẹn (100% HP)</b></div>
+      <div>Đoàn Thợ Rèn: <b id="peers-status" style="color:#FBBF24;">Bệ Đá Độc Lập Cho Từng Thợ Rèn</b></div>
+      <div>Lôi Đình: <b id="lightning-status" style="color:#38BDF8;">Sét Giáng Từ Mái Vòm Xuống Đe Rèn</b></div>
+    </div>
+
+    <div class="hud-hint">
+      <span>🖱️ Rê chuột: Chiều sâu Parallax 2.5D</span>
+      <span>•</span>
+      <span>🔨 Phím Space / Click: Nện Búa Phóng Sét Lên Trời</span>
+      <span>•</span>
+      <span>🌌 Bấm nút 1 -> 6 để xem Bầu Trời Nứt Vỡ Đến Tan Tành</span>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('parallax-canvas');
+    const ctx = canvas.getContext('2d');
+    const container = document.getElementById('canvas-container');
+
+    // =========================================================================
+    // 1. ASSET IMAGES (6 SKY STATES + BỆ ĐỨNG ĐÀNG HOÀNG CHO THỢ RÈN)
+    // =========================================================================
+    const ASSETS = {
+      // 6 Trạng Thái Bầu Trời
+      sky1: { src: './assets/art/sky_states/sky_state_1_pristine.webp', img: new Image(), loaded: false },
+      sky2: { src: './assets/art/sky_states/sky_state_2_incipient.webp', img: new Image(), loaded: false },
+      sky3: { src: './assets/art/sky_states/sky_state_3_spreading.webp', img: new Image(), loaded: false },
+      sky4: { src: './assets/art/sky_states/sky_state_4_severe.webp', img: new Image(), loaded: false },
+      sky5: { src: './assets/art/sky_states/sky_state_5_cataclysm.webp', img: new Image(), loaded: false },
+      sky6: { src: './assets/art/sky_states/sky_state_6_shattered.webp', img: new Image(), loaded: false },
+
+      // Thiên Thể & Khí Quyển
+      moon: { src: './assets/art/sky_celestial_moon.webp', img: new Image(), loaded: false },
+      aurora: { src: './assets/art/sky_aurora_nebula.webp', img: new Image(), loaded: false },
+      clouds: { src: './assets/art/sky_drifting_clouds.webp', img: new Image(), loaded: false },
+
+      // Hậu Cảnh: Dãy Núi Tiên Cảnh Sâu Thẳm
+      mountains: { src: './assets/art/bg_distant_mountains_clean.webp', img: new Image(), loaded: false },
+      temple: { src: './assets/art/bg_floating_temple.webp', img: new Image(), loaded: false },
+
+      // Bệ Đứng Cho Thợ Rèn (Đàng Hoàng & Rộng Rãi)
+      pedestal: { src: './assets/art/single_forger_pedestal.webp', img: new Image(), loaded: false },
+      daisLow: { src: './assets/art/blacksmith_dais_low.webp', img: new Image(), loaded: false },
+      mainAltar: { src: './assets/art/altar_platform.webp', img: new Image(), loaded: false },
+
+      // Sprite Hoạt Họa Thợ Rèn
+      peerSheet: { src: './assets/art/peer_blacksmith_strip.webp', img: new Image(), loaded: false },
+      peerShadowSheet: { src: './assets/art/peer_blacksmith_shadow_strip.webp', img: new Image(), loaded: false },
+      heroSheet: { src: './assets/art/hero_spritesheet_strip.webp', img: new Image(), loaded: false }
+    };
+
+    Object.values(ASSETS).forEach(asset => {
+      asset.img.src = asset.src;
+      asset.img.onload = () => { asset.loaded = true; };
+    });
+
+    if (document.fonts) {
+      document.fonts.load('700 16px "Charm"');
+      document.fonts.load('700 15px "Charm"');
+      document.fonts.load('700 13px "Charm"');
+    }
+
+    let width = 0;
+    let height = 0;
+
+    // 6 Trạng Thái Bầu Trời
+    let currentSkyState = 1;
+    const SKY_STATE_DESCS = {
+      1: 'Trạng Thái 1: Lành Lặn Nguyên Vẹn (100% HP - Vòm Trời Yên Bình)',
+      2: 'Trạng Thái 2: Chớm Nứt Nhẹ (80% HP - Tia Nứt Tơ Nhện Phát Quang)',
+      3: 'Trạng Thái 3: Rạn Nứt Lan Tỏa (60% HP - Mạng Lưới Sét Cam Rực)',
+      4: 'Trạng Thái 4: Nứt Vỡ Nặng Nề (40% HP - Rãnh Dung Nham Sâu Hoắm)',
+      5: 'Trạng Thái 5: Thiên Kiếp Sụp Đổ (20% HP - Bão Lửa Tàn Phá Vòm Sắt)',
+      6: 'Trạng Thái 6: Mái Vòm Tan Vỡ Hoàn Toàn (0% HP - PHÁ TRỜI THÀNH CÔNG 🔥)'
+    };
+
+    let targetMouseX = 0;
+    let targetMouseY = 0;
+    let currentMouseX = 0;
+    let currentMouseY = 0;
+
+    let currentSect = 'thunder';
+    const SECT_COLORS = {
+      thunder: { glow: '#00F0FF', light: '#38BDF8', label: '⚡ Lôi Đỉnh (Xanh Neon)', spark: '#E0F2FE' },
+      fire: { glow: '#FF5500', light: '#FB923C', label: '🔥 Viêm Dương (Cam Lửa)', spark: '#FED7AA' },
+      gravity: { glow: '#A855F7', light: '#C084FC', label: '⛰️ Trọng Lực (Tím Huyền Không)', spark: '#F3E8FF' },
+      mystic: { glow: '#10B981', light: '#34D399', label: '🎵 Huyền Âm (Ngọc Bích)', spark: '#D1FAE5' }
+    };
+
+    // Deep space celestial stars
+    const stars = [];
+    for (let i = 0; i < 120; i++) {
+      stars.push({
+        x: Math.random(),
+        y: Math.random() * 0.65,
+        size: 0.8 + Math.random() * 1.8,
+        baseAlpha: 0.25 + Math.random() * 0.7,
+        twinkleSpeed: 0.002 + Math.random() * 0.005,
+        phase: Math.random() * Math.PI * 2
+      });
+    }
+
+    // =========================================================================
+    // 2. KHUNG THẺ TÊN TIÊN HIỆP (XIANXIA DAOIST NAMEPLATE PLAQUE)
+    // =========================================================================
+    const PLAQUE_PALETTES = {
+      hero: {
+        gold: '#FFD700',
+        rim: '#F59E0B',
+        glow: '#00F0FF',
+        gem: '#00F0FF',
+        text: '#FFFFFF',
+        bg1: 'rgba(12, 18, 36, 0.96)',
+        bg2: 'rgba(4, 7, 16, 0.98)'
+      },
+      thunder: {
+        gold: '#7DD3FC',
+        rim: '#00F0FF',
+        glow: '#00F0FF',
+        gem: '#38BDF8',
+        text: '#E0F2FE',
+        bg1: 'rgba(8, 18, 36, 0.95)',
+        bg2: 'rgba(3, 8, 20, 0.98)'
+      },
+      fire: {
+        gold: '#FDE68A',
+        rim: '#FF7700',
+        glow: '#FF5500',
+        gem: '#FB923C',
+        text: '#FED7AA',
+        bg1: 'rgba(28, 12, 8, 0.95)',
+        bg2: 'rgba(12, 4, 3, 0.98)'
+      },
+      mystic: {
+        gold: '#A7F3D0',
+        rim: '#10B981',
+        glow: '#10B981',
+        gem: '#34D399',
+        text: '#D1FAE5',
+        bg1: 'rgba(6, 26, 18, 0.95)',
+        bg2: 'rgba(2, 12, 8, 0.98)'
+      },
+      gravity: {
+        gold: '#E9D5FF',
+        rim: '#A855F7',
+        glow: '#C084FC',
+        gem: '#C084FC',
+        text: '#F3E8FF',
+        bg1: 'rgba(20, 10, 32, 0.95)',
+        bg2: 'rgba(8, 4, 16, 0.98)'
+      }
+    };
+
+    function drawXianxiaPlaque(ctx, x, y, text, stance = 'thunder', isHero = false, isReal = true) {
+      ctx.save();
+      ctx.translate(x, y);
+
+      const pal = isHero ? PLAQUE_PALETTES.hero : (PLAQUE_PALETTES[stance] || PLAQUE_PALETTES.thunder);
+
+      ctx.font = isHero ? '700 14px "Charm", "Caveat", cursive' : '700 13px "Charm", "Caveat", cursive';
+      const tw = ctx.measureText(text).width;
+
+      // Kích thước khung tự thích ứng hài hòa, không lấn át
+      const padX = isHero ? 22 : 18;
+      const bw = Math.max(isHero ? 160 : 130, tw + padX * 2);
+      const bh = isHero ? 26 : 24;
+      const halfW = bw * 0.5;
+      const halfH = bh * 0.5;
+
+      if (!isReal) {
+        // Tàn ảnh / Bóng mờ: Khung ngọc mờ ảo
+        ctx.globalAlpha = 0.55;
+      }
+
+      // 1. Bóng đổ thẻ bài
+      ctx.save();
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
+      ctx.filter = 'blur(6px)';
+      ctx.beginPath();
+      ctx.roundRect(-halfW - 6, -halfH - 2, bw + 12, bh + 8, 8);
+      ctx.fill();
+      ctx.restore();
+
+      // 2. Thân thẻ bài (Phiến đá Tiên Lệnh góc vát đuôi én)
+      const chamfer = isHero ? 9 : 7;
+      const wingNotch = isHero ? 8 : 6;
+
+      ctx.save();
+      const bodyGrad = ctx.createLinearGradient(0, -halfH, 0, halfH);
+      bodyGrad.addColorStop(0, pal.bg1);
+      bodyGrad.addColorStop(1, pal.bg2);
+      ctx.fillStyle = bodyGrad;
+
+      ctx.beginPath();
+      ctx.moveTo(-halfW + chamfer, -halfH);
+      ctx.lineTo(halfW - chamfer, -halfH);
+      ctx.lineTo(halfW, -halfH + chamfer);
+      ctx.lineTo(halfW + wingNotch, 0); // Đuôi én cánh phải
+      ctx.lineTo(halfW, halfH - chamfer);
+      ctx.lineTo(halfW - chamfer, halfH);
+      ctx.lineTo(-halfW + chamfer, halfH);
+      ctx.lineTo(-halfW, halfH - chamfer);
+      ctx.lineTo(-halfW - wingNotch, 0); // Đuôi én cánh trái
+      ctx.lineTo(-halfW, -halfH + chamfer);
+      ctx.closePath();
+      ctx.fill();
+
+      // Viền kim loại cổ phong
+      ctx.strokeStyle = isReal ? pal.rim : 'rgba(148, 163, 184, 0.4)';
+      ctx.lineWidth = isHero ? 1.8 : 1.3;
+      if (isReal) {
+        ctx.shadowColor = pal.glow;
+        ctx.shadowBlur = isHero ? 10 : 6;
+      }
+      ctx.stroke();
+      ctx.restore();
+
+      // 3. Đường chỉ viền nội phù văn (Inner engraved line)
+      if (isReal) {
+        ctx.save();
+        ctx.strokeStyle = pal.gold;
+        ctx.lineWidth = 0.9;
+        ctx.globalAlpha = 0.45;
+        const inPad = 3.2;
+        ctx.beginPath();
+        ctx.moveTo(-halfW + chamfer + inPad, -halfH + inPad);
+        ctx.lineTo(halfW - chamfer - inPad, -halfH + inPad);
+        ctx.lineTo(halfW - inPad, -halfH + chamfer + inPad);
+        ctx.lineTo(halfW + wingNotch - inPad, 0);
+        ctx.lineTo(halfW - inPad, halfH - chamfer - inPad);
+        ctx.lineTo(halfW - chamfer - inPad, halfH - inPad);
+        ctx.lineTo(-halfW + chamfer + inPad, halfH - inPad);
+        ctx.lineTo(-halfW + inPad, halfH - chamfer - inPad);
+        ctx.lineTo(-halfW - wingNotch + inPad, 0);
+        ctx.lineTo(-halfW + inPad, -halfH + chamfer + inPad);
+        ctx.closePath();
+        ctx.stroke();
+        ctx.restore();
+
+        // 4. Hoa văn tai triện / Mây cách điệu 2 đầu (Cloud curls on wingtips)
+        ctx.save();
+        ctx.strokeStyle = pal.gold;
+        ctx.lineWidth = 1.3;
+        ctx.lineCap = 'round';
+        ctx.shadowColor = pal.glow;
+        ctx.shadowBlur = 4;
+
+        // Tai mây trái
+        ctx.beginPath();
+        ctx.moveTo(-halfW + 4, -halfH + 3);
+        ctx.quadraticCurveTo(-halfW - 7, -halfH - 2, -halfW - wingNotch - 4, 0);
+        ctx.quadraticCurveTo(-halfW - 7, halfH + 2, -halfW + 4, halfH - 3);
+        ctx.stroke();
+        ctx.fillStyle = pal.gem;
+        ctx.beginPath();
+        ctx.arc(-halfW - 2, 0, isHero ? 2.8 : 2.2, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Tai mây phải
+        ctx.beginPath();
+        ctx.moveTo(halfW - 4, -halfH + 3);
+        ctx.quadraticCurveTo(halfW + 7, -halfH - 2, halfW + wingNotch + 4, 0);
+        ctx.quadraticCurveTo(halfW + 7, halfH + 2, halfW - 4, halfH - 3);
+        ctx.stroke();
+        ctx.fillStyle = pal.gem;
+        ctx.beginPath();
+        ctx.arc(halfW + 2, 0, isHero ? 2.8 : 2.2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+
+        // 5. Đỉnh phù ấn (Top & Bottom Crest)
+        ctx.save();
+        ctx.fillStyle = pal.gold;
+        ctx.beginPath();
+        ctx.moveTo(0, -halfH - (isHero ? 5 : 4));
+        ctx.lineTo(isHero ? 5 : 4, -halfH);
+        ctx.lineTo(0, -halfH + (isHero ? 5 : 4));
+        ctx.lineTo(-(isHero ? 5 : 4), -halfH);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.fillStyle = pal.gem;
+        ctx.beginPath();
+        ctx.arc(0, -halfH, isHero ? 2.2 : 1.6, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Đáy nút thắt tiên kết (Bottom tail notch)
+        ctx.fillStyle = pal.gold;
+        ctx.beginPath();
+        ctx.moveTo(-3, halfH);
+        ctx.lineTo(0, halfH + (isHero ? 4 : 3));
+        ctx.lineTo(3, halfH);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+      }
+
+      // 6. Chữ viết tay Thư Pháp (Handwritten Calligraphy Name)
+      ctx.save();
+      ctx.font = isHero ? '700 16px "Charm", "Caveat", cursive' : '700 14px "Charm", "Caveat", cursive';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = isReal ? pal.text : 'rgba(148, 163, 184, 0.75)';
+      if (isReal) {
+        ctx.shadowColor = pal.glow;
+        ctx.shadowBlur = isHero ? 8 : 4;
+      }
+      ctx.fillText(text, 0, 1);
+      ctx.restore();
+
+      ctx.restore();
+    }
+
+    // =========================================================================
+    // 3. HÀNG NGŨ ĐOÀN THỢ RÈN (3 TẦNG BẬC: HẬU ĐÀI, TRUNG ĐÀI, TIỀN ĐÀI)
+    // =========================================================================
+    // Tier 1 (Hậu Đài) & Tier 2 (Trung Đài): Hàng ngũ tàn ảnh / bóng mờ đập búa đồng bộ
+    const AMBIENT_BOTS = [
+      { id: 'b1', xNorm: 0.08, tier: 1, scale: 0.16, facing: 1, speed: 0.92, phase: 0.12, label: 'Tàn Ảnh #11' },
+      { id: 'b2', xNorm: 0.19, tier: 1, scale: 0.16, facing: 1, speed: 1.08, phase: 0.45, label: 'Tàn Ảnh #12' },
+      { id: 'b3', xNorm: 0.30, tier: 1, scale: 0.16, facing: 1, speed: 0.95, phase: 0.78, label: 'Tàn Ảnh #13' },
+      { id: 'b4', xNorm: 0.41, tier: 1, scale: 0.16, facing: 1, speed: 1.15, phase: 0.23, label: 'Tàn Ảnh #14' },
+      { id: 'b5', xNorm: 0.59, tier: 1, scale: 0.16, facing: -1, speed: 1.02, phase: 0.85, label: 'Tàn Ảnh #15' },
+      { id: 'b6', xNorm: 0.70, tier: 1, scale: 0.16, facing: -1, speed: 1.12, phase: 0.38, label: 'Tàn Ảnh #16' },
+      { id: 'b7', xNorm: 0.81, tier: 1, scale: 0.16, facing: -1, speed: 0.90, phase: 0.65, label: 'Tàn Ảnh #17' },
+      { id: 'b8', xNorm: 0.92, tier: 1, scale: 0.16, facing: -1, speed: 1.20, phase: 0.19, label: 'Tàn Ảnh #18' },
+
+      { id: 'b9', xNorm: 0.18, tier: 2, scale: 0.22, facing: 1, speed: 1.00, phase: 0.35, label: 'Tàn Ảnh #21' },
+      { id: 'b10', xNorm: 0.30, tier: 2, scale: 0.22, facing: 1, speed: 1.18, phase: 0.68, label: 'Tàn Ảnh #22' },
+      { id: 'b11', xNorm: 0.70, tier: 2, scale: 0.22, facing: -1, speed: 0.96, phase: 0.52, label: 'Tàn Ảnh #23' },
+      { id: 'b12', xNorm: 0.82, tier: 2, scale: 0.22, facing: -1, speed: 1.05, phase: 0.91, label: 'Tàn Ảnh #24' },
+    ];
+
+    // Tier 3 (Tiền Đài): Các thợ rèn danh xưng đứng trên Bệ Thần Đài độc lập đàng hoàng
+    const PEER_SLOTS = [
+      // Cánh Trái (Tả Thần Đài):
+      { id: 0, xNorm: 0.12, yOffset: 6, scale: 0.34, facing: 1, speed: 1.15, phase: 0.1, isReal: false, name: '', stance: 'thunder' },
+      { id: 1, xNorm: 0.24, yOffset: 2, scale: 0.35, facing: 1, speed: 0.95, phase: 0.35, isReal: true, name: '', stance: 'fire' },
+      { id: 2, xNorm: 0.36, yOffset: 0, scale: 0.36, facing: 1, speed: 1.05, phase: 0.7, isReal: true, name: '', stance: 'thunder' },
+
+      // Cánh Phải (Hữu Thần Đài):
+      { id: 3, xNorm: 0.64, yOffset: 0, scale: 0.36, facing: -1, speed: 1.0, phase: 0.55, isReal: true, name: '', stance: 'mystic' },
+      { id: 4, xNorm: 0.76, yOffset: 2, scale: 0.35, facing: -1, speed: 1.2, phase: 0.85, isReal: true, name: '', stance: 'gravity' },
+      { id: 5, xNorm: 0.88, yOffset: 6, scale: 0.34, facing: -1, speed: 1.1, phase: 0.65, isReal: false, name: '', stance: 'fire' }
+    ];
+
+    // Strike Timers and VFX
+    const STRIKE_TOTAL_SEC = 0.44;
+    let heroStrikeTimer = -1;
+    let screenShake = 0;
+    let flashIntensity = 0;
+
+    const sparks = [];
+    const shockwaves = [];
+    const lightningStrikes = [];
+
+    function resize() {
+      width = container.clientWidth;
+      height = container.clientHeight;
+      canvas.width = width * window.devicePixelRatio;
+      canvas.height = height * window.devicePixelRatio;
+      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    // Mouse Tracking
+    window.addEventListener('mousemove', (e) => {
+      const rect = container.getBoundingClientRect();
+      const nx = ((e.clientX - rect.left) / width - 0.5) * 2;
+      const ny = ((e.clientY - rect.top) / height - 0.5) * 2;
+      targetMouseX = Math.max(-1, Math.min(1, nx));
+      targetMouseY = Math.max(-1, Math.min(1, ny));
+    });
+
+    // Tạo tia sét giáng từ đỉnh trời xuống đe rèn
+    function spawnLightningBolt(targetX, targetY, color = '#00F0FF', power = 1.0) {
+      const startX = targetX + (Math.random() - 0.5) * 100;
+      const startY = height * 0.08;
+      
+      const segments = [];
+      const steps = 7;
+      let currX = startX;
+      let currY = startY;
+      segments.push({ x: currX, y: currY });
+
+      for (let s = 1; s < steps; s++) {
+        const frac = s / steps;
+        const idealX = startX + (targetX - startX) * frac;
+        const idealY = startY + (targetY - startY) * frac;
+        currX = idealX + (Math.random() - 0.5) * 45;
+        currY = idealY + (Math.random() - 0.5) * 25;
+        segments.push({ x: currX, y: currY });
+      }
+      segments.push({ x: targetX, y: targetY });
+
+      lightningStrikes.push({
+        segments,
+        alpha: 1.0,
+        decay: 3.0,
+        color,
+        lineWidth: 3.5 * power
+      });
+    }
+
+    // Nện búa nhân vật chính
+    function triggerHeroStrike() {
+      heroStrikeTimer = 0;
+      screenShake = currentSkyState >= 5 ? 12 : 7;
+      flashIntensity = currentSkyState >= 5 ? 1.3 : 0.9;
+
+      const renderScale = 0.38;
+      const groundY = height * 0.825;
+      const centerX = width * 0.5;
+      const heroFootX = centerX - 14;
+      const spriteLeft = heroFootX - (360 * renderScale) * 0.46;
+      const spriteTop = groundY - (440 * renderScale);
+      
+      const impactX = spriteLeft + 213 * renderScale;
+      const impactY = spriteTop + 342 * renderScale;
+
+      const sc = SECT_COLORS[currentSect];
+      
+      // Sét giáng thẳng từ trời xuống đe Main Hero
+      spawnLightningBolt(impactX, impactY, sc.glow, 1.4);
+
+      // Sóng xung kích
+      shockwaves.push({
+        x: impactX,
+        y: impactY,
+        radius: 10,
+        maxRadius: 75,
+        alpha: 1.0,
+        color: sc.light
+      });
+
+      // Tia lửa búa
+      const count = currentSkyState >= 5 ? 65 : 45;
+      for (let i = 0; i < count; i++) {
+        const ang = Math.PI * 1.5 + (Math.random() - 0.5) * 1.8;
+        const spd = 4.5 + Math.random() * 10;
+        sparks.push({
+          x: impactX,
+          y: impactY,
+          vx: Math.cos(ang) * spd,
+          vy: Math.sin(ang) * spd,
+          life: 1.0,
+          decay: 0.02 + Math.random() * 0.03,
+          size: 2.2 + Math.random() * 2.8,
+          color: Math.random() < 0.35 ? '#FFFFFF' : sc.light
+        });
+      }
+    }
+
+    // Bão sét toàn màn hình
+    window.triggerLightningStorm = function() {
+      screenShake = 14;
+      flashIntensity = 1.2;
+      PEER_SLOTS.forEach(slot => {
+        const px = slot.xNorm * width;
+        const py = height * 0.825 + slot.yOffset;
+        const color = SECT_COLORS[slot.stance].glow;
+        spawnLightningBolt(px, py, color, 1.0);
+      });
+      triggerHeroStrike();
+    };
+
+    // Chuyển 1 bóng mờ thành người chơi thật
+    window.toggleAddPlayer = function() {
+      const candidates = PEER_SLOTS.filter(s => !s.isReal);
+      if (candidates.length > 0) {
+        const slot = candidates[0];
+        slot.isReal = true;
+        const names = ['Lâm Động', 'Tần Vũ', 'La Phong', 'Bạch Tiểu Thuần', 'Cố Trầm'];
+        const stances = ['thunder', 'fire', 'gravity', 'mystic'];
+        slot.name = `★ ${names[Math.floor(Math.random() * names.length)]}`;
+        slot.stance = stances[Math.floor(Math.random() * stances.length)];
+        
+        const px = slot.xNorm * width;
+        const py = height * 0.825 + slot.yOffset;
+        spawnLightningBolt(px, py, SECT_COLORS[slot.stance].glow, 1.3);
+      } else {
+        PEER_SLOTS.forEach((s, i) => { if (i % 2 === 0) s.isReal = false; });
+      }
+
+      const realCount = PEER_SLOTS.filter(s => s.isReal).length;
+      document.getElementById('peers-status').innerText = `${realCount} Người Chơi Thật · ${PEER_SLOTS.length - realCount} Tàn Ảnh Bóng Mờ`;
+    };
+
+    window.addEventListener('keydown', (e) => {
+      if (e.code === 'Space' || e.code === 'KeyQ') {
+        e.preventDefault();
+        if (!e.repeat) triggerHeroStrike();
+      }
+    });
+    canvas.addEventListener('mousedown', triggerHeroStrike);
+
+    window.setSect = function(sId, btn) {
+      currentSect = sId;
+      document.querySelectorAll('.btn[data-sect]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const sc = SECT_COLORS[sId];
+      document.getElementById('sect-val').innerText = sc.label;
+      document.getElementById('sect-val').style.color = sc.light;
+      flashIntensity = 0.5;
+    };
+
+    window.setSkyState = function(stateNum, btn) {
+      currentSkyState = stateNum;
+      document.querySelectorAll('.sky-state-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      const desc = SKY_STATE_DESCS[stateNum];
+      const descEl = document.getElementById('state-desc');
+      descEl.innerText = desc;
+
+      // Update Boss Bar & Crack %
+      const bossHpMap = { 1: 1500000000, 2: 1200000000, 3: 900000000, 4: 600000000, 5: 300000000, 6: 0 };
+      const crackPctMap = { 1: '0.0%', 2: '20.0%', 3: '40.0%', 4: '60.0%', 5: '80.0%', 6: '100.0% 🔥' };
+      const hp = bossHpMap[stateNum];
+      const pct = (hp / 1500000000) * 100;
+      
+      document.getElementById('boss-hp-text').innerText = hp.toLocaleString();
+      document.getElementById('boss-crack-text').innerText = `(Nứt ${crackPctMap[stateNum]})`;
+      document.getElementById('boss-hp-bar').style.width = `${pct}%`;
+
+      if (stateNum === 1) descEl.style.color = '#38BDF8';
+      else if (stateNum === 2) descEl.style.color = '#7DD3FC';
+      else if (stateNum === 3) descEl.style.color = '#FBBF24';
+      else if (stateNum === 4) descEl.style.color = '#FB923C';
+      else if (stateNum === 5) descEl.style.color = '#F87171';
+      else {
+        descEl.style.color = '#EF4444';
+        screenShake = 16;
+      }
+      flashIntensity = 0.7;
+    };
+
+    // =========================================================================
+    // 3. MAIN RENDER LOOP (PARALLAX + BẦU TRỜI 6 TRẠNG THÁI + BỆ ĐÁ THẦN ĐÀI)
+    // =========================================================================
+    let lastTime = performance.now();
+    let frameCount = 0;
+    let lastFpsUpdate = performance.now();
+    const lastImpactFlags = new Array(PEER_SLOTS.length).fill(false);
+
+    function render(now) {
+      requestAnimationFrame(render);
+
+      const dt = (now - lastTime) / 1000;
+      lastTime = now;
+
+      frameCount++;
+      if (now - lastFpsUpdate > 500) {
+        document.getElementById('fps-val').innerText = Math.round((frameCount * 1000) / (now - lastFpsUpdate));
+        frameCount = 0;
+        lastFpsUpdate = now;
+      }
+
+      currentMouseX += (targetMouseX - currentMouseX) * 0.05;
+      currentMouseY += (targetMouseY - currentMouseY) * 0.05;
+
+      // Screen Shake
+      let shakeX = 0;
+      let shakeY = 0;
+      if (screenShake > 0) {
+        shakeX = (Math.random() - 0.5) * screenShake;
+        shakeY = (Math.random() - 0.5) * screenShake;
+        screenShake = Math.max(0, screenShake - 28 * dt);
+      }
+
+      if (flashIntensity > 0) {
+        flashIntensity = Math.max(0, flashIntensity - 3.6 * dt);
+      }
+
+      // Hero Strike Timer
+      if (heroStrikeTimer >= 0) {
+        heroStrikeTimer += dt;
+        if (heroStrikeTimer > STRIKE_TOTAL_SEC) heroStrikeTimer = -1;
+      }
+
+      let heroFrameIdx = 0;
+      if (heroStrikeTimer >= 0) {
+        const p = Math.min(1, heroStrikeTimer / STRIKE_TOTAL_SEC);
+        if (p < 0.18) heroFrameIdx = 1;
+        else if (p < 0.38) heroFrameIdx = 2;
+        else if (p < 0.62) heroFrameIdx = 3;
+        else if (p < 0.82) heroFrameIdx = 4;
+        else heroFrameIdx = 5;
+      }
+
+      ctx.clearRect(0, 0, width, height);
+      ctx.save();
+      ctx.translate(shakeX, shakeY);
+
+      // Mặt sàn thấp: Đặt ở 82.5% chiều cao màn hình để giải phóng 75% KHÔNG GIAN CHO BẦU TRỜI & MÁI VÒM!
+      const groundY = height * 0.825;
+      const centerX = width * 0.5;
+
+      // -----------------------------------------------------------------------
+      // LAYER 0: BẦU TRỜI ĐÊM HUYỀN BÍ (BIẾN CHUYỂN THEO 6 TRẠNG THÁI)
+      // -----------------------------------------------------------------------
+      const gradSky = ctx.createLinearGradient(0, 0, 0, height);
+      if (currentSkyState === 1 || currentSkyState === 2) {
+        // Trạng thái 1 & 2: Đêm Xanh Đen Huyền Bí
+        gradSky.addColorStop(0, '#020409');
+        gradSky.addColorStop(0.42, '#060B18');
+        gradSky.addColorStop(0.75, '#0A1224');
+        gradSky.addColorStop(1, '#020408');
+      } else if (currentSkyState === 3) {
+        // Trạng thái 3: Sấm Giông Tím Thẫm
+        gradSky.addColorStop(0, '#07030F');
+        gradSky.addColorStop(0.42, '#150B28');
+        gradSky.addColorStop(0.75, '#1E1236');
+        gradSky.addColorStop(1, '#07040C');
+      } else if (currentSkyState === 4) {
+        // Trạng thái 4: Cam Nóng Bỏng
+        gradSky.addColorStop(0, '#120404');
+        gradSky.addColorStop(0.40, '#220808');
+        gradSky.addColorStop(0.75, '#2F0E0E');
+        gradSky.addColorStop(1, '#080202');
+      } else if (currentSkyState === 5) {
+        // Trạng thái 5: Đỏ Dung Nham Sụp Đổ
+        gradSky.addColorStop(0, '#1C0404');
+        gradSky.addColorStop(0.38, '#3A0808');
+        gradSky.addColorStop(0.75, '#481010');
+        gradSky.addColorStop(1, '#100303');
+      } else {
+        // Trạng thái 6: Phá Trời Thành Công (Ánh Sáng Khai Môn Vàng Kim Chói Lòa)
+        gradSky.addColorStop(0, '#260804');
+        gradSky.addColorStop(0.35, '#4D1204');
+        gradSky.addColorStop(0.70, '#5C1808');
+        gradSky.addColorStop(1, '#150502');
+      }
+      ctx.fillStyle = gradSky;
+      ctx.fillRect(0, 0, width, height);
+
+      // Ngôi sao lấp lánh trên vòm trời rộng mở
+      stars.forEach(s => {
+        const a = s.baseAlpha + Math.sin(now * s.twinkleSpeed + s.phase) * 0.25;
+        ctx.fillStyle = `rgba(224, 242, 254, ${Math.max(0, Math.min(1, a))})`;
+        ctx.beginPath();
+        ctx.arc(s.x * width, s.y * height, s.size, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      // LAYER 1: MẶT TRĂNG BẠCH NGỌC (NẰM CAO TRÊN VÒM TRỜI)
+      if (ASSETS.moon.loaded) {
+        const mImg = ASSETS.moon.img;
+        const moonSize = Math.min(220, width * 0.20);
+        const moonX = width * 0.74 - currentMouseX * 10;
+        const moonY = height * 0.07 - currentMouseY * 5;
+
+        ctx.save();
+        ctx.globalCompositeOperation = 'screen';
+        ctx.globalAlpha = currentSkyState >= 5 ? 0.35 : 0.95;
+        ctx.drawImage(mImg, moonX, moonY, moonSize, moonSize);
+        ctx.restore();
+      }
+
+      // LAYER 2: CỰC QUANG KHÍ TỨC TIÊN MÔN
+      if (ASSETS.aurora.loaded) {
+        const aImg = ASSETS.aurora.img;
+        const aW = width * 1.05;
+        const aH = aW * (aImg.height / aImg.width);
+        const aX = (width - aW) * 0.5 - currentMouseX * 14;
+        const aY = height * 0.04 - currentMouseY * 6;
+
+        ctx.save();
+        ctx.globalCompositeOperation = 'screen';
+        ctx.globalAlpha = 0.55 + Math.sin(now * 0.002) * 0.15 + (flashIntensity * 0.3);
+        ctx.drawImage(aImg, aX, aY, aW, aH);
+        ctx.restore();
+      }
+
+      // -----------------------------------------------------------------------
+      // LAYER 3: BẦU TRỜI 6 TRẠNG THÁI (MÁI VÒM THIÊN GIỚI NỨT VỠ -> TAN HOÀN TOÀN)
+      // -----------------------------------------------------------------------
+      const stateAssetKey = `sky${currentSkyState}`;
+      const skyAsset = ASSETS[stateAssetKey];
+      if (skyAsset && skyAsset.loaded && currentSkyState > 1) {
+        const sImg = skyAsset.img;
+        const pX = currentMouseX * 18;
+        const pY = currentMouseY * 7;
+
+        const sW = width * 0.95;
+        const sH = sW * (sImg.height / sImg.width);
+        const sX = (width - sW) * 0.5 - pX;
+        const sY = height * 0.02 - pY;
+
+        ctx.save();
+        ctx.globalCompositeOperation = 'screen';
+        const pulse = 0.85 + Math.sin(now * 0.005) * 0.15;
+        ctx.globalAlpha = Math.min(1, pulse + flashIntensity * 0.4);
+        ctx.drawImage(sImg, sX, sY, sW, sH);
+        ctx.restore();
+      }
+
+      // LAYER 4: MÂY TIÊN THỦY MẶC (LƠ LỬNG TẦNG KHÔNG)
+      if (ASSETS.clouds.loaded) {
+        const clImg = ASSETS.clouds.img;
+        const clW = width * 1.15;
+        const clH = clW * (clImg.height / clImg.width);
+        const clX = (width - clW) * 0.5 - currentMouseX * 20;
+        const clY = height * 0.28 - currentMouseY * 6;
+
+        ctx.save();
+        ctx.globalCompositeOperation = 'screen';
+        ctx.globalAlpha = 0.22;
+        ctx.drawImage(clImg, clX, clY, clW, clH);
+        ctx.restore();
+      }
+
+      // -----------------------------------------------------------------------
+      // LAYER 5: DÃY NÚI ĐÁ BẠCH HUYỀN / BASALT HORIZON RIDGE (CHÂN TRỜI THẤP 64%)
+      // -----------------------------------------------------------------------
+      // Giữ cho 65% bên trên HOÀN TOÀN TRỐNG TRẢI cho Mái Vòm Thiên Giới & Sấm Sét!
+      const horizonY = height * 0.64;
+      
+      // Lớp sương mù chân trời
+      const mistGrad = ctx.createLinearGradient(0, horizonY - 45, 0, horizonY + 20);
+      mistGrad.addColorStop(0, 'rgba(4, 7, 18, 0)');
+      mistGrad.addColorStop(0.6, 'rgba(12, 18, 36, 0.45)');
+      mistGrad.addColorStop(1, 'rgba(7, 10, 20, 0.85)');
+      ctx.fillStyle = mistGrad;
+      ctx.fillRect(0, horizonY - 45, width, 65);
+
+      // Dãy núi basalt xa (Silhouette phong cách Phá Trời với đường viền phát quang)
+      ctx.save();
+      const paraRidgeX = currentMouseX * 18;
+      ctx.fillStyle = '#060914';
+      ctx.strokeStyle = currentSkyState >= 5 ? 'rgba(239, 68, 68, 0.65)' : 'rgba(255, 120, 30, 0.45)';
+      ctx.lineWidth = 1.6;
+      ctx.beginPath();
+      ctx.moveTo(-50, horizonY + 25);
+      const ridgeSteps = 32;
+      for (let r = 0; r <= ridgeSteps; r++) {
+        const rx = (r / ridgeSteps) * (width + 100) - 50 - paraRidgeX;
+        const peak = Math.sin(r * 1.5 + 0.4) * 16 + Math.cos(r * 2.8) * 10;
+        ctx.lineTo(rx, horizonY - Math.abs(peak));
+      }
+      ctx.lineTo(width + 50, horizonY + 45);
+      ctx.lineTo(-50, horizonY + 45);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      ctx.restore();
+
+      // -----------------------------------------------------------------------
+      // LAYER 6: 3 TẦNG BẬC THẠCH ĐÀI (STEPPED BASALT TERRACES)
+      // -----------------------------------------------------------------------
+      const terraceLevels = [
+        { y: height * 0.685, h: height * 0.065, color1: '#0B1122', color2: '#050812', stroke: 'rgba(124, 232, 255, 0.22)', lw: 1.2 },
+        { y: height * 0.750, h: height * 0.075, color1: '#0E162B', color2: '#060914', stroke: 'rgba(124, 232, 255, 0.35)', lw: 1.5 },
+        { y: height * 0.825, h: height * 0.180, color1: '#121D38', color2: '#070B18', stroke: SECT_COLORS[currentSect].glow, lw: 2.2 }
+      ];
+
+      terraceLevels.forEach((tl, tIdx) => {
+        const pX = currentMouseX * (22 + tIdx * 14);
+        const ty = tl.y - currentMouseY * (5 + tIdx * 3);
+
+        ctx.save();
+        const gradT = ctx.createLinearGradient(0, ty, 0, ty + tl.h);
+        gradT.addColorStop(0, tl.color1);
+        gradT.addColorStop(1, tl.color2);
+        ctx.fillStyle = gradT;
+
+        ctx.beginPath();
+        ctx.moveTo(0, ty);
+        for (let s = 0; s <= 20; s++) {
+          const sx = (s / 20) * width;
+          const dip = s >= 8 && s <= 12 ? 4 : (s % 2 === 0 ? -2 : 2);
+          ctx.lineTo(sx - pX, ty + dip);
+        }
+        ctx.lineTo(width, ty + tl.h);
+        ctx.lineTo(0, ty + tl.h);
+        ctx.closePath();
+        ctx.fill();
+
+        // Viền năng lượng phát quang trên mép thạch đài
+        ctx.strokeStyle = tl.stroke;
+        ctx.lineWidth = tl.lw;
+        ctx.shadowColor = tl.stroke;
+        ctx.shadowBlur = tIdx === 2 ? 14 : 6;
+        ctx.beginPath();
+        for (let s = 0; s <= 20; s++) {
+          const sx = (s / 20) * width;
+          const dip = s >= 8 && s <= 12 ? 4 : (s % 2 === 0 ? -2 : 2);
+          if (s === 0) ctx.moveTo(sx - pX, ty + dip);
+          else ctx.lineTo(sx - pX, ty + dip);
+        }
+        ctx.stroke();
+        ctx.restore();
+      });
+
+      // -----------------------------------------------------------------------
+      // LAYER 7: HÀNG NGŨ TÀN ẢNH BÓNG MỜ (AMBIENT BOT TROUPE - TIER 1 & TIER 2)
+      // -----------------------------------------------------------------------
+      if (ASSETS.peerShadowSheet.loaded) {
+        const sheetShadow = ASSETS.peerShadowSheet.img;
+        const FW = 458;
+        const FH = 384;
+
+        AMBIENT_BOTS.forEach((bot, bIdx) => {
+          const tLevel = bot.tier === 1 ? terraceLevels[0] : terraceLevels[1];
+          const tY = tLevel.y - currentMouseY * (bot.tier === 1 ? 5 : 8);
+          const pX = currentMouseX * (bot.tier === 1 ? 26 : 38);
+          const bx = bot.xNorm * width - pX;
+          const by = tY + (bot.tier === 1 ? 22 : 28);
+
+          const cycleTime = 1.05 / bot.speed;
+          const cycleSec = (now * 0.001 + bot.phase * 10) % cycleTime;
+          const progress = cycleSec / cycleTime;
+          let bFrame = 0;
+          if (progress < 0.20) bFrame = 0;
+          else if (progress < 0.42) bFrame = 1;
+          else if (progress < 0.60) bFrame = 2;
+          else if (progress < 0.78) bFrame = 3;
+          else if (progress < 0.90) bFrame = 4;
+          else bFrame = 5;
+
+          const bw = FW * bot.scale;
+          const bh = FH * bot.scale;
+
+          // Vẽ đe rèn mini dưới chân tàn ảnh
+          ctx.save();
+          ctx.fillStyle = '#1E293B';
+          ctx.strokeStyle = '#334155';
+          ctx.lineWidth = 1.0;
+          const anvilX = bx + (bot.facing === 1 ? 8 : -8);
+          ctx.beginPath();
+          ctx.roundRect(anvilX - 9, by - 6, 18, 8, 2);
+          ctx.fill();
+          ctx.stroke();
+          ctx.restore();
+
+          // Tia lửa nhỏ khi tàn ảnh nện búa
+          if (bFrame === 3 && Math.random() < 0.12) {
+            sparks.push({
+              x: anvilX,
+              y: by - 6,
+              vx: (Math.random() - 0.5) * 3,
+              vy: -2 - Math.random() * 2,
+              life: 0.5,
+              decay: 0.06,
+              size: 1.2,
+              color: '#94A3B8'
+            });
+          }
+
+          ctx.save();
+          ctx.translate(bx, by);
+          if (bot.facing === -1) ctx.scale(-1, 1);
+          ctx.globalAlpha = bot.tier === 1 ? 0.45 : 0.60;
+          const sx = bFrame * FW;
+          ctx.drawImage(sheetShadow, sx, 0, FW, FH, -bw * 0.42, -bh + 6, bw, bh);
+          ctx.restore();
+
+          // Nhãn mờ chữ viết tay
+          ctx.save();
+          ctx.font = '700 13px "Charm", "Caveat", cursive';
+          ctx.textAlign = 'center';
+          ctx.fillStyle = 'rgba(148, 163, 184, 0.55)';
+          ctx.fillText(bot.label, bx, by - bh - 2);
+          ctx.restore();
+        });
+      }
+
+      // -----------------------------------------------------------------------
+      // LAYER 7: BỆ ĐỨNG THẦN ĐÀI CHO TỪNG THỢ RÈN (ĐÀNG HOÀNG, TRANG NGHIÊM)
+      // -----------------------------------------------------------------------
+      if (ASSETS.pedestal.loaded) {
+        const pedImg = ASSETS.pedestal.img;
+        PEER_SLOTS.forEach(slot => {
+          const paraX = currentMouseX * 52;
+          const paraY = currentMouseY * 14;
+          const px = slot.xNorm * width - paraX;
+          const py = groundY + slot.yOffset - paraY;
+
+          // Bệ đá rộng nâng đỡ người và đe
+          const pedW = 160 * (slot.scale / 0.35);
+          const pedH = pedW * (pedImg.height / pedImg.width);
+
+          ctx.save();
+          // Bóng đổ bệ đá
+          ctx.fillStyle = 'rgba(0,0,0,0.7)';
+          ctx.filter = 'blur(10px)';
+          ctx.beginPath();
+          ctx.ellipse(px, py + pedH * 0.35, pedW * 0.45, 12, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+
+          // Vẽ bệ đá
+          ctx.save();
+          ctx.drawImage(pedImg, px - pedW * 0.5, py - pedH * 0.28, pedW, pedH);
+
+          // Phù văn phát quang trên bệ đá theo hệ phái
+          if (slot.isReal) {
+            const sc = SECT_COLORS[slot.stance];
+            ctx.globalAlpha = 0.45 + Math.sin(now * 0.004 + slot.id) * 0.15;
+            ctx.filter = 'blur(10px)';
+            ctx.fillStyle = sc.glow;
+            ctx.beginPath();
+            ctx.ellipse(px, py - 4, pedW * 0.3, 8, 0, 0, Math.PI * 2);
+            ctx.fill();
+          }
+          ctx.restore();
+        });
+      }
+
+      // -----------------------------------------------------------------------
+      // LAYER 8: ĐOÀN THỢ RÈN HOẠT HỌA 6 FRAME (BÓNG MỜ & NGƯỜI CHƠI THẬT)
+      // -----------------------------------------------------------------------
+      if (ASSETS.peerSheet.loaded && ASSETS.peerShadowSheet.loaded) {
+        const sheetColor = ASSETS.peerSheet.img;
+        const sheetShadow = ASSETS.peerShadowSheet.img;
+
+        const PEER_FW = 458;
+        const PEER_FH = 384;
+
+        PEER_SLOTS.forEach((slot, idx) => {
+          const cycleTime = 1.05 / slot.speed;
+          const cycleSec = (now * 0.001 + slot.phase * 10) % cycleTime;
+          const progress = cycleSec / cycleTime;
+
+          let pFrame = 0;
+          if (progress < 0.20) pFrame = 0;
+          else if (progress < 0.42) pFrame = 1;
+          else if (progress < 0.60) pFrame = 2;
+          else if (progress < 0.78) pFrame = 3;
+          else if (progress < 0.90) pFrame = 4;
+          else pFrame = 5;
+
+          const paraX = currentMouseX * 52;
+          const paraY = currentMouseY * 14;
+          const px = slot.xNorm * width - paraX;
+          const py = groundY + slot.yOffset - paraY;
+
+          const pScale = slot.scale;
+          const pw = PEER_FW * pScale;
+          const ph = PEER_FH * pScale;
+
+          // Khi nện đe (Frame 3): Sét giáng và tia lửa nổ tung
+          if (pFrame === 3 && !lastImpactFlags[idx]) {
+            lastImpactFlags[idx] = true;
+            const impactX = px + (slot.facing === 1 ? 14 : -14);
+            const impactY = py - 8;
+            
+            if (slot.isReal) {
+              spawnLightningBolt(impactX, impactY, SECT_COLORS[slot.stance].glow, 0.9);
+            }
+
+            for (let s = 0; s < (slot.isReal ? 12 : 6); s++) {
+              const ang = Math.PI * 1.5 + (Math.random() - 0.5) * 1.6;
+              const spd = 2.5 + Math.random() * 5.0;
+              sparks.push({
+                x: impactX,
+                y: impactY,
+                vx: Math.cos(ang) * spd,
+                vy: Math.sin(ang) * spd,
+                life: 0.8,
+                decay: 0.035,
+                size: slot.isReal ? 2.2 : 1.5,
+                color: slot.isReal ? SECT_COLORS[slot.stance].spark : '#94A3B8'
+              });
+            }
+          } else if (pFrame !== 3) {
+            lastImpactFlags[idx] = false;
+          }
+
+          ctx.save();
+          ctx.translate(px, py);
+          if (slot.facing === -1) {
+            ctx.scale(-1, 1);
+          }
+
+          const activeImg = slot.isReal ? sheetColor : sheetShadow;
+          ctx.globalAlpha = slot.isReal ? 1.0 : 0.45;
+
+          const sx = pFrame * PEER_FW;
+          const sy = 0;
+          ctx.drawImage(activeImg, sx, sy, PEER_FW, PEER_FH, -pw * 0.42, -ph + 12, pw, ph);
+          ctx.restore();
+
+          // Khung Thẻ Tên Tiên Hiệp trên đầu (Chí Tôn / Phù Lệnh Bài)
+          const nameY = py - ph + 4;
+          if (slot.isReal && slot.name) { drawXianxiaPlaque(ctx, px, nameY, slot.name, slot.stance, false, slot.isReal); }
+        });
+      }
+
+      // -----------------------------------------------------------------------
+      // LAYER 9: VẠN CỔ THẦN ĐÀI BÁT QUÁI (BỆ ĐÁ TRUNG TÂM MAIN HERO)
+      // -----------------------------------------------------------------------
+      if (ASSETS.mainAltar.loaded) {
+        const aImg = ASSETS.mainAltar.img;
+        const aW = Math.min(270, width * 0.25);
+        const aH = aW * (aImg.height / aImg.width);
+        const aX = centerX - aW * 0.5 - currentMouseX * 56;
+        const aY = groundY - aH * 0.22 - currentMouseY * 16;
+
+        ctx.save();
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.9)';
+        ctx.filter = 'blur(16px)';
+        ctx.beginPath();
+        ctx.ellipse(centerX - currentMouseX * 56, groundY + aH * 0.30, aW * 0.45, 14, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+
+        ctx.save();
+        ctx.drawImage(aImg, aX, aY, aW, aH);
+
+        const runeColor = SECT_COLORS[currentSect].glow;
+        const runePulse = 0.35 + Math.sin(now * 0.003) * 0.15 + (flashIntensity * 0.45);
+        ctx.globalAlpha = runePulse;
+        ctx.filter = 'blur(12px)';
+        ctx.fillStyle = runeColor;
+        ctx.beginPath();
+        ctx.ellipse(centerX - currentMouseX * 56, groundY - 2 - currentMouseY * 16, aW * 0.26, 10, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+
+      // LAYER 10: THỢ RÈN CHÍNH TIÊN NHÂN & ĐE VÀNG (KÍCH THƯỚC HÀI HÒA VỚI ĐỒNG ĐỘI)
+      if (ASSETS.heroSheet.loaded) {
+        const sheet = ASSETS.heroSheet.img;
+        const stageFootY = groundY - currentMouseY * 18;
+        const heroFootX = centerX - 14 - currentMouseX * 64;
+
+        const FRAME_W = 360;
+        const FRAME_H = 480;
+        const renderScale = 0.38;
+        const dw = FRAME_W * renderScale;
+        const dh = FRAME_H * renderScale;
+        const baseLineY = 440 * renderScale;
+
+        const sx = heroFrameIdx * FRAME_W;
+        const sy = 0;
+        const spriteLeft = heroFootX - dw * 0.46;
+        const spriteTop = stageFootY - baseLineY;
+
+        ctx.save();
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+        ctx.filter = 'blur(6px)';
+        ctx.beginPath();
+        ctx.ellipse(heroFootX - 16, stageFootY + 2, 26, 8, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.ellipse(heroFootX + 32, stageFootY + 3, 30, 9, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+
+        ctx.save();
+        ctx.strokeStyle = SECT_COLORS[currentSect].glow;
+        ctx.lineWidth = 1.6;
+        ctx.globalAlpha = 0.55 + Math.sin(now * 0.004) * 0.2;
+        ctx.beginPath();
+        ctx.ellipse(heroFootX + 8, stageFootY, 62, 14, 0, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+
+        ctx.save();
+        if (heroFrameIdx === 3) {
+          ctx.shadowColor = SECT_COLORS[currentSect].light;
+          ctx.shadowBlur = 25;
+        }
+        ctx.drawImage(sheet, sx, sy, FRAME_W, FRAME_H, spriteLeft, spriteTop, dw, dh);
+        ctx.restore();
+
+        // Khung Danh Hiệu Thợ Rèn Chính (Chí Tôn Tiên Lệnh Bài)
+        const labelText = `Thợ Rèn Chính · [${currentSect.toUpperCase()}]`;
+        const tagY = stageFootY - 140;
+        drawXianxiaPlaque(ctx, centerX - currentMouseX * 64, tagY, labelText, currentSect, true, true);
+      }
+
+      // -----------------------------------------------------------------------
+      // LAYER 11: DYNAMIC LIGHTNING STRIKES (SÉT TỪ TRỜI GIÁNG XUỐNG ĐE RÈN)
+      // -----------------------------------------------------------------------
+      for (let i = lightningStrikes.length - 1; i >= 0; i--) {
+        const bolt = lightningStrikes[i];
+        bolt.alpha -= bolt.decay * dt;
+        if (bolt.alpha <= 0) {
+          lightningStrikes.splice(i, 1);
+          continue;
+        }
+
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, bolt.alpha);
+        ctx.strokeStyle = '#FFFFFF';
+        ctx.lineWidth = bolt.lineWidth;
+        ctx.shadowColor = bolt.color;
+        ctx.shadowBlur = 24;
+
+        ctx.beginPath();
+        ctx.moveTo(bolt.segments[0].x, bolt.segments[0].y);
+        for (let s = 1; s < bolt.segments.length; s++) {
+          ctx.lineTo(bolt.segments[s].x, bolt.segments[s].y);
+        }
+        ctx.stroke();
+
+        ctx.strokeStyle = bolt.color;
+        ctx.lineWidth = bolt.lineWidth * 2.5;
+        ctx.globalAlpha = Math.max(0, bolt.alpha * 0.45);
+        ctx.stroke();
+
+        ctx.restore();
+      }
+
+      // LAYER 12: SHOCKWAVES & SPARKS
+      for (let i = shockwaves.length - 1; i >= 0; i--) {
+        const sw = shockwaves[i];
+        sw.radius += 130 * dt;
+        sw.alpha -= 1.8 * dt;
+
+        if (sw.alpha <= 0 || sw.radius >= sw.maxRadius) {
+          shockwaves.splice(i, 1);
+          continue;
+        }
+
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, sw.alpha);
+        ctx.strokeStyle = sw.color;
+        ctx.lineWidth = 3.2;
+        ctx.beginPath();
+        ctx.ellipse(sw.x, sw.y, sw.radius, sw.radius * 0.45, 0, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      for (let i = sparks.length - 1; i >= 0; i--) {
+        const sp = sparks[i];
+        sp.x += sp.vx;
+        sp.y += sp.vy;
+        sp.vy += 0.34;
+        sp.life -= sp.decay;
+
+        if (sp.life <= 0) {
+          sparks.splice(i, 1);
+          continue;
+        }
+
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, sp.life);
+        ctx.fillStyle = sp.color;
+        ctx.shadowColor = sp.color;
+        ctx.shadowBlur = 9;
+        ctx.beginPath();
+        ctx.arc(sp.x, sp.y, sp.size, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+
+      if (flashIntensity > 0) {
+        ctx.save();
+        ctx.globalAlpha = flashIntensity * 0.4;
+        ctx.fillStyle = SECT_COLORS[currentSect].light;
+        ctx.filter = 'blur(50px)';
+        ctx.beginPath();
+        ctx.arc(centerX + 20, groundY - 50, 180, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+
+      ctx.restore();
+    }
+
+    requestAnimationFrame(render);
+  </script>
+</body>
+</html>
