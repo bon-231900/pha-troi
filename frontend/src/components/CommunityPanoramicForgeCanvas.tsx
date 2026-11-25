@@ -8,11 +8,18 @@ import React, {
 import {
   PANORAMA_SKY_RATIO,
   HERO_STRIKE_TOTAL_SEC,
-  SCREEN_SHAKE_DURATION_SEC,
   HERO_STANCE_PALETTES,
   type StanceKey,
-  type Point2D,
 } from '../game/rules';
+import {
+  type AdvancedLightningBolt,
+  type ElectricZapParticle,
+  createAdvancedLightningBolt,
+  drawAdvancedLightningBolt,
+  createElectricZapParticles,
+  updateAndDrawElectricZaps,
+  drawSkyLightningFlash,
+} from '../game/lightningVFX';
 import { hapticEngine } from '../game/haptics';
 
 export interface RemotePeerStrikePayload {
@@ -35,6 +42,7 @@ export interface RemotePeerInfo {
 
 export interface CommunityPanoramicForgeCanvasHandle {
   triggerHeroStrike: (forceGolden?: boolean) => void;
+  triggerThunderStorm: (count?: number, power?: number) => void;
   triggerPeerWave: () => void;
   triggerRemotePeerStrike: (payload: RemotePeerStrikePayload) => void;
   updateRemotePeers: (peers: RemotePeerInfo[]) => void;
@@ -68,13 +76,7 @@ export interface CommunityPanoramicForgeCanvasProps {
   equippedSkinId?: string;
 }
 
-interface ActiveLightningBolt2D {
-  segments: Point2D[];
-  alpha: number;
-  decay: number;
-  color: string;
-  lineWidth: number;
-}
+// ActiveLightningBolt2D superseded by AdvancedLightningBolt in lightningVFX.ts
 
 interface SparkParticle2D {
   active: boolean;
@@ -368,10 +370,6 @@ function drawXianxiaPlaque(
   ctx.restore();
 }
 
-// Background troupe (Tier 1 & 2 ambient shadows)
-// All bots removed per user request: zero bot overhead, no lag
-const AMBIENT_BOTS: Array<{ id: string; xNorm: number; tier: number; scale: number; facing: number; speed: number; phase: number; label: string }> = [];
-
 // 24 Multi-Tier Co-Op Forge Stations (Vạn Cổ Đúc Thần Đài)
 interface PeerSlotConfig {
   id: number;
@@ -493,6 +491,7 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
   const triggerRemotePeerStrikeClosureRef = useRef<((payload: RemotePeerStrikePayload) => void) | null>(null);
   const updateRemotePeersClosureRef = useRef<((peers: RemotePeerInfo[]) => void) | null>(null);
   const spawnTouchRippleClosureRef = useRef<((x: number, y: number) => void) | null>(null);
+  const triggerThunderStormClosureRef = useRef<((count?: number, power?: number) => void) | null>(null);
   const lastTouchTimeRef = useRef<number>(0);
 
   useImperativeHandle(
@@ -500,6 +499,9 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
     () => ({
       triggerHeroStrike: (forceGolden = false) => {
         executeHeroStrikeClosureRef.current?.(forceGolden);
+      },
+      triggerThunderStorm: (count = 6, power = 2.0) => {
+        triggerThunderStormClosureRef.current?.(count, power);
       },
       triggerPeerWave: () => {
         triggerPeerWaveClosureRef.current?.();
@@ -660,7 +662,6 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
     // Dynamic Peer Slots (6 frontline pedestals)
     const peerSlots: PeerSlotConfig[] = DEFAULT_PEER_SLOTS.map((s) => ({ ...s }));
     const peerStrikeTimers = new Float32Array(peerSlots.length).fill(-1);
-    const lastImpactFlags = new Array(peerSlots.length).fill(false);
 
     // Remote Players Map
     const remotePeersMap = new Map<number, RemotePeerInfo>();
@@ -672,7 +673,8 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
     let rhythmPhase = 0.72;
     let textIdCounter = 1;
 
-    const lightningBolts: ActiveLightningBolt2D[] = [];
+    const lightningBolts: AdvancedLightningBolt[] = [];
+    const electricZaps: ElectricZapParticle[] = [];
     const shockwaves: Shockwave2D[] = [];
     const floatingTexts: FloatingCombatText2D[] = [];
 
@@ -741,69 +743,83 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
       p.isAsh = isAsh;
     };
 
-    const spawnLightningBolt = (targetX: number, targetY: number, color = '#00F0FF', power = 1.0) => {
-      const startX = targetX + (Math.random() - 0.5) * 90;
-      const startY = viewH * 0.08;
-      const segments: Point2D[] = [];
-      const steps = 7;
-      let currX = startX;
-      let currY = startY;
-      segments.push({ x: currX, y: currY });
-
-      for (let s = 1; s < steps; s++) {
-        const frac = s / steps;
-        const idealX = startX + (targetX - startX) * frac;
-        const idealY = startY + (targetY - startY) * frac;
-        currX = idealX + (Math.random() - 0.5) * 42;
-        currY = idealY + (Math.random() - 0.5) * 22;
-        segments.push({ x: currX, y: currY });
+    const spawnLightningBolt = (
+      targetX: number,
+      targetY: number,
+      color = '#00F0FF',
+      power = 1.0,
+      lightColor = '#38BDF8',
+      hasGroundTendrils = true
+    ) => {
+      // Keep at most 3 concurrent bolts for buttery smooth 60 FPS
+      if (lightningBolts.length >= 3) {
+        lightningBolts.shift();
       }
-      segments.push({ x: targetX, y: targetY });
-
-      lightningBolts.push({
-        segments,
-        alpha: 1.0,
-        decay: 3.2,
+      const bolt = createAdvancedLightningBolt(targetX, targetY, {
+        viewH,
         color,
-        lineWidth: 3.2 * power,
+        lightColor,
+        power,
+        hasGroundTendrils,
       });
+      lightningBolts.push(bolt);
+
+      const newZaps = createElectricZapParticles(targetX, targetY, 10, lightColor, power);
+      electricZaps.push(...newZaps);
     };
 
-    const executeHeroStrikeVisuals = (forceGolden = false) => {
+    const executeHeroStrikeVisuals = (isCrit = false) => {
       const currentStanceKey = activeStanceRef.current;
       const sect = STANCE_TO_SECT[currentStanceKey] || 'thunder';
       const sc = SECT_COLORS[sect] || SECT_COLORS.thunder;
 
       heroStrikeTimer = 0;
-      screenShake = forceGolden ? 13 : 8;
-      flashIntensity = forceGolden ? 1.4 : 0.95;
-      rhythmPhase = 0.05;
+      screenShake = isCrit ? 16 : 8;
+      flashIntensity = isCrit ? 1.6 : 0.95;
 
       const isPortrait = viewW < viewH;
       let groundY = isPortrait ? viewH * 0.65 : (viewH < 500 ? viewH * 0.81 : viewH * 0.825);
       const renderScale = isPortrait ? Math.min(0.48, Math.max(0.36, viewW / 760)) : 0.38;
       const centerX = viewW * 0.5;
       const heroFootX = centerX - 14;
-      const spriteLeft = heroFootX - (360 * renderScale) * 0.46;
-      const spriteTop = groundY - (440 * renderScale);
-      const impactX = spriteLeft + 213 * renderScale;
-      const impactY = spriteTop + 342 * renderScale;
+      const impactX = heroFootX + 28 * renderScale;
+      const impactY = groundY + 4;
 
-      // 1. Lightning from sky to anvil
-      spawnLightningBolt(impactX, impactY, sc.glow, 1.45);
+      // 1. Primary High-Definition Multi-Pass Lightning Bolt
+      spawnLightningBolt(impactX, impactY, sc.glow, isCrit ? 1.4 : 1.15, sc.light, true);
 
-      // 2. Shockwave
+      // 2. Converging Secondary Bolt ONLY on Crit (keeps active bolts <= 2)
+      if (isCrit) {
+        const startX = impactX + (Math.random() < 0.5 ? -1 : 1) * (70 + Math.random() * 50);
+        const bolt = createAdvancedLightningBolt(impactX, impactY, {
+          viewH,
+          color: sc.glow,
+          lightColor: sc.light,
+          power: 1.1,
+          startX,
+          branchCount: 2,
+          hasGroundTendrils: false,
+        });
+        lightningBolts.push(bolt);
+      }
+
+      // 3. Multi-tier shockwave
       shockwaves.push({
         x: impactX,
         y: impactY,
-        radius: 10,
-        maxRadius: 75,
+        radius: 12,
+        maxRadius: isCrit ? 95 : 75,
         alpha: 1.0,
         color: sc.light,
       });
 
-      // 3. Sparks
-      const sparkCount = forceGolden ? 48 : 34;
+      // 4. Electric Zap Streak Particles (capped to 10 max)
+      const zapCount = isCrit ? 10 : 6;
+      const newZaps = createElectricZapParticles(impactX, impactY, zapCount, sc.spark, isCrit ? 1.3 : 1.0);
+      electricZaps.push(...newZaps);
+
+      // 5. Molten Sparks
+      const sparkCount = isCrit ? 44 : 24;
       for (let i = 0; i < sparkCount; i++) {
         const ang = Math.PI * 1.5 + (Math.random() - 0.5) * 1.8;
         const spd = 120 + Math.random() * 260;
@@ -826,21 +842,19 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
       multiplier: number,
       isCrit: boolean,
       isGolden: boolean,
-      stanceKey: StanceKey
+      _stanceKey: StanceKey
     ) => {
       const heroX = viewW * 0.5;
       const isPortrait = viewW < viewH;
       const groundY = isPortrait ? viewH * 0.65 : (viewH < 500 ? viewH * 0.81 : viewH * 0.825);
 
       const isGlance = grade === 'GLANCING';
-      const color = isGlance ? '#F87171' : isGolden ? '#FFD700' : isCrit ? '#38BDF8' : '#F8FAFC';
-      const glowColor = isGlance ? '#EF4444' : isGolden ? '#F59E0B' : isCrit ? '#00F0FF' : 'rgba(255, 255, 255, 0.4)';
-      const scale = isGolden ? 1.35 : isCrit ? 1.22 : isGlance ? 0.92 : 1.05;
+      const color = isGlance ? '#F87171' : isCrit ? '#FFD700' : '#F8FAFC';
+      const glowColor = isGlance ? '#EF4444' : isCrit ? '#F59E0B' : 'rgba(255, 255, 255, 0.4)';
+      const scale = isCrit ? 1.30 : isGlance ? 0.92 : 1.05;
 
       let badgeText: string | undefined = undefined;
-      if (isGolden) {
-        badgeText = `★ HOÀNG KIM x${multiplier}`;
-      } else if (isCrit) {
+      if (isCrit) {
         badgeText = `⚡ BẠO KÍCH x${multiplier}`;
       } else if (isGlance) {
         badgeText = 'DỘI BÚA';
@@ -881,8 +895,6 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
       isGolden: boolean
     ) => {
       const heroX = viewW * 0.5;
-      const isPortrait = viewW < viewH;
-      const groundY = isPortrait ? viewH * 0.65 : (viewH < 500 ? viewH * 0.81 : viewH * 0.825);
 
       // Skill & Milestone Banners float in the sky/boss area (upper 28%), well above hero avatar
       const bannerY = Math.max(80, viewH * 0.28);
@@ -908,9 +920,44 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
       screenShake = 0;
       flashIntensity = 0;
       lightningBolts.length = 0;
+      electricZaps.length = 0;
       shockwaves.length = 0;
       floatingTexts.length = 0;
       for (const p of sparkPool) p.active = false;
+    };
+
+    triggerThunderStormClosureRef.current = (count = 4, power = 1.6) => {
+      const isPortrait = viewW < viewH;
+      const groundY = isPortrait ? viewH * 0.65 : (viewH < 500 ? viewH * 0.81 : viewH * 0.825);
+      const renderScale = isPortrait ? Math.min(0.48, Math.max(0.36, viewW / 760)) : 0.38;
+      const centerX = viewW * 0.5;
+      const heroFootX = centerX - 14;
+      const impactX = heroFootX + 28 * renderScale;
+      const impactY = groundY + 4;
+
+      screenShake = 16;
+      flashIntensity = 1.8;
+
+      const actualCount = Math.min(4, count);
+      for (let i = 0; i < actualCount; i++) {
+        setTimeout(() => {
+          if (lightningBolts.length >= 3) lightningBolts.shift();
+          const offsetX = (Math.random() - 0.5) * 40;
+          const startX = impactX + (Math.random() - 0.5) * 160;
+          const bolt = createAdvancedLightningBolt(impactX + offsetX, impactY, {
+            viewH,
+            color: '#00F0FF',
+            lightColor: '#38BDF8',
+            power: power * 0.9,
+            startX,
+            branchCount: 2,
+          });
+          lightningBolts.push(bolt);
+
+          const zaps = createElectricZapParticles(impactX + offsetX, impactY, 8, '#E0FFFF', 1.0);
+          electricZaps.push(...zaps);
+        }, i * 75);
+      }
     };
 
     executeHeroStrikeClosureRef.current = (forceGolden?: boolean) => {
@@ -1070,6 +1117,7 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
           // Lightning bolts decay
           for (let i = lightningBolts.length - 1; i >= 0; i--) {
             const bolt = lightningBolts[i];
+            bolt.age += dt;
             bolt.alpha -= bolt.decay * dt;
             if (bolt.alpha <= 0) {
               lightningBolts.splice(i, 1);
@@ -1559,48 +1607,7 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
           ctx.drawImage(sheet, sx, sy, FRAME_W, FRAME_H, spriteLeft, spriteTop, dw, dh);
           ctx.restore();
 
-          // Contracting Rhythm Ring (100 BPM) on Hero Anvil - Glowing Multi-Layer Qi Pulse
-          const anvilImpactX = spriteLeft + 213 * renderScale;
-          const anvilImpactY = spriteTop + 342 * renderScale;
-          const ringScale = 1 - rhythmPhase;
-          const isSweetSpot = Math.abs(rhythmPhase - 0.78) <= 0.18;
-
-          ctx.save();
-          ctx.shadowColor = isSweetSpot ? '#FFD700' : activeSectColor.glow;
-          ctx.shadowBlur = isSweetSpot ? 14 : 7;
-          ctx.strokeStyle = isSweetSpot ? '#FFF3B0' : activeSectColor.light;
-          ctx.lineWidth = isSweetSpot ? 2.5 : 1.4;
-          ctx.globalAlpha = 0.4 + rhythmPhase * 0.55;
-          ctx.beginPath();
-          ctx.ellipse(
-            anvilImpactX,
-            anvilImpactY,
-            14 + ringScale * 38,
-            5 + ringScale * 14,
-            0,
-            0,
-            Math.PI * 2
-          );
-          ctx.stroke();
-
-          if (isSweetSpot) {
-            ctx.strokeStyle = '#FFFFFF';
-            ctx.lineWidth = 1.0;
-            ctx.globalAlpha = 0.8;
-            ctx.beginPath();
-            ctx.ellipse(
-              anvilImpactX,
-              anvilImpactY,
-              14 + ringScale * 38 * 0.96,
-              5 + ringScale * 14 * 0.96,
-              0,
-              0,
-              Math.PI * 2
-            );
-            ctx.stroke();
-          }
-          ctx.restore();
-
+          // Hero Dais Surface is completely clean and unobstructed (No rhythm clutter)
           // Balanced Overhead Plaque (Charm / Caveat Calligraphy)
           const stanceMeta = HERO_STANCE_PALETTES[activeStanceRef.current] || HERO_STANCE_PALETTES.Q;
           const heroName = playerNameRef.current.trim() || 'Thợ Rèn Chính';
@@ -1610,30 +1617,21 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
         }
 
         // ---------------------------------------------------------------------
-        // LAYER 12: DYNAMIC LIGHTNING BOLTS
+        // LAYER 12: DYNAMIC ADVANCED LIGHTNING BOLTS & ELECTRIC ZAPS
         // ---------------------------------------------------------------------
-        for (let i = lightningBolts.length - 1; i >= 0; i--) {
-          const bolt = lightningBolts[i];
-          ctx.save();
-          ctx.globalAlpha = Math.max(0, bolt.alpha);
-          ctx.strokeStyle = '#FFFFFF';
-          ctx.lineWidth = bolt.lineWidth;
-          ctx.shadowColor = bolt.color;
-          ctx.shadowBlur = 22;
-
-          ctx.beginPath();
-          ctx.moveTo(bolt.segments[0].x, bolt.segments[0].y);
-          for (let s = 1; s < bolt.segments.length; s++) {
-            ctx.lineTo(bolt.segments[s].x, bolt.segments[s].y);
-          }
-          ctx.stroke();
-
-          ctx.strokeStyle = bolt.color;
-          ctx.lineWidth = bolt.lineWidth * 2.2;
-          ctx.globalAlpha = Math.max(0, bolt.alpha * 0.45);
-          ctx.stroke();
-          ctx.restore();
+        // Atmospheric Sky Lightning Flash (Illuminates sky, moon & clouds)
+        if (lightningBolts.length > 0 && flashIntensity > 0.05) {
+          const mainBolt = lightningBolts[lightningBolts.length - 1];
+          drawSkyLightningFlash(ctx, viewW, viewH, mainBolt.color, flashIntensity);
         }
+
+        // Multi-Pass Shader Lightning Rendering (Additive Blending, Zero shadowBlur)
+        for (let i = 0; i < lightningBolts.length; i++) {
+          drawAdvancedLightningBolt(ctx, lightningBolts[i]);
+        }
+
+        // Electric Zap Streak Particles (High Voltage Ionization)
+        updateAndDrawElectricZaps(ctx, electricZaps, dt);
 
         // ---------------------------------------------------------------------
         // LAYER 13: SHOCKWAVES & SPARKS
@@ -1641,12 +1639,23 @@ export const CommunityPanoramicForgeCanvas = forwardRef<
         for (let i = shockwaves.length - 1; i >= 0; i--) {
           const sw = shockwaves[i];
           ctx.save();
+          ctx.globalCompositeOperation = 'lighter';
           ctx.globalAlpha = Math.max(0, sw.alpha);
+
+          // Outer colored electric ring (NO shadowBlur - uses GPU additive blending)
           ctx.strokeStyle = sw.color;
-          ctx.lineWidth = 2.4 * sw.alpha;
+          ctx.lineWidth = 3.5 * sw.alpha;
           ctx.beginPath();
           ctx.ellipse(sw.x, sw.y, sw.radius, sw.radius * 0.45, 0, 0, Math.PI * 2);
           ctx.stroke();
+
+          // Inner white-hot shock core
+          ctx.strokeStyle = '#FFFFFF';
+          ctx.lineWidth = 1.5 * sw.alpha;
+          ctx.beginPath();
+          ctx.ellipse(sw.x, sw.y, sw.radius * 0.90, sw.radius * 0.45 * 0.90, 0, 0, Math.PI * 2);
+          ctx.stroke();
+
           ctx.restore();
         }
 

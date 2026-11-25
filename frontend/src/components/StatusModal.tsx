@@ -1,7 +1,7 @@
 import React from 'react';
-import { PlayerClassMeta, CHARACTER_SKINS } from '../game/rules';
+import { PlayerClassMeta, CHARACTER_SKINS, AVAILABLE_CHARACTER_SKINS } from '../game/rules';
 import { Sparkles } from 'lucide-react';
-import { HEADER_ICON_ASSETS, HEADER_FRAME_ASSETS } from '../game/headerArtAssets';
+import { HEADER_ICON_ASSETS } from '../game/headerArtAssets';
 
 interface StatusModalProps {
   mode: 'paused' | 'gameover';
@@ -19,6 +19,7 @@ interface StatusModalProps {
   activeCharacterName?: string;
   equippedSkinId?: string;
   onEquipSkin?: (skinId: string) => void;
+  onOpenGuide?: () => void;
 }
 
 export const StatusModal: React.FC<StatusModalProps> = ({
@@ -37,6 +38,7 @@ export const StatusModal: React.FC<StatusModalProps> = ({
   activeCharacterName,
   equippedSkinId = 'skin_default',
   onEquipSkin,
+  onOpenGuide,
 }) => {
   const currentDamage = Math.round(
     typeof playerTotalDamage === 'number'
@@ -166,6 +168,19 @@ export const StatusModal: React.FC<StatusModalProps> = ({
                 )}
               </div>
 
+              {/* Hướng Dẫn & Cẩm Nang Bí Kíp Button */}
+              {onOpenGuide && (
+                <button
+                  type="button"
+                  onClick={onOpenGuide}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-cyan-950/40 hover:bg-cyan-900/50 text-cyan-200 border border-cyan-500/50 hover:border-cyan-400 font-tech font-bold text-xs shadow-md cursor-pointer transition-all active:scale-[0.98]"
+                  title="Mở cẩm nang hướng dẫn luật chơi, lò rèn, đe và các chiêu thức"
+                >
+                  <span className="text-base">📜</span>
+                  <span>XEM CẨM NANG BÍ KÍP RÈN ĐÚC [?]</span>
+                </button>
+              )}
+
               {/* 2B. Tủ Đồ Tiên Gia: 5 Bộ Y Phục Môn Phái */}
               {onEquipSkin && (
                 <div className="p-3 rounded-2xl bg-slate-900/70 border border-slate-800 flex flex-col gap-2">
@@ -179,23 +194,23 @@ export const StatusModal: React.FC<StatusModalProps> = ({
                     </span>
                   </div>
 
-                  <div className="grid grid-cols-4 sm:grid-cols-8 gap-1.5">
-                    {Object.values(CHARACTER_SKINS).map((sk) => {
+                  <div className="grid grid-cols-3 gap-2 max-w-lg mx-auto w-full">
+                    {AVAILABLE_CHARACTER_SKINS.map((sk) => {
                       const isEquipped = (equippedSkinId || 'skin_default') === sk.id;
                       return (
                         <button
                           key={sk.id}
                           type="button"
                           onClick={() => onEquipSkin(sk.id)}
-                          className={`relative rounded-xl border p-1 text-center cursor-pointer transition-all flex flex-col items-center gap-1 group ${
+                          className={`relative rounded-xl border p-2 text-center cursor-pointer transition-all flex flex-col items-center gap-1.5 group ${
                             isEquipped
-                              ? 'bg-slate-800/95 border-amber-400 ring-2 ring-amber-400/50 shadow-lg scale-105 z-10'
+                              ? 'bg-slate-800/95 border-amber-400 ring-2 ring-amber-400/50 shadow-lg scale-[1.02] z-10'
                               : 'bg-slate-950/70 border-slate-800 hover:border-slate-700 hover:bg-slate-900/60'
                           }`}
                           title={`${sk.name} · ${sk.sectTitle}\n${sk.description}`}
                         >
                           {isEquipped && (
-                            <div className="absolute -top-1.5 -right-1 px-1 py-0.2 rounded-full bg-emerald-500 text-slate-950 text-[7px] font-bold z-20 shadow">
+                            <div className="absolute -top-1.5 -right-1 px-1.5 py-0.5 rounded-full bg-emerald-500 text-slate-950 text-[8px] font-bold z-20 shadow">
                               ĐANG MẶC
                             </div>
                           )}
@@ -203,15 +218,18 @@ export const StatusModal: React.FC<StatusModalProps> = ({
                             <img
                               src={`${import.meta.env.BASE_URL || './'}${sk.cardPath}`}
                               alt={sk.name}
-                              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
-                            <span className="absolute bottom-0.5 right-1 text-[11px]">{sk.icon}</span>
+                            <span className="absolute bottom-1 right-1.5 text-xs">{sk.icon}</span>
                           </div>
-                          <span className={`text-[9px] font-tech font-bold leading-tight truncate w-full ${
-                            isEquipped ? 'text-amber-300' : 'text-slate-300'
+                          <span className={`text-[11px] font-tech font-bold leading-tight truncate w-full ${
+                            isEquipped ? 'text-amber-300' : 'text-slate-200'
                           }`}>
-                            {sk.name.replace('Phàm Nhân ', '').replace('Cửu Tiêu ', '').replace('Hắc Diệm ', '').replace('Bất Chu ', '').replace('Thanh Mộc ', '').replace('Thái Cổ ', '').replace('Phần Thiên ', '').replace('Bích Lạc ', '')}
+                            {sk.name}
+                          </span>
+                          <span className="text-[9px] text-slate-400 font-tech truncate w-full">
+                            {sk.sectTitle.split('·')[0].trim()}
                           </span>
                         </button>
                       );

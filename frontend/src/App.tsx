@@ -1,11 +1,10 @@
 // Release build: silhouette-live-1793696800
 const APP_BUILD_VER = '20261103-multiplayer-p2p-v8';
 console.log('App build version:', APP_BUILD_VER);
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, lazy, Suspense } from 'react';
 import {
   RealtimeRoomClient,
   PeerPresence,
-  RemoteStrikeMessage,
   WorldStateSyncMessage,
 } from './game/realtimeRoom';
 import {
@@ -21,78 +20,57 @@ import {
   getUpgradeCost,
   canUnlockSpiritNode,
   HAMMER_STANCES,
-  OVERDRIVE_MAX,
   BOSS_FLOOR_1_MAX_HP,
-  BOSS_FLOOR_NAME,
-  RESONANCE_MAX_STRIKES,
   SHIELD_BREAK_DURATION_SEC,
   MIN_ANVIL_HEAT,
   MAX_ANVIL_HEAT,
   HEAT_DECAY_PER_SEC,
-  AtmosphericSealLayer,
-  ATMOSPHERIC_SEAL_LAYERS,
   getAtmosphericSealLayer,
   CONTRIBUTION_TIERS,
-  ContributionTier,
   formatInteger,
   EquipmentItem,
   EquipmentSlotKey,
   ItemRarity,
   INITIAL_EQUIPPED_SLOTS,
+  ensureAllEquippedSlots,
   MAX_INVENTORY_SLOTS,
-  getMaxInventorySlots,
   rollLootDrop,
-  openWorldRaidClearChest,
   RuneGem,
-  RuneType,
-  RuneTier,
-  RUNE_GEM_POOL,
   getTemperCost,
   temperEquipment,
   getAscensionCost,
   getUnlockedSockets,
   ascendEquipmentTier,
   getSalvageYield,
-  getItemRarityMeta,
   calculateArsenalBonuses,
   checkForgeEquilibrium,
-  ForgerRank,
-  FORGER_RANKS,
   getForgerRank,
   PlayerClassId,
   PLAYER_CLASSES,
   getPlayerClass,
   OVERDRIVE_TOTAL_CAP,
-  getOverdriveTier,
   StanceSkillNode,
   INITIAL_STANCE_SKILLS,
   canUnlockStanceSkill,
   calculateStanceSkillBonuses,
-  CelestialVault,
-  CELESTIAL_VAULTS,
   getCelestialVault,
-  BlacksmithGuild,
   BLACKSMITH_GUILDS,
   getGuild,
   QuenchType,
   QUENCH_OPTIONS,
   SECT_DEFAULT_SKIN,
   CHARACTER_SKINS,
+  getSkinOrDefault,
 } from './game/rules';
 import { soundEngine } from './game/audio';
 import { hapticEngine } from './game/haptics';
 import { safeStorage } from './game/storage';
-import { TitleScreenModal } from './components/TitleScreenModal';
 import { TopBossHeader } from './components/TopBossHeader';
 import { LeftTacticalPanel, CombatLogEntry, ChatMessage } from './components/LeftTacticalPanel';
-import { RightProgressionPanel, LeaderboardEntry } from './components/RightProgressionPanel';
-import { StatusModal } from './components/StatusModal';
+import type { LeaderboardEntry } from './components/RightProgressionPanel';
 import { LoadingScreen } from './components/LoadingScreen';
-import { CharacterCreationModal } from './components/CharacterCreationModal';
-import { CharacterSelectionModal } from './components/CharacterSelectionModal';
 import {
   loadCharacterSlots,
-  saveAllCharacterSlots,
   getActiveSlotId,
   setActiveSlotId,
   createCharacterInSlot,
@@ -110,7 +88,29 @@ import {
   CommunityPanoramicForgeCanvasHandle,
 } from './components/CommunityPanoramicForgeCanvas';
 import { LootNotificationFeed, LootToastItem } from './components/LootNotificationFeed';
-import { Shield, Hammer, X, Zap, Flame, Sparkles, Eye, EyeOff } from 'lucide-react';
+import { Shield, X, Eye, EyeOff } from 'lucide-react';
+
+const TitleScreenModal = lazy(() =>
+  import('./components/TitleScreenModal').then((m) => ({ default: m.TitleScreenModal }))
+);
+const RightProgressionPanel = lazy(() =>
+  import('./components/RightProgressionPanel').then((m) => ({ default: m.RightProgressionPanel }))
+);
+const StatusModal = lazy(() =>
+  import('./components/StatusModal').then((m) => ({ default: m.StatusModal }))
+);
+const CharacterSelectionModal = lazy(() =>
+  import('./components/CharacterSelectionModal').then((m) => ({ default: m.CharacterSelectionModal }))
+);
+const CharacterCreationModal = lazy(() =>
+  import('./components/CharacterCreationModal').then((m) => ({ default: m.CharacterCreationModal }))
+);
+const ForgeGuideHelpModal = lazy(() =>
+  import('./components/ForgeGuideHelpModal').then((m) => ({ default: m.ForgeGuideHelpModal }))
+);
+const BeginnerTutorialGuide = lazy(() =>
+  import('./components/BeginnerTutorialGuide').then((m) => ({ default: m.BeginnerTutorialGuide }))
+);
 
 type GameState = 'title' | 'character_select' | 'playing' | 'paused' | 'gameover';
 
@@ -256,6 +256,8 @@ export default function App() {
 
   // Player Forge & Rhythm State
   const [activeStance, setActiveStance] = useState<StanceKey>('Q');
+  const activeStanceRef = useRef<StanceKey>(activeStance);
+  activeStanceRef.current = activeStance;
   const [combo, setCombo] = useState<number>(0);
   const [maxCombo, setMaxCombo] = useState<number>(0);
   const [perfectCount, setPerfectCount] = useState<number>(0);
@@ -269,7 +271,6 @@ export default function App() {
 
   // Bottom-Right Corner Loot Drop Notification Feed
   const [lootToasts, setLootToasts] = useState<LootToastItem[]>([]);
-  const lastBagFullToastTimeRef = useRef<number>(0);
 
   const addLootToast = useCallback((toast: Omit<LootToastItem, 'id' | 'timestamp'>) => {
     const id = `loot_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
@@ -395,7 +396,7 @@ export default function App() {
   });
 
   const [equippedSkinId, setEquippedSkinId] = useState<string>(() => {
-    return safeStorage.getItem('phatroi_equipped_skin') || 'skin_default';
+    return getSkinOrDefault(safeStorage.getItem('phatroi_equipped_skin')).id;
   });
 
   const [skillCooldowns, setSkillCooldowns] = useState<{ W: number; E: number; R: number }>({
@@ -403,6 +404,7 @@ export default function App() {
     E: 0,
     R: 0,
   });
+  const [furnaceOverheatTimeLeft, setFurnaceOverheatTimeLeft] = useState<number>(0);
 
   // Cooldown countdown timer
   useEffect(() => {
@@ -415,6 +417,7 @@ export default function App() {
           R: Math.max(0, Number((prev.R - 0.2).toFixed(1))),
         };
       });
+      setFurnaceOverheatTimeLeft((prev) => Math.max(0, Number((prev - 0.2).toFixed(1))));
     }, 200);
     return () => clearInterval(timer);
   }, []);
@@ -458,7 +461,7 @@ export default function App() {
         if (typeof parsed.serverFurnaceHeat === 'number') return parsed.serverFurnaceHeat;
       }
     } catch {}
-    return 1500;
+    return 600;
   });
 
   const [serverAnvilHp, setServerAnvilHp] = useState<number>(() => {
@@ -498,12 +501,10 @@ export default function App() {
       const s = getInitialSaveString();
       if (s) {
         const parsed = JSON.parse(s);
-        if (parsed.equippedItems && typeof parsed.equippedItems === 'object') {
-          return parsed.equippedItems;
-        }
+        return ensureAllEquippedSlots(parsed?.equippedItems);
       }
     } catch {}
-    return INITIAL_EQUIPPED_SLOTS;
+    return ensureAllEquippedSlots(null);
   });
 
   const [inventory, setInventory] = useState<EquipmentItem[]>(() => {
@@ -550,6 +551,50 @@ export default function App() {
   // Viêm Dương [W] Burn DoT Stacks (0 - 80)
   const [burnStacks, setBurnStacks] = useState<number>(0);
   const goldenStreakRef = useRef<number>(0);
+
+  // Beginner Tutorial & Onboarding Guide State
+  // QUY TẮC CỐT LÕI: Chỉ hiển thị DUY NHẤT LẦN ĐẦU TIÊN cho người chơi mới tinh (New User).
+  // Đã từng chơi, đã xem hoặc từng bỏ qua -> 100% không bao giờ tự động hiện lại phiền toái.
+  const [tutorialCompleted, setTutorialCompleted] = useState<boolean>(() => {
+    try {
+      if (safeStorage.getItem('phatroi_tutorial_seen') === '1') {
+        return true;
+      }
+      const s = getInitialSaveString();
+      if (s) {
+        const parsed = JSON.parse(s);
+        if (parsed.tutorialCompleted === true) {
+          safeStorage.setItem('phatroi_tutorial_seen', '1');
+          return true;
+        }
+        if (
+          (parsed.playerTotalDamage || 0) > 0 ||
+          (parsed.linhThach || 0) > 0 ||
+          (parsed.level || 1) > 1 ||
+          (Array.isArray(parsed.inventory) && parsed.inventory.length > 0)
+        ) {
+          safeStorage.setItem('phatroi_tutorial_seen', '1');
+          return true;
+        }
+      }
+    } catch {}
+    return false;
+  });
+  const [tutorialStep, setTutorialStep] = useState<number>(() => {
+    try {
+      const s = getInitialSaveString();
+      if (s) {
+        const parsed = JSON.parse(s);
+        if (typeof parsed.tutorialStep === 'number') return parsed.tutorialStep;
+        if (parsed.tutorialCompleted) return 5;
+      }
+    } catch {}
+    return 1;
+  });
+  const [tutorialStrikes, setTutorialStrikes] = useState<number>(0);
+  const [tutorialHeatStrikes, setTutorialHeatStrikes] = useState<number>(0);
+  const [tutorialSkillUsed, setTutorialSkillUsed] = useState<boolean>(false);
+  const [isGuideModalOpen, setIsGuideModalOpen] = useState<boolean>(false);
 
   // Phase 3: Cửu Trọng Thiên & Phường Rèn Vạn Dân & Đại Hỏa Lò
   const [currentVaultId, setCurrentVaultId] = useState<number>(() => {
@@ -627,15 +672,6 @@ export default function App() {
   });
 
   // UI & Feedback State
-  const [lastFeedback, setLastFeedback] = useState<{
-    id: number;
-    grade: string;
-    labelVn: string;
-    multiplier: number;
-    damage: number;
-  } | null>(null);
-
-  const lastMilestonePercentRef = useRef<number>(100);
   const lastSealLayerIdRef = useRef<number>(1);
   const [muted, setMuted] = useState<boolean>(false);
 
@@ -651,6 +687,15 @@ export default function App() {
       window.removeEventListener('keydown', handleFirstGesture);
     };
   }, []);
+
+  // Sync BGM with Game State (Pause on pause/modal, resume on playing)
+  useEffect(() => {
+    if (gameState === 'playing') {
+      soundEngine.resumeBgm();
+    } else if (gameState === 'paused' || gameState === 'character_select') {
+      soundEngine.pauseBgm();
+    }
+  }, [gameState]);
 
   const [combatLogs, setCombatLogs] = useState<CombatLogEntry[]>([
     {
@@ -670,7 +715,6 @@ export default function App() {
 
   // Panoramic Canvas Ref
   const canvasHandleRef = useRef<CommunityPanoramicForgeCanvasHandle | null>(null);
-  const feedbackCounterRef = useRef<number>(1);
   const logCounterRef = useRef<number>(10);
   const mpClientRef = useRef<MultiplayerClient | null>(null);
   const realtimeRoomRef = useRef<RealtimeRoomClient | null>(null);
@@ -699,28 +743,68 @@ export default function App() {
     document.body.dataset.state = gameState;
   }, [gameState]);
 
+  // Render-updated snapshot ref so auto-save interval/beforeunload persist every latest field without resetting the 3s timer
+  const latestAutoSavePayloadRef = useRef({
+    bossHp,
+    linhThach,
+    tinhHoa,
+    ironDust,
+    celestialStars,
+    anvilPityCount,
+    raidPityCount,
+    autoSalvageTiers,
+    playerClassId,
+    upgrades,
+    spiritNodes,
+    stanceSkills,
+    equippedItems,
+    inventory,
+    runePouch,
+    playerTotalDamage,
+    claimedMilestones,
+    currentVaultId,
+    userGuildId,
+    guildHearths,
+    serverFurnaceHeat,
+    serverAnvilHp,
+    raidContributionScore,
+    tutorialCompleted,
+    tutorialStep,
+  });
+  latestAutoSavePayloadRef.current = {
+    bossHp,
+    linhThach,
+    tinhHoa,
+    ironDust,
+    celestialStars,
+    anvilPityCount,
+    raidPityCount,
+    autoSalvageTiers,
+    playerClassId,
+    upgrades,
+    spiritNodes,
+    stanceSkills,
+    equippedItems,
+    inventory,
+    runePouch,
+    playerTotalDamage,
+    claimedMilestones,
+    currentVaultId,
+    userGuildId,
+    guildHearths,
+    serverFurnaceHeat,
+    serverAnvilHp,
+    raidContributionScore,
+    tutorialCompleted,
+    tutorialStep,
+  };
+
   // Auto-save progression to safeStorage (Account vs Guest slot separation)
   useEffect(() => {
     const saveState = () => {
       try {
         const payload = {
-          bossHp,
-          linhThach,
-          tinhHoa,
-          upgrades,
-          spiritNodes,
-          stanceSkills,
-          equippedItems,
-          inventory,
-          runePouch,
-          playerTotalDamage,
-          claimedMilestones,
-          currentVaultId,
-          userGuildId,
-          guildHearths,
-          serverFurnaceHeat,
-          serverAnvilHp,
-          raidContributionScore,
+          ...latestAutoSavePayloadRef.current,
           lastActiveTimestamp: Date.now(),
         };
         updateActiveSlotProgress(activeSlotId, payload, googleUser?.googleId);
@@ -739,7 +823,7 @@ export default function App() {
       clearInterval(timer);
       window.removeEventListener('beforeunload', saveState);
     };
-  }, [googleUser, bossHp, linhThach, tinhHoa, upgrades, spiritNodes, stanceSkills, equippedItems, inventory, playerTotalDamage, claimedMilestones, currentVaultId, userGuildId, guildHearths, serverFurnaceHeat, serverAnvilHp, raidContributionScore]);
+  }, [googleUser, activeSlotId]);
 
   // Connect to Multiplayer Gateway (Offline Fallback if server unreachable)
   useEffect(() => {
@@ -790,7 +874,7 @@ export default function App() {
           room.broadcastWorldState(latestWorldStateRef.current);
         }
       },
-      onPeerLeft: (peerId) => {
+      onPeerLeft: (_peerId) => {
         appendCombatLog('🍂 Một đồng môn vừa tạm lui về hậu phương nghỉ ngơi.', 'neutral');
       },
       onRemoteStrike: (strike) => {
@@ -881,7 +965,7 @@ export default function App() {
     });
 
     realtimeRoomRef.current = room;
-    room.init(userGuildId, activeStance, currentVaultId);
+    room.init(userGuildId, activeStanceRef.current, currentVaultId);
 
     // Actively request world state from any active peer on mount
     room.requestWorldState();
@@ -894,7 +978,13 @@ export default function App() {
       mp.disconnect();
       room.destroy();
     };
-  }, [userGuildId, activeStance, currentVaultId, appendCombatLog]);
+  }, [userGuildId, currentVaultId, appendCombatLog]);
+
+  useEffect(() => {
+    if (realtimeRoomRef.current && realtimeRoomRef.current.getLocalPlayer().stance !== activeStance) {
+      realtimeRoomRef.current.updateIdentity(activeStance);
+    }
+  }, [activeStance]);
 
   // Cloudflare Worker API: Initial Global World State Fetch & Periodic Poll (10s)
   useEffect(() => {
@@ -1007,37 +1097,66 @@ export default function App() {
     setGameState('playing');
   }, []);
 
-  const resetGame = useCallback(() => {
-    if (document.activeElement instanceof HTMLElement) {
-      document.activeElement.blur();
+  const resetVaultSession = useCallback(
+    (targetVaultId: number, logMessage?: string) => {
+      if (document.activeElement instanceof HTMLElement) {
+        document.activeElement.blur();
+      }
+      const vault = getCelestialVault(targetVaultId);
+      setBossHp(vault.maxHp);
+      setBossTrailHp(vault.maxHp);
+      setBossShieldPct(100.0);
+      setIsShieldBroken(false);
+      setShieldBreakTimeLeft(0);
+      setResonanceStrikes(0);
+      setAnvilHeat(MIN_ANVIL_HEAT);
+      setActiveArmorBreakPoints(0);
+      setArmorRegenFrozenTime(0);
+      setServerFurnaceHeat(Math.round(vault.meltingThreshold * 0.4));
+      setServerAnvilHp(10000);
+      setPhaseCheckActive(false);
+      setPhaseCheckTimeLeft(0);
+      setFurnaceOverheatTimeLeft(0);
+      setStanceWeave(null);
+      setBurnStacks(0);
+      triggeredPhaseChecksRef.current = {};
+      lastSealLayerIdRef.current = 1;
+      goldenStreakRef.current = 0;
+      setGlobalCountdownSec(180);
+      setGlobalSynergyPct(74.0);
+      setGlobalBurstActive(false);
+      setCombo(0);
+      setOverdriveCharge(0);
+      setOverdriveActive(false);
+      setOverdriveTimeLeft(0);
+      canvasHandleRef.current?.reset();
+      document.body.dataset.state = 'playing';
+      setGameState('playing');
+      appendCombatLog(
+        logMessage || `Lò rèn tái khởi động! Vạn dân đồng loạt giáng búa vào ${vault.title} (${vault.name})!`,
+        'gold'
+      );
+    },
+    [appendCombatLog]
+  );
+
+  const resetGame = useCallback(
+    () => resetVaultSession(currentVaultId),
+    [currentVaultId, resetVaultSession]
+  );
+
+  const handleStatusModalRestart = useCallback(() => {
+    if (gameState === 'gameover') {
+      const nextVaultId = currentVaultId < 9 ? currentVaultId + 1 : 1;
+      setCurrentVaultId(nextVaultId);
+      resetVaultSession(
+        nextVaultId,
+        `🌌 [TIẾN TẦNG] Toàn server tiến vào ${getCelestialVault(nextVaultId).title} (${getCelestialVault(nextVaultId).name})!`
+      );
+    } else {
+      resetGame();
     }
-    const vault = getCelestialVault(currentVaultId);
-    setBossHp(vault.maxHp);
-    setBossTrailHp(vault.maxHp);
-    setBossShieldPct(100.0);
-    setIsShieldBroken(false);
-    setShieldBreakTimeLeft(0);
-    setResonanceStrikes(0);
-    setAnvilHeat(100);
-    setActiveArmorBreakPoints(0);
-    setArmorRegenFrozenTime(0);
-    setServerFurnaceHeat(vault.meltingThreshold);
-    setServerAnvilHp(10000);
-    setPhaseCheckActive(false);
-    setPhaseCheckTimeLeft(0);
-    triggeredPhaseChecksRef.current = {};
-    setGlobalCountdownSec(180);
-    setGlobalSynergyPct(74.0);
-    setGlobalBurstActive(false);
-    setCombo(0);
-    setOverdriveCharge(0);
-    setOverdriveActive(false);
-    setOverdriveTimeLeft(0);
-    canvasHandleRef.current?.reset();
-    document.body.dataset.state = 'playing';
-    setGameState('playing');
-    appendCombatLog('Lò rèn tái khởi động! Vạn dân đồng loạt giáng búa vào Tầng 1!', 'gold');
-  }, [appendCombatLog]);
+  }, [gameState, currentVaultId, resetGame, resetVaultSession]);
 
   // Helper to load save payload into React state
   const loadSaveData = useCallback((saveJsonStr: string) => {
@@ -1058,20 +1177,7 @@ export default function App() {
       if (Array.isArray(parsed.stanceSkills)) setStanceSkills(parsed.stanceSkills);
       if (Array.isArray(parsed.runePouch)) setRunePouch(parsed.runePouch);
       if (parsed.equippedItems && typeof parsed.equippedItems === 'object') {
-        const validatedEquipped: Record<EquipmentSlotKey, EquipmentItem> = { ...INITIAL_EQUIPPED_SLOTS };
-        for (const k of Object.keys(INITIAL_EQUIPPED_SLOTS) as EquipmentSlotKey[]) {
-          if (parsed.equippedItems[k]) {
-            const item = parsed.equippedItems[k];
-            const unlocked = getUnlockedSockets(item.rarity || 'common');
-            validatedEquipped[k] = {
-              ...item,
-              level: typeof item.level === 'number' && item.level >= 1 ? item.level : 1,
-              unlockedSockets: unlocked,
-              sockets: Array.isArray(item.sockets) ? item.sockets : [],
-            };
-          }
-        }
-        setEquippedItems(validatedEquipped);
+        setEquippedItems(ensureAllEquippedSlots(parsed.equippedItems));
       }
       if (Array.isArray(parsed.inventory) && parsed.inventory.length > 0) {
         let extraDust = 0;
@@ -1133,7 +1239,7 @@ export default function App() {
       setPlayerName(profile.characterName);
       safeStorage.setItem('phatroi_user_name', profile.characterName);
       safeStorage.setItem('phatroi_player_class', profile.classId);
-      const skin = profile.equippedSkinId || SECT_DEFAULT_SKIN[profile.classId] || 'skin_default';
+      const skin = getSkinOrDefault(profile.equippedSkinId, profile.classId).id;
       setEquippedSkinId(skin);
       safeStorage.setItem('phatroi_equipped_skin', skin);
       if (realtimeRoomRef.current) {
@@ -1147,6 +1253,22 @@ export default function App() {
       }
       setLinhThach(prog.linhThach || 0);
       setTinhHoa(prog.tinhHoa || 0);
+      if (typeof prog.ironDust === 'number') setIronDust(prog.ironDust);
+      if (typeof prog.celestialStars === 'number') setCelestialStars(prog.celestialStars);
+      if (typeof prog.anvilPityCount === 'number') setAnvilPityCount(prog.anvilPityCount);
+      if (typeof prog.raidPityCount === 'number') setRaidPityCount(prog.raidPityCount);
+
+      const isDone =
+        safeStorage.getItem('phatroi_tutorial_seen') === '1' ||
+        (typeof prog.tutorialCompleted === 'boolean'
+          ? prog.tutorialCompleted
+          : ((prog.playerTotalDamage || 0) > 0 || (profile.level || 1) > 1 || (prog.linhThach || 0) > 0));
+      setTutorialCompleted(isDone);
+      if (isDone) safeStorage.setItem('phatroi_tutorial_seen', '1');
+      setTutorialStep(prog.tutorialStep || (isDone ? 5 : 1));
+      setTutorialStrikes(0);
+      setTutorialHeatStrikes(0);
+      setTutorialSkillUsed(false);
       setUpgrades(Array.isArray(prog.upgrades) ? prog.upgrades : INITIAL_UPGRADES);
       setSpiritNodes(Array.isArray(prog.spiritNodes) ? prog.spiritNodes : INITIAL_SPIRIT_NODES);
       setStanceSkills(
@@ -1154,7 +1276,7 @@ export default function App() {
           ? prog.stanceSkills
           : INITIAL_STANCE_SKILLS
       );
-      setEquippedItems(prog.equippedItems && typeof prog.equippedItems === 'object' ? prog.equippedItems : INITIAL_EQUIPPED_SLOTS);
+      setEquippedItems(ensureAllEquippedSlots(prog.equippedItems));
       setInventory(Array.isArray(prog.inventory) ? prog.inventory : []);
       setPlayerTotalDamage(prog.playerTotalDamage || 0);
       setClaimedMilestones(Array.isArray(prog.claimedMilestones) ? prog.claimedMilestones.map(String) : []);
@@ -1362,12 +1484,21 @@ export default function App() {
     setGameState('title');
   }, [googleUser, bossHp, linhThach, tinhHoa, upgrades, spiritNodes, stanceSkills, equippedItems, inventory, playerTotalDamage, claimedMilestones, currentVaultId, userGuildId, guildHearths, serverFurnaceHeat, serverAnvilHp, raidContributionScore, loadSaveData, resetToFreshCharacter, appendCombatLog]);
 
+  const currentVaultIdRef = useRef<number>(currentVaultId);
+  currentVaultIdRef.current = currentVaultId;
+  const isShieldBrokenRef = useRef<boolean>(isShieldBroken);
+  isShieldBrokenRef.current = isShieldBroken;
+  const activeForgersCountRef = useRef<number>(activeForgersCount);
+  activeForgersCountRef.current = activeForgersCount;
+  const furnaceOverheatTimeLeftRef = useRef<number>(furnaceOverheatTimeLeft);
+  furnaceOverheatTimeLeftRef.current = furnaceOverheatTimeLeft;
+
   // Periodic co-op raid loop & Simulation Tick (Runs every 500ms)
   useEffect(() => {
     if (gameState !== 'playing') return;
 
     const timer = setInterval(() => {
-      const vault = getCelestialVault(currentVaultId);
+      const vault = getCelestialVault(currentVaultIdRef.current);
       anvilStrikeTickCounterRef.current += 1;
       const is10sTick = anvilStrikeTickCounterRef.current % 20 === 0;
 
@@ -1393,6 +1524,7 @@ export default function App() {
         if (prev <= 0) return 0;
         const next = Math.max(0, prev - 0.5);
         if (next === 0) {
+          isShieldBrokenRef.current = false;
           setIsShieldBroken(false);
           setBossShieldPct(100.0);
           appendCombatLog('Vòm Trời tái lập Giáp Năng Lượng! Tiếp tục hợp lực Phá Giáp.', 'cyan');
@@ -1401,17 +1533,18 @@ export default function App() {
       });
 
       // 2B. World Raid: Active Armor Regeneration vs Troupe Breakers
-      if (!isShieldBroken) {
+      if (!isShieldBrokenRef.current) {
         setArmorRegenFrozenTime((frozenSec) => {
           if (frozenSec > 0) return Math.max(0, frozenSec - 0.5);
           const regenDecay = vault.armorRegenPerSec * 0.5;
-          const breakerCount = Math.max(1, Math.round(activeForgersCount * 0.25));
+          const breakerCount = Math.max(1, Math.round(activeForgersCountRef.current * 0.25));
           const breakerGain = breakerCount * (0.8 + Math.random() * 0.4) * 0.5;
           const netBreakGain = breakerGain - regenDecay;
 
           setActiveArmorBreakPoints((prev) => {
             const next = Math.max(0, Math.min(vault.armorBreakMaxPoints, prev + netBreakGain));
             if (next >= vault.armorBreakMaxPoints) {
+              isShieldBrokenRef.current = true;
               setIsShieldBroken(true);
               setShieldBreakTimeLeft(SHIELD_BREAK_DURATION_SEC);
               soundEngine.playGlobalBurstFanfare();
@@ -1434,15 +1567,36 @@ export default function App() {
         }
       }
 
-      // 2C. World Raid: Global Server Furnace vs Celestial Chill
-      const chillDelta = vault.serverChillPerSec * 0.5;
-      const melterCount = Math.max(1, Math.round(activeForgersCount * 0.25));
-      const melterHeat = melterCount * (2.2 + Math.random() * 1.2) * 0.5;
-      const netServerHeat = melterHeat + chillDelta;
-      setServerFurnaceHeat((prev) => Math.max(0, Math.min(10000, Math.round(prev + netServerHeat))));
+      // 2C. World Raid: Dynamic Furnace Heat Decay & Overheat Preservation
+      setServerFurnaceHeat((prev) => {
+        // If Chiêu R Overheat is active, preserve furnace heat (no decay)
+        if (furnaceOverheatTimeLeftRef.current > 0) {
+          return prev;
+        }
+        
+        // Ambient natural floor temperature (e.g. 600°C for Tier 1)
+        const ambientFloor = Math.round(vault.meltingThreshold * 0.4);
+        if (prev <= ambientFloor) {
+          return Math.max(ambientFloor, prev);
+        }
+        
+        // Dynamic natural cooling per 0.5s tick when idling/AFK:
+        // - Above 3,000°C: cools by -35°C/tick (-70°C/s)
+        // - Above melting threshold: cools by -20°C/tick (-40°C/s)
+        // - Normal range down to ambient: cools by -10°C/tick (-20°C/s)
+        let decayAmount = 10;
+        if (prev > 6000) {
+          decayAmount = 80;
+        } else if (prev > 3000) {
+          decayAmount = 40;
+        } else if (prev > vault.meltingThreshold) {
+          decayAmount = 20;
+        }
+        return Math.max(ambientFloor, prev - decayAmount);
+      });
 
       // 2D. World Raid: Great Server Anvil Durability & Wipe Check
-      const healerCount = Math.max(1, Math.round(activeForgersCount * 0.20));
+      const healerCount = Math.max(1, Math.round(activeForgersCountRef.current * 0.20));
       const healerRepair = Math.round(healerCount * (0.5 + Math.random() * 0.4) * 0.5);
       const skyAnvilStrikeDmg = is10sTick ? Math.floor(150 + Math.random() * 120) : 0;
       if (is10sTick) {
@@ -1547,11 +1701,10 @@ export default function App() {
   const arsenalBonuses = calculateArsenalBonuses(equippedItems, upgrades);
   const effectiveRankScore = Math.max(playerTotalDamage, raidContributionScore);
   const forgerRank = getForgerRank(effectiveRankScore);
-  const currentGuild = getGuild(userGuildId);
 
   // Player Strike Handler
   const handleHeroStrike = useCallback(
-    (forceGolden = false) => {
+    (_forceGolden = false) => {
       soundEngine.unlockAudio();
       const currentSt = gameStateRef.current;
       if (currentSt !== 'playing') {
@@ -1566,9 +1719,8 @@ export default function App() {
       }
       lastHeroStrikeTimeRef.current = now;
 
-      // Rhythm judgment: true skill timing or Overdrive burst (No more 45% RNG auto-crit!)
-      const isGoldenHit = forceGolden || overdriveActive || (combo >= 5 && Math.random() < 0.15);
-      const grade: JudgmentGrade = isGoldenHit ? 'PERFECT' : 'GREAT';
+      // Pure Action RPG Strike (Driven by Equipment, Stats, Crit Rate & Overdrive)
+      const grade: JudgmentGrade = 'GREAT';
 
       const effectiveRankScore = Math.max(playerTotalDamage, raidContributionScore);
   const forgerRank = getForgerRank(effectiveRankScore);
@@ -1597,38 +1749,39 @@ export default function App() {
         isFrozenSky: serverFurnaceHeat < currentVault.meltingThreshold,
       });
 
-      // 1. Trigger Panoramic Canvas 2D Strike Visuals
-      canvasHandleRef.current?.triggerHeroStrike(isGoldenHit);
+      const isCritHit = !!outcome.isCrit;
+      const isOverdriveNow = overdriveActive || outcome.triggeredOverdrive;
 
-      // 2. Spawn Floating Text in Canvas (Pure Integer RPG numbers: -1 DMG, -3 DMG, -12 DMG)
-      const stanceData = HAMMER_STANCES[activeStance];
-      const isCritHit = outcome.isCrit;
+      // 1. Trigger Panoramic Canvas 2D Strike Visuals
+      canvasHandleRef.current?.triggerHeroStrike(isCritHit);
+
+      // 2. Spawn Floating Text in Canvas (Pure Integer RPG numbers)
       const isGlancingHit = outcome.isGlancingHit;
 
-      // Dynamic, juicy combat damage fountain (replaces clunky 2-line text blocks)
+      // Dynamic, juicy combat damage fountain
       canvasHandleRef.current?.spawnCombatNumber(
         outcome.damage,
-        grade,
+        isCritHit ? 'PERFECT' : 'GREAT',
         outcome.displayMultiplier,
-        !!isCritHit,
-        isGoldenHit,
+        isCritHit,
+        false,
         activeStance
       );
 
       // 3. Audio & Haptics
       soundEngine.playAnvilStrike(
-        grade,
+        isCritHit ? 'PERFECT' : 'GREAT',
         activeStance,
-        combo >= 5 || overdriveActive
+        isCritHit || isOverdriveNow
       );
-      hapticEngine.playStrike(outcome.isCrit, isGoldenHit);
+      hapticEngine.playStrike(isCritHit, isOverdriveNow);
 
       // 4. Update Anvil Heat (Hỏa Hầu)
       setAnvilHeat((prev) => Math.min(MAX_ANVIL_HEAT, prev + outcome.heatGain));
 
       // 4B. Stance W (Viêm Dương): Burn Stacks Application
       if (activeStance === 'W') {
-        const addedBurn = isGoldenHit ? 2 : 1;
+        const addedBurn = isCritHit ? 2 : 1;
         setBurnStacks((prev) => Math.min(80, prev + addedBurn));
       }
 
@@ -1653,6 +1806,32 @@ export default function App() {
       pendingServerBatchRef.current.shatterPoints += outcome.armorBreakGain;
       pendingServerBatchRef.current.furnaceCooling += outcome.serverHeatGain;
       pendingServerBatchRef.current.anvilRepair += outcome.anvilRepairGain;
+
+      // Tutorial Step 1 & 2 Progression
+      if (!tutorialCompleted) {
+        if (tutorialStep === 1) {
+          setTutorialStrikes((prev) => {
+            const next = prev + 1;
+            if (next >= 3) {
+              setTutorialStep(2);
+              canvasHandleRef.current?.spawnCombatText('✨ BƯỚC 1 HOÀN THÀNH!', 'THỔI BÙNG HỎA LÒ!', '#F59E0B', '#FFFFFF', true);
+              appendCombatLog('🌟 [HƯỚNG DẪN TÂN THỦ] Hoàn thành Bước 1! Hãy tiếp tục gõ để thổi bùng Hỏa Lò.', 'gold');
+            }
+            return next;
+          });
+        } else if (tutorialStep === 2) {
+          setTutorialHeatStrikes((prev) => {
+            const next = prev + 1;
+            if (next >= 5) {
+              setTutorialStep(3);
+              setOverdriveCharge((ov) => Math.max(ov, 2));
+              canvasHandleRef.current?.spawnCombatText('🔥 HỎA LÒ RỰC CHÁY!', 'THỨC TỈNH TUYỆT KỸ [W]!', '#FF4D00', '#F59E0B', true);
+              appendCombatLog('⚡ [HƯỚNG DẪN TÂN THỦ] Hoàn thành Bước 2! Năng lượng Thần Lực đã nạp sẵn, hãy bấm phím [W] để tung chiêu thức!', 'cyan');
+            }
+            return next;
+          });
+        }
+      }
 
       // 5. Update Phá Giáp Resonance (Active Armor Break Points)
       if (!isShieldBroken) {
@@ -1700,19 +1879,19 @@ export default function App() {
         damage: outcome.damage,
         resonance: outcome.resonanceGain,
         offsetMs: 0,
-        isCrit: outcome.triggeredOverdrive || overdriveActive || isGoldenHit,
+        isCrit: outcome.triggeredOverdrive || overdriveActive || false,
       });
 
       realtimeRoomRef.current?.broadcastStrike(
         outcome.damage,
-        isGoldenHit,
+        false,
         !!outcome.isCrit
       );
 
       // 7. Update Combo & Overdrive
       setCombo(outcome.nextCombo);
       setMaxCombo((prev) => Math.max(prev, outcome.nextCombo));
-      if (grade === 'PERFECT') {
+      if (isCritHit) {
         setPerfectCount((prev) => prev + 1);
       }
 
@@ -1746,7 +1925,7 @@ export default function App() {
         // 8B. Phase 2 Stance Master Perks
         // Stance Q Master Perk: Thiên Lôi Giáng Thế (15 consecutive Perfect hits triggers -500 pure DMG)
         if (activeStance === 'Q') {
-          if (isGoldenHit) {
+          if (isCritHit) {
             goldenStreakRef.current += 1;
             const q5Unlocked = stanceSkills.some((s) => s.id === 'q_tier_5' && s.unlocked);
             if (goldenStreakRef.current >= 15 && q5Unlocked) {
@@ -1763,7 +1942,7 @@ export default function App() {
                 true
               );
               appendCombatLog(
-                '⚡ [THIÊN LÔI GIÁNG THẾ] Chuỗi 15 Hoàng Kim liên tiếp! Thiên lôi giáng -500 DMG xuyên giáp trời!',
+                '⚡ [THIÊN LÔI GIÁNG THẾ] Chuỗi Bạo Kích 15 đòn liên tiếp! Thiên lôi giáng -500 DMG xuyên giáp trời!',
                 'gold'
               );
             }
@@ -1777,7 +1956,7 @@ export default function App() {
         // Stance E Master Perk: Hư Không Đoạt Mệnh (Boss HP <= 30%, 30% execute chance for x5.0)
         if (activeStance === 'E') {
           const e5Unlocked = stanceSkills.some((s) => s.id === 'e_tier_5' && s.unlocked);
-          if (e5Unlocked && bossHp <= BOSS_FLOOR_1_MAX_HP * 0.3) {
+          if (e5Unlocked && bossHp <= currentVault.maxHp * 0.3) {
             if (Math.random() < 0.3) {
               const executeBonusDmg = outcome.damage * 4;
               setBossHp((hp) => Math.max(0, hp - executeBonusDmg));
@@ -1829,7 +2008,7 @@ export default function App() {
             tinhHoaAmount: th,
           });
           soundEngine.playGlobalBurstFanfare();
-          appendCombatLog(`✨ [THIÊN ĐỊA TINH HOA] Nhát búa Hoàng Kim ngưng tụ +${th} Tinh Hoa Thần Hồn!`, 'gold');
+          appendCombatLog(`✨ [THIÊN ĐỊA TINH HOA] Đòn Bạo Kích ngưng tụ +${th} Tinh Hoa Thần Hồn!`, 'gold');
         }
 
         // 3. Truly Rare Rune Gem Drop (Phù Thạch Khảm Nạm)
@@ -1845,15 +2024,6 @@ export default function App() {
         }
       }
 
-      feedbackCounterRef.current += 1;
-      setLastFeedback({
-        id: feedbackCounterRef.current,
-        grade,
-        labelVn: isCritHit ? 'BẠO KÍCH' : isGoldenHit ? 'HOÀNG KIM' : 'CHUẨN XÁC',
-        multiplier: outcome.displayMultiplier,
-        damage: outcome.damage,
-      });
-
       if (isGlancingHit) {
         appendCombatLog(
           `⚠️ [DỘI BÚA] Lực Chùy quá cao so với Nhiệt Lò (${arsenalBonuses.coreStats.str} > 2.5x ${arsenalBonuses.coreStats.int})! Sát thương giảm 35%!`,
@@ -1861,12 +2031,12 @@ export default function App() {
         );
       } else if (isCritHit) {
         appendCombatLog(
-          `⚡ [BẠO KÍCH BAO TAY] [${activeStance}] giáng -${outcome.damage} DMG! (+${outcome.linhThachEarned} LT)`,
+          `⚡ [BẠO KÍCH] [${activeStance}] giáng -${outcome.damage} DMG! (+${outcome.linhThachEarned} LT)`,
           'cyan'
         );
-      } else if (isGoldenHit) {
+      } else if (isOverdriveNow) {
         appendCombatLog(
-          `Nhịp Hoàng Kim [${activeStance}]! Giáng -${outcome.damage} DMG (+${outcome.linhThachEarned} LT)`,
+          `🔥 [OVERDRIVE] [${activeStance}] giáng -${outcome.damage} DMG! (+${outcome.linhThachEarned} LT)`,
           'gold'
         );
       } else {
@@ -1877,7 +2047,6 @@ export default function App() {
       }
     },
     [
-      gameState,
       startGame,
       activeStance,
       basePower,
@@ -1893,34 +2062,19 @@ export default function App() {
       arsenalBonuses,
       stanceSkills,
       playerTotalDamage,
+      raidContributionScore,
+      currentVaultId,
+      stanceWeave,
+      serverFurnaceHeat,
+      anvilPityCount,
+      tutorialCompleted,
+      tutorialStep,
       burnStacks,
       bossHp,
-      currentGuild,
       currentVault,
+      addLootToast,
       appendCombatLog,
     ]
-  );
-
-  const handleSelectStance = useCallback(
-    (stance: StanceKey) => {
-      if (stance === activeStance) return;
-      if (combo >= 4) {
-        setStanceWeave({ previousStance: activeStance, timeLeftSec: 6 });
-        soundEngine.playComboStreakSound?.(5);
-        appendCombatLog(
-          `✦ [KÍCH HOẠT CHUYỂN THẾ] Giữ lại 50% uy lực [${activeStance}] trong 6 giây!`,
-          'gold'
-        );
-      }
-      setActiveStance(stance);
-      realtimeRoomRef.current?.updateIdentity(stance, userGuildId);
-      soundEngine.playStanceSwitch(stance);
-      appendCombatLog(
-        `Chuyển thế búa: [${stance}] ${HAMMER_STANCES[stance].name} (${HAMMER_STANCES[stance].title})`,
-        'cyan'
-      );
-    },
-    [activeStance, combo, userGuildId, appendCombatLog]
   );
 
   const handleTriggerGlobalBurst = useCallback(() => {
@@ -2491,7 +2645,7 @@ export default function App() {
         setCreatingSlotId(slotId);
       }
     },
-    [characterSlots, loadSlotProfile, appendCombatLog]
+    [characterSlots, loadSlotProfile, currentVaultId, appendCombatLog]
   );
 
   const handleCreateNewInSlot = useCallback((slotId: 1 | 2 | 3) => {
@@ -2508,6 +2662,43 @@ export default function App() {
     [googleUser, appendCombatLog]
   );
 
+  const completeTutorialWithReward = useCallback(
+    (bannerTitle: string, logMessage: string) => {
+      safeStorage.setItem('phatroi_tutorial_seen', '1');
+      setLinhThach((lt) => lt + 500);
+      setIronDust((d) => d + 50);
+      setTutorialCompleted(true);
+      setTutorialStep(5);
+      soundEngine.playGlobalBurstFanfare();
+      canvasHandleRef.current?.spawnCombatText(bannerTitle, '+500 LT & +50 BỤI THIẾT', '#10B981', '#FFD700', true);
+      appendCombatLog(logMessage, 'gold');
+      try {
+        updateActiveSlotProgress(activeSlotId, {
+          tutorialCompleted: true,
+          tutorialStep: 5,
+          linhThach: linhThach + 500,
+          ironDust: ironDust + 50,
+          lastActiveTimestamp: Date.now(),
+        }, googleUser?.googleId);
+      } catch {}
+    },
+    [activeSlotId, googleUser, linhThach, ironDust, appendCombatLog]
+  );
+
+  const handleClaimTutorialReward = useCallback(() => {
+    completeTutorialWithReward(
+      '🎉 NHẬP MÔN THÀNH CÔNG!',
+      '🎁 [QUÀ TÂN THỦ] Chúc mừng đạo hữu nhập môn thành công! Nhận được +500 Linh Thạch và +50 Bụi Thiết để tôi luyện thần binh!'
+    );
+  }, [completeTutorialWithReward]);
+
+  const handleSkipTutorial = useCallback(() => {
+    completeTutorialWithReward(
+      '🎁 BỎ QUA & NHẬN QUÀ!',
+      '🎁 [QUÀ TÂN THỦ] Bạn đã nhận quà nhập môn: +500 Linh Thạch & +50 Bụi Thiết!'
+    );
+  }, [completeTutorialWithReward]);
+
   const handleCastClassSkill = useCallback(
     (slotKey: 'W' | 'E' | 'R') => {
       const cls = getPlayerClass(playerClassId || 'thunder');
@@ -2519,12 +2710,21 @@ export default function App() {
         return;
       }
 
+      // Tutorial Step 3 Progression
+      if (!tutorialCompleted && tutorialStep === 3) {
+        setTutorialSkillUsed(true);
+        setTutorialStep(4);
+        canvasHandleRef.current?.spawnCombatText('⚡ TUYỆT KỸ BÙNG NỔ!', 'MỞ LÒ RÈN NHẬN QUÀ!', '#06B6D4', '#F59E0B', true);
+        appendCombatLog('🛡️ [HƯỚNG DẪN TÂN THỦ] Hoàn thành Bước 3! Hãy bấm nút [LÒ RÈN] (phím ] ) để nhận Gói Quà Nhập Môn!', 'gold');
+      }
+
       if (slotKey === 'W') {
         if (skillCooldowns.W > 0) return;
         setSkillCooldowns((prev) => ({ ...prev, W: sk.cooldownSec }));
 
         if (cls.id === 'thunder') {
           soundEngine.playStanceSwitch('Q');
+          canvasHandleRef.current?.triggerThunderStorm(4, 1.4);
           canvasHandleRef.current?.spawnCombatText('⚡ LÔI QUANG BỘ!', 'BẢO TOÀN COMBO & XUYÊN GIÁP +20%', '#00F0FF', '#FFFFFF', true);
           appendCombatLog('⚡ [LÔI QUANG BỘ] 3 nhát gõ tiếp theo bảo toàn Combo nếu gõ trượt và chuyển 20% DEX thành Xuyên Giáp PEN!', 'cyan');
         } else if (cls.id === 'fire') {
@@ -2560,6 +2760,7 @@ export default function App() {
           const dmg = Math.round(basePower * 6 + combo * 25);
           setBossHp((hp) => Math.max(0, hp - dmg));
           setPlayerTotalDamage((prev) => prev + dmg);
+          canvasHandleRef.current?.triggerThunderStorm(8, 2.0);
           canvasHandleRef.current?.spawnCombatText('🌩️ BÃO PLASMA CUỒNG KÍCH!', `8 LUỒNG SÉT -${dmg} DMG`, '#00F0FF', '#FFD700', true);
           appendCombatLog(`🌩️ [BÃO PLASMA CUỒNG KÍCH] Xả 8 luồng sét giáng -${dmg} DMG vào Bầu Trời!`, 'gold');
         } else if (cls.id === 'fire') {
@@ -2599,6 +2800,7 @@ export default function App() {
           const ultDmg = Math.round(basePower * 16);
           setBossHp((hp) => Math.max(0, hp - ultDmg));
           setPlayerTotalDamage((prev) => prev + ultDmg);
+          canvasHandleRef.current?.triggerThunderStorm(14, 2.8);
           canvasHandleRef.current?.spawnCombatText('👑 THIÊN LÔI GIÁNG THẾ!', `CỘT LÔI TỐI THƯỢNG -${ultDmg} DMG`, '#00F0FF', '#FFD700', true);
           appendCombatLog(`👑 [THIÊN LÔI GIÁNG THẾ] Đại chiêu thức thứ 4! Triệu hồi cột lôi xé toạc Mái Vòm -${ultDmg} DMG (khuếch đại x2.2 Raid)!`, 'gold');
         } else if (cls.id === 'fire') {
@@ -2606,12 +2808,13 @@ export default function App() {
           const ultDmg = Math.round(basePower * 15);
           setBossHp((hp) => Math.max(0, hp - ultDmg));
           setPlayerTotalDamage((prev) => prev + ultDmg);
-          setServerFurnaceHeat(10000);
-          canvasHandleRef.current?.spawnCombatText('☀️ HỎA NGỤC ĐỒNG QUY!', `MẶT TRỜI RỰC CHÁY: -${ultDmg} DMG`, '#FF4D00', '#FFD700', true);
-          appendCombatLog(`☀️ [HỎA NGỤC ĐỒNG QUY] Đại chiêu thức thứ 4! Lò Rèn bốc cháy ngút trời, khóa cứng Đại Hỏa Hẩu 10,000°C!`, 'gold');
+          setServerFurnaceHeat((prev) => Math.min(10000, prev + 2000));
+          setFurnaceOverheatTimeLeft(15);
+          canvasHandleRef.current?.spawnCombatText('☀️ HỎA NGỤC ĐỒNG QUY!', `MẶT TRỜI RỰC CHÁY: -${ultDmg} DMG · +2,000°C · QUÁ NHIỆT 15S`, '#FF4D00', '#FFD700', true);
+          appendCombatLog(`☀️ [HỎA NGỤC ĐỒNG QUY] Đại chiêu thức thứ 4! Lò Rèn bốc cháy ngút trời: Bơm +2,000°C và duy trì trạng thái Quá Nhiệt trong 15 giây!`, 'gold');
         } else if (cls.id === 'gravity') {
           soundEngine.playGlobalBurstFanfare();
-          const mult = isShieldBroken || bossHp <= BOSS_FLOOR_1_MAX_HP * 0.3 ? 5.0 : 2.5;
+          const mult = isShieldBroken || bossHp <= currentVault.maxHp * 0.3 ? 5.0 : 2.5;
           const ultDmg = Math.round(basePower * 16 * (mult / 2.5));
           setBossHp((hp) => Math.max(0, hp - ultDmg));
           setPlayerTotalDamage((prev) => prev + ultDmg);
@@ -2628,7 +2831,7 @@ export default function App() {
         }
       }
     },
-    [playerClassId, upgrades, skillCooldowns, overdriveCharge, basePower, combo, burnStacks, isShieldBroken, bossHp, appendCombatLog]
+    [playerClassId, upgrades, skillCooldowns, overdriveCharge, basePower, combo, burnStacks, isShieldBroken, bossHp, currentVault, tutorialCompleted, tutorialStep, appendCombatLog]
   );
 
 
@@ -2767,7 +2970,7 @@ export default function App() {
         e.preventDefault();
         setMuted((prev) => {
           const next = !prev;
-          soundEngine.muted = next;
+          soundEngine.setMuted(next);
           return next;
         });
         return;
@@ -2847,8 +3050,6 @@ export default function App() {
     },
   ].sort((a, b) => b.damage - a.damage);
 
-  const stanceKeys: StanceKey[] = ['Q', 'W', 'E', 'R'];
-
   return (
     <div
       className="relative min-h-screen h-screen w-screen overflow-hidden bg-[#04060C] text-slate-100 select-none font-sans"
@@ -2868,18 +3069,20 @@ export default function App() {
           activeStance={activeStance}
           gameState={gameState}
           playerName={playerName}
-          onHeroStrikeAction={() => handleHeroStrike(false)}
+          onHeroStrikeAction={(isGolden) => handleHeroStrike(isGolden)}
           equippedSkinId={equippedSkinId}
         />
       </div>
 
       {/* Title Screen Overlay */}
       {gameState === 'title' && (
-        <TitleScreenModal
-          onStart={() => setGameState('character_select')}
-          googleProfile={googleUser}
-          onGoogleLogin={handleGoogleLogin}
-        />
+        <Suspense fallback={null}>
+          <TitleScreenModal
+            onStart={() => setGameState('character_select')}
+            googleProfile={googleUser}
+            onGoogleLogin={handleGoogleLogin}
+          />
+        </Suspense>
       )}
 
       {/* Top Floating Diegetic Sky Health Header (Zero Sky Obstruction) */}
@@ -2905,6 +3108,7 @@ export default function App() {
         shieldBreakTimeLeft={shieldBreakTimeLeft}
         currentSealLayer={currentSeal}
         serverFurnaceHeat={serverFurnaceHeat}
+        furnaceOverheatTimeLeft={furnaceOverheatTimeLeft}
         vaultMeltingThreshold={currentVault.meltingThreshold}
         serverChillRate={currentVault.serverChillPerSec}
         serverAnvilHp={serverAnvilHp}
@@ -2920,10 +3124,11 @@ export default function App() {
         onToggleMute={() => {
           setMuted((prev) => {
             const next = !prev;
-            soundEngine.muted = next;
+            soundEngine.setMuted(next);
             return next;
           });
         }}
+        onOpenGuide={() => setIsGuideModalOpen(true)}
         onPause={() =>
           setGameState((prev) => (prev === 'playing' ? 'paused' : 'playing'))
         }
@@ -3044,63 +3249,160 @@ export default function App() {
         </div>
       </div>
 
-      {/* 5. SLIDE-OUT DRAWER 2 (RIGHT): NÂNG CẤP, THẦN HỒN & BẢNG VÀNG */}
+      {/* Beginner Tutorial Guide HUD (Floating Daoist Jade Scroll) */}
+      {gameState === 'playing' && !tutorialCompleted && (
+        <Suspense fallback={null}>
+          <BeginnerTutorialGuide
+            currentStep={tutorialStep}
+            strikesCount={tutorialStrikes}
+            heatStrikesCount={tutorialHeatStrikes}
+            hasUsedSkill={tutorialSkillUsed}
+            rightPanelOpen={rightPanelOpen}
+            playerClassName={getPlayerClass(playerClassId || 'thunder').name}
+            onClaimReward={handleClaimTutorialReward}
+            onSkipTutorial={handleSkipTutorial}
+            onOpenForgePanel={() => setRightPanelOpen(true)}
+          />
+        </Suspense>
+      )}
+
+      {/* Forge Rules & Mechanics Help Guide Modal */}
+      {isGuideModalOpen && (
+        <Suspense fallback={null}>
+          <ForgeGuideHelpModal
+            isOpen={isGuideModalOpen}
+            onClose={() => setIsGuideModalOpen(false)}
+            playerClassName={getPlayerClass(playerClassId || 'thunder').name}
+          />
+        </Suspense>
+      )}
+
+      {/* 5. SLIDE-OUT DRAWER 2 (RIGHT): NÂNG CẤP, THẦN HỒN & BẢNG VÀNG - CELESTIAL STELE BOARD */}
       <div
-        className={`fixed inset-y-0 right-0 z-40 w-full sm:w-[400px] md:w-[440px] bg-slate-950/95 border-l border-amber-500/30 backdrop-blur-xl shadow-2xl transform transition-transform duration-300 ease-in-out flex flex-col pt-safe pb-safe ${
+        className={`fixed inset-y-0 right-0 z-40 w-full sm:w-[420px] md:w-[460px] border-l-2 border-amber-500/70 shadow-[-16px_0_50px_rgba(245,158,11,0.3)] transform transition-transform duration-300 ease-in-out flex flex-col pt-safe pb-safe select-none ${
           rightPanelOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
+        style={{
+          backgroundImage: "linear-gradient(to bottom, rgba(8, 11, 20, 0.94), rgba(5, 7, 14, 0.97)), url('./assets/art/ui/arsenal/board_forge_texture.webp')",
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
       >
-        <div className="flex items-center justify-between px-4 py-3 border-b border-slate-800 bg-slate-900/80">
-          <div className="flex items-center gap-2 text-amber-300 font-tech font-bold text-sm">
-            <Hammer className="w-4 h-4 text-amber-400" />
-            <span>LÒ RÈN, VŨ KHÍ & KỸ PHÁP</span>
+        {/* 4 Corner Antique Dragon Filigree Brackets */}
+        <div className="absolute top-0 left-0 w-11 h-11 pointer-events-none z-30 opacity-90 drop-shadow">
+          <img
+            src="./assets/art/ui/arsenal/board_corner_bracket.webp"
+            alt=""
+            className="w-full h-full object-contain"
+          />
+        </div>
+        <div className="absolute top-0 right-0 w-11 h-11 pointer-events-none z-30 opacity-90 drop-shadow">
+          <img
+            src="./assets/art/ui/arsenal/board_corner_bracket.webp"
+            alt=""
+            className="w-full h-full object-contain -scale-x-100"
+          />
+        </div>
+        <div className="absolute bottom-0 left-0 w-11 h-11 pointer-events-none z-30 opacity-90 drop-shadow">
+          <img
+            src="./assets/art/ui/arsenal/board_corner_bracket.webp"
+            alt=""
+            className="w-full h-full object-contain -scale-y-100"
+          />
+        </div>
+        <div className="absolute bottom-0 right-0 w-11 h-11 pointer-events-none z-30 opacity-90 drop-shadow">
+          <img
+            src="./assets/art/ui/arsenal/board_corner_bracket.webp"
+            alt=""
+            className="w-full h-full object-contain -scale-x-100 -scale-y-100"
+          />
+        </div>
+
+        {/* Sculpted Celestial Plaque Header Banner */}
+        <div className="relative pt-3 pb-2.5 px-3 border-b-2 border-amber-500/50 bg-gradient-to-b from-[#141C33]/90 via-[#0B1020]/95 to-[#070A14] shadow-xl flex items-center justify-between shrink-0 overflow-hidden">
+          {/* Ornate Plaque Arch Frame Banner across Header */}
+          <div className="absolute inset-0 flex items-center justify-center opacity-40 pointer-events-none">
+            <img
+              src="./assets/art/ui/arsenal/board_header_plaque.webp"
+              alt=""
+              className="w-full h-full object-cover scale-110"
+            />
           </div>
+
+          <div className="flex items-center gap-2.5 relative z-10 pl-2">
+            <div className="w-9 h-9 rounded-xl bg-black/95 border-2 border-amber-400/80 p-1 flex items-center justify-center shadow-lg shadow-amber-500/20 relative group">
+              <img
+                src="./assets/art/items/item_hammer_celestial.webp"
+                alt="Thần Chùy"
+                className="w-full h-full object-contain drop-shadow group-hover:scale-110 transition-transform"
+              />
+            </div>
+            <div>
+              <div className="text-amber-300 font-tech font-extrabold text-sm sm:text-base tracking-wider flex items-center gap-1.5 drop-shadow-[0_2px_8px_rgba(245,158,11,0.5)]">
+                <span>LÒ RÈN, VŨ KHÍ & KỸ PHÁP</span>
+              </div>
+              <div className="text-[9.5px] text-amber-400 font-tech tracking-widest uppercase flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping inline-block" />
+                <span>THIÊN CỔ BẢN MỆNH BẢNG · MMORPG</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Antique Daoist Jade Bagua Seal Close Button */}
           <button
             type="button"
             onClick={() => setRightPanelOpen(false)}
-            className="p-1 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-slate-100 cursor-pointer"
+            title="Đóng Bảng Thần Khí [ESC]"
+            className="w-9 h-9 rounded-full border-2 border-amber-400/70 hover:border-amber-300 bg-black/90 hover:bg-amber-950 p-1 flex items-center justify-center shadow-[0_0_12px_rgba(245,158,11,0.4)] transition-all hover:scale-110 active:scale-90 cursor-pointer relative z-10 mr-1 group"
           >
-            <X className="w-5 h-5" />
+            <img
+              src="./assets/art/ui/arsenal/board_close_seal.webp"
+              alt="Đóng"
+              className="w-full h-full object-contain drop-shadow group-hover:rotate-90 transition-transform duration-300"
+            />
           </button>
         </div>
-        <div className="flex-1 overflow-y-auto">
-          <RightProgressionPanel
-            equippedItems={equippedItems}
-            inventory={inventory}
-            upgrades={upgrades}
-            spiritNodes={spiritNodes}
-            stanceSkills={stanceSkills}
-            forgerRank={forgerRank}
-            playerTotalDamage={playerTotalDamage}
-            burnStacks={burnStacks}
-            linhThach={linhThach}
-            tinhHoa={tinhHoa}
-            ironDust={ironDust}
-            celestialStars={celestialStars}
-            anvilPityCount={anvilPityCount}
-            raidPityCount={raidPityCount}
-            autoSalvageTiers={autoSalvageTiers}
-            tier2Unlocked={tier2Unlocked}
-            leaderboard={leaderboard}
-            mobileDrawerOpen={rightPanelOpen}
-            onCloseMobileDrawer={() => setRightPanelOpen(false)}
-            onBuyUpgrade={handleBuyUpgrade}
-            onUnlockSpiritNode={handleUnlockSpiritNode}
-            onUnlockStanceSkill={handleUnlockStanceSkill}
-            onEquipItem={handleEquipItem}
-            onUnequipItem={handleUnequipItem}
-            onSalvageItem={handleSalvageItem}
-            onQuickSalvage={handleQuickSalvage}
-            onQuenchItem={handleQuenchItem}
-            onAscendItem={handleAscendItem}
-            onToggleAutoSalvage={handleToggleAutoSalvage}
-            playerClass={getPlayerClass(playerClassId || 'thunder')}
-            runePouch={runePouch}
-            onTemperEquipment={handleTemperEquipment}
-            onAscendEquipment={handleAscendEquipment}
-            onSocketGem={handleSocketGem}
-            onUnsocketGem={handleUnsocketGem}
-              />
+
+        <div className="flex-1 overflow-y-auto px-2.5 py-2.5 space-y-2">
+          <Suspense fallback={null}>
+            <RightProgressionPanel
+              equippedItems={equippedItems}
+              inventory={inventory}
+              upgrades={upgrades}
+              spiritNodes={spiritNodes}
+              stanceSkills={stanceSkills}
+              forgerRank={forgerRank}
+              playerTotalDamage={playerTotalDamage}
+              burnStacks={burnStacks}
+              linhThach={linhThach}
+              tinhHoa={tinhHoa}
+              ironDust={ironDust}
+              celestialStars={celestialStars}
+              anvilPityCount={anvilPityCount}
+              raidPityCount={raidPityCount}
+              autoSalvageTiers={autoSalvageTiers}
+              tier2Unlocked={tier2Unlocked}
+              leaderboard={leaderboard}
+              mobileDrawerOpen={rightPanelOpen}
+              onCloseMobileDrawer={() => setRightPanelOpen(false)}
+              onBuyUpgrade={handleBuyUpgrade}
+              onUnlockSpiritNode={handleUnlockSpiritNode}
+              onUnlockStanceSkill={handleUnlockStanceSkill}
+              onEquipItem={handleEquipItem}
+              onUnequipItem={handleUnequipItem}
+              onSalvageItem={handleSalvageItem}
+              onQuickSalvage={handleQuickSalvage}
+              onQuenchItem={handleQuenchItem}
+              onAscendItem={handleAscendItem}
+              onToggleAutoSalvage={handleToggleAutoSalvage}
+              playerClass={getPlayerClass(playerClassId || 'thunder')}
+              runePouch={runePouch}
+              onTemperEquipment={handleTemperEquipment}
+              onAscendEquipment={handleAscendEquipment}
+              onSocketGem={handleSocketGem}
+              onUnsocketGem={handleUnsocketGem}
+            />
+          </Suspense>
         </div>
       </div>
 
@@ -3124,65 +3426,74 @@ export default function App() {
 
       {/* Character Selection Hub (3 Slots Multi-Profile) */}
       {gameState === 'character_select' && (
-        <CharacterSelectionModal
-          slots={characterSlots}
-          activeSlotId={activeSlotId}
-          onSelectSlot={handleSelectSlot}
-          onCreateNewInSlot={handleCreateNewInSlot}
-          onDeleteSlot={handleDeleteSlot}
-          onBackToTitle={() => setGameState('title')}
-        />
+        <Suspense fallback={null}>
+          <CharacterSelectionModal
+            slots={characterSlots}
+            activeSlotId={activeSlotId}
+            onSelectSlot={handleSelectSlot}
+            onCreateNewInSlot={handleCreateNewInSlot}
+            onDeleteSlot={handleDeleteSlot}
+            onBackToTitle={() => setGameState('title')}
+          />
+        </Suspense>
       )}
 
       {/* Character Creation Modal when creating in a slot */}
       {creatingSlotId !== null && (
-        <CharacterCreationModal
-          slotId={creatingSlotId}
-          currentClassId={null}
-          currentName=""
-          isInitialCreation={true}
-          onConfirm={handleCommitClass}
-          onCancel={() => setCreatingSlotId(null)}
-        />
+        <Suspense fallback={null}>
+          <CharacterCreationModal
+            slotId={creatingSlotId}
+            currentClassId={null}
+            currentName=""
+            isInitialCreation={true}
+            onConfirm={handleCommitClass}
+            onCancel={() => setCreatingSlotId(null)}
+          />
+        </Suspense>
       )}
 
       {/* Fallback Single-Class Commitment Modal (if playing without class) */}
       {(!playerClassId && gameState === 'playing' && creatingSlotId === null) && (
-        <CharacterCreationModal
-          slotId={activeSlotId}
-          currentClassId={playerClassId}
-          currentName={playerName}
-          isInitialCreation={true}
-          onConfirm={handleCommitClass}
-        />
+        <Suspense fallback={null}>
+          <CharacterCreationModal
+            slotId={activeSlotId}
+            currentClassId={playerClassId}
+            currentName={playerName}
+            isInitialCreation={true}
+            onConfirm={handleCommitClass}
+          />
+        </Suspense>
       )}
 
       {/* Pause & Victory Status Modal */}
       {(gameState === 'paused' || gameState === 'gameover') && (
-        <StatusModal
-          mode={gameState}
-          playerTotalDamage={playerTotalDamage}
-          maxCombo={maxCombo}
-          perfectCount={perfectCount}
-          onResume={() => setGameState('playing')}
-          onReturnTitle={() => setGameState('title')}
-          onRestart={startGame}
-          onSwitchCharacter={() => {
-            setGameState('character_select');
-          }}
-          muted={muted}
-          onToggleMute={() => {
-            setMuted((prev) => {
-              const next = !prev;
-              soundEngine.muted = next;
-              return next;
-            });
-          }}
-          playerClass={getPlayerClass(playerClassId || 'thunder')}
-          activeCharacterName={playerName}
-          equippedSkinId={equippedSkinId}
-          onEquipSkin={handleEquipSkin}
-        />
+        <Suspense fallback={null}>
+          <StatusModal
+            mode={gameState}
+            playerTotalDamage={playerTotalDamage}
+            maxCombo={maxCombo}
+            perfectCount={perfectCount}
+            onResume={() => setGameState('playing')}
+            onReturnTitle={() => setGameState('title')}
+            onRestart={handleStatusModalRestart}
+            onSwitchCharacter={() => {
+              setGameState('character_select');
+            }}
+            muted={muted}
+            onToggleMute={() => {
+              setMuted((prev) => {
+                const next = !prev;
+                soundEngine.setMuted(next);
+                return next;
+              });
+            }}
+            playerClass={getPlayerClass(playerClassId || 'thunder')}
+            activeCharacterName={playerName}
+            equippedSkinId={equippedSkinId}
+            onEquipSkin={handleEquipSkin}
+            onOpenGuide={() => setIsGuideModalOpen(true)}
+          />
+        </Suspense>
       )}
     </div>
   );

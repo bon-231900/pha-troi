@@ -25,6 +25,7 @@ export interface TopBossHeaderProps {
   currentSealLayer?: AtmosphericSealLayer;
   // v3.1 World Raid additions
   serverFurnaceHeat?: number; // 0 - 10,000°C
+  furnaceOverheatTimeLeft?: number; // >0 means Overheated (Chiêu R)
   vaultMeltingThreshold?: number; // e.g. 1,500 - 8,800°C
   serverChillRate?: number; // e.g. -60°C/s
   serverAnvilHp?: number; // 0 - 10,000 HP
@@ -39,6 +40,7 @@ export interface TopBossHeaderProps {
   muted: boolean;
   onToggleMute: () => void;
   onPause: () => void;
+  onOpenGuide?: () => void;
   onTriggerGlobalBurst: () => void;
   leftPanelOpen?: boolean;
   onToggleLeftPanel?: () => void;
@@ -56,22 +58,23 @@ export const TopBossHeader: React.FC<TopBossHeaderProps> = ({
   bossHp,
   bossMaxHp,
   bossTrailHp,
-  bossShieldPct,
-  globalCountdownSec,
+  bossShieldPct: _bossShieldPct,
+  globalCountdownSec: _globalCountdownSec,
   globalSynergyPct,
   globalBurstActive,
   activeForgersCount,
   isCloudflareServerOnline = false,
   isOffline = false,
   realOnlinePeersCount = 0,
-  anvilHeat = 100,
-  resonanceStrikes = 0,
+  anvilHeat: _anvilHeat = 100,
+  resonanceStrikes: _resonanceStrikes = 0,
   isShieldBroken = false,
   shieldBreakTimeLeft = 0,
   currentSealLayer,
-  serverFurnaceHeat = 1500,
+  serverFurnaceHeat = 600,
+  furnaceOverheatTimeLeft = 0,
   vaultMeltingThreshold = 1500,
-  serverChillRate = -60,
+  serverChillRate: _serverChillRate = -60,
   serverAnvilHp = 10000,
   serverAnvilMaxHp = 10000,
   activeArmorBreakPoints = 0,
@@ -81,9 +84,10 @@ export const TopBossHeader: React.FC<TopBossHeaderProps> = ({
   raidContributionScore = 0,
   phaseCheckActive = false,
   phaseCheckTimeLeft = 30,
-  muted,
-  onToggleMute,
+  muted: _muted,
+  onToggleMute: _onToggleMute,
   onPause,
+  onOpenGuide,
   onTriggerGlobalBurst,
   leftPanelOpen = false,
   onToggleLeftPanel,
@@ -92,8 +96,8 @@ export const TopBossHeader: React.FC<TopBossHeaderProps> = ({
   googleProfile = null,
   onGoogleLogin,
   onGoogleLogout,
-  playerClass,
-  onSwitchCharacter,
+  playerClass: _playerClass,
+  onSwitchCharacter: _onSwitchCharacter,
 }) => {
   const safeMax = Math.max(1, bossMaxHp);
   const safeHp = Math.max(0, Math.min(safeMax, bossHp));
@@ -184,6 +188,17 @@ export const TopBossHeader: React.FC<TopBossHeaderProps> = ({
 
           {/* Right Actions: Tạm Dừng [ESC] + Lò Rèn */}
           <div className="flex items-center gap-1 shrink-0">
+            {onOpenGuide && (
+              <button
+                type="button"
+                onClick={onOpenGuide}
+                className="p-1.5 rounded-lg bg-slate-900/90 border border-cyan-500/40 text-cyan-300 hover:border-cyan-400 cursor-pointer active:scale-95 shadow-md"
+                title="Cẩm Nang Quy Tắc Rèn Đúc & Chỉ Dẫn [?]"
+              >
+                <span className="w-4 h-4 flex items-center justify-center font-bold text-xs text-cyan-300">?</span>
+              </button>
+            )}
+
             <button
               type="button"
               onClick={onPause}
@@ -257,10 +272,23 @@ export const TopBossHeader: React.FC<TopBossHeaderProps> = ({
           <span className="flex items-center gap-1">
             <img src={HEADER_ICON_ASSETS.furnaceHeat} alt="Lò" className="w-3 h-3 object-contain shrink-0" />
             Lò: <b className="text-amber-300">{serverFurnaceHeat}°C</b>
+            {furnaceOverheatTimeLeft > 0 ? (
+              <span className="text-[8px] font-bold text-red-400 animate-pulse">🔥({Math.ceil(furnaceOverheatTimeLeft)}s)</span>
+            ) : serverFurnaceHeat >= vaultMeltingThreshold ? (
+              <span className="text-[8px] font-bold text-emerald-400">🔥</span>
+            ) : (
+              <span className="text-[8px] font-bold text-cyan-400">❄️</span>
+            )}
           </span>
-          <span className="flex items-center gap-1">
+          <span className="flex items-center gap-1 shrink-0" title={`Độ Bền Đại Đe Thần: ${serverAnvilHp.toLocaleString('en-US')}/${serverAnvilMaxHp.toLocaleString('en-US')} HP (${Math.round((serverAnvilHp / serverAnvilMaxHp) * 100)}%). Vỡ đe = Toàn server thất bại (Wipe)!`}>
             <img src={HEADER_ICON_ASSETS.greatAnvil} alt="Đe" className="w-3 h-3 object-contain shrink-0" />
-            Đe: <b className="text-emerald-300">{serverAnvilHp}</b>/10k
+            <span>Độ Bền Đe: <b className={`${serverAnvilHp < 2500 ? 'text-red-400 font-extrabold animate-pulse' : serverAnvilHp < 5000 ? 'text-amber-300' : 'text-emerald-300'}`}>{Math.round((serverAnvilHp / serverAnvilMaxHp) * 100)}%</b></span>
+            <div className="w-6 h-1 rounded-full bg-slate-900 border border-slate-700 overflow-hidden shrink-0 hidden xs:block">
+              <div
+                className={`h-full transition-all duration-300 ${serverAnvilHp < 2500 ? 'bg-red-500' : serverAnvilHp < 5000 ? 'bg-amber-400' : 'bg-emerald-400'}`}
+                style={{ width: `${Math.min(100, Math.max(0, (serverAnvilHp / serverAnvilMaxHp) * 100))}%` }}
+              />
+            </div>
           </span>
           <span className="flex items-center gap-1 text-amber-300 font-bold">
             <img src={HEADER_ICON_ASSETS.rcsMedal} alt="RCS" className="w-3 h-3 object-contain shrink-0" />
@@ -415,7 +443,11 @@ export const TopBossHeader: React.FC<TopBossHeaderProps> = ({
               <span className="whitespace-nowrap">
                 Lò: <b className="text-amber-300">{serverFurnaceHeat.toLocaleString('en-US')}°C</b>
               </span>
-              {serverFurnaceHeat >= vaultMeltingThreshold ? (
+              {furnaceOverheatTimeLeft > 0 ? (
+                <span className="px-1.5 py-0.2 rounded bg-red-500/25 text-red-300 border border-red-500/40 text-[8px] font-bold shrink-0 animate-pulse" title="Trạng thái Quá Nhiệt duy trì từ Chiêu R">
+                  🔥 Quá Nhiệt ({Math.ceil(furnaceOverheatTimeLeft)}s)
+                </span>
+              ) : serverFurnaceHeat >= vaultMeltingThreshold ? (
                 <span className="px-1 py-0.2 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[8px] font-bold shrink-0">
                   🔥 Nung
                 </span>
@@ -427,15 +459,23 @@ export const TopBossHeader: React.FC<TopBossHeaderProps> = ({
             </div>
 
             {/* Meter 3: Độ Bền Đại Đe */}
-            <div className="flex items-center gap-1 shrink-0" title="Độ Bền Đại Đe Thần Server (10,000 HP). Vỡ đe = Toàn server thất bại (Wipe) và Boss hồi 15% HP!">
+            <div className="flex items-center gap-1.5 shrink-0" title={`Độ Bền Đại Đe Thần: ${serverAnvilHp.toLocaleString('en-US')}/${serverAnvilMaxHp.toLocaleString('en-US')} HP (${Math.round((serverAnvilHp / serverAnvilMaxHp) * 100)}%). Vỡ đe = Toàn server thất bại (Wipe)!`}>
               <img
                 src={HEADER_ICON_ASSETS.greatAnvil}
                 alt="Đại Đe"
                 className="w-3.5 h-3.5 object-contain filter drop-shadow-[0_0_4px_#10B981] shrink-0"
               />
-              <span className="whitespace-nowrap">
-                Đe: <b className={`${serverAnvilHp < 2500 ? 'text-red-400 font-extrabold animate-pulse' : serverAnvilHp < 5000 ? 'text-amber-300' : 'text-emerald-300'}`}>{serverAnvilHp.toLocaleString('en-US')}</b>/10k
-              </span>
+              <div className="flex items-center gap-1.5">
+                <span className="whitespace-nowrap">
+                  Độ Bền Đe: <b className={`${serverAnvilHp < 2500 ? 'text-red-400 font-extrabold animate-pulse' : serverAnvilHp < 5000 ? 'text-amber-300' : 'text-emerald-300'}`}>{Math.round((serverAnvilHp / serverAnvilMaxHp) * 100)}%</b>
+                </span>
+                <div className="w-10 h-1.5 rounded-full bg-slate-900 border border-slate-700 overflow-hidden hidden sm:block">
+                  <div
+                    className={`h-full transition-all duration-300 ${serverAnvilHp < 2500 ? 'bg-red-500' : serverAnvilHp < 5000 ? 'bg-amber-400' : 'bg-emerald-400'}`}
+                    style={{ width: `${Math.min(100, Math.max(0, (serverAnvilHp / serverAnvilMaxHp) * 100))}%` }}
+                  />
+                </div>
+              </div>
             </div>
 
             {/* Meter 4: RCS & Burst */}
@@ -518,6 +558,28 @@ export const TopBossHeader: React.FC<TopBossHeaderProps> = ({
               <span className="hidden sm:inline group-hover:text-cyan-200">Đăng Nhập</span>
             </button>
           ) : null}
+
+          {/* Guide Help Trigger Button */}
+          {onOpenGuide && (
+            <button
+              type="button"
+              onClick={onOpenGuide}
+              className="relative flex items-center gap-1.5 px-3 py-2 rounded-xl select-none cursor-pointer group transition-all hover:brightness-125 active:scale-95 shadow-md overflow-hidden text-xs font-tech font-bold"
+              title="Cẩm Nang Quy Tắc Rèn Đúc & Chỉ Dẫn Nhập Môn"
+            >
+              <img
+                src={HEADER_FRAME_ASSETS.tokenIdle}
+                alt="Frame"
+                className="absolute inset-0 w-full h-full object-fill pointer-events-none drop-shadow"
+              />
+              <span className="relative z-10 w-4 h-4 flex items-center justify-center font-extrabold text-cyan-300 rounded-full bg-cyan-950/80 border border-cyan-400/60 shadow-[0_0_8px_rgba(6,182,212,0.6)] group-hover:scale-110 transition-transform">
+                ?
+              </span>
+              <span className="relative z-10 text-cyan-200 tracking-wider hidden sm:inline drop-shadow">
+                Chỉ Dẫn
+              </span>
+            </button>
+          )}
 
           {/* Pause Modal Trigger Token Button [ESC / P] */}
           <button

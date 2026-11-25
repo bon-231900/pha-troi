@@ -7,13 +7,18 @@ import {
   INITIAL_SPIRIT_NODES,
   INITIAL_EQUIPPED_SLOTS,
   StanceSkillNode,
-  SECT_DEFAULT_SKIN,
+  getSkinOrDefault,
+  ensureAllEquippedSlots,
 } from './rules';
 
 export interface CharacterSlotProgress {
   bossHp?: number;
   linhThach: number;
   tinhHoa: number;
+  ironDust?: number;
+  celestialStars?: number;
+  anvilPityCount?: number;
+  raidPityCount?: number;
   upgrades: any[];
   spiritNodes: any[];
   stanceSkills: StanceSkillNode[];
@@ -28,6 +33,8 @@ export interface CharacterSlotProgress {
   serverAnvilHp?: number;
   raidContributionScore?: number;
   equippedSkinId?: string;
+  tutorialCompleted?: boolean;
+  tutorialStep?: number;
   lastActiveTimestamp: number;
 }
 
@@ -81,19 +88,25 @@ function checkAndMigrateLegacySave(googleId?: string): (CharacterProfile | null)
         bossHp: parsed.bossHp,
         linhThach: parsed.linhThach || 0,
         tinhHoa: parsed.tinhHoa || 0,
+        ironDust: parsed.ironDust || 0,
+        celestialStars: parsed.celestialStars || 0,
+        anvilPityCount: parsed.anvilPityCount || 0,
+        raidPityCount: parsed.raidPityCount || 0,
+        tutorialCompleted: true,
+        tutorialStep: 5,
         upgrades: Array.isArray(parsed.upgrades) ? parsed.upgrades : INITIAL_UPGRADES,
         spiritNodes: Array.isArray(parsed.spiritNodes) ? parsed.spiritNodes : INITIAL_SPIRIT_NODES,
         stanceSkills: Array.isArray(parsed.stanceSkills) && parsed.stanceSkills.length === INITIAL_STANCE_SKILLS.length
           ? parsed.stanceSkills
           : INITIAL_STANCE_SKILLS,
-        equippedItems: parsed.equippedItems && typeof parsed.equippedItems === 'object' ? parsed.equippedItems : INITIAL_EQUIPPED_SLOTS,
+        equippedItems: ensureAllEquippedSlots(parsed.equippedItems),
         inventory: Array.isArray(parsed.inventory) ? parsed.inventory : [],
         playerTotalDamage: parsed.playerTotalDamage || 0,
         claimedMilestones: Array.isArray(parsed.claimedMilestones) ? parsed.claimedMilestones : [],
         currentVaultId: typeof parsed.currentVaultId === 'number' ? parsed.currentVaultId : 1,
         userGuildId: parsed.userGuildId || null,
         guildHearths: parsed.guildHearths || [],
-        serverFurnaceHeat: parsed.serverFurnaceHeat || 3000,
+        serverFurnaceHeat: parsed.serverFurnaceHeat !== undefined ? parsed.serverFurnaceHeat : 600,
         serverAnvilHp: parsed.serverAnvilHp || 10000,
         raidContributionScore: parsed.raidContributionScore || 0,
         lastActiveTimestamp: parsed.lastActiveTimestamp || Date.now(),
@@ -143,8 +156,23 @@ export function loadCharacterSlots(googleId?: string): (CharacterProfile | null)
               dirty = true;
             }
             if (!slot.progress.equippedItems || typeof slot.progress.equippedItems !== 'object') {
-              slot.progress.equippedItems = INITIAL_EQUIPPED_SLOTS;
+              slot.progress.equippedItems = ensureAllEquippedSlots(slot.progress.equippedItems);
               dirty = true;
+            }
+            // Auto-heal tutorial flag for existing players
+            if (slot.progress.tutorialCompleted === undefined) {
+              if (
+                (slot.progress.playerTotalDamage || 0) > 0 ||
+                (slot.progress.linhThach || 0) > 0 ||
+                (slot.level || 1) > 1
+              ) {
+                slot.progress.tutorialCompleted = true;
+                slot.progress.tutorialStep = 5;
+                dirty = true;
+              }
+            }
+            if (slot.progress.tutorialCompleted) {
+              safeStorage.setItem('phatroi_tutorial_seen', '1');
             }
           }
         }
@@ -220,7 +248,7 @@ export function createCharacterInSlot(
 ): CharacterProfile {
   const slots = loadCharacterSlots(googleId);
 
-  const finalSkinId = skinId || SECT_DEFAULT_SKIN[classId] || 'skin_default';
+  const finalSkinId = getSkinOrDefault(skinId, classId).id;
   const newProfile: CharacterProfile = {
     slotId,
     characterName: characterName.trim() || `Thợ Rèn #${Math.floor(Math.random() * 8999 + 1000)}`,
@@ -233,6 +261,10 @@ export function createCharacterInSlot(
       bossHp: 1500000000,
       linhThach: 0,
       tinhHoa: 0,
+      ironDust: 0,
+      celestialStars: 0,
+      anvilPityCount: 0,
+      raidPityCount: 0,
       upgrades: INITIAL_UPGRADES,
       spiritNodes: INITIAL_SPIRIT_NODES,
       stanceSkills: INITIAL_STANCE_SKILLS,
@@ -243,10 +275,12 @@ export function createCharacterInSlot(
       currentVaultId: 1,
       userGuildId: null,
       guildHearths: [],
-      serverFurnaceHeat: 3500,
+      serverFurnaceHeat: 600,
       serverAnvilHp: 10000,
       raidContributionScore: 0,
       equippedSkinId: finalSkinId,
+      tutorialCompleted: false,
+      tutorialStep: 1,
       lastActiveTimestamp: Date.now(),
     },
   };

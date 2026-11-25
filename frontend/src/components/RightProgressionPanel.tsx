@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import {
   ForgeUpgrade,
   SpiritNode,
@@ -6,19 +6,13 @@ import {
   EquipmentSlotKey,
   ItemRarity,
   SLOT_INFO,
-  MAX_INVENTORY_SLOTS,
   getUpgradeCost,
-  canUnlockSpiritNode,
-  calculateSpiritMultiplier,
   calculateForgeDamage,
   getItemRarityMeta,
-  getSalvageYield,
   calculateArsenalBonuses,
   checkForgeEquilibrium,
-  EQUIPMENT_SETS,
   ForgerRank,
   FORGER_RANKS,
-  getForgerRank,
   StanceSkillNode,
   canUnlockStanceSkill,
   StanceKey,
@@ -26,43 +20,30 @@ import {
   formatInteger,
   QuenchType,
   QUENCH_OPTIONS,
-  getMaxInventorySlots,
-  ascendEquipmentTier,
   PlayerClassMeta,
   RuneGem,
   RuneType,
-  RuneTier,
   getTemperCost,
   getAscensionCost,
   getUnlockedSockets,
+  INITIAL_EQUIPPED_SLOTS,
+  formatItemDisplayStat,
 } from '../game/rules';
 
-const ITEM_ART_URLS: Record<EquipmentSlotKey, string> = {
-  hammer: '/assets/art/items/item_hammer.webp',
-  anvil: '/assets/art/items/item_anvil.webp',
-  bellows: '/assets/art/items/item_bellows.webp',
-  gauntlets: '/assets/art/items/item_gauntlets.webp',
-  apron: '/assets/art/items/item_apron.webp',
-  relic: '/assets/art/items/item_relic.webp',
-};
+import {
+  STAT_SIGIL_ASSETS,
+  getRelicArt,
+  getRuneArt,
+} from '../game/arsenalArtAssets';
 import {
   Hammer,
   Sparkles,
   Trophy,
-  X,
   Check,
   Lock,
   Shield,
   Flame,
-  Zap,
-  Layers,
-  Trash2,
-  PackageOpen,
-  ArrowRightLeft,
-  Info,
   Gem,
-  ChevronRight,
-  Plus,
 } from 'lucide-react';
 
 export interface LeaderboardEntry {
@@ -114,34 +95,34 @@ interface RightProgressionPanelProps {
 
 export const RightProgressionPanel: React.FC<RightProgressionPanelProps> = ({
   equippedItems,
-  inventory,
+  inventory: _inventory,
   upgrades,
-  spiritNodes = [],
+  spiritNodes: _spiritNodes = [],
   stanceSkills,
   forgerRank,
   playerTotalDamage,
-  burnStacks = 0,
+  burnStacks: _burnStacks = 0,
   linhThach,
   tinhHoa,
   ironDust = 0,
   celestialStars = 0,
-  anvilPityCount = 0,
-  raidPityCount = 0,
-  tier2Unlocked = false,
+  anvilPityCount: _anvilPityCount = 0,
+  raidPityCount: _raidPityCount = 0,
+  tier2Unlocked: _tier2Unlocked = false,
   leaderboard,
-  mobileDrawerOpen,
-  onCloseMobileDrawer,
+  mobileDrawerOpen: _mobileDrawerOpen,
+  onCloseMobileDrawer: _onCloseMobileDrawer,
   onBuyUpgrade,
-  onUnlockSpiritNode,
+  onUnlockSpiritNode: _onUnlockSpiritNode,
   onUnlockStanceSkill,
-  onEquipItem,
-  onUnequipItem,
-  onSalvageItem,
-  onQuickSalvage,
+  onEquipItem: _onEquipItem,
+  onUnequipItem: _onUnequipItem,
+  onSalvageItem: _onSalvageItem,
+  onQuickSalvage: _onQuickSalvage,
   onQuenchItem,
-  onAscendItem,
-  autoSalvageTiers = { tierE: false, tierD: false, tierC: false },
-  onToggleAutoSalvage,
+  onAscendItem: _onAscendItem,
+  autoSalvageTiers: _autoSalvageTiers = { tierE: false, tierD: false, tierC: false },
+  onToggleAutoSalvage: _onToggleAutoSalvage,
   playerClass,
   runePouch = [],
   onTemperEquipment,
@@ -152,57 +133,28 @@ export const RightProgressionPanel: React.FC<RightProgressionPanelProps> = ({
   const [activeTab, setActiveTab] = useState<'arsenal' | 'upgrades' | 'spirit' | 'leaderboard'>('arsenal');
   const [selectedSlotKey, setSelectedSlotKey] = useState<EquipmentSlotKey>('hammer');
   const [gemPouchFilter, setGemPouchFilter] = useState<RuneType | 'all'>('all');
-  const [selectedItem, setSelectedItem] = useState<EquipmentItem | null>(() => {
-    return equippedItems.hammer || inventory[0] || null;
-  });
   const [selectedStanceTree, setSelectedStanceTree] = useState<StanceKey>('Q');
   const [selectedSkillNodeId, setSelectedSkillNodeId] = useState<string>('q_tier_1');
-  const [selectedNodeId, setSelectedNodeId] = useState<string>('node_thunder_eye');
-
-  // Always resolve freshest reference from equippedItems or inventory
-  const activeSelected = useMemo(() => {
-    if (!selectedItem) return null;
-    for (const k of Object.keys(equippedItems) as EquipmentSlotKey[]) {
-      if (equippedItems[k]?.id === selectedItem.id) return equippedItems[k];
-    }
-    return inventory.find((it) => it.id === selectedItem.id) || selectedItem;
-  }, [selectedItem, equippedItems, inventory]);
-
-  const selectedNode =
-    spiritNodes.find((n) => n.id === selectedNodeId) || spiritNodes[0];
-  const spiritTotalMult = calculateSpiritMultiplier(spiritNodes);
 
   const arsenalBonuses = calculateArsenalBonuses(equippedItems, upgrades);
 
-  // Helper: check if item is currently equipped
-  const isEquipped = (item: EquipmentItem | null): boolean => {
-    if (!item) return false;
-    return equippedItems[item.slotKey]?.id === item.id;
-  };
-
-  // Inventory capacity & salvage counts
-  const maxInventorySlots = getMaxInventorySlots(forgerRank.tier);
-  const tierECount = inventory.filter((it) => it.rarity === 'common').length;
-  const tierDCount = inventory.filter((it) => it.rarity === 'uncommon').length;
-  const tierCCount = inventory.filter((it) => it.rarity === 'rare').length;
-
   const renderPanelContent = () => (
     <div className="flex flex-col h-full">
-      {/* 4 Segmented Control Tabs */}
+      {/* 4 Xianxia Daoist Token Tabs */}
       <div
         role="tablist"
         aria-label="Quản lý Vũ Khí, Rèn Đúc, Thần Hồn và Bảng Vàng"
-        className="grid grid-cols-4 gap-1 p-1 bg-[#080A10] border border-slate-800 rounded-xl mb-3 shrink-0"
+        className="grid grid-cols-4 gap-1 p-1 bg-[#060810] border border-amber-500/30 rounded-xl mb-2.5 shrink-0 shadow-lg"
       >
         <button
           type="button"
           role="tab"
           aria-selected={activeTab === 'arsenal'}
           onClick={() => setActiveTab('arsenal')}
-          className={`flex items-center justify-center gap-1 py-1.5 px-1 rounded-lg text-xs font-medium transition-colors cursor-pointer whitespace-nowrap ${
+          className={`flex items-center justify-center gap-1.5 py-1.5 px-1 rounded-lg text-xs transition-all cursor-pointer whitespace-nowrap font-tech ${
             activeTab === 'arsenal'
-              ? 'bg-amber-400 text-slate-950 font-bold'
-              : 'text-slate-300 hover:text-white'
+              ? 'bg-gradient-to-b from-amber-400 via-amber-500 to-amber-600 text-slate-950 font-bold shadow-[0_0_12px_rgba(245,158,11,0.4)] border border-amber-300 ring-1 ring-amber-400/50'
+              : 'text-slate-400 hover:text-amber-200 hover:bg-slate-900/60'
           }`}
           title="Trang Bị & Túi Đồ (Loot & Affix)"
         >
@@ -215,10 +167,10 @@ export const RightProgressionPanel: React.FC<RightProgressionPanelProps> = ({
           role="tab"
           aria-selected={activeTab === 'upgrades'}
           onClick={() => setActiveTab('upgrades')}
-          className={`flex items-center justify-center gap-1 py-1.5 px-1 rounded-lg text-xs font-medium transition-colors cursor-pointer whitespace-nowrap ${
+          className={`flex items-center justify-center gap-1.5 py-1.5 px-1 rounded-lg text-xs transition-all cursor-pointer whitespace-nowrap font-tech ${
             activeTab === 'upgrades'
-              ? 'bg-amber-400 text-slate-950 font-bold'
-              : 'text-slate-300 hover:text-white'
+              ? 'bg-gradient-to-b from-amber-400 via-amber-500 to-amber-600 text-slate-950 font-bold shadow-[0_0_12px_rgba(245,158,11,0.4)] border border-amber-300 ring-1 ring-amber-400/50'
+              : 'text-slate-400 hover:text-amber-200 hover:bg-slate-900/60'
           }`}
           title="Nâng Cấp Lò Rèn"
         >
@@ -231,10 +183,10 @@ export const RightProgressionPanel: React.FC<RightProgressionPanelProps> = ({
           role="tab"
           aria-selected={activeTab === 'spirit'}
           onClick={() => setActiveTab('spirit')}
-          className={`flex items-center justify-center gap-1 py-1.5 px-1 rounded-lg text-xs font-medium transition-colors cursor-pointer whitespace-nowrap ${
+          className={`flex items-center justify-center gap-1.5 py-1.5 px-1 rounded-lg text-xs transition-all cursor-pointer whitespace-nowrap font-tech ${
             activeTab === 'spirit'
-              ? 'bg-cyan-400 text-slate-950 font-bold'
-              : 'text-slate-300 hover:text-white'
+              ? 'bg-gradient-to-b from-cyan-400 via-cyan-500 to-cyan-600 text-slate-950 font-bold shadow-[0_0_12px_rgba(6,182,212,0.4)] border border-cyan-300 ring-1 ring-cyan-400/50'
+              : 'text-slate-400 hover:text-cyan-200 hover:bg-slate-900/60'
           }`}
           title="Kỹ Pháp Tứ Thế & Đẳng Cấp Thợ Rèn"
         >
@@ -247,10 +199,10 @@ export const RightProgressionPanel: React.FC<RightProgressionPanelProps> = ({
           role="tab"
           aria-selected={activeTab === 'leaderboard'}
           onClick={() => setActiveTab('leaderboard')}
-          className={`flex items-center justify-center gap-1 py-1.5 px-1 rounded-lg text-xs font-medium transition-colors cursor-pointer whitespace-nowrap ${
+          className={`flex items-center justify-center gap-1.5 py-1.5 px-1 rounded-lg text-xs transition-all cursor-pointer whitespace-nowrap font-tech ${
             activeTab === 'leaderboard'
-              ? 'bg-amber-400 text-slate-950 font-bold'
-              : 'text-slate-300 hover:text-white'
+              ? 'bg-gradient-to-b from-amber-400 via-amber-500 to-amber-600 text-slate-950 font-bold shadow-[0_0_12px_rgba(245,158,11,0.4)] border border-amber-300 ring-1 ring-amber-400/50'
+              : 'text-slate-400 hover:text-amber-200 hover:bg-slate-900/60'
           }`}
           title="Bảng Vàng Vạn Dân"
         >
@@ -259,29 +211,27 @@ export const RightProgressionPanel: React.FC<RightProgressionPanelProps> = ({
         </button>
       </div>
 
-      {/* Resource Bar Summary */}
-      <div className="flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-[#080A10] border border-slate-800/80 mb-2.5 font-tech text-[11px] shrink-0 overflow-x-auto gap-1.5">
-        <div className="whitespace-nowrap">
-          <span className="text-slate-400">LT: </span>
-          <span className="text-cyan-300 font-bold">{linhThach.toLocaleString('en-US')}</span>
+      {/* Celestial Jade Resource Capsule */}
+      <div className="flex items-center justify-between p-1.5 rounded-xl bg-[#070A14] border border-amber-500/20 mb-2.5 font-tech text-[10.5px] shrink-0 overflow-x-auto gap-1 shadow-inner">
+        <div className="px-2 py-1 rounded-lg bg-cyan-950/40 border border-cyan-500/30 flex items-center gap-1 text-cyan-300 font-bold whitespace-nowrap shadow-sm">
+          <span className="text-[10px] text-cyan-400">💎 LT:</span>
+          <span>{linhThach.toLocaleString('en-US')}</span>
         </div>
-        <span>·</span>
-        <div className="whitespace-nowrap">
-          <span className="text-slate-400">Tinh Hoa: </span>
-          <span className="text-amber-300 font-bold">{tinhHoa}</span>
+
+        <div className="px-2 py-1 rounded-lg bg-amber-950/40 border border-amber-500/30 flex items-center gap-1 text-amber-300 font-bold whitespace-nowrap shadow-sm">
+          <span className="text-[10px] text-amber-400">🔥 Tinh Hoa:</span>
+          <span>{tinhHoa}</span>
         </div>
-        <span>·</span>
-        <div className="whitespace-nowrap">
-          <span className="text-slate-400">Bụi Thiết: </span>
-          <span className="text-slate-200 font-bold">{ironDust.toLocaleString('en-US')}</span>
+
+        <div className="px-2 py-1 rounded-lg bg-slate-900/80 border border-slate-700/60 flex items-center gap-1 text-slate-200 font-bold whitespace-nowrap shadow-sm">
+          <span className="text-[10px] text-slate-400">⚙️ Bụi Thiết:</span>
+          <span>{ironDust.toLocaleString('en-US')}</span>
         </div>
+
         {celestialStars > 0 && (
-          <>
-            <span>·</span>
-            <div className="whitespace-nowrap">
-              <span className="text-purple-400 font-bold">✨ {celestialStars} Thiên Tinh</span>
-            </div>
-          </>
+          <div className="px-2 py-1 rounded-lg bg-purple-950/60 border border-purple-500/40 flex items-center gap-1 text-purple-300 font-bold whitespace-nowrap shadow-sm">
+            <span>✨ {celestialStars} T.Tinh</span>
+          </div>
         )}
       </div>
 
@@ -292,70 +242,79 @@ export const RightProgressionPanel: React.FC<RightProgressionPanelProps> = ({
         {/* ================================================================= */}
         {activeTab === 'arsenal' && (
           <div className="flex flex-col gap-2.5">
-            {/* 1. Ngũ Đại Thuộc Tính Rèn (MMORPG Stats Card) */}
-            <div className="p-2.5 rounded-xl bg-[#080A10] border border-amber-500/30 flex flex-col gap-2 shadow-inner">
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] font-tech font-bold text-amber-300 flex items-center gap-1.5">
-                  <Shield className="w-3.5 h-3.5 text-amber-400" />
-                  NGŨ ĐẠI THUỘC TÍNH RÈN (BẢN MỆNH THẦN LỰC)
-                </span>
-                <span className="text-[10px] font-tech text-cyan-300 font-mono">
+            {/* 1. Ngũ Đại Thuộc Tính Rèn (Trận Đồ Bản Mệnh Thần Lực) */}
+            <div className="p-3 rounded-xl bg-gradient-to-b from-[#0B0F1C] to-[#070912] border border-amber-500/40 shadow-xl flex flex-col gap-2.5 relative overflow-hidden">
+              <div className="flex items-center justify-between relative z-10">
+                <div className="flex items-center gap-2">
+                  <div className="w-5 h-5 rounded bg-amber-500/20 border border-amber-500/40 flex items-center justify-center">
+                    <Shield className="w-3.5 h-3.5 text-amber-400" />
+                  </div>
+                  <div>
+                    <div className="text-[11px] font-tech font-bold text-amber-300 tracking-wider">
+                      NGŨ ĐẠI THUỘC TÍNH RÈN
+                    </div>
+                    <div className="text-[9px] text-slate-400">
+                      Trận đồ Thần Lực bản mệnh thợ rèn
+                    </div>
+                  </div>
+                </div>
+                <div className="px-2 py-0.5 rounded-full bg-cyan-950/60 border border-cyan-500/40 text-[10px] font-tech text-cyan-300 font-mono shadow-sm">
                   {arsenalBonuses.totalEquippedCount}/6 Món Thần Khí
-                </span>
-              </div>
-
-              {/* 5 Core Attributes */}
-              <div className="grid grid-cols-5 gap-1 text-center font-tech">
-                <div className="p-1 rounded bg-[#0E1322] border border-slate-800">
-                  <div className="text-[9px] text-slate-400">Sức Mạnh</div>
-                  <div className="text-xs font-bold text-red-400 font-mono">
-                    {arsenalBonuses.coreStats.str}
-                  </div>
-                </div>
-                <div className="p-1 rounded bg-[#0E1322] border border-slate-800">
-                  <div className="text-[9px] text-slate-400">Khéo Léo</div>
-                  <div className="text-xs font-bold text-emerald-400 font-mono">
-                    {arsenalBonuses.coreStats.dex}
-                  </div>
-                </div>
-                <div className="p-1 rounded bg-[#0E1322] border border-slate-800">
-                  <div className="text-[9px] text-slate-400">Trí Tuệ</div>
-                  <div className="text-xs font-bold text-blue-400 font-mono">
-                    {arsenalBonuses.coreStats.int}
-                  </div>
-                </div>
-                <div className="p-1 rounded bg-[#0E1322] border border-slate-800">
-                  <div className="text-[9px] text-slate-400">Xuyên Giáp</div>
-                  <div className="text-xs font-bold text-amber-400 font-mono">
-                    {arsenalBonuses.coreStats.pen}
-                  </div>
-                </div>
-                <div className="p-1 rounded bg-[#0E1322] border border-slate-800">
-                  <div className="text-[9px] text-slate-400">Tâm Thần</div>
-                  <div className="text-xs font-bold text-purple-400 font-mono">
-                    {arsenalBonuses.coreStats.spi}
-                  </div>
                 </div>
               </div>
 
-              {/* Equilibrium, Pierce, Magic Find, Crit */}
-              <div className="flex items-center justify-between text-[10px] font-tech pt-1 border-t border-slate-800/80">
+              {/* 5 Core Attributes with Authentic Sigils */}
+              <div className="grid grid-cols-5 gap-1.5 font-tech relative z-10">
+                {(['str', 'dex', 'int', 'pen', 'spi'] as const).map((statKey) => {
+                  const sigil = STAT_SIGIL_ASSETS[statKey];
+                  const val = statKey === 'str'
+                    ? arsenalBonuses.coreStats.str
+                    : statKey === 'dex'
+                    ? arsenalBonuses.coreStats.dex
+                    : statKey === 'int'
+                    ? arsenalBonuses.coreStats.int
+                    : statKey === 'pen'
+                    ? arsenalBonuses.coreStats.pen
+                    : arsenalBonuses.coreStats.spi;
+
+                  return (
+                    <div
+                      key={statKey}
+                      title={`${sigil.label}: ${sigil.desc}`}
+                      className="p-1.5 rounded-lg bg-[#0E1426]/90 border border-slate-800/80 hover:border-amber-500/50 flex flex-col items-center justify-center gap-1 transition-all group cursor-help shadow"
+                    >
+                      <img
+                        src={sigil.url}
+                        alt={sigil.label}
+                        className="w-7 h-7 object-contain drop-shadow group-hover:scale-110 transition-transform"
+                      />
+                      <span className="text-[9px] text-slate-400 tracking-tight">{sigil.label}</span>
+                      <span className="text-xs font-bold font-mono tracking-tight" style={{ color: sigil.color }}>
+                        {val}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Dynamic Equilibrium & Secondary stats */}
+              <div className="p-2 rounded-lg bg-[#080B14] border border-slate-800/90 flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 text-[10px] font-tech relative z-10">
                 <div className="flex items-center gap-1.5">
                   {arsenalBonuses.glancingHitPenalty ? (
-                    <span className="text-red-400 bg-red-950/60 px-1.5 py-0.5 rounded border border-red-500/40">
-                      ⚠️ Dội Búa: STR &gt; 2.5x INT (-30% DMG)
+                    <span className="text-red-400 bg-red-950/80 px-2 py-0.5 rounded border border-red-500/50 flex items-center gap-1 font-bold">
+                      ⚠️ Dội Búa (STR &gt; 2.5x INT)
                     </span>
                   ) : (
-                    <span className="text-emerald-400 bg-emerald-950/60 px-1.5 py-0.5 rounded border border-emerald-500/40">
+                    <span className="text-emerald-300 bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-500/50 flex items-center gap-1 font-bold">
                       ✓ Cân Bằng STR/INT: {(arsenalBonuses.coreStats.str / Math.max(1, arsenalBonuses.coreStats.int)).toFixed(1)}
                     </span>
                   )}
                 </div>
-                <div className="flex items-center gap-2 text-cyan-300">
+                <div className="flex items-center gap-2 text-cyan-300 font-mono">
                   <span>Xuyên: +{arsenalBonuses.piercePct}%</span>
-                  <span>·</span>
+                  <span className="text-slate-600">·</span>
                   <span>MF: +{arsenalBonuses.magicFindPct}%</span>
-                  <span>·</span>
+                  <span className="text-slate-600">·</span>
                   <span>Crit: {arsenalBonuses.critRateEffective}%</span>
                 </div>
               </div>
@@ -363,6 +322,14 @@ export const RightProgressionPanel: React.FC<RightProgressionPanelProps> = ({
 
             {/* 2. LỤC ĐẠI BẢN MỆNH THẦN KHÍ (6 Fixed Equipment Slots) */}
             <div>
+              {/* Daoist Filigree Divider */}
+              <div className="flex items-center justify-center my-2 opacity-90 pointer-events-none">
+                <img
+                  src="./assets/art/ui/arsenal/board_divider_filigree.webp"
+                  alt=""
+                  className="w-full max-w-[360px] h-4 object-contain drop-shadow"
+                />
+              </div>
               <div className="text-[11px] font-tech text-slate-300 mb-1.5 flex items-center justify-between">
                 <span className="font-bold text-amber-300 flex items-center gap-1">
                   <Flame className="w-3.5 h-3.5 text-orange-400" />
@@ -374,90 +341,106 @@ export const RightProgressionPanel: React.FC<RightProgressionPanelProps> = ({
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 {(['hammer', 'anvil', 'bellows', 'gauntlets', 'apron', 'relic'] as EquipmentSlotKey[]).map(
                   (slotKey) => {
-                    const item = equippedItems[slotKey];
+                    const item = equippedItems[slotKey] || INITIAL_EQUIPPED_SLOTS[slotKey];
                     const slotMeta = SLOT_INFO[slotKey];
                     const isSelected = selectedSlotKey === slotKey;
                     const rMeta = item ? getItemRarityMeta(item.rarity) : null;
                     const itemLvl = item?.level || 1;
                     const unlockedSockets = item?.unlockedSockets ?? (item ? getUnlockedSockets(item.rarity) : 0);
                     const sockets = item?.sockets || [];
+                    const relicCfg = getRelicArt(slotKey);
 
                     return (
                       <button
                         key={slotKey}
                         type="button"
                         onClick={() => setSelectedSlotKey(slotKey)}
-                        className={`p-2 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between min-h-[92px] ${
+                        title={`${item ? item.name : relicCfg.title} · ${formatItemDisplayStat(item, slotKey).statLabel}: ${formatItemDisplayStat(item, slotKey).displayValue} (${formatItemDisplayStat(item, slotKey).explanation})`}
+                        className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between min-h-[105px] group relative overflow-hidden ${
                           isSelected
-                            ? 'bg-slate-900/95 border-amber-400 ring-2 ring-amber-400/40 shadow-lg shadow-amber-500/10'
-                            : 'bg-[#080A10] border-slate-800 hover:border-slate-700'
+                            ? 'bg-gradient-to-b from-[#12182B] to-[#0A0E1A] border-amber-400 ring-2 ring-amber-400/50 shadow-xl shadow-amber-500/20'
+                            : 'bg-[#080B14] border-slate-800 hover:border-amber-500/40 hover:bg-[#0D1222]'
                         }`}
                       >
                         <div>
-                          <div className="flex items-center justify-between mb-1">
-                            <span className="text-[9px] font-tech uppercase text-slate-400 font-bold">
+                          <div className="flex items-center justify-between mb-1.5">
+                            <span className="text-[9px] font-tech uppercase text-amber-400/90 font-bold tracking-wider">
                               {slotMeta.name}
                             </span>
                             {item && (
-                              <span className={`text-[8px] px-1 py-0.2 rounded font-tech ${rMeta?.badgeBg}`}>
+                              <span className={`text-[8px] px-1.5 py-0.2 rounded font-tech font-bold uppercase ${rMeta?.badgeBg}`}>
                                 Tier {rMeta?.tier}
                               </span>
                             )}
                           </div>
 
                           <div className="flex items-center gap-2">
-                            <div className="w-10 h-10 rounded-lg bg-black/80 border border-slate-800 flex items-center justify-center shrink-0 overflow-hidden shadow-inner">
+                            <div className={`w-11 h-11 rounded-xl bg-black/90 border flex items-center justify-center shrink-0 overflow-hidden shadow-inner relative transition-transform group-hover:scale-105 ${
+                              isSelected ? 'border-amber-400/80 shadow-[0_0_10px_rgba(245,158,11,0.3)]' : 'border-slate-800'
+                            }`}>
                               <img
-                                src={ITEM_ART_URLS[slotKey]}
+                                src={relicCfg.primary}
                                 alt={slotMeta.name}
-                                className="w-8 h-8 object-contain drop-shadow"
+                                onError={(e) => {
+                                  (e.target as HTMLImageElement).src = relicCfg.fallback;
+                                }}
+                                className="w-9 h-9 object-contain drop-shadow"
                               />
                             </div>
                             <div className="min-w-0 flex-1">
-                              <div className={`font-semibold text-[11px] truncate ${rMeta?.textColor || 'text-slate-200'}`}>
-                                {item ? item.name : slotMeta.name}
+                              <div className={`font-bold text-[11px] line-clamp-2 leading-snug min-h-[26px] ${rMeta?.textColor || 'text-slate-200'}`}>
+                                {item ? item.name : relicCfg.title}
                               </div>
-                              <div className="text-[9.5px] font-tech text-cyan-300 font-mono">
-                                +{item?.baseStatValue || 1} {item?.baseStatUnit || 'DMG'}
+                              <div className="text-[10px] font-tech text-cyan-300 font-bold mt-1 tracking-tight truncate">
+                                {formatItemDisplayStat(item, slotKey).displayValue}
                               </div>
                             </div>
                           </div>
                         </div>
 
-                        {/* Level & Socket pips */}
-                        <div className="mt-1.5 pt-1 border-t border-slate-800/80 flex items-center justify-between text-[9px] font-tech">
-                          <span className="text-amber-300 font-mono font-bold">
-                            Lv.{itemLvl}/20
+                        {/* Level & Socket Pips with Real Gems */}
+                        <div className="mt-2 pt-1 border-t border-slate-800/80 flex items-center justify-between text-[9px] font-tech">
+                          <span className="text-amber-300 font-mono font-bold flex items-center gap-1">
+                            Lv.{itemLvl}<span className="text-slate-500">/20</span>
                           </span>
                           {/* Socket Pips */}
-                          <div className="flex items-center gap-0.5">
+                          <div className="flex items-center gap-1">
                             {Array.from({ length: 4 }).map((_, sIdx) => {
                               const isUnlocked = sIdx < unlockedSockets;
                               const gem = isUnlocked ? sockets[sIdx] : null;
 
                               if (!isUnlocked) {
                                 return (
-                                  <span key={sIdx} className="w-2 h-2 rounded-full bg-slate-950 border border-slate-800 text-[6px] text-slate-700 flex items-center justify-center" title="Lỗ khảm bị khóa">
-                                    ·
+                                  <span
+                                    key={sIdx}
+                                    className="w-3 h-3 rounded-full bg-slate-950 border border-slate-800/80 text-[7px] text-slate-700 flex items-center justify-center"
+                                    title="Lỗ khảm bị khóa"
+                                  >
+                                    🔒
                                   </span>
                                 );
                               }
                               if (gem) {
+                                const runeUrl = getRuneArt(gem.type);
                                 return (
-                                  <span
+                                  <div
                                     key={sIdx}
-                                    className="w-2.5 h-2.5 rounded-full flex items-center justify-center text-[7px] shadow-sm animate-pulse"
-                                    style={{ backgroundColor: gem.color }}
+                                    className="w-3.5 h-3.5 rounded-full border flex items-center justify-center overflow-hidden shadow-sm animate-pulse"
+                                    style={{ borderColor: gem.color }}
                                     title={`Đã khảm: ${gem.name} (+${gem.value} ${gem.statLabel})`}
                                   >
-                                    ★
-                                  </span>
+                                    <img
+                                      src={runeUrl}
+                                      alt={gem.name}
+                                      className="w-full h-full object-cover"
+                                    />
+                                  </div>
                                 );
                               }
                               return (
                                 <span
                                   key={sIdx}
-                                  className="w-2.5 h-2.5 rounded-full border border-dashed border-cyan-400/80 bg-cyan-950/40 text-[7px] text-cyan-300 flex items-center justify-center"
+                                  className="w-3 h-3 rounded-full border border-dashed border-cyan-400/80 bg-cyan-950/40 text-[7px] text-cyan-300 flex items-center justify-center"
                                   title="Lỗ khảm trống"
                                 >
                                   ○
@@ -475,8 +458,7 @@ export const RightProgressionPanel: React.FC<RightProgressionPanelProps> = ({
 
             {/* 3. BÀN RÈN & NÂNG CẤP KHÍ GIỚI ĐƯỢC CHỌN (SELECTED WEAPON STATION) */}
             {(() => {
-              const item = equippedItems[selectedSlotKey];
-              if (!item) return null;
+              const item = equippedItems[selectedSlotKey] || INITIAL_EQUIPPED_SLOTS[selectedSlotKey];
 
               const slotMeta = SLOT_INFO[selectedSlotKey];
               const rMeta = getItemRarityMeta(item.rarity);
@@ -509,12 +491,15 @@ export const RightProgressionPanel: React.FC<RightProgressionPanelProps> = ({
                 <div className="p-3 rounded-xl bg-[#090C15] border border-amber-500/40 space-y-3 shadow-xl">
                   {/* Item Header */}
                   <div className="flex items-start justify-between gap-2">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-12 h-12 rounded-xl bg-black/90 border border-amber-500/50 flex items-center justify-center shrink-0 overflow-hidden shadow-md">
+                    <div className="flex items-center gap-3">
+                      <div className="w-14 h-14 rounded-2xl bg-black/95 border-2 border-amber-500/60 flex items-center justify-center shrink-0 overflow-hidden shadow-xl shadow-amber-500/10 relative group">
                         <img
-                          src={ITEM_ART_URLS[selectedSlotKey]}
+                          src={getRelicArt(selectedSlotKey).primary}
                           alt={slotMeta.name}
-                          className="w-10 h-10 object-contain drop-shadow"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = getRelicArt(selectedSlotKey).fallback;
+                          }}
+                          className="w-11 h-11 object-contain drop-shadow group-hover:scale-110 transition-transform"
                         />
                       </div>
                       <div>
@@ -522,15 +507,18 @@ export const RightProgressionPanel: React.FC<RightProgressionPanelProps> = ({
                           <span className="text-[10px] font-tech text-amber-400 font-bold uppercase tracking-wider">
                             {slotMeta.name}
                           </span>
-                          <span className={`text-[9px] px-1.5 py-0.2 rounded font-tech ${rMeta.badgeBg}`}>
+                          <span className={`text-[9px] px-1.5 py-0.2 rounded font-tech font-bold uppercase ${rMeta.badgeBg}`}>
                             Tier {rMeta.tier} · {rMeta.label}
                           </span>
                         </div>
-                        <h4 className={`text-sm font-bold truncate ${rMeta.textColor}`}>
+                        <h4 className={`text-sm font-bold leading-tight ${rMeta.textColor}`}>
                           {item.name}
                         </h4>
-                        <div className="text-[11px] font-tech text-cyan-300 font-mono">
-                          {item.baseStatLabel}: +{item.baseStatValue} {item.baseStatUnit}
+                        <div className="text-[11px] font-tech text-cyan-300 font-bold mt-0.5">
+                          {formatItemDisplayStat(item, selectedSlotKey).statLabel}: <span className="text-amber-300 font-mono">{formatItemDisplayStat(item, selectedSlotKey).displayValue}</span>
+                        </div>
+                        <div className="text-[9.5px] text-slate-400 font-sans mt-0.5">
+                          ℹ️ {formatItemDisplayStat(item, selectedSlotKey).explanation}
                         </div>
                       </div>
                     </div>
@@ -575,7 +563,7 @@ export const RightProgressionPanel: React.FC<RightProgressionPanelProps> = ({
                           </span>
                           <span className="text-slate-500">|</span>
                           <span className="text-emerald-400 font-bold">
-                            +{statGain} {item.baseStatUnit}
+                            +{statGain} {formatItemDisplayStat(item, selectedSlotKey).unit}
                           </span>
                         </div>
 
@@ -699,26 +687,38 @@ export const RightProgressionPanel: React.FC<RightProgressionPanelProps> = ({
                           return (
                             <div
                               key={sIdx}
-                              className="p-2 rounded-lg bg-[#070912] border border-slate-700 flex items-center justify-between gap-1 shadow-inner"
+                              className="p-2 rounded-xl bg-[#070A14] border border-slate-700/80 flex items-center justify-between gap-2 shadow-inner"
                               style={{ borderLeftColor: gem.color, borderLeftWidth: '3px' }}
                             >
-                              <div className="min-w-0 flex-1">
-                                <div className="flex items-center gap-1">
-                                  <span className="text-[10px] font-bold text-slate-200 truncate">
-                                    {gem.name}
-                                  </span>
-                                  <span className="text-[8px] font-tech px-1 rounded bg-slate-800 text-cyan-300">
-                                    +{gem.value} {gem.statLabel}
-                                  </span>
+                              <div className="flex items-center gap-2 min-w-0 flex-1">
+                                <div
+                                  className="w-8 h-8 rounded-lg bg-black/90 border flex items-center justify-center shrink-0 overflow-hidden shadow-sm p-0.5"
+                                  style={{ borderColor: `${gem.color}60` }}
+                                >
+                                  <img
+                                    src={getRuneArt(gem.type)}
+                                    alt={gem.name}
+                                    className="w-full h-full object-contain"
+                                  />
                                 </div>
-                                <div className="text-[8.5px] text-slate-400 truncate mt-0.5">
-                                  {gem.specialPerk}
+                                <div className="min-w-0 flex-1">
+                                  <div className="flex items-center gap-1">
+                                    <span className="text-[10px] font-bold text-slate-200 truncate">
+                                      {gem.name}
+                                    </span>
+                                    <span className="text-[8px] font-tech px-1 rounded bg-slate-800 text-cyan-300 font-mono">
+                                      +{gem.value} {gem.statLabel}
+                                    </span>
+                                  </div>
+                                  <div className="text-[8.5px] text-slate-400 truncate mt-0.5">
+                                    {gem.specialPerk}
+                                  </div>
                                 </div>
                               </div>
                               <button
                                 type="button"
                                 onClick={() => onUnsocketGem?.(selectedSlotKey, sIdx)}
-                                className="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-[9px] font-tech cursor-pointer shrink-0 transition-colors"
+                                className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-red-950 hover:border-red-500/50 border border-slate-700 text-slate-300 hover:text-red-200 text-[9px] font-tech font-bold cursor-pointer shrink-0 transition-all active:scale-95"
                                 title="Tháo ngọc về Túi Phù Thạch (Miễn phí)"
                               >
                                 Tháo
@@ -821,7 +821,15 @@ export const RightProgressionPanel: React.FC<RightProgressionPanelProps> = ({
             })()}
 
             {/* 4. TÚI PHÙ THẠCH THƯỢNG CỔ (ANCIENT RUNE GEM POUCH) */}
-            <div className="pt-2 border-t border-slate-800 space-y-2">
+            <div className="pt-1 space-y-2">
+              {/* Daoist Filigree Divider */}
+              <div className="flex items-center justify-center my-1.5 opacity-85 pointer-events-none">
+                <img
+                  src="./assets/art/ui/arsenal/board_divider_filigree.webp"
+                  alt=""
+                  className="w-full max-w-[340px] h-3.5 object-contain"
+                />
+              </div>
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
                 <div className="flex items-center gap-1.5 text-xs font-tech">
                   <Gem className="w-3.5 h-3.5 text-cyan-400" />
@@ -874,7 +882,7 @@ export const RightProgressionPanel: React.FC<RightProgressionPanelProps> = ({
                     Túi Phù Thạch Hiện Đang Trống
                   </div>
                   <p className="text-[10px] text-slate-500 max-w-sm mx-auto">
-                    Phù Thạch là kỳ trân dị bảo cực hiếm trong vũ trụ (rơi với tỉ lệ cực thấp khi nhát gõ Hoàng Kim hoặc phá vỡ Khiên Vòm Trời). Hãy kiên trì rèn đúc!
+                    Phù Thạch là kỳ trân dị bảo cực hiếm trong vũ trụ (rơi khi xuất hiện Bạo Kích hoặc phá vỡ Khiên Vòm Trời). Hãy kiên trì rèn đúc!
                   </p>
                 </div>
               ) : (
@@ -882,7 +890,7 @@ export const RightProgressionPanel: React.FC<RightProgressionPanelProps> = ({
                   {runePouch
                     .filter((gem) => (gemPouchFilter === 'all' ? true : gem.type === gemPouchFilter))
                     .map((gem) => {
-                      const currentSelected = equippedItems[selectedSlotKey];
+                      const currentSelected = equippedItems[selectedSlotKey] || INITIAL_EQUIPPED_SLOTS[selectedSlotKey];
                       const unlockedCount =
                         currentSelected?.unlockedSockets ?? (currentSelected ? getUnlockedSockets(currentSelected.rarity) : 0);
                       const sockets = currentSelected?.sockets || [];
@@ -892,35 +900,50 @@ export const RightProgressionPanel: React.FC<RightProgressionPanelProps> = ({
                       return (
                         <div
                           key={gem.id}
-                          className="p-2 rounded-lg bg-[#0C101D] border border-slate-800 flex flex-col justify-between gap-1.5 shadow"
-                          style={{ borderTopColor: gem.color, borderTopWidth: '2px' }}
+                          className="p-2.5 rounded-xl bg-gradient-to-b from-[#0E1324] to-[#080B14] border border-slate-800 hover:border-cyan-500/50 flex flex-col justify-between gap-2 shadow-lg transition-all"
+                          style={{ borderTopColor: gem.color, borderTopWidth: '3px' }}
                         >
-                          <div>
-                            <div className="flex items-center justify-between gap-1">
-                              <span className="font-bold text-[11px] text-slate-200 truncate">
-                                {gem.name}
-                              </span>
-                              <span className="text-[8px] font-tech px-1 rounded uppercase font-bold" style={{ backgroundColor: `${gem.color}20`, color: gem.color }}>
-                                {gem.tier}
-                              </span>
+                          <div className="flex items-start gap-2.5">
+                            <div
+                              className="w-11 h-11 rounded-xl bg-black/90 border flex items-center justify-center shrink-0 overflow-hidden shadow-inner p-1 relative"
+                              style={{ borderColor: `${gem.color}60` }}
+                            >
+                              <img
+                                src={getRuneArt(gem.type)}
+                                alt={gem.name}
+                                className="w-full h-full object-contain drop-shadow hover:scale-110 transition-transform"
+                              />
                             </div>
-                            <div className="text-[9.5px] font-tech text-cyan-300 font-mono mt-0.5">
-                              +{gem.value} {gem.statLabel}
-                            </div>
-                            <div className="text-[8.5px] text-slate-400 mt-0.5 line-clamp-2">
-                              {gem.specialPerk}
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center justify-between gap-1">
+                                <span className="font-bold text-[11px] text-slate-200 truncate">
+                                  {gem.name}
+                                </span>
+                                <span
+                                  className="text-[8px] font-tech px-1.5 py-0.2 rounded font-bold uppercase"
+                                  style={{ backgroundColor: `${gem.color}25`, color: gem.color, border: `1px solid ${gem.color}40` }}
+                                >
+                                  {gem.tier}
+                                </span>
+                              </div>
+                              <div className="text-[9.5px] font-tech text-cyan-300 font-mono mt-0.5">
+                                +{gem.value} {gem.statLabel}
+                              </div>
+                              <div className="text-[8.5px] text-slate-400 mt-0.5 line-clamp-2 leading-tight">
+                                {gem.specialPerk}
+                              </div>
                             </div>
                           </div>
 
-                          <div className="pt-1 border-t border-slate-800/80 flex items-center justify-between">
-                            <span className="text-[8.5px] font-tech uppercase" style={{ color: gem.color }}>
+                          <div className="pt-1.5 border-t border-slate-800/80 flex items-center justify-between">
+                            <span className="text-[8.5px] font-tech uppercase font-bold" style={{ color: gem.color }}>
                               Hệ {gem.type}
                             </span>
                             {canSocket ? (
                               <button
                                 type="button"
                                 onClick={() => onSocketGem?.(selectedSlotKey, firstEmptyIndex, gem.id)}
-                                className="px-2 py-0.5 rounded bg-cyan-600 hover:bg-cyan-500 text-white font-tech font-bold text-[9px] cursor-pointer shadow transition-all active:scale-95"
+                                className="px-2.5 py-1 rounded-lg bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 text-white font-tech font-bold text-[9.5px] cursor-pointer shadow-md shadow-cyan-500/20 transition-all active:scale-95"
                               >
                                 Khảm Vào {SLOT_INFO[selectedSlotKey].name}
                               </button>

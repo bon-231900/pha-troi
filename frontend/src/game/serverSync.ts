@@ -3,8 +3,6 @@
 // CLOUDFLARE WORKER API CLIENT - Bền vững, Single Source of Truth
 // ==============================================================================
 
-import { safeStorage } from './storage';
-
 export interface ServerBossState {
   success: boolean;
   vaultId: number;

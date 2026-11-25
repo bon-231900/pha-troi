@@ -6,7 +6,7 @@
 
 import { joinRoom } from '@trystero-p2p/nostr';
 import { safeStorage } from './storage';
-import { StanceKey } from './rules';
+import { getCelestialVault, StanceKey } from './rules';
 
 export interface PeerPresence {
   [key: string]: any;
@@ -423,12 +423,13 @@ export class RealtimeRoomClient {
   }
 
   public broadcastWorldState(state: Partial<WorldStateSyncMessage>) {
+    const fallbackHp = getCelestialVault(state.vaultId ?? 1).maxHp;
     const packet: WorldStateSyncMessage = {
       senderId: this.localPlayerId,
       senderName: this.localPlayerName,
       vaultId: state.vaultId ?? 1,
-      bossHp: state.bossHp ?? 1_500_000_000,
-      bossTrailHp: state.bossTrailHp ?? state.bossHp ?? 1_500_000_000,
+      bossHp: state.bossHp ?? fallbackHp,
+      bossTrailHp: state.bossTrailHp ?? state.bossHp ?? fallbackHp,
       serverFurnaceHeat: state.serverFurnaceHeat ?? 1500,
       serverAnvilHp: state.serverAnvilHp ?? 10000,
       activeArmorBreakPoints: state.activeArmorBreakPoints ?? 0,

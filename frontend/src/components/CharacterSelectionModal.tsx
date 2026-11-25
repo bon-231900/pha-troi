@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { CharacterProfile, MAX_CHARACTER_SLOTS } from '../game/characterSlots';
-import { PLAYER_CLASSES, PlayerClassId, CHARACTER_SKINS, getSkinOrDefault } from '../game/rules';
+import { CharacterProfile } from '../game/characterSlots';
+import { PLAYER_CLASSES, PlayerClassId, getSkinOrDefault } from '../game/rules';
 import { soundEngine } from '../game/audio';
 import {
   Zap,

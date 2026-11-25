@@ -2,10 +2,9 @@ import React, { useState, useRef } from 'react';
 import {
   PlayerClassId,
   PLAYER_CLASSES,
-  PlayerClassMeta,
   CHARACTER_SKINS,
-  SECT_DEFAULT_SKIN,
-  CharacterSkinMeta,
+  AVAILABLE_CHARACTER_SKINS,
+  getSkinOrDefault,
 } from '../game/rules';
 import { soundEngine } from '../game/audio';
 import { Sparkles, Dices, Zap, Flame, Mountain, Music, ArrowRight, Check } from 'lucide-react';
@@ -40,15 +39,14 @@ export const CharacterCreationModal: React.FC<CharacterCreationModalProps> = ({
   currentClassId = null,
   currentName = '',
   currentSkinId = null,
-  isInitialCreation = false,
+  isInitialCreation: _isInitialCreation = false,
   slotId,
   onConfirm,
   onCancel,
 }) => {
   const [selectedClassId, setSelectedClassId] = useState<PlayerClassId>(currentClassId || 'thunder');
   const [selectedSkinId, setSelectedSkinId] = useState<string>(() => {
-    if (currentSkinId && CHARACTER_SKINS[currentSkinId]) return currentSkinId;
-    return SECT_DEFAULT_SKIN[currentClassId || 'thunder'] || 'skin_thunder_robe';
+    return getSkinOrDefault(currentSkinId, currentClassId || 'thunder').id;
   });
   const [characterName, setCharacterName] = useState<string>(() => {
     if (currentName && currentName.trim().length > 0) return currentName;
@@ -67,7 +65,7 @@ export const CharacterCreationModal: React.FC<CharacterCreationModalProps> = ({
 
   const handleSelectClass = (cId: PlayerClassId) => {
     setSelectedClassId(cId);
-    setSelectedSkinId(SECT_DEFAULT_SKIN[cId] || 'skin_default');
+    setSelectedSkinId(getSkinOrDefault(undefined, cId).id);
     const cls = PLAYER_CLASSES[cId];
     soundEngine.playStanceSwitch(cls.stanceKey);
   };
@@ -154,16 +152,16 @@ export const CharacterCreationModal: React.FC<CharacterCreationModalProps> = ({
               <div className="flex items-center justify-between text-xs font-tech">
                 <span className="text-amber-300 font-bold uppercase tracking-wider flex items-center gap-1.5">
                   <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                  <span>Y PHỤC MÔN PHÁI (5 BỘ ĐỒ ĐỘC BẢN):</span>
+                  <span>TRANG PHỤC THẦN KHÍ (CHUYỂN ĐỘNG VUNG CHÙY RÈN):</span>
                 </span>
                 <span className="text-[11px] text-slate-400">
                   Đang chọn: <b className="text-amber-300">{CHARACTER_SKINS[selectedSkinId]?.name || 'Phục Trang'}</b>
                 </span>
               </div>
 
-              {/* 5 Outfit Cards Row */}
-              <div className="grid grid-cols-4 sm:grid-cols-8 gap-1.5">
-                {Object.values(CHARACTER_SKINS).map((sk) => {
+              {/* Verified Outfit Cards Row */}
+              <div className="grid grid-cols-3 gap-2 max-w-lg mx-auto w-full">
+                {AVAILABLE_CHARACTER_SKINS.map((sk) => {
                   const isSelected = selectedSkinId === sk.id;
                   const isSectMatch = sk.sectId === selectedClassId;
                   return (
@@ -171,36 +169,43 @@ export const CharacterCreationModal: React.FC<CharacterCreationModalProps> = ({
                       key={sk.id}
                       type="button"
                       onClick={() => handleSelectSkin(sk.id)}
-                      className={`relative rounded-xl border p-1 text-center cursor-pointer transition-all flex flex-col items-center gap-1 group ${
+                      className={`relative rounded-xl border p-2 text-center cursor-pointer transition-all flex flex-col items-center gap-1.5 group ${
                         isSelected
-                          ? 'bg-slate-800/90 border-amber-400 ring-2 ring-amber-400/50 shadow-lg scale-105 z-10'
+                          ? 'bg-slate-800/90 border-amber-400 ring-2 ring-amber-400/50 shadow-lg scale-[1.02] z-10'
                           : 'bg-slate-950/70 border-slate-800 hover:border-slate-700 hover:bg-slate-900/60'
                       }`}
                       title={`${sk.name} · ${sk.sectTitle}\n${sk.description}`}
                     >
                       {/* Sect Recommended Tag */}
-                      {isSectMatch && (
-                        <div className="absolute -top-1.5 -right-1 px-1 py-0.2 rounded-full bg-amber-500 text-slate-950 text-[7px] font-bold z-20 shadow">
-                          CHUẨN
+                      {isSectMatch ? (
+                        <div className="absolute -top-1.5 -right-1 px-1.5 py-0.5 rounded-full bg-amber-500 text-slate-950 text-[8px] font-bold z-20 shadow">
+                          CHUẨN HỆ
                         </div>
-                      )}
+                      ) : sk.sectId === 'neutral' ? (
+                        <div className="absolute -top-1.5 -right-1 px-1.5 py-0.5 rounded-full bg-slate-600 text-slate-100 text-[8px] font-bold z-20 shadow">
+                          TOÀN HỆ
+                        </div>
+                      ) : null}
 
                       {/* Outfit Card Image */}
                       <div className="w-full aspect-[3/4] rounded-lg overflow-hidden bg-slate-900/90 relative border border-slate-700/50">
                         <img
                           src={`${import.meta.env.BASE_URL || './'}${sk.cardPath}`}
                           alt={sk.name}
-                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
-                        <span className="absolute bottom-0.5 right-1 text-[11px]">{sk.icon}</span>
+                        <span className="absolute bottom-1 right-1.5 text-xs">{sk.icon}</span>
                       </div>
 
-                      {/* Outfit Short Name */}
-                      <span className={`text-[9px] font-tech font-bold leading-tight truncate w-full ${
-                        isSelected ? 'text-amber-300' : 'text-slate-300'
+                      {/* Outfit Name & Details */}
+                      <span className={`text-[11px] font-tech font-bold leading-tight truncate w-full ${
+                        isSelected ? 'text-amber-300' : 'text-slate-200'
                       }`}>
-                        {sk.name.replace('Phàm Nhân ', '').replace('Cửu Tiêu ', '').replace('Hắc Diệm ', '').replace('Bất Chu ', '').replace('Thanh Mộc ', '').replace('Thái Cổ ', '').replace('Phần Thiên ', '').replace('Bích Lạc ', '')}
+                        {sk.name}
+                      </span>
+                      <span className="text-[9px] text-slate-400 font-tech truncate w-full">
+                        {sk.sectTitle.split('·')[0].trim()}
                       </span>
                     </button>
                   );
@@ -208,7 +213,7 @@ export const CharacterCreationModal: React.FC<CharacterCreationModalProps> = ({
               </div>
 
               {/* Lore / Description Line */}
-              <div className="text-[10px] font-tech text-slate-400 italic bg-slate-950/60 py-1 px-2 rounded-lg border border-slate-800/60 truncate">
+              <div className="text-[10px] font-tech text-slate-400 italic bg-slate-950/60 py-1 px-2.5 rounded-lg border border-slate-800/60 truncate">
                 ✨ {CHARACTER_SKINS[selectedSkinId]?.description || ''}
               </div>
             </div>

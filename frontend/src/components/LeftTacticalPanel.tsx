@@ -8,23 +8,17 @@ import {
   CheckCircle,
   Flame,
   Layers,
-  Sparkles,
-  Users,
-  Compass,
   Zap,
 } from 'lucide-react';
 import {
   HAMMER_STANCES,
   StanceKey,
   CONTRIBUTION_TIERS,
-  ContributionTier,
   formatInteger,
   CELESTIAL_VAULTS,
   getCelestialVault,
-  CelestialVault,
   BLACKSMITH_GUILDS,
   getGuild,
-  BlacksmithGuild,
 } from '../game/rules';
 
 export interface CombatLogEntry {
@@ -73,7 +67,7 @@ export const LeftTacticalPanel: React.FC<LeftTacticalPanelProps> = ({
   perfectCount,
   maxCombo,
   serverDps = 2000,
-  serverDpsBillions,
+  serverDpsBillions: _serverDpsBillions,
   claimedMilestones = [],
   onClaimMilestone,
   combatLogs,

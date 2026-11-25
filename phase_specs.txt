@@ -1,0 +1,54 @@
+Chia theo **Phases (Các giai đoạn triển khai)** là cách làm chuẩn xác nhất của một Studio game chuyên nghiệp. 
+
+Nếu cố gắng làm toàn bộ Backend nhiều server, Redis, WebSocket cùng lúc với giao diện và âm thanh, dự án sẽ rất dễ bị rối và khó gỡ lỗi. 
+
+Tôi đã lập một **Bản Lộ Trình Phân Kỳ Chi Tiết (Phased Implementation Roadmap)** kết nối trọn vẹn cả 3 tài liệu (GDD + TAD + MMD):
+
+👉 Bạn có thể xem toàn bộ lộ trình tại: **[Lộ Trình Phân Kỳ Triển Khai: Toàn Dân Phá Trời](file:///C:/Users/ADMIN/.gemini/antigravity/brain/4ac532ff-c4ae-4325-afcc-f630c6b43d10/PHASED_IMPLEMENTATION_ROADMAP.md)**
+
+---
+
+### TÓM TẮT 4 GIAI ĐOẠN TRIỂN KHAI:
+
+```
+┌────────────────────────────────────────────────────────────────────────┐
+│ PHASE 1: CỐT LÕI ĐE THẦN & BỘ MÁY TOÁN HỌC (Client-Side Prototype)   │
+│ - Dựng giao diện Mái Vòm Thiên Cấm + Đe Thần trung tâm.               │
+│ - Thanh Nhịp Điệu (Forge Rhythm Bar) + Điểm Hoàng Kim + Overdrive 10s. │
+│ - Nạp 100% công thức MMD (1.18 vs 1.11, Milestones x2 x3, 4 Thần Chùy)│
+│ - Giả lập Server Tick 2Hz & Nội suy lerp 60 FPS ngay trên trình duyệt. │
+└───────────────────────────────────┬────────────────────────────────────┘
+                                    │
+                                    ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│ PHASE 2: TAM TẦNG CẢM QUAN & NÂNG CAO (Community Polish & FX)          │
+│ - Hậu cảnh Đại Công Trường: Hàng trăm đốm lửa lò rèn nhấp nháy.        │
+│ - Render mảng FX (Tia sét, luồng lửa) bắn lên trời rải rác mỗi 500ms.  │
+│ - Thanh Cộng Hưởng Vạn Dân + Hiệu ứng Phá Giáp 60s toàn màn hình.      │
+│ - Cây Kỹ Năng Chuyển Sinh (Tôi Luyện Thần Hồn) với hàm tiệm cận.      │
+└───────────────────────────────────┬────────────────────────────────────┘
+                                    │
+                                    ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│ PHASE 3: HẠ TẦNG WEBSOCKET & REDIS CORE (Real-time Multiplayer)        │
+│ - Triển khai WebSocket Gateway (Go / Node.js uWebSockets.js).          │
+│ - Nạp đoạn Redis Lua Script chuẩn (Gộp lệnh 250ms, Khóa 1-HP Last Hit).│
+│ - Bộ lọc Anti-Cheat 4 lớp (Độ lệch chuẩn Timing Offset σ).             │
+│ - Broadcast 2Hz nhịp tim công trường tới toàn bộ người chơi thật.      │
+└───────────────────────────────────┬────────────────────────────────────┘
+                                    │
+                                    ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│ PHASE 4: POSTGRESQL PERSISTENCE & HALL OF ETERNITY (Launch Ready)      │
+│ - Schema PostgreSQL + Tiến trình Write-Behind 30s (Bulk Upsert).       │
+│ - Bảng Đài Tưởng Niệm Lịch Sử (Lưu vĩnh viễn Last Hit & Top 10).       │
+│ - Sự kiện 15 Phút Mưa Thiên Lộc & Chuyển Tầng Trời vĩnh viễn.          │
+└────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+### ĐIỂM SÁNG CỦA LỘ TRÌNH NÀY:
+Ngay sau khi hoàn thành **Phase 1**, chúng ta sẽ có ngay một **bản game hoàn chỉnh, cực kỳ đã tay và đã tai trên [phatroi.com](https://phatroi.com)**. Bạn có thể mở điện thoại hoặc laptop lên gõ búa canh nhịp, thử nghiệm 4 cây Thần Chùy, trải nghiệm cảm giác thanh máu Mái Vòm tụt mượt mà qua cơ chế giả lập 2Hz trước khi chúng ta đấu nối cụm server thật ở Phase 3.
+
+Bạn xem qua phân kỳ 4 giai đoạn này và cho tôi biết: **Chúng ta bắt đầu khởi động Phase 1 ngay bây giờ nhé?**

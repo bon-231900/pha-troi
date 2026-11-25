@@ -1,0 +1,204 @@
+<USER_REQUEST>
+Dưới đây là bản **Thiết Kế Nội Dung Toàn Diện (Master Game Design & Lore Document)** cho **PHÁ TRỜI: ĐẠI CÔNG TRƯỜNG VẠN DÂN**, mang chiều sâu dày dặn về cốt truyện, cơ chế tiến trình, hệ thống 6 slot trang bị và cây kỹ năng phân nhánh.
+
+---
+
+# PHẦN I: THẾ GIỚI QUAN & CỐT TRUYỆN (LORE BIBLE)
+
+### 1. Huyền Sử: "Trời Là Để Phá"
+
+Thuở hồng hoang, Thần Nữ Oa từng luyện đá ngũ sắc vá trời để che chở muôn dân. Nhưng trải qua ức triệu năm, bầu trời nguyên thủy đã bị tha hóa bởi **Cổ Thần Cửu U**.
+
+Chư thần dựng lên **Cửu Trọng Thiên Cấm** — 9 tầng vòm sắt, đồng, băng và hư không khổng lồ bọc kín nhân gian. Bầu trời không còn là mái nhà, mà là một cỗ máy hút cạn linh khí đất mẹ; con người sinh ra chỉ để làm tro bụi nuôi dưỡng sự bất tử của Cổ Thần. Dưới mái vòm tối tăm không thấy mặt trời, bệnh tật và đói nghèo bủa vây.
+
+Cho đến một ngày, trên đỉnh Thiên Thai, một thợ rèn vô danh nhìn lên vết nứt kim loại rỉ sét trên bầu trời và giác ngộ:
+
+> *"Trời đã do đúc mà thành hình, ắt có thể dùng búa đe mà đập vỡ!"*
+
+Người ấy dựng đe, giáng nhát búa đầu tiên vào màn đêm. Tiếng búa vang động mười phương, triệu tập hàng vạn người khốn cùng trên khắp nhân gian cùng tề tựu. Họ không cầm gươm giáo để chém giết lẫn nhau, mà cùng dựng lên **Đại Công Trường Vạn Dân** — nơi hàng triệu cánh tay đồng lòng nện búa, phóng lôi hỏa ngược lên trời cao để phá vỡ xiềng xích của chư thần, đoạt lại ánh sáng cho trần thế.
+
+---
+
+### 2. Hành Trình Vượt 9 Tầng Trời (The 9 Celestial Vaults)
+
+Mỗi tầng trời là một Boss Thế Giới trường kỳ, sở hữu cơ chế, giáp trụ và câu chuyện bi tráng riêng:
+
+```
+[ TẦNG 1: THIẾT VÂN VÒM ] ────► Giáp Sắt Mây Đen (500M HP)  | Boss: Hắc Diệm Thao Thiết
+[ TẦNG 2: CỔ ĐỒNG THIÊN  ] ────► Đồng Rỉ Đông Sơn (1.2 Tỷ HP)| Boss: Trấn Thiên Lạc Thần
+[ TẦNG 3: LÔI TIÊU ĐIỆN  ] ────► Bão Plasma Tím   (2.5 Tỷ HP)| Boss: Ứng Lôi Chân Quân
+[ TẦNG 4: HÀN BĂNG THẦN  ] ────► Kính Băng Cực Độ (5.0 Tỷ HP)| Boss: Huyền Minh Băng Hoàng
+[ TẦNG 5: XÍCH DIỄM GIỚI ] ────► Nham Thạch Núi Lửa (10 Tỷ HP) | Boss: Chúc Dung Ma Thần
+[ TẦNG 6: HUYỀN THỦY HẢI ] ────► Biển Trời Nghịch (20 Tỷ HP) | Boss: Côn Bằng Hóa Minh
+[ TẦNG 7: BÁT QUÁI PHONG ] ────► Trận Đồ Phong Cấm(40 Tỷ HP) | Boss: Vô Cực Cơ Quan Tôn
+[ TẦNG 8: HƯ KHÔNG ĐOẠN  ] ────► Hố Đen Vũ Trụ   (80 Tỷ HP) | Boss: Thôn Thiên Ma Thú
+[ TẦNG 9: HỖN ĐỘN THIÊN  ] ────► Con Mắt Thiên Đạo(150 Tỷ HP)| Boss: Cửu U Tối Cao Chi Nhãn
+
+```
+
+---
+
+# PHẦN II: HỆ THỐNG TRANG BỊ NHÂN VẬT (6 SLOTS ARSENAL)
+
+Thay vì chỉ có một cây búa vô danh, nhân vật của người chơi sở hữu một **Bộ Dụng Cụ Rèn Thần Thánh (6 Slot)**. Mỗi món trang bị mang một vai trò gameplay riêng biệt, không trùng lặp:
+
+```
+                   ┌──────────────────────────────┐
+                   │    [1] THẦN CHÙY (BÚA)       │ ──► Base DMG & Animation
+                   ├──────────────────────────────┤
+                   │    [2] THẦN ĐE (ANVIL)       │ ──► Vùng Hoàng Kim & Resonance
+                   ├──────────────────────────────┤
+                   │    [3] HỎA LÒ (BELLOWS)      │ ──► Tích Nhiệt & Overdrive
+   BỘ TRANG BỊ     ├──────────────────────────────┤
+   THỢ RÈN 6 MÓN   │    [4] BAO TAY RÈN (GLOVES)  │ ──► Tốc độ Nhịp & Tỷ lệ Crit
+                   ├──────────────────────────────┤
+                   │    [5] TẠP DỀ THIẾT HỘ (APRON)│ ──► Chống Phản Lực & AFK Ore
+                   ├──────────────────────────────┤
+                   │    [6] ĐỊNH THIÊN PHÁP BẢO   │ ──► Nội tại Độc bản & Hào quang
+                   └──────────────────────────────┘
+
+```
+
+### 1. Chi Tiết Từng Vị Trí Trang Bị
+
+| Slot | Tên Vị Trí | Chỉ số Cốt lõi | Dòng Thuộc Tính Ngẫu Nhiên (Affixes) |
+| --- | --- | --- | --- |
+| **Slot 1** | **Thần Chùy (Hammer)** | • Sát thương Cơ bản (`+X DMG`)<br>
+
+<br>• Hiệu ứng đập (VFX) | • `+% Sát thương Thế Búa`<br>
+
+<br>• `+% Tỷ lệ Sét Lan sang thợ rèn bên cạnh` |
+| **Slot 2** | **Thần Đe (Anvil)** | • Điểm tích lũy Phá Giáp (`+Resonance`)<br>
+
+<br>• Mở rộng Vùng Hoàng Kim (`+X ms`) | • `+% Linh Thạch rơi khi đập Perfect`<br>
+
+<br>• `Giảm % Giáp Boss cá nhân` |
+| **Slot 3** | **Ống Bể / Hỏa Lò (Furnace)** | • Tốc độ Tích Nhiệt Lò (`+Heat/hit`)<br>
+
+<br>• Kéo dài thời gian Cuồng Nhiệt (`+X s`) | • `Giữ nhiệt độ đe rèn không bị tụt khi ngừng gõ trong 30s`<br>
+
+<br>• `+10% DMG khi đe rực đỏ` |
+| **Slot 4** | **Bao Tay Rèn (Gauntlets)** | • Tỷ lệ Chí mạng (`Crit Chance %`)<br>
+
+<br>• Giảm thời gian trừng phạt khi trượt nhịp | • `Đổi nhịp Gõ Lạnh thành Gõ Ấm ngẫu nhiên (15%)`<br>
+
+<br>• `+Tốc độ vung búa` |
+| **Slot 5** | **Tạp Dề Thiết Hộ (Apron)** | • Kháng địa chấn/phản lực từ Boss<br>
+
+<br>• Tăng sản lượng tích trữ Offline (AFK) | • `Tăng thời gian treo máy tối đa từ 4h -> 12h`<br>
+
+<br>• `Nhận thêm SP Thần Hồn khi Rebirth` |
+| **Slot 6** | **Định Thiên Pháp Bảo (Relic)** | • Kỹ năng Kích hoạt / Hào quang Vạn Dân | • Kỹ năng Bị động độc bản (Xem chi tiết bên dưới) |
+
+---
+
+### 2. Các Món Trang Bị Tiêu Biểu Theo Độ Hiếm
+
+Hệ thống độ hiếm gồm 5 bậc: **Phàm Thiết (Trắng)** $\rightarrow$ **Cổ Thiết (Xanh)** $\rightarrow$ **U Minh (Tím)** $\rightarrow$ **Hoàng Kim (Vàng)** $\rightarrow$ **Khai Thiên (Cam)**.
+
+#### Ví Dụ Các Món Khai Thiên Cực Phẩm (Legendary Artifacts):
+
+* **[Chùy] Sấm Truyền Bát Quái:** Khi đổi sang *Thế Lôi Đỉnh*, nhát búa đầu tiên triệu hồi 1 cột sét khổng lồ gây `500% DMG` và làm choáng thanh giáp Boss trong 3 giây.
+* **[Đe] Thạch Bàn Đông Sơn:** Đe đúc bằng đồng cổ chạm khắc 18 chim Lạc. Vùng Hoàng Kim mở rộng thêm `+25ms`. Cứ mỗi 50 nhát Perfect, phát ra sóng âm thanh cổ truyền tăng 10% sát thương cho toàn bộ thợ rèn trong cùng khu vực.
+* **[Pháp Bảo] Nguyệt Lượng Kính:** Thu thập ánh sáng ban đêm; trong khung giờ 00:00 - 06:00, toàn bộ đòn đánh tự động trở thành đòn Chí Mạng (100% Crit).
+
+---
+
+# PHẦN III: HỆ THỐNG NÂNG CẤP ĐA TẦNG (UPGRADE PROGRESSION)
+
+Để người chơi chơi hàng tháng trời mà luôn có việc để làm, tiến trình được chia thành **3 trục nâng cấp lồng ghép**:
+
+```
+                       [ TIẾN TRÌNH THỢ RÈN ]
+                                 │
+         ┌───────────────────────┼───────────────────────┐
+         ▼                       ▼                       ▼
+   [ TRỤC 1: LÒ RÈN ]     [ TRỤC 2: KỸ PHÁP ]     [ TRỤC 3: THẦN HỒN ]
+   (Ngắn hạn - Mỗi ngày)  (Trung hạn - Build lối chơi) (Dài hạn - Meta Rebirth)
+   • Cường hóa Búa/Đe     • Nhánh Lôi Đỉnh        • Chòm Sao Tinh Đồ
+   • Tôi Lửa (Tempering)  • Nhánh Viêm Dương      • Mở khóa Trang bị Cam
+   • Khảm Ngọc Tinh Hoa   • Nhánh Trọng Lực       • Tăng sản lượng Vạn Dân
+
+```
+
+### 1. Trục 1: Lò Rèn & Tôi Lửa (Micro-Progression)
+
+* **Cường Hóa Chỉ Số (+1 đến +100):** Dùng *Linh Thạch* rớt ra sau mỗi nhát đập để tăng cấp trang bị trực tiếp. Giá tăng nhẹ theo cấp số nhân nhỏ ($1.12$).
+* **Nghi Thức Tôi Lửa (Quenching):**
+* Khi trang bị đạt cấp 20, 40, 60... có thể đem "Tôi Lửa" vào các loại dung dịch thần bí:
+* *Tôi Nước Suối Băng:* Thêm dòng hút tinh thể quặng.
+* *Tôi Dung Nham:* Thêm sát thương thiêu đốt theo thời gian.
+* *Tôi Máu Lôi Thần:* Thêm tỷ lệ nổ sét diện rộng.
+
+
+
+
+
+### 2. Trục 2: Kỹ Pháp Tứ Thế (Stance Skill Trees)
+
+Mỗi thế búa không chỉ là một nút bấm đổi màu, mà có một **Cây Kỹ Năng Riêng Biệt (5 Tầng)**:
+
+#### Nhánh [Q] Lôi Đỉnh (Thuần Tốc Độ & Nhịp Điệu):
+
+* *Tầng 1 - Dẫn Lôi:* Tăng 10% điểm Resonance nạp Phá Giáp.
+* *Tầng 3 - Sét Truyền Thần:* Gõ Perfect sẽ tạo tia sét phóng sang đe của người chơi bên cạnh, buff cho họ 5% sát thương.
+* *Tầng 5 (Master Perk) - Thiên Lôi Giáng Thế:* Đạt combo 20 Hoàng Kim liên tiếp, tự động giáng một cú sấm sét tối thượng bỏ qua 100% giáp Boss.
+
+#### Nhánh [W] Viêm Dương (DoT & Giữ Lửa):
+
+* *Tầng 1 - Tro Tàn:* Đòn đánh tích lũy tầng cháy trên vòm trời (tối đa 50 tầng), mỗi giây gây sát thương tương đương 5% lực đập của thợ rèn.
+* *Tầng 5 (Master Perk) - Hỏa Ngục Đồng Quy:* Nổ toàn bộ tầng cháy khi kích hoạt Phá Giáp, nhân 3 sát thương tích lũy.
+
+#### Nhánh [E] Trọng Lực (Bạo Kích & Chùy Nặng):
+
+* *Tầng 1 - Chùy Ngàn Cân:* Giảm tốc độ nhịp búa đi 20%, nhưng tăng sát thương đơn đòn lên `x2.5`.
+* *Tầng 5 (Master Perk) - Hư Không Đoạt Mệnh:* Khi Boss còn dưới 25% máu của một lớp phong ấn, tăng 50% tỷ lệ đòn đánh kết liễu nhân x10 sát thương.
+
+#### Nhánh [R] Huyền Âm (Cộng Hưởng & Trợ Lực):
+
+* *Tầng 1 - Hòa Âm:* Tăng 15% quặng rơi cho bản thân và thợ rèn xung quanh.
+* *Tầng 5 (Master Perk) - Khúc Khải Hoàn:* Bật hào quang giảm 50% hình phạt khi trượt nhịp cho toàn bộ người chơi trong bán kính 10 mét.
+
+---
+
+### 3. Trục 3: Đẳng Cấp Thợ Rèn (Rank & Mastery)
+
+Dựa trên tổng sát thương tích lũy trọn đời đóng góp vào Cửu Trọng Thiên, người chơi thăng tiến qua các danh vị:
+
+1. **Thiết Đồ (Apprentice):** Tân thủ mới vào lò.
+2. **Hỏa Tượng (Furnace Smith):** Đã đóng góp $100,000\text{ DMG}$. Mở khóa slot Trang bị thứ 3 & 4.
+3. **Cổ Đúc Sư (Ancient Forger):** Đã đóng góp $5,000,000\text{ DMG}$. Mở khóa slot Pháp Bảo và tham gia Bang Hội.
+4. **Trảm Thiên Thần Tượng (Heaven Breaker Master):** Đóng góp $100,000,000\text{ DMG}$. Được tạc tượng đá vinh danh vĩnh viễn dưới chân vòm trời của tầng tương ứng.
+
+---
+
+# PHẦN IV: CƠ CHẾ CỘNG ĐỒNG "PHƯỜNG RÈN" (GUILD SYSTEM)
+
+Để giữ chân hàng ngàn người chơi phối hợp trong nhiều tuần, game tích hợp mô hình **Phường Rèn (Blacksmith Guilds)**:
+
+* **Quy mô:** Mỗi Phường Rèn quy tụ 30 – 50 thợ rèn.
+* **Đại Hỏa Lò Bang Hội (The Guild Great Hearth):**
+* Thành viên quyên góp quặng thừa vào lò sưởi chung của Phường.
+* Khi lò đạt cấp nhiệt độ cao, kích hoạt **"Hào Quang Phường Rèn"**: Toàn bộ thành viên được tăng 15% tốc độ nạp nộ khí Overdrive trong các khung giờ công thành Boss.
+
+
+* **Vũ Điệu Khai Thiên (Co-op Beat Chain):**
+* Nếu 3 thành viên cùng Phường Rèn đứng gần nhau và gõ trúng nhịp Perfect trong cùng một chu kỳ 1 giây $\rightarrow$ Kích hoạt hiệu ứng **"Tam Điểm Lôi Hỏa"**, phóng 3 tia sét hợp nhất bắn thủng lớp mây đen, gây lượng sát thương đột biến lên Boss thế giới.
+
+
+
+---
+
+### TỔNG KẾT BẢN THIẾT KẾ
+
+Với hệ sinh thái nội dung này:
+
+1. **Lore** mang lại lý do chiến đấu đầy cảm xúc và hào hùng (giải phóng loài người, đòi lại bầu trời).
+2. **Hệ thống 6 món đồ** tạo chiều sâu cày cuốc, săn tìm trang bị hiếm như một game RPG thứ thiệt.
+3. **Tiến trình đa trục** đảm bảo người chơi lúc nào cũng có mục tiêu trước mắt (nâng cấp búa, tôi lửa) và mục tiêu dài hạn (mở khóa kỹ năng, phá vỡ tầng trời cùng anh em Phường Rèn).
+
+Hãy đánh giá kế hoạch update game
+</USER_REQUEST>
+<ADDITIONAL_METADATA>
+The current local time is: 2026-11-03T14:08:44+07:00.
+</ADDITIONAL_METADATA>

@@ -6,6 +6,8 @@ import { safeStorage } from './storage';
 
 export const GOOGLE_CLIENT_ID = '325984073866-an8facrtq5edm0aetm5ok3qmrf00oq7t.apps.googleusercontent.com';
 const API_BASE_URL = 'https://phatroi-api.beanbinh2000.workers.dev/api';
+const PROFILE_STORAGE_KEY = 'phatroi_google_profile';
+const SESSION_TOKEN_STORAGE_KEY = 'phatroi_session_token';
 
 export interface GoogleUserProfile {
   googleId: string;
@@ -20,6 +22,8 @@ export interface GoogleAuthResponse {
   profile?: GoogleUserProfile;
   saveData?: string;
   lastSyncAt?: number;
+  sessionToken?: string;
+  sessionExpiresAt?: number;
   error?: string;
 }
 
@@ -73,6 +77,7 @@ declare global {
 
 class GoogleAuthService {
   private userProfile: GoogleUserProfile | null = null;
+  private sessionToken: string | null = null;
   private isInitialized: boolean = false;
   private lastCloudSyncTime: number = 0;
   private tokenClient: GoogleTokenClient | null = null;
@@ -91,6 +96,10 @@ class GoogleAuthService {
     return !!this.userProfile;
   }
 
+  public hasActiveSession(): boolean {
+    return !!(this.userProfile && this.sessionToken);
+  }
+
   public getLastSyncTime(): number {
     return this.lastCloudSyncTime;
   }
@@ -101,11 +110,30 @@ class GoogleAuthService {
 
   private loadStoredProfile() {
     try {
-      const stored = safeStorage.getItem('phatroi_google_profile');
+      const stored = safeStorage.getItem(PROFILE_STORAGE_KEY);
       if (stored) {
         this.userProfile = JSON.parse(stored);
       }
-    } catch {}
+    } catch {
+      this.userProfile = null;
+    }
+
+    try {
+      const storedToken = safeStorage.getItem(SESSION_TOKEN_STORAGE_KEY);
+      this.sessionToken = storedToken && storedToken.trim() ? storedToken.trim() : null;
+    } catch {
+      this.sessionToken = null;
+    }
+  }
+
+  private setSessionToken(token: string) {
+    this.sessionToken = token;
+    safeStorage.setItem(SESSION_TOKEN_STORAGE_KEY, token);
+  }
+
+  private clearSessionToken() {
+    this.sessionToken = null;
+    safeStorage.removeItem(SESSION_TOKEN_STORAGE_KEY);
   }
 
   /**
@@ -245,113 +273,99 @@ class GoogleAuthService {
   }
 
   /**
-   * Xử lý sau khi người dùng đăng nhập bằng Popup OAuth2
+   * Gửi token Google lên Cloudflare Worker để xác thực và cấp sessionToken HMAC
    */
-  public async handleAccessTokenResponse(accessToken: string, localSaveData: string): Promise<GoogleAuthResponse> {
+  private async authenticateWithWorker(
+    payload: { accessToken: string; localSaveData: string } | { credential: string; localSaveData: string }
+  ): Promise<GoogleAuthResponse> {
     try {
       const res = await fetch(`${API_BASE_URL}/auth/google`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          accessToken,
-          localSaveData,
-        }),
+        body: JSON.stringify(payload),
       });
 
-      const data = (await res.json()) as GoogleAuthResponse;
+      const data = (await res.json().catch(() => null)) as GoogleAuthResponse | null;
+      const sessionToken = typeof data?.sessionToken === 'string' ? data.sessionToken.trim() : '';
 
-      if (data.success && data.profile) {
-        this.userProfile = data.profile;
-        this.lastCloudSyncTime = data.lastSyncAt || Date.now();
-        safeStorage.setItem('phatroi_google_profile', JSON.stringify(data.profile));
-
-        // Kích hoạt callbacks thông báo đăng nhập thành công
-        this.onLoginCallbacks.forEach((cb) => cb(data.profile!, data.saveData));
-        return data;
+      if (!res.ok || !data || !data.success || !data.profile || !sessionToken) {
+        this.clearSessionToken();
+        return {
+          success: false,
+          error:
+            data?.error ||
+            (res.ok
+              ? data?.success && data?.profile
+                ? 'Máy chủ không cấp session token hợp lệ'
+                : 'Xác thực tài khoản Google không thành công'
+              : `Lỗi máy chủ xác thực (${res.status})`),
+        };
       }
 
-      // Fallback: nếu API Worker có trục trặc mạng, gọi trực tiếp Google UserInfo
-      const directGoogleRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-        headers: { Authorization: `Bearer ${accessToken}` },
-      });
-      if (directGoogleRes.ok) {
-        const userInfo = (await directGoogleRes.json()) as {
-          sub: string;
-          email: string;
-          name?: string;
-          picture?: string;
-        };
-        const fallbackProfile: GoogleUserProfile = {
-          googleId: userInfo.sub,
-          email: userInfo.email,
-          name: userInfo.name || userInfo.email.split('@')[0],
-          avatar: userInfo.picture || '',
-        };
-        this.userProfile = fallbackProfile;
-        this.lastCloudSyncTime = Date.now();
-        safeStorage.setItem('phatroi_google_profile', JSON.stringify(fallbackProfile));
-        this.onLoginCallbacks.forEach((cb) => cb(fallbackProfile, localSaveData));
-        return { success: true, profile: fallbackProfile, saveData: localSaveData };
-      }
+      this.userProfile = data.profile;
+      this.lastCloudSyncTime = data.lastSyncAt || Date.now();
+      safeStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(data.profile));
+      this.setSessionToken(sessionToken);
 
+      // Kích hoạt callbacks thông báo đăng nhập thành công
+      this.onLoginCallbacks.forEach((cb) => cb(data.profile!, data.saveData));
       return data;
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
       return { success: false, error: msg };
     }
+  }
+
+  /**
+   * Xử lý sau khi người dùng đăng nhập bằng Popup OAuth2
+   */
+  public async handleAccessTokenResponse(accessToken: string, localSaveData: string): Promise<GoogleAuthResponse> {
+    return this.authenticateWithWorker({ accessToken, localSaveData });
   }
 
   /**
    * Xử lý sau khi người dùng chọn tài khoản Google qua One Tap ID Token
    */
   public async handleCredentialResponse(credential: string, localSaveData: string): Promise<GoogleAuthResponse> {
-    try {
-      const res = await fetch(`${API_BASE_URL}/auth/google`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          credential,
-          localSaveData,
-        }),
-      });
-
-      const data = (await res.json()) as GoogleAuthResponse;
-
-      if (data.success && data.profile) {
-        this.userProfile = data.profile;
-        this.lastCloudSyncTime = data.lastSyncAt || Date.now();
-        safeStorage.setItem('phatroi_google_profile', JSON.stringify(data.profile));
-
-        // Thông báo cho các listeners
-        this.onLoginCallbacks.forEach((cb) => cb(data.profile!, data.saveData));
-        return data;
-      }
-      return data;
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err);
-      return { success: false, error: msg };
-    }
+    return this.authenticateWithWorker({ credential, localSaveData });
   }
 
   /**
    * Đẩy dữ liệu tiến độ chơi game lên Cloudflare D1
    */
   public async pushCloudSave(saveDataString: string): Promise<boolean> {
-    if (!this.userProfile) return false;
+    if (!this.userProfile || !this.sessionToken) return false;
+
+    const token = this.sessionToken;
+    const googleId = this.userProfile.googleId;
 
     try {
       const res = await fetch(`${API_BASE_URL}/player/cloud-save`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({
-          googleId: this.userProfile.googleId,
+          googleId,
           saveData: saveDataString,
         }),
       });
 
-      const data = (await res.json()) as { success: boolean; lastSyncAt?: number };
-      if (data.success) {
-        this.lastCloudSyncTime = data.lastSyncAt || Date.now();
+      if (res.status === 401 || res.status === 403) {
+        if (this.sessionToken === token) {
+          this.clearSessionToken();
+        }
+        return false;
+      }
+
+      if (!res.ok) return false;
+
+      const data = (await res.json().catch(() => null)) as { success?: boolean; lastSyncAt?: number } | null;
+      if (data?.success) {
+        if (this.sessionToken === token) {
+          this.lastCloudSyncTime = data.lastSyncAt || Date.now();
+        }
         return true;
       }
       return false;
@@ -361,11 +375,56 @@ class GoogleAuthService {
   }
 
   /**
+   * Tải dữ liệu tiến độ chơi game từ Cloudflare D1
+   */
+  public async pullCloudLoad(): Promise<GoogleAuthResponse | null> {
+    if (!this.sessionToken) return null;
+
+    const token = this.sessionToken;
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/player/cloud-load`, {
+        method: 'GET',
+        headers: {
+          Accept: 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (res.status === 401 || res.status === 403) {
+        if (this.sessionToken === token) {
+          this.clearSessionToken();
+        }
+        return null;
+      }
+
+      const data = (await res.json().catch(() => null)) as GoogleAuthResponse | null;
+      if (!res.ok || !data) return null;
+
+      if (data.success && this.sessionToken === token) {
+        if (data.profile) {
+          this.userProfile = data.profile;
+          safeStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(data.profile));
+        }
+        if (data.lastSyncAt) {
+          this.lastCloudSyncTime = data.lastSyncAt;
+        }
+      }
+
+      return data;
+    } catch {
+      return null;
+    }
+  }
+
+  /**
    * Đăng xuất khỏi tài khoản Google trong game
    */
   public logout() {
     this.userProfile = null;
-    safeStorage.removeItem('phatroi_google_profile');
+    this.lastCloudSyncTime = 0;
+    this.clearSessionToken();
+    safeStorage.removeItem(PROFILE_STORAGE_KEY);
     if (typeof window !== 'undefined' && window.google?.accounts?.id) {
       try {
         window.google.accounts.id.disableAutoSelect();

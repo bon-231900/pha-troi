@@ -314,7 +314,7 @@ export const PLAYER_CLASSES: Record<PlayerClassId, PlayerClassMeta> = {
         name: 'Hỏa Ngục Đồng Quy',
         typeTitle: 'Thức Chân Truyền',
         unlockLevel: 80,
-        description: 'Biến mặt đe thành mặt trời rực cháy trong 12 giây, khóa cứng thanh Đại Hỏa Hẩu Server không bị tụt nhiệt.',
+        description: 'Biến mặt đe thành mặt trời rực cháy, bơm ngay +2,000°C và duy trì trạng thái Quá Nhiệt (giữ nhiệt không tụt) trong 15 giây.',
         cooldownSec: 30,
         overdriveCost: 16,
         icon: '☀️',
@@ -506,6 +506,7 @@ export interface CharacterSkinMeta {
   spritesheetPath: string;
   cardPath: string;
   bonusStatText: string;
+  isAvailable?: boolean;
 }
 
 export const CHARACTER_SKINS: Record<string, CharacterSkinMeta> = {
@@ -524,6 +525,7 @@ export const CHARACTER_SKINS: Record<string, CharacterSkinMeta> = {
     spritesheetPath: 'assets/art/skins/skin_default/spritesheet_strip.webp?v=20261106_whitehair',
     cardPath: 'assets/art/skins/skin_default/card.webp?v=20261106_whitehair',
     bonusStatText: 'Khởi Nguyên Chi Lực · Tốc Độ Đúc +0%',
+    isAvailable: true,
   },
   skin_thunder_robe: {
     id: 'skin_thunder_robe',
@@ -540,6 +542,7 @@ export const CHARACTER_SKINS: Record<string, CharacterSkinMeta> = {
     spritesheetPath: 'assets/art/skins/skin_thunder_robe/spritesheet_strip.webp?v=20261105_v3',
     cardPath: 'assets/art/skins/skin_thunder_robe/card.webp?v=20261105_v3',
     bonusStatText: 'Lôi Điện Cuộn Trào · Hiệu ứng Lôi Quang hào nhoáng',
+    isAvailable: false,
   },
   skin_thunder_god: {
     id: 'skin_thunder_god',
@@ -556,6 +559,7 @@ export const CHARACTER_SKINS: Record<string, CharacterSkinMeta> = {
     spritesheetPath: 'assets/art/skins/skin_thunder_god/spritesheet_strip.webp?v=20261105_v3',
     cardPath: 'assets/art/skins/skin_thunder_god/card.webp?v=20261105_v3',
     bonusStatText: 'Lôi Thần Giáng Thế · Hiệu ứng Lôi Quang Thần Thoại rực rỡ',
+    isAvailable: false,
   },
   skin_flame_robe: {
     id: 'skin_flame_robe',
@@ -572,6 +576,7 @@ export const CHARACTER_SKINS: Record<string, CharacterSkinMeta> = {
     spritesheetPath: 'assets/art/skins/skin_flame_robe/spritesheet_strip.webp?v=20261105_v3',
     cardPath: 'assets/art/skins/skin_flame_robe/card.webp?v=20261105_v3',
     bonusStatText: 'Nhiệt Lửa Luyện Kim · Hỏa Hẩu rực lửa lò rèn',
+    isAvailable: false,
   },
   skin_flame_lord: {
     id: 'skin_flame_lord',
@@ -588,6 +593,7 @@ export const CHARACTER_SKINS: Record<string, CharacterSkinMeta> = {
     spritesheetPath: 'assets/art/skins/skin_flame_lord/spritesheet_strip.webp?v=20261105_v3',
     cardPath: 'assets/art/skins/skin_flame_lord/card.webp?v=20261105_v3',
     bonusStatText: 'Nghiệp Hỏa Thiêu Thiên · Hiệu ứng Hỏa Quang Ma Tổ rực rỡ',
+    isAvailable: true,
   },
   skin_mountain_robe: {
     id: 'skin_mountain_robe',
@@ -604,6 +610,7 @@ export const CHARACTER_SKINS: Record<string, CharacterSkinMeta> = {
     spritesheetPath: 'assets/art/skins/skin_mountain_robe/spritesheet_strip.webp?v=20261105_v3',
     cardPath: 'assets/art/skins/skin_mountain_robe/card.webp?v=20261105_v3',
     bonusStatText: 'Bàn Thạch Hộ Thể · Hào quang Trọng Lực tím hoàng kim',
+    isAvailable: false,
   },
   skin_mystic_robe: {
     id: 'skin_mystic_robe',
@@ -620,6 +627,7 @@ export const CHARACTER_SKINS: Record<string, CharacterSkinMeta> = {
     spritesheetPath: 'assets/art/skins/skin_mystic_robe/spritesheet_strip.webp?v=20261105_v3',
     cardPath: 'assets/art/skins/skin_mystic_robe/card.webp?v=20261105_v3',
     bonusStatText: 'Linh Khí Phục Hồi · Hào quang Bích Ngọc thoát tục',
+    isAvailable: false,
   },
   skin_mystic_fairy: {
     id: 'skin_mystic_fairy',
@@ -633,24 +641,29 @@ export const CHARACTER_SKINS: Record<string, CharacterSkinMeta> = {
     rarityBorder: 'border-emerald-400',
     icon: '🪷',
     paletteColor: '#10B981',
-    spritesheetPath: 'assets/art/skins/skin_mystic_fairy/spritesheet_strip.webp?v=20261106_v1',
-    cardPath: 'assets/art/skins/skin_mystic_fairy/card.webp?v=20261106_v1',
+    spritesheetPath: 'assets/art/skins/skin_mystic_fairy/spritesheet_strip.webp?v=20261107_lotus_v2',
+    cardPath: 'assets/art/skins/skin_mystic_fairy/card.webp?v=20261107_lotus_v2',
     bonusStatText: 'Tạo Hóa Vạn Vật · Hiệu Ứng Bích Lạc Tiên Quang rực rỡ',
+    isAvailable: true,
   },
 };
 
+export const AVAILABLE_CHARACTER_SKINS: CharacterSkinMeta[] = Object.values(CHARACTER_SKINS).filter(
+  (sk) => sk.isAvailable !== false
+);
+
 export const SECT_DEFAULT_SKIN: Record<PlayerClassId, string> = {
-  thunder: 'skin_thunder_robe',
-  fire: 'skin_flame_robe',
-  gravity: 'skin_mountain_robe',
-  mystic: 'skin_mystic_robe',
+  thunder: 'skin_default',
+  fire: 'skin_flame_lord',
+  gravity: 'skin_default',
+  mystic: 'skin_mystic_fairy',
 };
 
 export function getSkinOrDefault(skinId?: string | null, classId?: PlayerClassId): CharacterSkinMeta {
-  if (skinId && CHARACTER_SKINS[skinId]) {
+  if (skinId && CHARACTER_SKINS[skinId] && CHARACTER_SKINS[skinId].isAvailable !== false) {
     return CHARACTER_SKINS[skinId];
   }
-  if (classId && SECT_DEFAULT_SKIN[classId]) {
+  if (classId && SECT_DEFAULT_SKIN[classId] && CHARACTER_SKINS[SECT_DEFAULT_SKIN[classId]]?.isAvailable !== false) {
     return CHARACTER_SKINS[SECT_DEFAULT_SKIN[classId]];
   }
   return CHARACTER_SKINS.skin_default;
@@ -1039,9 +1052,9 @@ export const RUNE_GEM_POOL: RuneGem[] = [
   { id: 'gem_gravity_2', name: 'Thái Sơn Cương Thạch', type: 'gravity', tier: 'rare', statLabel: 'Sát Thương & Khóa Giáp', statKey: 'flatDamage', value: 8, specialPerk: '+15 Sức Đập Phá Giáp', color: '#A855F7' },
   { id: 'gem_gravity_3', name: 'Hỗn Độn Thạch Châu', type: 'gravity', tier: 'epic', statLabel: 'Sát Thương Thuần', statKey: 'flatDamage', value: 18, specialPerk: 'Bỏ qua 20% giáp trời', color: '#9333EA' },
 
-  // Âm (Mystic) - Cửa Sổ Hoàng Kim & Kinh Tế
-  { id: 'gem_mystic_1', name: 'Huyền Âm Ngọc', type: 'mystic', tier: 'common', statLabel: 'Vùng Hoàng Kim', statKey: 'perfectWindowMs', value: 6, color: '#34D399' },
-  { id: 'gem_mystic_2', name: 'Bích Tinh Linh Châu', type: 'mystic', tier: 'rare', statLabel: 'Vùng Hoàng Kim & Linh Thạch', statKey: 'perfectWindowMs', value: 12, specialPerk: '+25% Linh Thạch rơi', color: '#10B981' },
+  // Âm (Mystic) - Tỷ Lệ Bạo Kích & Kinh Tế
+  { id: 'gem_mystic_1', name: 'Huyền Âm Ngọc', type: 'mystic', tier: 'common', statLabel: 'Tỷ Lệ Bạo Kích', statKey: 'critChancePct', value: 3, color: '#34D399' },
+  { id: 'gem_mystic_2', name: 'Bích Tinh Linh Châu', type: 'mystic', tier: 'rare', statLabel: 'Bạo Kích & Linh Thạch', statKey: 'critChancePct', value: 6, specialPerk: '+25% Linh Thạch rơi', color: '#10B981' },
 
   // Vận (Fortune) - Thần Thoại Tối Thượng
   { id: 'gem_fortune_1', name: 'Thiên Mệnh Tinh Thạch', type: 'fortune', tier: 'legendary', statLabel: 'Toàn Diện & Magic Find', statKey: 'damageMultiplierPct', value: 25, specialPerk: 'Cực Phẩm: +25% Sát thương toàn thể & +35% Magic Find', color: '#F59E0B' },
@@ -1082,13 +1095,78 @@ export interface ArsenalBonuses {
 }
 
 export const SLOT_INFO: Record<EquipmentSlotKey, { name: string; icon: string; statLabel: string; statUnit: string }> = {
-  hammer: { name: 'Thần Chùy', icon: 'Hammer', statLabel: 'Sát Thương Cơ Bản', statUnit: 'DMG' },
-  anvil: { name: 'Thần Đe', icon: 'Shield', statLabel: 'Vùng Hoàng Kim', statUnit: 'ms' },
-  bellows: { name: 'Hỏa Lò', icon: 'Flame', statLabel: 'Tích Nhiệt Đe', statUnit: '°C/hit' },
-  gauntlets: { name: 'Bao Tay Rèn', icon: 'Zap', statLabel: 'Tỷ Lệ Bạo Kích', statUnit: '%' },
-  apron: { name: 'Tạp Dề Thiết Hộ', icon: 'Layers', statLabel: 'Linh Thạch Treo Máy', statUnit: 'LT/phút' },
-  relic: { name: 'Định Thiên Pháp Bảo', icon: 'Sparkles', statLabel: 'Sát Thương Toàn Thể', statUnit: '%' },
+  hammer: { name: 'Thần Chùy', icon: 'Hammer', statLabel: 'Sát Thương Cơ Bản', statUnit: 'Sát Thương' },
+  anvil: { name: 'Thần Đe', icon: 'Shield', statLabel: 'Tỷ Lệ Bạo Kích', statUnit: '% Bạo Kích' },
+  bellows: { name: 'Hỏa Lò', icon: 'Flame', statLabel: 'Bơm Nhiệt Lò Rèn', statUnit: '°C Lửa / nhát' },
+  gauntlets: { name: 'Bao Tay Rèn', icon: 'Zap', statLabel: 'Tỷ Lệ Bạo Kích', statUnit: '% Bạo Kích' },
+  apron: { name: 'Tạp Dề Thiết Hộ', icon: 'Layers', statLabel: 'Thu Thập Tự Động', statUnit: 'Linh Thạch / phút' },
+  relic: { name: 'Định Thiên Pháp Bảo', icon: 'Sparkles', statLabel: 'Khuếch Đại Uy Lực', statUnit: '% Tổng Sát Thương' },
 };
+
+/**
+ * Format any equipment item's base stat into crystal clear, human-readable Vietnamese.
+ */
+export function formatItemDisplayStat(item?: EquipmentItem | null, slotKey?: EquipmentSlotKey): {
+  statLabel: string;
+  displayValue: string;
+  unit: string;
+  explanation: string;
+} {
+  const key = (item?.slotKey || slotKey || 'hammer') as EquipmentSlotKey;
+  const val = item?.baseStatValue ?? 1;
+
+  switch (key) {
+    case 'hammer':
+      return {
+        statLabel: 'Sát Thương Cơ Bản',
+        displayValue: `+${val} Sát Thương`,
+        unit: 'Sát Thương',
+        explanation: 'Tăng lực đập trực tiếp vào Mái Vòm Thiên Giới',
+      };
+    case 'anvil':
+      return {
+        statLabel: 'Tỷ Lệ Bạo Kích',
+        displayValue: `+${val}% Bạo Kích`,
+        unit: '% Bạo Kích',
+        explanation: 'Tăng cơ hội giáng đòn chí mạng nhân đôi sát thương',
+      };
+    case 'bellows':
+      return {
+        statLabel: 'Bơm Nhiệt Lò Rèn',
+        displayValue: `+${val}°C Lửa / nhát`,
+        unit: '°C Lửa / nhát',
+        explanation: 'Tăng nhiệt độ Lò Rèn mỗi khi đập búa để nung chảy vòm trời',
+      };
+    case 'gauntlets':
+      return {
+        statLabel: 'Tỷ Lệ Bạo Kích',
+        displayValue: `+${val}% Bạo Kích`,
+        unit: '% Bạo Kích',
+        explanation: 'Gia tăng cơ hội xuất hiện đòn đánh Bạo Kích',
+      };
+    case 'apron':
+      return {
+        statLabel: 'Thu Thập Tự Động',
+        displayValue: `+${val} Linh Thạch / phút`,
+        unit: 'Linh Thạch / phút',
+        explanation: 'Tự động tích lũy Linh Thạch ngay cả khi rảnh tay hoặc AFK',
+      };
+    case 'relic':
+      return {
+        statLabel: 'Khuếch Đại Uy Lực',
+        displayValue: `+${val}% Tổng Sát Thương`,
+        unit: '% Tổng Sát Thương',
+        explanation: 'Tăng % toàn bộ sát thương của tất cả các chiêu thức',
+      };
+    default:
+      return {
+        statLabel: item?.baseStatLabel || 'Chỉ Số',
+        displayValue: `+${val} ${item?.baseStatUnit || ''}`.trim(),
+        unit: item?.baseStatUnit || '',
+        explanation: '',
+      };
+  }
+}
 
 interface BaseItemDef {
   name: string;
@@ -1163,7 +1241,7 @@ const PREFIX_POOL: AffixDef[] = [
   { name: 'Lôi Điện', statKey: 'critChancePct', minVal: 3, maxVal: 10, weight: 8, labelTemplate: (v) => `+${v}% Tỷ lệ Bạo Kích` },
   { name: 'Xích Diễm', statKey: 'heatGainPerHit', minVal: 2, maxVal: 7, weight: 8, labelTemplate: (v) => `+${v} °C/hit Hỏa Hầu` },
   { name: 'Trầm Trọng', statKey: 'resonanceBonus', minVal: 1, maxVal: 2, weight: 7, labelTemplate: (v) => `+${v} Điểm Phá Giáp / nhát` },
-  { name: 'Huyền Ảo', statKey: 'perfectWindowMs', minVal: 5, maxVal: 18, weight: 8, labelTemplate: (v) => `+${v} ms Cửa sổ Hoàng Kim` },
+  { name: 'Huyền Ảo', statKey: 'critChancePct', minVal: 2, maxVal: 6, weight: 8, labelTemplate: (v) => `+${v}% Tỷ Lệ Bạo Kích` },
   { name: 'Kim Cang', statKey: 'heatDecayReductionPct', minVal: 10, maxVal: 30, weight: 7, labelTemplate: (v) => `Giảm ${v}% tốc độ nguội đe` },
   { name: 'Hoàng Kim', statKey: 'linhThachPerHit', minVal: 1, maxVal: 3, weight: 9, labelTemplate: (v) => `+${v} Linh Thạch mỗi nhát` },
   { name: 'Thiên Mệnh', statKey: 'damageMultiplier', minVal: 0.2, maxVal: 0.45, weight: 3, labelTemplate: (v) => `+${Math.round(v * 100)}% Công phá Thiên Mệnh` },
@@ -1173,7 +1251,7 @@ const SUFFIX_POOL: AffixDef[] = [
   { name: 'chi Bạo Kích', statKey: 'critChancePct', minVal: 4, maxVal: 12, weight: 10, labelTemplate: (v) => `+${v}% Tỷ lệ Bạo Kích` },
   { name: 'chi Hỏa Hầu', statKey: 'heatDecayReductionPct', minVal: 15, maxVal: 35, weight: 8, labelTemplate: (v) => `Giảm ${v}% nguội đe rèn` },
   { name: 'chi Phá Giáp', statKey: 'resonanceBonus', minVal: 1, maxVal: 3, weight: 8, labelTemplate: (v) => `+${v} Điểm Phá Giáp` },
-  { name: 'chi Phong Nhịp', statKey: 'perfectWindowMs', minVal: 8, maxVal: 22, weight: 8, labelTemplate: (v) => `+${v} ms Dung sai nhịp gõ` },
+  { name: 'chi Phong Nhịp', statKey: 'critChancePct', minVal: 2, maxVal: 6, weight: 8, labelTemplate: (v) => `+${v}% Bạo Kích` },
   { name: 'chi Tài Phú', statKey: 'linhThachPerHit', minVal: 2, maxVal: 5, weight: 9, labelTemplate: (v) => `+${v} Linh Thạch rơi` },
   { name: 'chi Thần Hồn', statKey: 'essenceDropChancePct', minVal: 5, maxVal: 15, weight: 6, labelTemplate: (v) => `+${v}% Tỷ lệ nhặt Tinh Hoa` },
   { name: 'chi Cực Nhịp', statKey: 'synergyChargeBonusPct', minVal: 10, maxVal: 30, weight: 7, labelTemplate: (v) => `+${v}% Tốc độ nạp Cực Nhịp` },
@@ -1381,12 +1459,6 @@ export interface RollLootDropOptions {
   vaultFloorId?: number;
   anvilPityCount?: number;
   forceDrop?: boolean;
-}
-
-export interface RollLootDropResult {
-  item: EquipmentItem | null;
-  newPityCount: number;
-  isPityTriggered: boolean;
 }
 
 export interface RollLootDropResult {
@@ -1642,7 +1714,6 @@ export function getAscensionCost(item: EquipmentItem): AscensionCost | null {
     default:
       return null;
   }
-  return null;
 }
 
 export function ascendEquipmentTier(item: EquipmentItem): EquipmentItem | null {
@@ -1686,7 +1757,7 @@ export function getMaxInventorySlots(forgerRankTier: number): number {
 }
 
 
-export function getSalvageYield(item: EquipmentItem): {
+export function getSalvageYield(item: Pick<EquipmentItem, 'rarity'>): {
   linhThach: number;
   tinhHoa: number;
   ironDust: number;
@@ -1826,7 +1897,7 @@ export const INITIAL_EQUIPPED_SLOTS: Record<EquipmentSlotKey, EquipmentItem> = {
     itemLevel: 1,
     baseStatLabel: 'Sát Thương Cơ Bản',
     baseStatValue: 1,
-    baseStatUnit: 'DMG',
+    baseStatUnit: 'Sát Thương',
     prefixes: [{ id: 'p_init_1', type: 'prefix', name: 'Sắc Bén', label: '+1 Sát thương cơ bản', statKey: 'flatDamage', value: 1 }],
     suffixes: [],
     loreDescription: 'Cây búa sắt thô sơ từ thung lũng Thiên Thai, vết rỉ sét ghi dấu ngày đầu khởi nghĩa phá trời.',
@@ -1838,14 +1909,14 @@ export const INITIAL_EQUIPPED_SLOTS: Record<EquipmentSlotKey, EquipmentItem> = {
     slotKey: 'anvil',
     slotName: 'Thần Đe',
     baseName: 'Đe Thép Cổ Vân',
-    name: 'Đe Thép Cổ Vân chi Phong Nhịp',
+    name: 'Đe Thép Cổ Vân chi Bạo Kích',
     rarity: 'common',
     itemLevel: 1,
-    baseStatLabel: 'Vùng Hoàng Kim',
-    baseStatValue: 6,
-    baseStatUnit: 'ms',
+    baseStatLabel: 'Tỷ Lệ Bạo Kích',
+    baseStatValue: 4,
+    baseStatUnit: '% Bạo Kích',
     prefixes: [],
-    suffixes: [{ id: 's_init_1', type: 'suffix', name: 'chi Phong Nhịp', label: '+8 ms Dung sai nhịp gõ', statKey: 'perfectWindowMs', value: 8 }],
+    suffixes: [{ id: 's_init_1', type: 'suffix', name: 'chi Bạo Kích', label: '+3% Bạo Kích', statKey: 'critChancePct', value: 3 }],
     loreDescription: 'Khối đe thép tôi qua vạn lớp nước suối mây, bề mặt đanh chắc tạo âm vang dội.',
     setId: 'set_mystic',
     setName: 'Huyền Âm Vạn Dân',
@@ -1858,10 +1929,10 @@ export const INITIAL_EQUIPPED_SLOTS: Record<EquipmentSlotKey, EquipmentItem> = {
     name: 'Xích Diễm Ống Bễ Da Hổ Lôi',
     rarity: 'common',
     itemLevel: 1,
-    baseStatLabel: 'Tích Nhiệt Đe',
+    baseStatLabel: 'Bơm Nhiệt Lò Rèn',
     baseStatValue: 3,
-    baseStatUnit: '°C/hit',
-    prefixes: [{ id: 'p_init_2', type: 'prefix', name: 'Xích Diễm', label: '+2 °C/hit Hỏa Hầu', statKey: 'heatGainPerHit', value: 2 }],
+    baseStatUnit: '°C Lửa / nhát',
+    prefixes: [{ id: 'p_init_2', type: 'prefix', name: 'Xích Diễm', label: '+2 °C Hỏa Hầu', statKey: 'heatGainPerHit', value: 2 }],
     suffixes: [],
     loreDescription: 'May từ da hổ sấm, mỗi nhịp thổi bùng ngọn lửa đỏ rực công trường.',
     setId: 'set_fire',
@@ -1877,7 +1948,7 @@ export const INITIAL_EQUIPPED_SLOTS: Record<EquipmentSlotKey, EquipmentItem> = {
     itemLevel: 1,
     baseStatLabel: 'Tỷ Lệ Bạo Kích',
     baseStatValue: 2,
-    baseStatUnit: '%',
+    baseStatUnit: '% Bạo Kích',
     prefixes: [],
     suffixes: [{ id: 's_init_2', type: 'suffix', name: 'chi Bạo Kích', label: '+2% Tỷ lệ Bạo Kích', statKey: 'critChancePct', value: 2 }],
     loreDescription: 'Bảo vệ lòng bàn tay khỏi những tia tàn tro đỏ rực tóe ra từ mặt đe.',
@@ -1892,9 +1963,9 @@ export const INITIAL_EQUIPPED_SLOTS: Record<EquipmentSlotKey, EquipmentItem> = {
     name: 'Tạp Dề Bì Hộ',
     rarity: 'common',
     itemLevel: 1,
-    baseStatLabel: 'Linh Thạch Treo Máy',
+    baseStatLabel: 'Thu Thập Tự Động',
     baseStatValue: 15,
-    baseStatUnit: 'LT/phút',
+    baseStatUnit: 'Linh Thạch / phút',
     prefixes: [],
     suffixes: [],
     loreDescription: 'Tạp dề lót giáp sắt mỏng, che chắn lồng ngực thợ rèn trước xung lực rực lửa.',
@@ -1909,9 +1980,9 @@ export const INITIAL_EQUIPPED_SLOTS: Record<EquipmentSlotKey, EquipmentItem> = {
     name: 'Thạch Bàn Đông Sơn',
     rarity: 'common',
     itemLevel: 1,
-    baseStatLabel: 'Sát Thương Toàn Thể',
+    baseStatLabel: 'Khuếch Đại Uy Lực',
     baseStatValue: 5,
-    baseStatUnit: '%',
+    baseStatUnit: '% Tổng Sát Thương',
     prefixes: [],
     suffixes: [],
     loreDescription: 'Mảnh thạch bàn khắc họa chim Lạc sải cánh, tượng trưng cho ý chí người thợ rèn Việt cổ.',
@@ -1919,6 +1990,38 @@ export const INITIAL_EQUIPPED_SLOTS: Record<EquipmentSlotKey, EquipmentItem> = {
     setName: 'Thiên Lôi Phá Khởi',
   },
 };
+
+export function ensureAllEquippedSlots(
+  rawEquipped?: Record<string, unknown> | null
+): Record<EquipmentSlotKey, EquipmentItem> {
+  const result: Record<EquipmentSlotKey, EquipmentItem> = { ...INITIAL_EQUIPPED_SLOTS };
+  if (rawEquipped && typeof rawEquipped === 'object') {
+    for (const key of Object.keys(INITIAL_EQUIPPED_SLOTS) as EquipmentSlotKey[]) {
+      const rawItem = rawEquipped[key];
+      if (rawItem && typeof rawItem === 'object' && !Array.isArray(rawItem)) {
+        const candidate = rawItem as Partial<EquipmentItem>;
+        if (typeof candidate.id === 'string' && candidate.id.length > 0) {
+          const defaultSlot = INITIAL_EQUIPPED_SLOTS[key];
+          const rarity = typeof candidate.rarity === 'string' ? candidate.rarity : defaultSlot.rarity;
+          result[key] = {
+            ...defaultSlot,
+            ...candidate,
+            baseStatLabel: defaultSlot.baseStatLabel,
+            baseStatUnit: defaultSlot.baseStatUnit,
+            prefixes: Array.isArray(candidate.prefixes) ? candidate.prefixes : [],
+            suffixes: Array.isArray(candidate.suffixes) ? candidate.suffixes : [],
+            level: typeof candidate.level === 'number' && candidate.level >= 1 ? candidate.level : 1,
+            unlockedSockets: typeof candidate.unlockedSockets === 'number'
+              ? candidate.unlockedSockets
+              : getUnlockedSockets(rarity),
+            sockets: Array.isArray(candidate.sockets) ? candidate.sockets : [],
+          };
+        }
+      }
+    }
+  }
+  return result;
+}
 
 export function calculateArsenalBonuses(
   equipped: Record<EquipmentSlotKey, EquipmentItem | null> | EquipmentItem[],
@@ -1960,7 +2063,7 @@ export function calculateArsenalBonuses(
         flatDamage += item.baseStatValue;
         break;
       case 'anvil':
-        perfectWindowMs += item.baseStatValue;
+        critChancePct += item.baseStatValue;
         break;
       case 'bellows':
         heatPerHitBonus += item.baseStatValue;
@@ -1993,13 +2096,13 @@ export function calculateArsenalBonuses(
         if (!gem) continue;
         if (gem.statKey === 'flatDamage') flatDamage += gem.value;
         else if (gem.statKey === 'critChancePct') critChancePct += gem.value;
-        else if (gem.statKey === 'perfectWindowMs') perfectWindowMs += gem.value;
+        else if (gem.statKey === 'perfectWindowMs') critChancePct += gem.value;
         else if (gem.statKey === 'heatGainPerHit') heatPerHitBonus += gem.value;
         else if (gem.statKey === 'damageMultiplierPct') damageMultiplier += gem.value / 100;
         else if (gem.statKey === 'magicFindPct') magicFindBonus += gem.value;
       }
     }
-    const allAffixes = [...item.prefixes, ...item.suffixes];
+    const allAffixes = [...(item.prefixes ?? []), ...(item.suffixes ?? [])];
     for (const aff of allAffixes) {
       switch (aff.statKey) {
         case 'flatDamage':
@@ -2012,7 +2115,7 @@ export function calculateArsenalBonuses(
           critChancePct += aff.value;
           break;
         case 'perfectWindowMs':
-          perfectWindowMs += aff.value;
+          critChancePct += aff.value;
           break;
         case 'heatGainPerHit':
           heatPerHitBonus += aff.value;
@@ -2043,14 +2146,14 @@ export function calculateArsenalBonuses(
   const activeSetPerks: string[] = [];
   if (setCounts.set_thunder >= 2) {
     synergyChargeBonusPct += 12;
-    perfectWindowMs += 8;
-    activeSetPerks.push('Thiên Lôi 2/6: +12% Nạp Cực Nhịp (SPI) & +8 ms Cửa Sổ Hoàng Kim');
+    critChancePct += 5;
+    activeSetPerks.push('Thiên Lôi 2/6: +12% Nạp Cực Nhịp (SPI) & +5% Tỷ Lệ Bạo Kích');
   }
   if (setCounts.set_thunder >= 4) {
     activeSetPerks.push('Thiên Lôi 4/6: Vào Overdrive tăng +25% Phá Phách (PEN)');
   }
   if (setCounts.set_thunder >= 6) {
-    activeSetPerks.push('Thiên Lôi 6/6: Chuỗi Hoàng Kim tăng sát thương Sét Lan +8%/nhát (tối đa +80%)');
+    activeSetPerks.push('Thiên Lôi 6/6: Chuỗi Bạo Kích tăng sát thương Sét Lan +8%/nhát (tối đa +80%)');
   }
 
   if (setCounts.set_fire >= 2) {
@@ -2080,7 +2183,7 @@ export function calculateArsenalBonuses(
     activeSetPerks.push('Huyền Âm 2/6: +30% Sản Lượng Linh Thạch & +15% Cộng Hưởng (SPI)');
   }
   if (setCounts.set_mystic >= 4) {
-    activeSetPerks.push('Huyền Âm 4/6: Hoàng Kim hồi +1°C Hỏa Hẩu & tăng +10% DMG thợ rèn lân cận');
+    activeSetPerks.push('Huyền Âm 4/6: Đòn Bạo Kích hồi +1°C Hỏa Hẩu & tăng +10% DMG thợ rèn lân cận');
   }
   if (setCounts.set_mystic >= 6) {
     activeSetPerks.push('Huyền Âm 6/6: Kéo dài trạng thái Vỡ Giáp +5s & nhân đôi tỷ lệ rơi Tinh Hoa');
@@ -2231,16 +2334,14 @@ export function calculateStrikeOutcome(input: StrikeInput): StrikeOutcome {
     };
   }
 
-  const isGolden = input.grade === 'PERFECT';
-  const isGreat = input.grade === 'GREAT';
-
-  // 1. Timing Multiplier (Hoàng Kim x2.5 / x3.2 streak, Thuần Thục x1.25, Chuẩn Xác x1.0)
-  const timingMult = isGolden ? (input.combo >= 5 ? 3.2 : 2.5) : isGreat ? 1.25 : 1.0;
+  // Action RPG Combo multiplier (streak scales damage naturally up to +100%)
+  const comboBonus = Math.min(1.0, (input.combo ?? 0) * 0.04);
+  const timingMult = 1.0 + comboBonus;
   const nextCombo = input.combo + 1;
 
   // 2. 3-Tier Overdrive Charging (Up to 24 points: Tier 1: 8, Tier 2: 16, Tier 3: 24)
-  const baseChargeGain = isGolden ? (input.stance === 'Q' ? 1.5 : 1.0) : 0.5;
-  let nextOverdriveCharge = Math.min(OVERDRIVE_TOTAL_CAP, input.overdriveCharge + baseChargeGain);
+  const baseChargeGain = input.stance === 'Q' ? 1.2 : 0.8;
+  let nextOverdriveCharge = Math.min(OVERDRIVE_TOTAL_CAP, Number((input.overdriveCharge + baseChargeGain).toFixed(2)));
   let triggeredOverdrive = false;
 
   if (nextOverdriveCharge >= 8 && input.overdriveCharge < 8) {
@@ -2255,7 +2356,6 @@ export function calculateStrikeOutcome(input: StrikeInput): StrikeOutcome {
   // 3. Core Stats & Thermal Synchronization (M_Thermal)
   const arsenal = input.arsenalBonuses;
   const str = arsenal?.coreStats.str ?? input.basePower;
-  const dex = arsenal?.coreStats.dex ?? 10;
   const intStat = arsenal?.coreStats.int ?? 10;
   const pen = arsenal?.coreStats.pen ?? 10;
 
@@ -2328,10 +2428,10 @@ export function calculateStrikeOutcome(input: StrikeInput): StrikeOutcome {
     stanceMult *
     armorFactor;
 
-  const finalDamage = Math.max(isGolden ? 3 : 1, Math.round(rawDamage));
+  const finalDamage = Math.max(isCrit ? 2 : 1, Math.round(rawDamage));
 
   // 8. Loot & Drops
-  const baseLinhThach = isGolden || isCrit ? 4 : isGreat ? 2 : 1;
+  const baseLinhThach = isCrit ? 4 : (isOverdriveNow ? 3 : 2);
   const extraLTDrops = arsenal ? arsenal.dropLinhThachBonus : 0;
   const linhThachEarned = Math.round(
     (baseLinhThach + extraLTDrops) * (isOverdriveNow ? 2 : 1) * (stanceBonuses?.linhThachMult ?? 1.0)
@@ -2342,7 +2442,7 @@ export function calculateStrikeOutcome(input: StrikeInput): StrikeOutcome {
 
   // Heat & Resonance
   const extraHeat = (arsenal ? arsenal.heatPerHitBonus : 0) + (stanceBonuses?.heatGainAdd ?? 0);
-  const heatGain = (isGolden ? 25 : 12) + extraHeat;
+  const heatGain = (isCrit ? 22 : 14) + extraHeat;
 
   let baseResonance = input.stance === 'E' ? 2 : 1;
   if ((arsenal?.setCounts.set_gravity ?? 0) >= 2) baseResonance += 1;
@@ -2357,8 +2457,8 @@ export function calculateStrikeOutcome(input: StrikeInput): StrikeOutcome {
 
   // A. Phá Giáp (Armor Break Points)
   let baseBreakGain = input.stance === 'E'
-    ? (isGolden ? 8 : 4) + Math.round(pen * 0.15)
-    : (isGolden ? 2 : 1) + Math.round(pen * 0.05);
+    ? (isCrit ? 8 : 4) + Math.round(pen * 0.15)
+    : (isCrit ? 2 : 1) + Math.round(pen * 0.05);
   if ((arsenal?.setCounts.set_gravity ?? 0) >= 2) {
     baseBreakGain += 2;
   }
@@ -2369,8 +2469,8 @@ export function calculateStrikeOutcome(input: StrikeInput): StrikeOutcome {
 
   // B. Đại Hỏa Hẩu Server (Heat Pumped)
   let baseServerHeat = input.stance === 'W'
-    ? (isGolden ? 25 : 12) + Math.round(intStat * 0.25)
-    : (isGolden ? 6 : 2);
+    ? (isCrit ? 25 : 12) + Math.round(intStat * 0.25)
+    : (isCrit ? 6 : 2);
   if ((arsenal?.setCounts.set_fire ?? 0) >= 6 && input.stance === 'W') {
     baseServerHeat *= 2.0;
   }
@@ -2378,15 +2478,15 @@ export function calculateStrikeOutcome(input: StrikeInput): StrikeOutcome {
 
   // C. Độ Bền Đại Đe Server (Anvil Repair)
   let baseAnvilRepair = input.stance === 'R'
-    ? (isGolden ? 20 : 8) + Math.round((arsenal?.coreStats.spi ?? 10) * 0.2)
+    ? (isCrit ? 20 : 8) + Math.round((arsenal?.coreStats.spi ?? 10) * 0.2)
     : 0;
-  if ((arsenal?.setCounts.set_mystic ?? 0) >= 4 && isGolden && input.stance === 'R') {
+  if ((arsenal?.setCounts.set_mystic ?? 0) >= 4 && isCrit && input.stance === 'R') {
     baseAnvilRepair += 15;
   }
   const anvilRepairGain = Math.round(baseAnvilRepair);
 
   // D. Đóng Băng Tự Hồi Giáp (Set Thái Sơn 6/6)
-  const freezeRegenSec = (input.stance === 'E' && (arsenal?.setCounts.set_gravity ?? 0) >= 6 && isGolden) ? 0.5 : 0;
+  const freezeRegenSec = (input.stance === 'E' && (arsenal?.setCounts.set_gravity ?? 0) >= 6 && isCrit) ? 0.5 : 0;
 
   // E. Anvil Damage from Glancing hit
   const anvilDamage = isGlancingHit ? 3 : 0;
@@ -2414,7 +2514,7 @@ export function calculateStrikeOutcome(input: StrikeInput): StrikeOutcome {
     linhThachEarned,
     tinhHoaEarned,
     isCrit,
-    isGolden,
+    isGolden: false,
     isGlancingHit,
     effectivePiercePct: Math.round(basePierce * 100),
     armorBreakGain,

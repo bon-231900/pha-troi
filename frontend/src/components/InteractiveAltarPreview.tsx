@@ -1,5 +1,13 @@
-import React, { useEffect, useRef, useState, useCallback, useImperativeHandle, forwardRef } from 'react';
-import { PlayerClassId, PLAYER_CLASSES, StanceKey, SECT_DEFAULT_SKIN, CHARACTER_SKINS } from '../game/rules';
+import { useEffect, useRef, useState, useCallback, useImperativeHandle, forwardRef } from 'react';
+import { PlayerClassId, PLAYER_CLASSES, StanceKey, CHARACTER_SKINS, getSkinOrDefault } from '../game/rules';
+import {
+  type AdvancedLightningBolt,
+  type ElectricZapParticle,
+  createAdvancedLightningBolt,
+  drawAdvancedLightningBolt,
+  createElectricZapParticles,
+  updateAndDrawElectricZaps,
+} from '../game/lightningVFX';
 import { soundEngine } from '../game/audio';
 
 export interface InteractiveAltarPreviewRef {
@@ -35,13 +43,6 @@ interface Particle {
   maxLife: number;
   color: string;
   size: number;
-}
-
-interface LightningBolt {
-  segments: { x: number; y: number }[];
-  alpha: number;
-  color: string;
-  lineWidth: number;
 }
 
 interface Shockwave {
@@ -220,15 +221,14 @@ export const InteractiveAltarPreview = forwardRef<InteractiveAltarPreviewRef, In
   // Statistics
   const [totalStrikes, setTotalStrikes] = useState(0);
   const [perfectStrikes, setPerfectStrikes] = useState(0);
-  const [lastRating, setLastRating] = useState<string>('');
-  const [lastDamage, setLastDamage] = useState<number>(0);
 
   // Animation & game loop refs
   const strikeTimerRef = useRef<number>(-1);
   const screenShakeRef = useRef<number>(0);
   const particlesRef = useRef<Particle[]>([]);
   const floatingTextsRef = useRef<FloatingText[]>([]);
-  const lightningBoltsRef = useRef<LightningBolt[]>([]);
+  const lightningBoltsRef = useRef<AdvancedLightningBolt[]>([]);
+  const electricZapsRef = useRef<ElectricZapParticle[]>([]);
   const shockwavesRef = useRef<Shockwave[]>([]);
   const nextTextIdRef = useRef<number>(1);
 
@@ -239,7 +239,7 @@ export const InteractiveAltarPreview = forwardRef<InteractiveAltarPreviewRef, In
   const assetsLoadedRef = useRef<boolean>(false);
 
   // Effective skin for this class
-  const activeSkinId = skinId || SECT_DEFAULT_SKIN[selectedClassId] || 'skin_default';
+  const activeSkinId = getSkinOrDefault(skinId, selectedClassId).id;
 
   // Base platform asset loader
   useEffect(() => {
@@ -303,36 +303,16 @@ export const InteractiveAltarPreview = forwardRef<InteractiveAltarPreviewRef, In
     const cls = PLAYER_CLASSES[selectedClassId];
     const pal = SECT_PALETTES[selectedClassId];
 
-    // Rhythm calculation: 100 BPM = 600ms period
-    const now = performance.now();
-    const beatPeriod = 600; // ms
-    const phase = (now % beatPeriod) / beatPeriod;
-    const sweetSpot = 0.78;
-    const diff = Math.abs(phase - sweetSpot);
-
-    let rating: 'PERFECT' | 'GREAT' | 'HIT' = 'HIT';
-    let baseDamage = 350;
-    let multiplier = 1.0;
-
-    if (diff <= 0.10 || diff >= 0.90) {
-      rating = 'PERFECT';
-      multiplier = 2.8;
-      baseDamage = 980;
-    } else if (diff <= 0.22 || diff >= 0.78) {
-      rating = 'GREAT';
-      multiplier = 1.8;
-      baseDamage = 620;
-    } else {
-      rating = 'HIT';
-      multiplier = 1.1;
-      baseDamage = 380;
-    }
+    // Action RPG Strike: Base Power + Chance of Critical Hit
+    const isCrit = Math.random() < 0.25;
+    const rating: 'PERFECT' | 'GREAT' | 'HIT' = isCrit ? 'PERFECT' : 'GREAT';
+    const baseDamage = isCrit ? 880 : 420;
 
     const finalDamage = Math.floor(baseDamage * (0.95 + Math.random() * 0.12));
 
     // Sound feedback
     const stanceKey = cls.stanceKey as StanceKey;
-    soundEngine.playAnvilStrike(rating === 'HIT' ? 'GREAT' : rating, stanceKey, rating === 'PERFECT');
+    soundEngine.playAnvilStrike(rating, stanceKey, isCrit);
 
     // Trigger visual hero strike animation
     strikeTimerRef.current = 0; // Starts strike timer
@@ -346,24 +326,18 @@ export const InteractiveAltarPreview = forwardRef<InteractiveAltarPreviewRef, In
       const impactX = cw * 0.5 + 16;
       const impactY = ch * 0.70;
 
-      // Celestial lightning bolt from sky to anvil
-      const segments: { x: number; y: number }[] = [];
-      const startX = impactX + (Math.random() - 0.5) * 80;
-      const startY = 10;
-      const segCount = 7;
-      for (let s = 0; s <= segCount; s++) {
-        const t = s / segCount;
-        const curX = startX + (impactX - startX) * t + (s > 0 && s < segCount ? (Math.random() - 0.5) * 40 : 0);
-        const curY = startY + (impactY - startY) * t;
-        segments.push({ x: curX, y: curY });
-      }
-
-      lightningBoltsRef.current.push({
-        segments,
-        alpha: 1.0,
+      // Celestial fractal lightning bolt from sky to anvil
+      const bolt = createAdvancedLightningBolt(impactX, impactY, {
+        viewH: ch,
         color: pal.glow,
-        lineWidth: rating === 'PERFECT' ? 4 : 2.5,
+        lightColor: pal.light,
+        power: rating === 'PERFECT' ? 1.6 : 1.15,
+        branchCount: rating === 'PERFECT' ? 4 : 2,
       });
+      lightningBoltsRef.current.push(bolt);
+
+      const zaps = createElectricZapParticles(impactX, impactY, rating === 'PERFECT' ? 20 : 12, pal.glow, 1.2);
+      electricZapsRef.current.push(...zaps);
 
       // Shockwave
       shockwavesRef.current.push({
@@ -419,8 +393,6 @@ export const InteractiveAltarPreview = forwardRef<InteractiveAltarPreviewRef, In
       const nextTotal = prev + 1;
       const nextPerfect = rating === 'PERFECT' ? perfectStrikes + 1 : perfectStrikes;
       setPerfectStrikes(nextPerfect);
-      setLastRating(rating);
-      setLastDamage(finalDamage);
 
       if (onStrikeStatsUpdate) {
         onStrikeStatsUpdate({
@@ -693,43 +665,7 @@ export const InteractiveAltarPreview = forwardRef<InteractiveAltarPreviewRef, In
         ctx.restore();
       }
 
-      // 6. Contracting 100 BPM Rhythm Ring on Anvil
-      const anvilImpactX = spriteLeft + 213 * renderScale;
-      const anvilImpactY = spriteTop + 342 * renderScale;
-
-      const beatPeriod = 600; // 100 BPM = 600ms
-      const rhythmPhase = (now % beatPeriod) / beatPeriod;
-      const ringScale = 1.0 - rhythmPhase;
-      const isSweetSpot = Math.abs(rhythmPhase - 0.78) <= 0.12;
-
-      ctx.save();
-      ctx.strokeStyle = isSweetSpot ? '#FFD166' : pal.glow;
-      ctx.lineWidth = isSweetSpot ? 2.8 : 1.4;
-      ctx.shadowColor = isSweetSpot ? '#FFD166' : pal.glow;
-      ctx.shadowBlur = isSweetSpot ? 12 : 5;
-      ctx.globalAlpha = 0.4 + rhythmPhase * 0.55;
-
-      ctx.beginPath();
-      ctx.ellipse(
-        anvilImpactX,
-        anvilImpactY,
-        12 + ringScale * 38,
-        5 + ringScale * 14,
-        0,
-        0,
-        Math.PI * 2
-      );
-      ctx.stroke();
-
-      // Static target ring on anvil
-      ctx.strokeStyle = '#FFFFFF';
-      ctx.lineWidth = 1.0;
-      ctx.globalAlpha = 0.5;
-      ctx.beginPath();
-      ctx.ellipse(anvilImpactX, anvilImpactY, 13, 5.5, 0, 0, Math.PI * 2);
-      ctx.stroke();
-      ctx.restore();
-
+      // Hero Dais Surface is completely clean and unobstructed
       // 7. Shockwaves
       for (let i = shockwavesRef.current.length - 1; i >= 0; i--) {
         const sw = shockwavesRef.current[i];
@@ -751,34 +687,18 @@ export const InteractiveAltarPreview = forwardRef<InteractiveAltarPreviewRef, In
         ctx.restore();
       }
 
-      // 8. Lightning Bolts
+      // 8. Dynamic Advanced Lightning Bolts & Electric Zaps
       for (let i = lightningBoltsRef.current.length - 1; i >= 0; i--) {
         const bolt = lightningBoltsRef.current[i];
-        bolt.alpha -= dt * 4.5;
+        bolt.age += dt;
+        bolt.alpha -= bolt.decay * dt;
         if (bolt.alpha <= 0) {
           lightningBoltsRef.current.splice(i, 1);
           continue;
         }
-        ctx.save();
-        ctx.strokeStyle = '#FFFFFF';
-        ctx.lineWidth = bolt.lineWidth;
-        ctx.shadowColor = bolt.color;
-        ctx.shadowBlur = 18;
-        ctx.globalAlpha = Math.max(0, bolt.alpha);
-
-        ctx.beginPath();
-        ctx.moveTo(bolt.segments[0].x, bolt.segments[0].y);
-        for (let s = 1; s < bolt.segments.length; s++) {
-          ctx.lineTo(bolt.segments[s].x, bolt.segments[s].y);
-        }
-        ctx.stroke();
-
-        ctx.strokeStyle = bolt.color;
-        ctx.lineWidth = bolt.lineWidth * 2.2;
-        ctx.globalAlpha = Math.max(0, bolt.alpha * 0.45);
-        ctx.stroke();
-        ctx.restore();
+        drawAdvancedLightningBolt(ctx, bolt);
       }
+      updateAndDrawElectricZaps(ctx, electricZapsRef.current, dt);
 
       // 9. Particle Sparks
       for (let i = particlesRef.current.length - 1; i >= 0; i--) {

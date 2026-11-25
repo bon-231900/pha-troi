@@ -3,17 +3,86 @@ import { JudgmentGrade, StanceKey } from './rules';
 class CelestialAudioEngine {
   private ctx: AudioContext | null = null;
   public muted: boolean = false;
+  private bgmAudio: HTMLAudioElement | null = null;
+  private bgmTargetVolume: number = 0.35;
+
+  public setMuted(muted: boolean): boolean {
+    this.muted = muted;
+    if (this.bgmAudio) {
+      if (this.muted) {
+        this.bgmAudio.volume = 0;
+      } else {
+        this.bgmAudio.volume = this.bgmTargetVolume;
+        if (this.bgmAudio.paused) {
+          this.bgmAudio.play().catch(() => {});
+        }
+      }
+    }
+    return this.muted;
+  }
 
   public toggleMute(): boolean {
-    this.muted = !this.muted;
-    return this.muted;
+    return this.setMuted(!this.muted);
+  }
+
+  public setBgmVolume(volume: number) {
+    this.bgmTargetVolume = Math.max(0, Math.min(1, volume));
+    if (this.bgmAudio && !this.muted) {
+      this.bgmAudio.volume = this.bgmTargetVolume;
+    }
+  }
+
+  public startBgm() {
+    if (typeof window === 'undefined') return;
+    try {
+      if (!this.bgmAudio) {
+        this.bgmAudio = new Audio();
+        const canPlayWebm = this.bgmAudio.canPlayType('audio/webm; codecs="opus"');
+        this.bgmAudio.src = canPlayWebm
+          ? './assets/audio/bgm_forge_battle.webm'
+          : './assets/audio/bgm_forge_battle.mp3';
+        this.bgmAudio.loop = true;
+        this.bgmAudio.preload = 'auto';
+      }
+
+      this.bgmAudio.volume = this.muted ? 0 : this.bgmTargetVolume;
+      if (this.bgmAudio.paused) {
+        const playPromise = this.bgmAudio.play();
+        if (playPromise !== undefined) {
+          playPromise
+            .catch(() => {
+              // Browser autoplay policy might block before interaction
+            });
+        }
+      }
+    } catch {
+      // Ignore audio init issues on unsupported environments
+    }
+  }
+
+  public pauseBgm() {
+    if (this.bgmAudio && !this.bgmAudio.paused) {
+      this.bgmAudio.pause();
+    }
+  }
+
+  public resumeBgm() {
+    if (this.muted) return;
+    if (this.bgmAudio && this.bgmAudio.paused) {
+      this.bgmAudio.volume = this.bgmTargetVolume;
+      this.bgmAudio.play().catch(() => {});
+    } else if (!this.bgmAudio) {
+      this.startBgm();
+    }
   }
 
   private ensureContext(): AudioContext | null {
     if (this.muted || typeof window === 'undefined') return null;
     try {
       if (!this.ctx) {
-        const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+        const AudioCtx =
+          window.AudioContext ||
+          (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
         if (AudioCtx) {
           this.ctx = new AudioCtx();
         }
@@ -29,9 +98,15 @@ class CelestialAudioEngine {
 
   public unlockAudio(): Promise<void> {
     if (typeof window === 'undefined') return Promise.resolve();
+
+    // Start background music loop on first interaction
+    this.startBgm();
+
     try {
       if (!this.ctx) {
-        const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+        const AudioCtx =
+          window.AudioContext ||
+          (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
         if (AudioCtx) {
           this.ctx = new AudioCtx();
         }
@@ -87,8 +162,8 @@ class CelestialAudioEngine {
     // Stance root pitch variation
     const stanceBaseFreq: Record<StanceKey, number> = {
       Q: 587.33, // D5 (Thunder high crisp)
-      W: 440.0,  // A4 (Fire warm)
-      E: 392.0,  // G4 (Heavy armor breaker)
+      W: 440.0, // A4 (Fire warm)
+      E: 392.0, // G4 (Heavy armor breaker)
       R: 523.25, // C5 (Resonance harmonic)
     };
 

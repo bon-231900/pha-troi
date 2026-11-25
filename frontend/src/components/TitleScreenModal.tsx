@@ -205,7 +205,7 @@ export const TitleScreenModal: React.FC<TitleScreenModalProps> = ({
 
       {/* 5. Bottom Status, Controls & Legal Links */}
       <div className="w-full max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between text-[11px] sm:text-xs text-slate-400/70 font-tech tracking-wider z-10 pt-3 border-t border-slate-800/40 gap-2">
-        <div>Space / Chạm: Đập Đe Canh Nhịp • Q W E R: 4 Thế Búa</div>
+        <div>Chạm màn hình / Space: Nện Búa Rèn • Q W E R: 4 Kỹ Pháp Môn Phái</div>
         <div className="flex items-center gap-3 text-slate-500">
           <a href="./privacy.html" target="_blank" rel="noopener noreferrer" className="hover:text-amber-400 transition underline">
             Chính Sách Bảo Mật

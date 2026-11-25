@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { 
-  Globe, Users, Zap, Flame, Mountain, Music, Shield, Sparkles, 
-  Newspaper, CheckCircle2, ChevronRight, Award, FlameKindling, Swords
+  Globe, Users, Sparkles, 
+  Newspaper, ChevronRight
 } from 'lucide-react';
-import { PLAYER_CLASSES, PlayerClassId, CHARACTER_SKINS } from '../game/rules';
+import { PLAYER_CLASSES, PlayerClassId, AVAILABLE_CHARACTER_SKINS } from '../game/rules';
 
 export type TitleNavTab = 'home' | 'world' | 'character' | 'features' | 'news';
 
@@ -193,7 +193,7 @@ export const TitlePagesOverlay: React.FC<TitlePageProps> = ({
                     characterViewMode === 'wardrobe' ? 'bg-amber-400 text-slate-950 shadow' : 'text-slate-400 hover:text-slate-200'
                   }`}
                 >
-                  👘 TỦ ĐỒ TIÊN GIA (7 BỘ TRANG PHỤC)
+                  👘 TỦ ĐỒ TIÊN GIA (TRANG PHỤC HOÀN THIỆN)
                 </button>
               </div>
 
@@ -296,26 +296,34 @@ export const TitlePagesOverlay: React.FC<TitlePageProps> = ({
 
             {/* SUB-VIEW 2: TỦ ĐỒ TIÊN GIA SHOWCASE */}
             {characterViewMode === 'wardrobe' && (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-7 gap-3">
-                {Object.values(CHARACTER_SKINS).map((sk) => (
-                  <div key={sk.id} className="rounded-xl border border-slate-800 bg-slate-900/70 p-2 flex flex-col gap-2 hover:border-amber-400/60 transition-all group">
-                    <div className="w-full aspect-[3/4] rounded-lg overflow-hidden bg-slate-950 relative border border-slate-800">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-3xl mx-auto">
+                {AVAILABLE_CHARACTER_SKINS.map((sk) => (
+                  <div key={sk.id} className="rounded-2xl border border-slate-800 bg-slate-900/80 p-3.5 flex flex-col gap-3 hover:border-amber-400/60 transition-all group shadow-lg">
+                    <div className="w-full aspect-[3/4] rounded-xl overflow-hidden bg-slate-950 relative border border-slate-700/60">
                       <img 
                         src={`${cleanBase}${sk.cardPath}`} 
                         alt={sk.name} 
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
                       />
-                      <span className="absolute bottom-1 right-1 text-sm drop-shadow">{sk.icon}</span>
-                      <span className={`absolute top-1 left-1 px-1.5 py-0.2 rounded text-[8px] font-bold uppercase ${sk.rarityBadgeBg}`}>
+                      <span className="absolute bottom-1.5 right-2 text-base drop-shadow">{sk.icon}</span>
+                      <span className={`absolute top-2 left-2 px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider ${sk.rarityBadgeBg}`}>
                         {sk.rarity.replace('_', ' ')}
                       </span>
                     </div>
-                    <div className="min-w-0">
-                      <h5 className="text-xs font-bold text-slate-200 font-tech truncate">{sk.name}</h5>
-                      <span className="text-[10px] text-amber-400/90 font-tech block truncate">{sk.sectTitle}</span>
-                      <p className="text-[9px] text-slate-400 font-light mt-1 line-clamp-2 leading-tight">
+                    <div className="min-w-0 space-y-1">
+                      <div className="flex items-center justify-between">
+                        <h5 className="text-sm font-bold text-amber-200 font-tech truncate">{sk.name}</h5>
+                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-300 border border-amber-400/30 font-tech">
+                          ĐÃ HOÀN THIỆN
+                        </span>
+                      </div>
+                      <span className="text-[11px] text-amber-400/90 font-tech block truncate">{sk.sectTitle}</span>
+                      <p className="text-[11px] text-slate-300 font-light leading-relaxed">
                         {sk.description}
                       </p>
+                      <div className="text-[10px] text-cyan-300 font-tech pt-1 border-t border-slate-800/80">
+                        ✨ {sk.bonusStatText}
+                      </div>
                     </div>
                   </div>
                 ))}

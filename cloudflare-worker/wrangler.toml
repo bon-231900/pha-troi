@@ -20,5 +20,14 @@ binding = "DB"
 database_name = "phatroi_db"
 database_id = "48a94d8e-18b0-43c5-8559-a096d015ed4c"
 
+# ==============================================================================
+# CẤU HÌNH SECRETS (KHÔNG BAO GIỜ LƯU SECRET THẬT TRONG FILE NÀY):
+# Bắt buộc cấu hình qua Wrangler Secrets trước khi triển khai production:
+#   npx wrangler secret put SESSION_SECRET   # Tối thiểu 16 ký tự ngẫu nhiên để ký HS256 JWT
+#   npx wrangler secret put ADMIN_API_KEY    # Khóa bí mật cho POST /api/boss/reset (fail-closed)
+# Tùy chọn (nếu đổi OAuth Client ID):
+#   npx wrangler secret put GOOGLE_CLIENT_ID
+# Hoặc cấu hình biến không nhạy cảm trong [vars]:
 # [vars]
-# ADMIN_API_KEY = "phatroi_secret_key"
+# GOOGLE_CLIENT_ID = "325984073866-an8facrtq5edm0aetm5ok3qmrf00oq7t.apps.googleusercontent.com"
+# ==============================================================================

@@ -5,7 +5,7 @@ import {
   OVERDRIVE_MAX,
   OVERDRIVE_TOTAL_CAP,
 } from '../game/rules';
-import { Sparkles, Lock } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 import { hapticEngine } from '../game/haptics';
 import { getSkillArt, UI_FRAME_ASSETS } from '../game/skillArtAssets';
 
@@ -44,8 +44,8 @@ function formatSkillDisplayTitle(name: string): string {
 export const ClassSkillBar: React.FC<ClassSkillBarProps> = ({
   playerClass,
   overdriveCharge,
-  overdriveActive,
-  overdriveTimeLeft,
+  overdriveActive: _overdriveActive,
+  overdriveTimeLeft: _overdriveTimeLeft,
   totalForgeLevel,
   cooldowns,
   onCastSkill,

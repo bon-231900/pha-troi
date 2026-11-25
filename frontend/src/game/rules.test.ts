@@ -1,9 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import {
   getItemRarityMeta,
   getSalvageYield,
-  FLOOR_TIER_DROP_WEIGHTS,
   rollLootDrop,
   openWorldRaidClearChest,
   ascendEquipmentTier,
@@ -11,6 +13,8 @@ import {
   generateProceduralItem,
   computeRaidContributionScore,
   CELESTIAL_VAULTS,
+  BOSS_FLOOR_1_MAX_HP,
+  getAtmosphericSealLayer,
   judgeRhythmWave,
   calculateStrikeOutcome,
   TARGET_RIM_PROGRESS,
@@ -43,9 +47,19 @@ import {
   advanceVaultCrack,
   OVERDRIVE_TOTAL_CAP,
   getOverdriveTier,
-  PLAYER_CLASSES,
   getPlayerClass,
+  INITIAL_EQUIPPED_SLOTS,
+  ensureAllEquippedSlots,
+  calculateArsenalBonuses,
+  type PlayerClassId,
+  type EquipmentItem,
 } from './rules';
+import {
+  SKILL_ART_MAP,
+  getSkillArt,
+  UI_FRAME_ASSETS,
+  type SkillSlotKey,
+} from './skillArtAssets';
 
 test('judgeRhythmWave returns PERFECT (x3.5) inside the golden anvil rim tolerance', () => {
   const exact = judgeRhythmWave(TARGET_RIM_PROGRESS);
@@ -69,9 +83,28 @@ test('judgeRhythmWave returns GREAT (x1.5) in warm zone and MISS (x0) outside', 
 });
 
 test('calculateStrikeOutcome triggers Overdrive at 8/8 and scales x3.5 on Perfect', () => {
-  const outcome = calculateStrikeOutcome({
+  const wOutcome = calculateStrikeOutcome({
     grade: 'PERFECT',
     stance: 'W',
+    basePower: 10,
+    combo: 7,
+    overdriveCharge: 7.2,
+    overdriveActive: false,
+    bossShieldPct: 50,
+    spiritBonusMult: 1.2,
+    globalBurstActive: false,
+  });
+
+  assert.equal(wOutcome.nextCombo, 8);
+  assert.equal(wOutcome.nextOverdriveCharge, OVERDRIVE_MAX);
+  assert.equal(wOutcome.triggeredOverdrive, true);
+  assert.ok(wOutcome.damage > 0);
+  assert.ok(wOutcome.linhThachEarned > 0);
+  assert.ok(wOutcome.tinhHoaEarned >= 0);
+
+  const qOutcome = calculateStrikeOutcome({
+    grade: 'PERFECT',
+    stance: 'Q',
     basePower: 10,
     combo: 7,
     overdriveCharge: 7,
@@ -81,12 +114,26 @@ test('calculateStrikeOutcome triggers Overdrive at 8/8 and scales x3.5 on Perfec
     globalBurstActive: false,
   });
 
-  assert.equal(outcome.nextCombo, 8);
-  assert.equal(outcome.nextOverdriveCharge, OVERDRIVE_MAX);
-  assert.equal(outcome.triggeredOverdrive, true);
-  assert.ok(outcome.damage > 0);
-  assert.ok(outcome.linhThachEarned > 0);
-  assert.ok(outcome.tinhHoaEarned >= 0);
+  assert.equal(qOutcome.nextCombo, 8);
+  assert.equal(qOutcome.nextOverdriveCharge, 8.2);
+  assert.equal(qOutcome.triggeredOverdrive, true);
+  assert.ok(qOutcome.damage > 0);
+  assert.ok(qOutcome.linhThachEarned > 0);
+
+  const wBelowOutcome = calculateStrikeOutcome({
+    grade: 'PERFECT',
+    stance: 'W',
+    basePower: 10,
+    combo: 7,
+    overdriveCharge: 5,
+    overdriveActive: false,
+    bossShieldPct: 50,
+    spiritBonusMult: 1.2,
+    globalBurstActive: false,
+  });
+
+  assert.equal(wBelowOutcome.nextOverdriveCharge, 5.8);
+  assert.equal(wBelowOutcome.triggeredOverdrive, false);
 });
 
 test('calculateStrikeOutcome resets combo to 0 on MISS', () => {
@@ -249,12 +296,12 @@ test('v3.2 MMORPG drop tables, 6 tiers (E -> S) and pity counter work determinis
   assert.equal(metaS.label, 'Tier S · Thiên Đạo Thần Khí');
 
   // 2. Salvage yields verification
-  const salvageS = getSalvageYield({ rarity: 'mythic' } as any);
+  const salvageS = getSalvageYield({ rarity: 'mythic' });
   assert.equal(salvageS.ironDust, 1000);
   assert.equal(salvageS.celestialStar, 1);
   assert.equal(salvageS.tinhHoa, 20);
 
-  const salvageE = getSalvageYield({ rarity: 'common' } as any);
+  const salvageE = getSalvageYield({ rarity: 'common' });
   assert.equal(salvageE.ironDust, 5);
   assert.equal(salvageE.linhThach, 10);
 
@@ -338,4 +385,262 @@ test('v3.3 Single-Class commitment and 3-Tier Overcharge Gauge work deterministi
   assert.equal(tier3.tierCharge, 8);
   assert.equal(tier3.isEmpoweredE, true);
   assert.equal(tier3.canUseR, true);
+});
+
+test('skillArtAssets maps all 4 PlayerClassId keys to distinct Q/W/E/R icon paths without falling back to flame', () => {
+  const expectedPrefixes: Record<PlayerClassId, string> = {
+    thunder: 'skill_thunder_',
+    fire: 'skill_flame_',
+    gravity: 'skill_mountain_',
+    mystic: 'skill_music_',
+  };
+  const slots: readonly SkillSlotKey[] = ['Q', 'W', 'E', 'R'];
+
+  assert.deepEqual(
+    Object.keys(SKILL_ART_MAP).sort(),
+    (['fire', 'gravity', 'mystic', 'thunder'] as const).slice().sort()
+  );
+
+  const collectedIcons = new Set<string>();
+
+  for (const [classId, expectedPrefix] of Object.entries(expectedPrefixes) as Array<[PlayerClassId, string]>) {
+    assert.ok(Object.prototype.hasOwnProperty.call(SKILL_ART_MAP, classId));
+
+    for (const slot of slots) {
+      const mapEntry = SKILL_ART_MAP[classId][slot];
+      const resolved = getSkillArt(classId, slot);
+      const expectedIcon = `./assets/art/ui/skills/${expectedPrefix}${slot.toLowerCase()}.webp`;
+
+      assert.equal(mapEntry.icon, expectedIcon);
+      assert.deepEqual(resolved, mapEntry);
+      assert.ok(mapEntry.borderColor.startsWith('#'));
+      assert.ok(mapEntry.glowColor.startsWith('rgba('));
+
+      if (classId !== 'fire') {
+        assert.equal(mapEntry.icon.includes('skill_flame_'), false);
+      }
+      collectedIcons.add(mapEntry.icon);
+    }
+  }
+
+  assert.equal(collectedIcons.size, 16);
+});
+
+test('getSkillArt resolves legacy class aliases and falls back to thunder for unknown classes', () => {
+  const slots: readonly SkillSlotKey[] = ['Q', 'W', 'E', 'R'];
+  const legacyPairs: Array<[string, PlayerClassId]> = [
+    ['flame', 'fire'],
+    ['mountain', 'gravity'],
+    ['music', 'mystic'],
+  ];
+
+  for (const slot of slots) {
+    for (const [alias, canonical] of legacyPairs) {
+      assert.deepEqual(getSkillArt(alias, slot), SKILL_ART_MAP[canonical][slot]);
+    }
+
+    assert.deepEqual(getSkillArt('unknown_class', slot), SKILL_ART_MAP.thunder[slot]);
+    assert.deepEqual(getSkillArt('', slot), SKILL_ART_MAP.thunder[slot]);
+  }
+});
+
+test('SKILL_ART_MAP and UI_FRAME_ASSETS reference existing non-empty files under frontend/public/assets', () => {
+  const testDir = path.dirname(fileURLToPath(import.meta.url));
+  const publicDir = path.resolve(testDir, '../../public');
+  const slots: readonly SkillSlotKey[] = ['Q', 'W', 'E', 'R'];
+  const classIds: readonly PlayerClassId[] = ['thunder', 'fire', 'gravity', 'mystic'];
+
+  const assetPaths: string[] = [];
+  for (const classId of classIds) {
+    for (const slot of slots) {
+      assetPaths.push(SKILL_ART_MAP[classId][slot].icon);
+    }
+  }
+  assetPaths.push(...Object.values(UI_FRAME_ASSETS));
+
+  assert.equal(assetPaths.length, 23);
+
+  for (const assetPath of assetPaths) {
+    assert.ok(assetPath.startsWith('./assets/'), `Expected ./assets/ prefix for ${assetPath}`);
+    const fileOnDisk = path.resolve(publicDir, assetPath.slice(2));
+    assert.equal(fs.existsSync(fileOnDisk), true, `Missing asset file: ${fileOnDisk}`);
+    const stat = fs.statSync(fileOnDisk);
+    assert.equal(stat.isFile(), true, `Expected regular file: ${fileOnDisk}`);
+    assert.ok(stat.size > 0, `Expected non-empty file: ${fileOnDisk}`);
+  }
+});
+
+test('CELESTIAL_VAULTS floors 2..9 scale 30% HP threshold above BOSS_FLOOR_1_MAX_HP * 0.3 and preserve getAtmosphericSealLayer ratios', () => {
+  assert.equal(CELESTIAL_VAULTS.length, 9);
+  assert.equal(CELESTIAL_VAULTS[0].id, 1);
+  assert.equal(CELESTIAL_VAULTS[0].maxHp, BOSS_FLOOR_1_MAX_HP);
+  assert.equal(CELESTIAL_VAULTS[0].maxHp * 0.3, BOSS_FLOOR_1_MAX_HP * 0.3);
+
+  let previousMaxHp = 0;
+  for (const vault of CELESTIAL_VAULTS) {
+    assert.ok(vault.maxHp > previousMaxHp, `Expected Floor ${vault.id} maxHp to increase strictly`);
+    previousMaxHp = vault.maxHp;
+
+    const thirtyPctHp = vault.maxHp * 0.3;
+    if (vault.id >= 2) {
+      assert.ok(vault.maxHp > BOSS_FLOOR_1_MAX_HP);
+      assert.ok(
+        thirtyPctHp > BOSS_FLOOR_1_MAX_HP * 0.3,
+        `Floor ${vault.id} 30% HP (${thirtyPctHp}) should exceed Floor 1 30% HP (${BOSS_FLOOR_1_MAX_HP * 0.3})`
+      );
+      if (vault.id >= 3) {
+        assert.ok(thirtyPctHp > BOSS_FLOOR_1_MAX_HP);
+      }
+
+      // Calling without vault.maxHp falls back to BOSS_FLOOR_1_MAX_HP and misclassifies 30% HP as Layer 1.
+      const fallbackDefaultSeal = getAtmosphericSealLayer(thirtyPctHp);
+      assert.equal(fallbackDefaultSeal.id, 1);
+    }
+
+    // Passing vault.maxHp preserves exact 4-layer seal percentages across every floor 1..9.
+    assert.equal(getAtmosphericSealLayer(vault.maxHp, vault.maxHp).id, 1);
+    assert.equal(getAtmosphericSealLayer(vault.maxHp * 0.8, vault.maxHp).damageReductionPct, 80);
+
+    assert.equal(getAtmosphericSealLayer(vault.maxHp * 0.75, vault.maxHp).id, 2);
+    assert.equal(getAtmosphericSealLayer(vault.maxHp * 0.6, vault.maxHp).damageReductionPct, 60);
+
+    assert.equal(getAtmosphericSealLayer(vault.maxHp * 0.5, vault.maxHp).id, 3);
+    const layerAt30Pct = getAtmosphericSealLayer(thirtyPctHp, vault.maxHp);
+    assert.equal(layerAt30Pct.id, 3);
+    assert.equal(layerAt30Pct.damageReductionPct, 40);
+
+    assert.equal(getAtmosphericSealLayer(vault.maxHp * 0.25, vault.maxHp).id, 4);
+    assert.equal(getAtmosphericSealLayer(vault.maxHp * 0.1, vault.maxHp).damageReductionPct, 0);
+    assert.equal(getAtmosphericSealLayer(0, vault.maxHp).id, 4);
+  }
+});
+
+test('ensureAllEquippedSlots safely restores partial/legacy equipped items and never throws in calculateArsenalBonuses', () => {
+  const legacySave: Record<string, unknown> = {
+    hammer: {
+      id: 'legacy_hammer_1',
+      slotKey: 'hammer',
+      name: 'Cổ Chùy Truyền Thuyết',
+      rarity: 'epic',
+      baseStatValue: 25,
+    },
+    relic: {
+      id: 'legacy_relic_1',
+      slotKey: 'relic',
+      name: 'Cổ Bảo Thái Cổ',
+      rarity: 'legendary',
+      baseStatValue: 18,
+      setId: 'set_thunder',
+    },
+    // Invalid entry with empty id should fall back to INITIAL_EQUIPPED_SLOTS.apron
+    apron: {
+      id: '',
+      name: 'Broken Apron',
+    },
+  };
+
+  const restored = ensureAllEquippedSlots(legacySave);
+
+  for (const slotKey of Object.keys(INITIAL_EQUIPPED_SLOTS) as Array<keyof typeof INITIAL_EQUIPPED_SLOTS>) {
+    const item = restored[slotKey];
+    assert.ok(item, `Expected slot ${slotKey} to be populated`);
+    assert.equal(Array.isArray(item.prefixes), true, `Expected prefixes array on ${slotKey}`);
+    assert.equal(Array.isArray(item.suffixes), true, `Expected suffixes array on ${slotKey}`);
+  }
+
+  for (const restoredKey of ['hammer', 'relic'] as const) {
+    const item = restored[restoredKey];
+    assert.equal(Array.isArray(item.sockets), true, `Expected sockets array on ${restoredKey}`);
+    assert.equal(typeof item.level, 'number');
+    assert.ok((item.level ?? 0) >= 1);
+  }
+
+  assert.equal(restored.hammer.id, 'legacy_hammer_1');
+  assert.deepEqual(restored.hammer.prefixes, []);
+  assert.deepEqual(restored.hammer.suffixes, []);
+  assert.deepEqual(restored.hammer.sockets, []);
+  assert.equal(restored.hammer.unlockedSockets, 3);
+  assert.equal(restored.hammer.baseStatLabel, INITIAL_EQUIPPED_SLOTS.hammer.baseStatLabel);
+  assert.equal(restored.hammer.baseStatUnit, INITIAL_EQUIPPED_SLOTS.hammer.baseStatUnit);
+
+  assert.equal(restored.relic.id, 'legacy_relic_1');
+  assert.deepEqual(restored.relic.prefixes, []);
+  assert.deepEqual(restored.relic.suffixes, []);
+  assert.deepEqual(restored.relic.sockets, []);
+  assert.equal(restored.relic.unlockedSockets, 4);
+
+  assert.equal(restored.apron.id, INITIAL_EQUIPPED_SLOTS.apron.id);
+
+  assert.doesNotThrow(() => {
+    const bonuses = calculateArsenalBonuses(restored);
+    assert.equal(bonuses.totalEquippedCount, 6);
+    assert.equal(bonuses.flatDamage, 25);
+  });
+
+  // Also ensure null/undefined input restores all starter slots cleanly
+  const fromNull = ensureAllEquippedSlots(null);
+  assert.equal(fromNull.hammer.id, INITIAL_EQUIPPED_SLOTS.hammer.id);
+  assert.doesNotThrow(() => calculateArsenalBonuses(fromNull));
+});
+
+test('Thiên Lôi 2/6 set bonus adds +5% critChancePct alongside +12% synergyChargeBonusPct in calculateArsenalBonuses', () => {
+  const hammerPiece: EquipmentItem = {
+    id: 'test_thunder_hammer',
+    slotKey: 'hammer',
+    slotName: 'Thần Chùy',
+    baseName: 'Lôi Chùy',
+    name: 'Lôi Chùy',
+    rarity: 'rare',
+    itemLevel: 10,
+    baseStatLabel: 'Sát Thương Cơ Bản',
+    baseStatValue: 10,
+    baseStatUnit: 'Sát Thương',
+    prefixes: [],
+    suffixes: [],
+    sockets: [],
+    loreDescription: 'Test hammer',
+    setId: 'set_thunder',
+    setName: 'Thiên Lôi Phá Khởi',
+  };
+
+  const relicNoSet: EquipmentItem = {
+    id: 'test_neutral_relic',
+    slotKey: 'relic',
+    slotName: 'Định Thiên Pháp Bảo',
+    baseName: 'Ngọc Bội',
+    name: 'Ngọc Bội',
+    rarity: 'rare',
+    itemLevel: 10,
+    baseStatLabel: 'Khuếch Đại Uy Lực',
+    baseStatValue: 0,
+    baseStatUnit: '% Tổng Sát Thương',
+    prefixes: [],
+    suffixes: [],
+    sockets: [],
+    loreDescription: 'Test relic without set',
+  };
+
+  const relicThunderSet: EquipmentItem = {
+    ...relicNoSet,
+    id: 'test_thunder_relic',
+    setId: 'set_thunder',
+    setName: 'Thiên Lôi Phá Khởi',
+  };
+
+  const onePiece = calculateArsenalBonuses([hammerPiece, relicNoSet]);
+  assert.equal(onePiece.setCounts.set_thunder, 1);
+  assert.equal(onePiece.critChancePct, 3);
+  assert.equal(onePiece.synergyChargeBonusPct, 0);
+  assert.equal(onePiece.activeSetPerks.some((p) => p.startsWith('Thiên Lôi 2/6')), false);
+
+  const twoPieces = calculateArsenalBonuses([hammerPiece, relicThunderSet]);
+  assert.equal(twoPieces.setCounts.set_thunder, 2);
+  assert.equal(twoPieces.critChancePct - onePiece.critChancePct, 5);
+  assert.equal(twoPieces.synergyChargeBonusPct - onePiece.synergyChargeBonusPct, 12);
+  assert.equal(twoPieces.critChancePct, 8);
+  assert.equal(twoPieces.synergyChargeBonusPct, 12);
+  assert.equal(
+    twoPieces.activeSetPerks.includes('Thiên Lôi 2/6: +12% Nạp Cực Nhịp (SPI) & +5% Tỷ Lệ Bạo Kích'),
+    true
+  );
 });
