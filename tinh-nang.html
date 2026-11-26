@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tính Năng · Cẩm Nang Luyện Búa & Săn Thần Khí | Webgame Phá Trời</title>
+  <meta name="description" content="Bí kíp chơi Webgame Phá Trời: Cách canh nhịp 100 BPM Perfect x3.5 sát thương, kiểm soát Hỏa Hẩu Overdrive, mẹo tôi luyện Quench và cơ chế Bảo Hiểm Pity 200 Hits cho dân cày tại phatroi.com." />
+  <meta name="keywords" content="tính năng phá trời, gameplay phá trời, búa rèn canh nhịp, bảo hiểm pity, hệ thống trang bị, boss raid thế giới" />
+  <link rel="canonical" href="https://phatroi.com/tinh-nang.html" />
+  <link rel="icon" type="image/svg+xml" href="./icon.svg" />
+  <link rel="alternate icon" type="image/png" sizes="32x32" href="./favicon-32x32.png" />
+  <meta property="og:title" content="Tính Năng · Cẩm Nang Luyện Búa & Săn Thần Khí | Webgame Phá Trời" />
+  <meta property="og:description" content="Khám phá 6 cơ chế gameplay đỉnh cao: Canh nhịp Perfect x3.5, Quản lý Hỏa Hẩu, Tôi luyện Quench 6 bậc và Bảo Hiểm Pity 200 Hits." />
+  <meta property="og:image" content="https://phatroi.com/assets/art/celestial_splash_bg.webp" />
+  <meta property="og:url" content="https://phatroi.com/tinh-nang.html" />
+  <meta property="og:type" content="article" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="theme-color" content="#060914" />
+
+  <!-- Fonts & Styling -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800&family=Saira:wght@500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Be Vietnam Pro"', 'sans-serif'],
+            tech: ['"Saira"', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #050811;
+      color: #E2E8F0;
+      background-image: radial-gradient(circle at 50% 0%, rgba(30, 41, 59, 0.5) 0%, rgba(5, 8, 17, 1) 70%);
+      background-attachment: fixed;
+    }
+  </style>
+
+  <!-- Schema.org JSON-LD -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "VideoGame",
+    "name": "Webgame Phá Trời: The Celestial Forge",
+    "url": "https://phatroi.com/tinh-nang.html",
+    "description": "Game Web Rhythm Action & Co-op World Boss Raid phong cách Thiên Cổ Rực Lửa kết hợp Cyber-Mythology.",
+    "genre": ["Action", "Idle", "Rhythm", "MMORPG"],
+    "gamePlatform": ["Web Browser", "Mobile Browser", "PC"],
+    "operatingSystem": "Any (HTML5)",
+    "applicationCategory": "Game",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "VND"
+    }
+  }
+  </script>
+</head>
+<body class="min-h-screen flex flex-col justify-between selection:bg-amber-500 selection:text-slate-950 font-sans">
+
+  <!-- 1. Top Unified Navigation Bar -->
+  <header class="sticky top-0 z-50 backdrop-blur-md bg-slate-950/80 border-b border-amber-500/20 px-4 sm:px-8 py-3.5">
+    <div class="max-w-7xl mx-auto flex items-center justify-between gap-4">
+      <a href="./index.html" class="flex items-center gap-2 group cursor-pointer text-decoration-none">
+        <div class="w-8 h-8 rounded-full border border-amber-400/60 flex items-center justify-center bg-slate-900 shadow-[0_0_12px_rgba(255,180,0,0.3)] group-hover:scale-105 transition-transform">
+          <span class="text-amber-300 font-bold text-xs">破</span>
+        </div>
+        <span class="font-bold text-sm tracking-wider text-amber-200 group-hover:text-amber-100 font-tech">PHÁ TRỜI</span>
+      </a>
+
+      <!-- 5 Main Navigation Links -->
+      <nav class="flex items-center gap-4 sm:gap-8 text-xs font-tech tracking-[0.18em] uppercase overflow-x-auto py-1 px-1">
+        <a href="./index.html" class="text-slate-300/80 hover:text-amber-200 transition-colors pb-1">TRANG CHỦ</a>
+        <a href="./the-gioi.html" class="text-slate-300/80 hover:text-amber-200 transition-colors pb-1">THẾ GIỚI</a>
+        <a href="./nhan-vat.html" class="text-slate-300/80 hover:text-amber-200 transition-colors pb-1">NHÂN VẬT</a>
+        <a href="./tinh-nang.html" class="text-amber-300 font-bold border-b-2 border-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.6)] pb-1">TÍNH NĂNG</a>
+        <a href="./tin-tuc.html" class="text-slate-300/80 hover:text-amber-200 transition-colors pb-1">TIN TỨC</a>
+      </nav>
+
+      <!-- CTA Button -->
+      <a href="./index.html" class="hidden sm:inline-flex items-center gap-2 px-5 py-2 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs font-tech tracking-wider uppercase transition-all shadow-[0_0_15px_rgba(245,158,11,0.3)]">
+        <span>VÀO GAME</span>
+        <span>→</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- 2. Main Content Container -->
+  <main class="max-w-6xl mx-auto px-4 sm:px-8 py-8 sm:py-12 flex-1 w-full space-y-12">
+    
+    <!-- Hero Header -->
+    <div class="relative rounded-3xl overflow-hidden border border-amber-500/30 bg-gradient-to-br from-slate-900/95 via-slate-900/70 to-slate-950/95 p-6 sm:p-10 shadow-2xl">
+      <div class="max-w-3xl space-y-4">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs font-tech font-bold uppercase tracking-widest">
+          <span>✧</span>
+          <span>BÍ KÍP THẦN RÈN · HƯỚNG DẪN THỰC CHIẾN</span>
+        </div>
+        <h1 class="text-2xl sm:text-4xl font-extrabold text-slate-100 font-tech tracking-wide leading-tight">
+          Cẩm Nang Luyện Búa & Bí Quyết Săn Thần Khí
+        </h1>
+        <p class="text-sm sm:text-base text-slate-300 leading-relaxed font-light">
+          Khác với các tựa game clicker rảnh tay đơn điệu, <strong>Phá Trời</strong> là đấu trường kết hợp giữa <strong>phản xạ canh nhịp chuẩn xác</strong>, chiến thuật quản lý nhiệt độ lò nung và chiều sâu phát triển trang bị MMORPG. Nắm vững 6 trụ cột cơ chế dưới đây để trở thành Đệ Nhất Thần Rèn trên đỉnh Vạn Cổ Đúc Thần Đài!
+        </p>
+      </div>
+    </div>
+
+    <!-- 6 Core Feature Pillars Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      
+      <!-- Feature 1: Canh Nhịp Búa -->
+      <div class="rounded-3xl border border-cyan-500/30 bg-slate-900/80 p-6 sm:p-8 space-y-4 shadow-xl hover:border-cyan-400/60 transition-all">
+        <div class="flex items-center justify-between">
+          <span class="text-4xl p-2.5 rounded-2xl bg-cyan-950/60 border border-cyan-500/40">⚡</span>
+          <span class="px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 text-xs font-tech font-bold uppercase">
+            CANH NHỊP ĐE THÉP
+          </span>
+        </div>
+        <h2 class="text-lg sm:text-xl font-bold font-tech text-slate-100">
+          Búa Rèn Canh Nhịp 100 BPM (Bí Quyết Gõ Perfect x3.5)
+        </h2>
+        <p class="text-xs sm:text-sm text-slate-300 leading-relaxed font-light">
+          Vòng hào quang thu hẹp nhịp nhàng quanh đe theo tiết tấu 100 BPM. Khi vòng ánh sáng chạm đúng <strong>vành tâm đe vàng</strong>, hãy bấm phím Cách (Space) trên máy tính hoặc chạm màn hình điện thoại:
+        </p>
+        <ul class="text-xs text-slate-300 space-y-1.5 font-sans pt-2 border-t border-slate-800">
+          <li class="flex items-start gap-2">
+            <span class="text-amber-400 font-bold">•</span>
+            <span><strong class="text-amber-300">Đòn PERFECT:</strong> Sát thương x3.5, nổ tung 3.000 hạt tia sét, tích lũy +1 ngọc Overdrive và rung chấn màn hình.</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-cyan-400 font-bold">•</span>
+            <span><strong class="text-cyan-300">Đòn GREAT:</strong> Sát thương x1.5, duy trì chuỗi Combo không bị ngắt quãng.</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-rose-400 font-bold">•</span>
+            <span><strong class="text-rose-400">Đòn MISS:</strong> Bị phạt nguội đe, mất chuỗi combo. <em>(Mẹo: Môn phái Bất Chu Sơn có kỹ năng W chống phạt trượt nhịp!)</em></span>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Feature 2: Hỏa Hẩu & Overdrive -->
+      <div class="rounded-3xl border border-red-500/30 bg-slate-900/80 p-6 sm:p-8 space-y-4 shadow-xl hover:border-red-400/60 transition-all">
+        <div class="flex items-center justify-between">
+          <span class="text-4xl p-2.5 rounded-2xl bg-red-950/60 border border-red-500/40">🔥</span>
+          <span class="px-3 py-1 rounded-full bg-red-500/10 border border-red-500/30 text-red-300 text-xs font-tech font-bold uppercase">
+            ĐIỀU PHỐI HỎA HẨU
+          </span>
+        </div>
+        <h2 class="text-lg sm:text-xl font-bold font-tech text-slate-100">
+          Nghệ Thuật Giữ Nhiệt Lò & Bạo Phát Overdrive Tầng 3
+        </h2>
+        <p class="text-xs sm:text-sm text-slate-300 leading-relaxed font-light">
+          Người thợ rèn bậc thầy không chỉ gõ đúng nhịp mà còn phải biết <strong>điều hòa nhiệt lượng lò nung</strong>. Mỗi cú gõ Perfect sẽ nạp nhiệt vào Lò Cổ Thần:
+        </p>
+        <ul class="text-xs text-slate-300 space-y-1.5 font-sans pt-2 border-t border-slate-800">
+          <li class="flex items-start gap-2">
+            <span class="text-red-400 font-bold">•</span>
+            <span><strong class="text-red-300">Giữ Nhiệt Đe:</strong> Không để đe nguội lạnh. Duy trì nhịp búa đều đặn để nhận thêm 20% đá Tinh Hoa.</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-amber-400 font-bold">•</span>
+            <span><strong class="text-amber-300">Tích Lũy 8 Ngọc Overdrive:</strong> Khi thanh Overdrive phát sáng trọn vẹn 8 viên, người chơi bước vào trạng thái <strong>Bạo Phát Cực Hạn</strong>.</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-rose-400 font-bold">•</span>
+            <span><strong class="text-rose-300">Xả Tuyệt Kỹ:</strong> Tiêu hao ngọc Overdrive để thi triển các chiêu thức E và R môn phái với lượng sát thương hủy diệt.</span>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Feature 3: Trang Bị 6 Bậc & Tôi Luyện Quench -->
+      <div class="rounded-3xl border border-amber-500/30 bg-slate-900/80 p-6 sm:p-8 space-y-4 shadow-xl hover:border-amber-400/60 transition-all">
+        <div class="flex items-center justify-between">
+          <span class="text-4xl p-2.5 rounded-2xl bg-amber-950/60 border border-amber-500/40">🛡️</span>
+          <span class="px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs font-tech font-bold uppercase">
+            SĂN ĐỒ MMORPG
+          </span>
+        </div>
+        <h2 class="text-lg sm:text-xl font-bold font-tech text-slate-100">
+          Hệ Thống Rơi Đồ 6 Bậc (Tier E $\to$ S) & Tôi Luyện Quench
+        </h2>
+        <p class="text-xs sm:text-sm text-slate-300 leading-relaxed font-light">
+          Kho trang bị phong phú phân chia thành 6 phẩm cấp rõ ràng: Búa Rèn, Đe Sắt, Tạp Dề, Găng Tay và Thần Khí Linh Bảo.
+        </p>
+        <ul class="text-xs text-slate-300 space-y-1.5 font-sans pt-2 border-t border-slate-800">
+          <li class="flex items-start gap-2">
+            <span class="text-amber-400 font-bold">•</span>
+            <span><strong class="text-slate-200">Phân Phẩm Rõ Rệt:</strong> Tier E (Phàm Thiết) $\to$ Tier D (Tinh Cương) $\to$ Tier C (Linh Thiết) $\to$ Tier B (Huyền Thiết) $\to$ Tier A (Cổ Thần) $\to$ <strong>Tier S (Thiên Đạo Thần Khí)</strong>.</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-cyan-400 font-bold">•</span>
+            <span><strong class="text-cyan-300">Bể Tôi Luyện Quench (Băng, Hỏa, Lôi):</strong> Nhúng trang bị vào dung dịch tôi luyện để tẩy luyện và tái sinh thuộc tính phụ theo mong muốn.</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-emerald-400 font-bold">•</span>
+            <span><strong class="text-emerald-300">Khảm Nạp Ngọc Bát Quái:</strong> Khảm đá Lôi, Hỏa, Sơn, Âm để kích hoạt dòng ẩn Set Perks (kích hoạt hiệu ứng bộ 3 món và 5 món).</span>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Feature 4: Bảo Hiểm Pity 200 Hits -->
+      <div class="rounded-3xl border border-purple-500/30 bg-slate-900/80 p-6 sm:p-8 space-y-4 shadow-xl hover:border-purple-400/60 transition-all">
+        <div class="flex items-center justify-between">
+          <span class="text-4xl p-2.5 rounded-2xl bg-purple-950/60 border border-purple-500/40">👑</span>
+          <span class="px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/30 text-purple-300 text-xs font-tech font-bold uppercase">
+            BẢO HIỂM DÂN CÀY
+          </span>
+        </div>
+        <h2 class="text-lg sm:text-xl font-bold font-tech text-slate-100">
+          Cơ Chế Bảo Hiểm Pity 200 Hits (100% Rớt Thần Khí)
+        </h2>
+        <p class="text-xs sm:text-sm text-slate-300 leading-relaxed font-light">
+          Webgame Phá Trời vận hành theo tiêu chí <strong>Công Bằng & Tôn Vinh Dân Cày</strong>. Trò chơi không bán trang bị bằng tiền thật, mọi chiến tích đều đến từ chính tay nghề và sự kiên trì của người chơi:
+        </p>
+        <ul class="text-xs text-slate-300 space-y-1.5 font-sans pt-2 border-t border-slate-800">
+          <li class="flex items-start gap-2">
+            <span class="text-purple-400 font-bold">•</span>
+            <span><strong class="text-purple-300">Bộ Đếm Kiên Trì:</strong> Hệ thống tự động đếm số nhát búa đã giáng xuống.</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-amber-400 font-bold">•</span>
+            <span><strong class="text-amber-300">Cam Kết Chắc Chắn Ra Đồ:</strong> Nếu sau 200 cú gõ liên tiếp chưa may mắn nhặt được đồ Bậc S, nhát búa thứ 201 chắc chắn 100% nổ cột sáng Thần Khí Hoàng Kim!</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-emerald-400 font-bold">•</span>
+            <span><strong class="text-emerald-300">Minh Bạch Hoàn Toàn:</strong> Điểm Pity hiển thị trực tiếp ngay dưới đe rèn để đạo hữu dễ dàng theo dõi.</span>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Feature 5: Đấu Trường Toàn Dân Realtime -->
+      <div class="rounded-3xl border border-emerald-500/30 bg-slate-900/80 p-6 sm:p-8 space-y-4 shadow-xl hover:border-emerald-400/60 transition-all">
+        <div class="flex items-center justify-between">
+          <span class="text-4xl p-2.5 rounded-2xl bg-emerald-950/60 border border-emerald-500/40">🌐</span>
+          <span class="px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-tech font-bold uppercase">
+            CHIẾN TRƯỜNG ĐA NGƯỜI
+          </span>
+        </div>
+        <h2 class="text-lg sm:text-xl font-bold font-tech text-slate-100">
+          Hàng Ngàn Thợ Rèn Cùng Phòng & Hào Quang Tổ Đội
+        </h2>
+        <p class="text-xs sm:text-sm text-slate-300 leading-relaxed font-light">
+          Không bao giờ phải cô đơn trên đỉnh Bất Chu Sơn! Toàn bộ người chơi online đều hiển thị trực quan xung quanh các bậc đài đá của Đúc Thần Đài:
+        </p>
+        <ul class="text-xs text-slate-300 space-y-1.5 font-sans pt-2 border-t border-slate-800">
+          <li class="flex items-start gap-2">
+            <span class="text-emerald-400 font-bold">•</span>
+            <span><strong class="text-emerald-300">Hào Quang Tổ Đội:</strong> Đứng cạnh đồng môn thuộc các phái khác nhau giúp kích hoạt các hào quang buff tốc độ gõ và tỷ lệ bạo kích.</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-cyan-400 font-bold">•</span>
+            <span><strong class="text-cyan-300">Gộp Sức Đánh Boss:</strong> Sát thương búa của tất cả người chơi được cộng dồn thời gian thực để bào mòn thanh máu của Mái Vòm.</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-amber-400 font-bold">•</span>
+            <span><strong class="text-amber-300">Bảng Vàng RCS:</strong> Thi thố xem ai đóng góp nhiều nhát búa Perfect nhất để giành danh hiệu Đệ Nhất Thần Rèn.</span>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Feature 6: Lưu Đám Mây & 3 Slot Nhân Vật -->
+      <div class="rounded-3xl border border-sky-500/30 bg-slate-900/80 p-6 sm:p-8 space-y-4 shadow-xl hover:border-sky-400/60 transition-all">
+        <div class="flex items-center justify-between">
+          <span class="text-4xl p-2.5 rounded-2xl bg-sky-950/60 border border-sky-500/40">☁️</span>
+          <span class="px-3 py-1 rounded-full bg-sky-500/10 border border-sky-500/30 text-sky-300 text-xs font-tech font-bold uppercase">
+            LƯU MÂY AN TOÀN
+          </span>
+        </div>
+        <h2 class="text-lg sm:text-xl font-bold font-tech text-slate-100">
+          Đăng Nhập Google 1 Chạm & Quản Lý 3 Slot Độc Lập
+        </h2>
+        <p class="text-xs sm:text-sm text-slate-300 leading-relaxed font-light">
+          Thoải mái trải nghiệm mọi lúc mọi nơi mà không lo mất mát công sức cày cuốc:
+        </p>
+        <ul class="text-xs text-slate-300 space-y-1.5 font-sans pt-2 border-t border-slate-800">
+          <li class="flex items-start gap-2">
+            <span class="text-sky-400 font-bold">•</span>
+            <span><strong class="text-sky-300">Lưu Trữ Đám Mây Vĩnh Viễn:</strong> Đăng nhập nhanh bằng tài khoản Google giúp túi đồ, cấp bậc và trang phục được sao lưu an toàn.</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-amber-400 font-bold">•</span>
+            <span><strong class="text-amber-300">Đa Nền Tảng Liền Mạch:</strong> Đang chơi dở trên điện thoại khi đi đường, về nhà mở máy tính lên là tiếp tục gõ đe không ngắt quãng.</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-emerald-400 font-bold">•</span>
+            <span><strong class="text-emerald-300">3 Slot Nhân Vật:</strong> Dễ dàng tạo cùng lúc 3 thợ rèn thuộc 3 môn phái khác nhau để trải nghiệm đầy đủ các bộ chiêu thức độc bản!</span>
+          </li>
+        </ul>
+      </div>
+
+    </div>
+
+    <!-- Bottom Action Banner -->
+    <div class="rounded-2xl border border-amber-500/30 bg-gradient-to-r from-amber-950/40 via-slate-900/80 to-slate-950 p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div>
+        <h3 class="text-base sm:text-lg font-bold font-tech text-amber-300">Vào Game Ngay Để Thử Thách Tay Nghề Rèn Búa Của Bạn!</h3>
+        <p class="text-xs sm:text-sm text-slate-400 font-light">Không cần tải app, chơi ngay trên trình duyệt với tốc độ tải dưới 1 giây.</p>
+      </div>
+      <a href="./index.html" class="px-7 py-3 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold font-tech text-sm tracking-wider uppercase transition-all shadow-[0_4px_25px_rgba(251,191,36,0.4)] whitespace-nowrap">
+        BẮT ĐẦU RÈN ĐE NGAY →
+      </a>
+    </div>
+
+  </main>
+
+  <!-- 3. Footer -->
+  <footer class="border-t border-slate-800/80 bg-slate-950/90 py-6 px-4 sm:px-8 mt-12 text-xs text-slate-500 font-tech">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div>
+        <span>© 2026 Webgame Phá Trời · Phát hành độc quyền tại </span>
+        <a href="https://phatroi.com" class="text-amber-400/80 hover:underline">phatroi.com</a>
+      </div>
+      <div class="flex items-center gap-4">
+        <a href="./privacy.html" class="hover:text-slate-300 transition">Chính Sách Quyền Riêng Tư</a>
+        <span>·</span>
+        <a href="./terms.html" class="hover:text-slate-300 transition">Điều Khoản Dịch Vụ</a>
+        <span>·</span>
+        <a href="./sitemap.xml" class="hover:text-slate-300 transition">Sitemap XML</a>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>

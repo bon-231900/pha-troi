@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Demo Hướng 1: Sprite Sheet (Frame-by-Frame) - Tiên Nhân Đập Búa</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+    body {
+      background: #060913;
+      color: #E2E8F0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+    header {
+      background: rgba(11, 16, 32, 0.95);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid rgba(255, 183, 3, 0.2);
+      padding: 12px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 10;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .badge {
+      background: linear-gradient(135deg, #06B6D4, #3B82F6);
+      color: #FFFFFF;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 3px 8px;
+      border-radius: 4px;
+      letter-spacing: 0.5px;
+    }
+    .title {
+      font-size: 17px;
+      font-weight: 700;
+      color: #F8FAFC;
+    }
+    .subtitle {
+      font-size: 12px;
+      color: #94A3B8;
+    }
+    .status-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      background: rgba(6, 182, 212, 0.12);
+      border: 1px solid rgba(6, 182, 212, 0.3);
+      color: #22D3EE;
+      padding: 4px 12px;
+      border-radius: 999px;
+    }
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      background: #06B6D4;
+      border-radius: 50%;
+      box-shadow: 0 0 8px #06B6D4;
+    }
+
+    main {
+      flex: 1;
+      display: flex;
+      position: relative;
+    }
+    #viewport-container {
+      flex: 1;
+      position: relative;
+      background: radial-gradient(circle at 50% 50%, #0F172A 0%, #060913 85%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Floating control bar */
+    .floating-hud {
+      position: absolute;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      background: rgba(11, 16, 32, 0.88);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(6, 182, 212, 0.35);
+      padding: 10px 18px;
+      border-radius: 50px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+      z-index: 20;
+    }
+    .strike-btn {
+      background: linear-gradient(135deg, #06B6D4, #2563EB);
+      color: #FFFFFF;
+      font-weight: 800;
+      font-size: 15px;
+      padding: 12px 28px;
+      border: none;
+      border-radius: 40px;
+      cursor: pointer;
+      box-shadow: 0 0 20px rgba(6, 182, 212, 0.45);
+      transition: all 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .strike-btn:hover {
+      transform: scale(1.06);
+      box-shadow: 0 0 28px rgba(6, 182, 212, 0.7);
+    }
+    .strike-btn:active {
+      transform: scale(0.95);
+    }
+
+    /* Sidebar controls */
+    .sidebar {
+      width: 330px;
+      background: #0B1020;
+      border-left: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      overflow-y: auto;
+    }
+    .section-title {
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #22D3EE;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .control-group {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 8px;
+      padding: 12px;
+    }
+    .control-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .control-row:last-child {
+      margin-bottom: 0;
+    }
+    label {
+      font-size: 13px;
+      color: #CBD5E1;
+    }
+    input[type="range"] {
+      width: 100%;
+      accent-color: #06B6D4;
+      margin-top: 6px;
+    }
+    .toggle-btn {
+      background: #1E293B;
+      color: #94A3B8;
+      border: 1px solid #334155;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .toggle-btn.active {
+      background: rgba(6, 182, 212, 0.18);
+      border-color: #06B6D4;
+      color: #22D3EE;
+      font-weight: 700;
+    }
+    .step-btn-group {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .step-btn {
+      flex: 1;
+      background: #1E293B;
+      border: 1px solid #334155;
+      color: #E2E8F0;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .step-btn:hover {
+      background: #334155;
+    }
+    .hint-box {
+      background: rgba(6, 182, 212, 0.08);
+      border-left: 3px solid #06B6D4;
+      padding: 10px 12px;
+      font-size: 11px;
+      line-height: 1.5;
+      color: #94A3B8;
+      border-radius: 0 6px 6px 0;
+    }
+    .hint-box b {
+      color: #22D3EE;
+    }
+    .nav-link {
+      display: inline-block;
+      text-align: center;
+      padding: 10px;
+      background: rgba(255, 183, 3, 0.12);
+      border: 1px solid rgba(255, 183, 3, 0.3);
+      color: #FFB703;
+      border-radius: 6px;
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 700;
+      transition: all 0.2s;
+    }
+    .nav-link:hover {
+      background: rgba(255, 183, 3, 0.25);
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <span class="badge">HƯỚNG 1: SPRITE SHEET</span>
+      <div>
+        <div class="title">Tiên Nhân Rèn Búa · Frame-by-Frame Flipbook</div>
+        <div class="subtitle">Hoạt họa từng khung hình truyền thống (6 Frames hành động liên hoàn)</div>
+      </div>
+    </div>
+    <div class="status-pill">
+      <div class="status-dot"></div>
+      <span id="fps-label">FPS: 12 · Frame: 1/6</span>
+    </div>
+  </header>
+
+  <main>
+    <div id="viewport-container">
+      <canvas id="forge-canvas"></canvas>
+
+      <div class="floating-hud">
+        <button id="strike-trigger" class="strike-btn">
+          <span>⚡ ĐẬP BÚA (SPACE)</span>
+        </button>
+        <button id="loop-btn" class="toggle-btn">Lặp lại liên tục (Off)</button>
+        <button id="grid-btn" class="toggle-btn">Soi Lưới UV (Off)</button>
+      </div>
+    </div>
+
+    <aside class="sidebar">
+      <div>
+        <div class="section-title">⏱ Tốc Độ Lật Khung Hình (Framerate)</div>
+        <div class="control-group">
+          <div class="control-row">
+            <label>Tốc độ hoạt họa</label>
+            <span id="rate-val" style="font-size: 12px; color: #22D3EE;">12 FPS</span>
+          </div>
+          <input type="range" id="rate-slider" min="3" max="24" step="1" value="12">
+          
+          <div class="control-row" style="margin-top: 14px;">
+            <label>Âm thanh va đập</label>
+            <button id="sound-btn" class="toggle-btn active">Bật âm thanh</button>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="section-title">🔍 Soi Từng Khung Hình (Step-by-Step)</div>
+        <div class="control-group">
+          <div class="control-row">
+            <label>Khung hiện tại:</label>
+            <span id="current-frame-name" style="font-size: 12px; color: #F59E0B; font-weight: 700;">Frame 1: Ready</span>
+          </div>
+          <div class="step-btn-group">
+            <button id="prev-frame" class="step-btn">◀ Khung trước</button>
+            <button id="next-frame" class="step-btn">Khung tiếp ▶</button>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="section-title">💡 Giải Phẫu Sprite Sheet</div>
+        <div class="hint-box">
+          <b>Đặc điểm Hướng 1 (Spritesheet):</b><br>
+          1. <b>Tự do nét vẽ tuyệt đối</b>: Ở Frame 3 (chém vung) và Frame 4 (nổ búa), người họa sĩ có thể vẽ thêm vệt mực đen và tia lửa nổ bung mà không bị gò bó bởi khớp xương.<br>
+          2. <b>Dung lượng</b>: Toàn bộ 6 frame được nén vào 1 dải WebP dài chỉ <b>178 KB</b>.<br>
+          3. <b>Nhược điểm</b>: Chuyển động có cảm giác giật nhẹ kiểu phim hoạt hình (vì chỉ có 6 nấc tranh).
+        </div>
+      </div>
+
+      <div style="margin-top: auto; display: flex; flex-direction: column; gap: 8px;">
+        <a href="demo_cutout_forge.html" class="nav-link">👉 Chuyển sang xem Hướng 2 (Khớp Xương Puppet)</a>
+        <div style="font-size: 11px; color: #475569; text-align: center;">
+          Chạy nội bộ (Offline Demo) · Chưa đưa lên web chính thức
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <script>
+    const canvas = document.getElementById('forge-canvas');
+    const ctx = canvas.getContext('2d');
+    const container = document.getElementById('viewport-container');
+
+    const strikeTrigger = document.getElementById('strike-trigger');
+    const loopBtn = document.getElementById('loop-btn');
+    const gridBtn = document.getElementById('grid-btn');
+    const soundBtn = document.getElementById('sound-btn');
+    const rateSlider = document.getElementById('rate-slider');
+    const rateVal = document.getElementById('rate-val');
+    const prevBtn = document.getElementById('prev-frame');
+    const nextBtn = document.getElementById('next-frame');
+    const currentFrameName = document.getElementById('current-frame-name');
+    const fpsLabel = document.getElementById('fps-label');
+
+    // Sprite Sheet Settings
+    const FRAME_COUNT = 6;
+    const FRAME_W = 360;
+    const FRAME_H = 480;
+
+    const FRAME_DESCRIPTIONS = [
+      'Frame 1: Thủ thế chuẩn bị (Ready)',
+      'Frame 2: Giơ cao tích điện (Windup)',
+      'Frame 3: Vung búa xé gió (Downstroke)',
+      'Frame 4: Nện trúng đe phát nổ (Impact)',
+      'Frame 5: Nảy búa sau va chạm (Rebound)',
+      'Frame 6: Thu búa hồi thế (Recovery)'
+    ];
+
+    // State
+    let isLooping = false;
+    let isShowGrid = false;
+    let isSoundEnabled = true;
+    let targetFps = 12;
+    let currentFrameIdx = 0;
+    let isPlayingAction = false;
+    let frameTimer = 0;
+    let screenShake = 0;
+
+    // Load Sprite Sheet Image
+    const spriteSheet = new Image();
+    spriteSheet.src = '/assets/art/hero_spritesheet_strip.webp';
+    let isLoaded = false;
+    spriteSheet.onload = () => {
+      isLoaded = true;
+    };
+
+    // Web Audio Synthesizer
+    let audioCtx = null;
+    function playClangSound() {
+      if (!isSoundEnabled) return;
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+
+      const now = audioCtx.currentTime;
+      const osc1 = audioCtx.createOscillator();
+      const osc2 = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+
+      osc1.type = 'triangle';
+      osc1.frequency.setValueAtTime(860, now);
+      osc1.frequency.exponentialRampToValueAtTime(300, now + 0.35);
+
+      osc2.type = 'sine';
+      osc2.frequency.setValueAtTime(1480, now);
+      osc2.frequency.exponentialRampToValueAtTime(520, now + 0.25);
+
+      gain.gain.setValueAtTime(0.45, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+
+      osc1.connect(gain);
+      osc2.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      osc1.start(now);
+      osc2.start(now);
+      osc1.stop(now + 0.45);
+      osc2.stop(now + 0.45);
+
+      // Bass boom
+      const oscSub = audioCtx.createOscillator();
+      const gainSub = audioCtx.createGain();
+      oscSub.type = 'sine';
+      oscSub.frequency.setValueAtTime(140, now);
+      oscSub.frequency.exponentialRampToValueAtTime(40, now + 0.3);
+      gainSub.gain.setValueAtTime(0.65, now);
+      gainSub.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+      oscSub.connect(gainSub);
+      gainSub.connect(audioCtx.destination);
+      oscSub.start(now);
+      oscSub.stop(now + 0.4);
+    }
+
+    function triggerStrike() {
+      isPlayingAction = true;
+      currentFrameIdx = 0;
+      frameTimer = 0;
+    }
+
+    // Resize
+    function resize() {
+      const rect = container.getBoundingClientRect();
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    // Event listeners
+    strikeTrigger.addEventListener('click', triggerStrike);
+    container.addEventListener('click', (e) => {
+      if (e.target === canvas) triggerStrike();
+    });
+    window.addEventListener('keydown', (e) => {
+      if (e.code === 'Space') {
+        e.preventDefault();
+        triggerStrike();
+      }
+    });
+
+    loopBtn.addEventListener('click', () => {
+      isLooping = !isLooping;
+      loopBtn.textContent = `Lặp lại liên tục (${isLooping ? 'On' : 'Off'})`;
+      loopBtn.classList.toggle('active', isLooping);
+      if (isLooping && !isPlayingAction) {
+        triggerStrike();
+      }
+    });
+
+    gridBtn.addEventListener('click', () => {
+      isShowGrid = !isShowGrid;
+      gridBtn.textContent = `Soi Lưới UV (${isShowGrid ? 'On' : 'Off'})`;
+      gridBtn.classList.toggle('active', isShowGrid);
+    });
+
+    soundBtn.addEventListener('click', () => {
+      isSoundEnabled = !isSoundEnabled;
+      soundBtn.textContent = isSoundEnabled ? 'Bật âm thanh' : 'Tắt âm thanh';
+      soundBtn.classList.toggle('active', isSoundEnabled);
+    });
+
+    rateSlider.addEventListener('input', (e) => {
+      targetFps = parseInt(e.target.value, 10);
+      rateVal.textContent = `${targetFps} FPS`;
+    });
+
+    prevBtn.addEventListener('click', () => {
+      isPlayingAction = false;
+      isLooping = false;
+      loopBtn.textContent = 'Lặp lại liên tục (Off)';
+      loopBtn.classList.remove('active');
+      currentFrameIdx = (currentFrameIdx - 1 + FRAME_COUNT) % FRAME_COUNT;
+      updateFrameUI();
+    });
+
+    nextBtn.addEventListener('click', () => {
+      isPlayingAction = false;
+      isLooping = false;
+      loopBtn.textContent = 'Lặp lại liên tục (Off)';
+      loopBtn.classList.remove('active');
+      currentFrameIdx = (currentFrameIdx + 1) % FRAME_COUNT;
+      updateFrameUI();
+    });
+
+    function updateFrameUI() {
+      currentFrameName.textContent = FRAME_DESCRIPTIONS[currentFrameIdx];
+      fpsLabel.textContent = `FPS: ${targetFps} · Frame: ${currentFrameIdx + 1}/${FRAME_COUNT}`;
+    }
+
+    // Sparks
+    const sparks = [];
+    function spawnSparks(x, y, count = 20) {
+      for (let i = 0; i < count; i++) {
+        const angle = Math.PI * 2 * Math.random();
+        const speed = 140 + Math.random() * 320;
+        sparks.push({
+          x,
+          y,
+          vx: Math.cos(angle) * speed,
+          vy: -Math.abs(Math.sin(angle)) * speed * 1.3,
+          life: 0.35 + Math.random() * 0.25,
+          maxLife: 0.6,
+          color: Math.random() > 0.4 ? '#22D3EE' : '#FDE047',
+          size: 2 + Math.random() * 3.5
+        });
+      }
+    }
+
+    // Animation Loop
+    let lastTime = performance.now();
+
+    function render(currentTime) {
+      const dt = Math.min((currentTime - lastTime) / 1000.0, 0.1);
+      lastTime = currentTime;
+
+      // Update frame playback
+      if (isPlayingAction || isLooping) {
+        frameTimer += dt;
+        const frameInterval = 1.0 / targetFps;
+
+        if (frameTimer >= frameInterval) {
+          frameTimer -= frameInterval;
+          currentFrameIdx++;
+
+          // Impact trigger on Frame 3 (zero-indexed = 4th frame)
+          if (currentFrameIdx === 3) {
+            screenShake = 1.2;
+            playClangSound();
+            spawnSparks(600, 480, 24);
+          }
+
+          if (currentFrameIdx >= FRAME_COUNT) {
+            if (isLooping) {
+              currentFrameIdx = 0;
+            } else {
+              currentFrameIdx = 0;
+              isPlayingAction = false;
+            }
+          }
+          updateFrameUI();
+        }
+      }
+
+      // Screen shake decay
+      screenShake = Math.max(0, screenShake - dt * 6.0);
+      const shakeX = (Math.random() - 0.5) * screenShake * 18;
+      const shakeY = (Math.random() - 0.5) * screenShake * 18;
+
+      ctx.save();
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.translate(shakeX, shakeY);
+
+      // World scale
+      const baseW = 1000;
+      const baseH = 800;
+      const scaleFit = Math.min(canvas.width / baseW, canvas.height / baseH);
+      const originX = (canvas.width - baseW * scaleFit) / 2;
+      const originY = (canvas.height - baseH * scaleFit) / 2;
+
+      ctx.save();
+      ctx.translate(originX, originY);
+      ctx.scale(scaleFit, scaleFit);
+
+      // Radial background
+      const bgGrad = ctx.createRadialGradient(500, 400, 40, 500, 400, 550);
+      bgGrad.addColorStop(0, '#0F1A30');
+      bgGrad.addColorStop(0.7, '#080D1A');
+      bgGrad.addColorStop(1, '#05070E');
+      ctx.fillStyle = bgGrad;
+      ctx.fillRect(0, 0, baseW, baseH);
+
+      // Celestial Moon
+      ctx.save();
+      const moonGrad = ctx.createRadialGradient(720, 220, 20, 720, 220, 180);
+      moonGrad.addColorStop(0, 'rgba(34, 211, 238, 0.35)');
+      moonGrad.addColorStop(0.5, 'rgba(34, 211, 238, 0.12)');
+      moonGrad.addColorStop(1, 'rgba(34, 211, 238, 0)');
+      ctx.fillStyle = moonGrad;
+      ctx.beginPath();
+      ctx.arc(720, 220, 180, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+
+      // Ground Aura
+      ctx.save();
+      ctx.fillStyle = '#06B6D4';
+      ctx.globalAlpha = 0.05;
+      ctx.beginPath();
+      ctx.ellipse(500, 680, 380, 40, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+
+      // Draw Sprite from Sprite Sheet
+      if (isLoaded) {
+        const sx = currentFrameIdx * FRAME_W;
+        const sy = 0;
+        const sw = FRAME_W;
+        const sh = FRAME_H;
+
+        const renderScale = 1.35;
+        const dw = FRAME_W * renderScale;
+        const dh = FRAME_H * renderScale;
+        const dx = (baseW - dw) / 2;
+        const dy = 160;
+
+        ctx.drawImage(spriteSheet, sx, sy, sw, sh, dx, dy, dw, dh);
+
+        // UV Grid overlay if debug is on
+        if (isShowGrid) {
+          ctx.strokeStyle = '#22D3EE';
+          ctx.lineWidth = 2;
+          ctx.strokeRect(dx, dy, dw, dh);
+          ctx.fillStyle = '#22D3EE';
+          ctx.font = '12px monospace';
+          ctx.fillText(`UV BBOX: (${sx}, ${sy}, ${sw}, ${sh})`, dx + 10, dy + 24);
+        }
+      }
+
+      // Render sparks
+      for (let i = sparks.length - 1; i >= 0; i--) {
+        const p = sparks[i];
+        p.x += p.vx * dt;
+        p.y += p.vy * dt;
+        p.vy += 450 * dt;
+        p.life -= dt;
+        if (p.life <= 0) {
+          sparks.splice(i, 1);
+          continue;
+        }
+        const alpha = p.life / p.maxLife;
+        ctx.save();
+        ctx.globalAlpha = alpha;
+        ctx.fillStyle = p.color;
+        ctx.shadowColor = p.color;
+        ctx.shadowBlur = 8;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+
+      ctx.restore();
+      ctx.restore();
+
+      requestAnimationFrame(render);
+    }
+
+    requestAnimationFrame(render);
+  </script>
+</body>
+</html>
