@@ -652,6 +652,8 @@ export default function App() {
     } catch {}
     return 'guild_thien_thai';
   });
+  const userGuildIdRef = useRef<string>(userGuildId);
+  userGuildIdRef.current = userGuildId;
 
   const [guildHearths, setGuildHearths] = useState<Record<string, { level: number; exp: number }>>(() => {
     try {
@@ -965,7 +967,7 @@ export default function App() {
     });
 
     realtimeRoomRef.current = room;
-    room.init(userGuildId, activeStanceRef.current, currentVaultId);
+    room.init(userGuildIdRef.current, activeStanceRef.current, currentVaultId);
 
     // Actively request world state from any active peer on mount
     room.requestWorldState();
@@ -978,13 +980,18 @@ export default function App() {
       mp.disconnect();
       room.destroy();
     };
-  }, [userGuildId, currentVaultId, appendCombatLog]);
+  }, [currentVaultId, appendCombatLog]);
 
   useEffect(() => {
-    if (realtimeRoomRef.current && realtimeRoomRef.current.getLocalPlayer().stance !== activeStance) {
-      realtimeRoomRef.current.updateIdentity(activeStance);
+    const room = realtimeRoomRef.current;
+    if (!room) return;
+    const local = room.getLocalPlayer();
+    const nextStance = local.stance !== activeStance ? activeStance : undefined;
+    const nextGuild = local.guildId !== userGuildId ? userGuildId : undefined;
+    if (nextStance || nextGuild) {
+      room.updateIdentity(nextStance, nextGuild);
     }
-  }, [activeStance]);
+  }, [activeStance, userGuildId]);
 
   // Cloudflare Worker API: Initial Global World State Fetch & Periodic Poll (10s)
   useEffect(() => {
